@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Boo Who? · Sell Sheet</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Source for boo-who-sell-sheet.pdf (US Letter, landscape). */
+@page{size:11in 8.5in;margin:0}
+:root{--bg:#F1EEF7;--panel:#E3DDF0;--violet:#5B2E86;--night:#2A2856;--dusk:#B8603D;--witch:#6A3590;--living:#D9662B;
+  --ink:#1E1B32;--muted:#5D5878;--line:#D5CEE6}
+*{box-sizing:border-box}
+html,body{margin:0;background:#888}
+.sheet{width:11in;height:8.5in;margin:0 auto;background:var(--bg);color:var(--ink);font-family:"Figtree",Arial,sans-serif;font-size:10pt;line-height:1.38;
+  display:grid;grid-template-rows:auto 1fr auto;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+header{display:flex;justify-content:space-between;align-items:flex-end;padding:.36in 0 .16in;border-bottom:2px solid var(--ink);margin:0 .5in}
+h1{font-family:"Archivo",sans-serif;font-weight:900;font-stretch:118%;letter-spacing:-.02em;font-size:54pt;line-height:.9;color:var(--violet);margin:0}
+.tag{font-size:13pt;margin-top:8px;font-weight:600}
+.tag i{font-style:normal;color:var(--muted);font-weight:500}
+.by{text-align:right;font-size:9.5pt;color:var(--muted)}
+.by b{display:block;color:var(--ink);font-size:11pt}
+.pill{display:inline-block;margin-bottom:8px;font-size:8pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--night);color:#F1EEF7;padding:4px 9px;border-radius:99px}
+main{display:grid;grid-template-columns:1.32fr 1fr;gap:.32in;padding:.22in .5in .2in;min-height:0}
+.art{display:flex;flex-direction:column;gap:.14in;min-height:0}
+.render{aspect-ratio:16/10;border-radius:14px;background:#0d0b12;overflow:hidden}
+.render img{width:100%;height:100%;object-fit:cover;display:block}
+.pieces{display:grid;grid-template-columns:repeat(3,.62in) 1fr;gap:.12in;align-items:center}
+.pieces img{width:100%;aspect-ratio:5/7;border-radius:5px;display:block;box-shadow:0 1.5px 0 rgba(0,0,0,.18)}
+.toks{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:.08in .1in;border-radius:10px;background:var(--panel)}
+.tok{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font:800 14pt/1 "Archivo",sans-serif;background:#FBF5E8;color:var(--c);box-shadow:inset 0 0 0 3px var(--c)}
+.tok.down{background:var(--c);color:#fff;font-size:6pt;letter-spacing:.05em;align-content:center;gap:1px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)}
+.tok.down svg{width:44%;height:auto}
+.copy{display:flex;flex-direction:column;gap:.11in;min-height:0}
+.copy p{margin:0}
+h2{font-size:8.5pt;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+li{padding-left:14px;position:relative}
+li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;border-radius:2px;background:var(--violet)}
+li b{font-weight:700}
+.night{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.night span{border-radius:7px;padding:5px 8px;color:#fff;font-size:8.5pt;line-height:1.25}
+.night b{display:block;font-size:9.5pt}
+dl{display:grid;grid-template-columns:auto 1fr;margin:0;border-top:1px solid var(--line)}
+dt,dd{margin:0;padding:5px 0;border-bottom:1px solid var(--line)}
+dt{font-size:8.5pt;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-right:14px;padding-top:7px}
+footer{background:var(--night);color:#F1EEF7;display:flex;justify-content:space-between;align-items:center;padding:.17in .5in;font-size:10pt}
+footer b{font-family:"Archivo",sans-serif;font-weight:900;font-stretch:112%;font-size:13pt;margin-right:8px}
+footer .u{font-weight:700}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div>
+      <span class="pill">Available for licensing</span>
+      <h1>Boo Who?</h1>
+      <p class="tag">A paranoia party game for 4–8 players · <i>Everyone can see it but you.</i></p>
+    </div>
+    <div class="by"><b>Darren Don</b>What's Good Board Games<br>darren@whatsgoodboardgames.com</div>
+  </header>
+  <main>
+    <div class="art">
+      <div class="render"><img src="/games/boo-who/img/sheet-render.jpg" alt=""></div>
+      <div class="pieces" aria-hidden="true">
+        <img src="/games/boo-who/img/card-ghost.webp" alt="">
+        <img src="/games/boo-who/img/card-living.webp" alt="">
+        <img src="/games/boo-who/img/card-back.webp" alt="">
+        <div class="toks">
+          <span class="tok" style="--c:#2E5EAA">3</span><span class="tok" style="--c:#2E5EAA">2</span><span class="tok" style="--c:#2E5EAA">1</span>
+          <span class="tok down" style="--c:#E0619E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E0619E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E0619E"/></svg>BOO!</span>
+          <span class="tok down" style="--c:#2E9E5B"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#2E9E5B"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#2E9E5B"/></svg>BOO!</span>
+          <span class="tok down" style="--c:#E8692E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E8692E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E8692E"/></svg>BOO!</span>
+        </div>
+      </div>
+    </div>
+    <div class="copy">
+      <div>
+        <h2>The game</h2>
+        <p>Your role card faces out, so everyone can read it except you. Players put Boo tokens on each other, then everyone decides at once: run or stay. The Living should run; the Ghosts should stay. Your only clues are the Boos in front of you.</p>
+      </div>
+      <div>
+        <h2>Why it works</h2>
+        <ul>
+          <li><b>Paranoia on the table.</b> No secret chats or votes. A pile of Boos might be a warning, or bait.</li>
+          <li><b>Everyone acts at once.</b> Boos go down on a count of three; everyone runs or stays together.</li>
+          <li><b>Scoring in one line.</b> Right call: 1 point per Boo. Wrong call: your booers score their numbers.</li>
+          <li><b>Fits in a deck box.</b> Every piece is card-sized and flat, even the cardboard stands.</li>
+        </ul>
+      </div>
+      <div class="night">
+        <span style="background:var(--dusk)"><b>Dusk</b>A normal round</span>
+        <span style="background:var(--night)"><b>Midnight</b>Boos face down</span>
+        <span style="background:var(--witch)"><b>Witching Hour</b>Points doubled</span>
+      </div>
+      <div>
+        <h2>At a glance</h2>
+        <dl>
+          <dt>Players</dt><dd>4–8</dd>
+          <dt>Genre</dt><dd>Party, simultaneous</dd>
+          <dt>Length</dt><dd>About 15 minutes, 3 rounds</dd>
+          <dt>Components</dt><dd>17 role cards, 8 player boards, deck box</dd>
+          <dt>Ready</dt><dd>Print-and-play kit, playable online build</dd>
+        </dl>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <span><b>Play it now</b><span class="u">darrendon.github.io/games/boo-who</span></span>
+    <span>Darren Don · darren@whatsgoodboardgames.com</span>
+  </footer>
+</div>
+</body>
+</html>
