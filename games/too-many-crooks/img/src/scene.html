@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script src="/assets/vendor/three.r128.min.js"></script>
+</head><body>
+<script>
+/* Too Many Crooks! — still renders. Units are inches. ?scene=hero|table|kit  &w=1600&h=1000 */
+(async function () {
+  const q = new URLSearchParams(location.search);
+  const SCENE = q.get('scene') || 'hero', W = +q.get('w') || 1600, H = +q.get('h') || 1000;
+  const TEX = '/games/too-many-crooks/img/src/tex/';
+  const C = (h) => new THREE.Color(h).convertSRGBToLinear();
+  const loader = new THREE.TextureLoader();
+  const tex = (n) => new Promise((res, rej) => loader.load(TEX + n, (t) => { t.anisotropy = 16; t.encoding = THREE.sRGBEncoding; res(t); }, undefined, rej));
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(W, H);
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = C('#15120E');
+  scene.fog = new THREE.Fog(C('#15120E'), 26, 48);
+  const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
+
+  // ---- lights (same rig as the Dim Sum Rush mockup, warmed a touch)
+  scene.add(new THREE.HemisphereLight(0xfff3e2, 0x8a7458, 0.62));
+  const key = new THREE.DirectionalLight(0xfff1dc, 1.05); key.position.set(7, 12, 7); key.castShadow = true;
+  key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 50 });
+  key.shadow.radius = 5; key.shadow.bias = -0.0005; scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffd9a8, 0.38); rim.position.set(-9, 6, -8); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xdfe8ff, 0.18); fill.position.set(-5, 4, 9); scene.add(fill);
+
+  // ---- table: dark walnut with a little grain
+  function woodTexture() {
+    const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
+    g.fillStyle = '#2B231C'; g.fillRect(0, 0, 1024, 1024);
+    for (let i = 0; i < 520; i++) { g.strokeStyle = 'rgba(' + (i % 2 ? '66,50,38' : '22,16,12') + ',' + (0.04 + Math.random() * 0.08) + ')'; g.lineWidth = 1 + Math.random() * 3; g.beginPath(); const y = Math.random() * 1024; g.moveTo(0, y); g.bezierCurveTo(300, y + (Math.random() - .5) * 30, 700, y + (Math.random() - .5) * 30, 1024, y + (Math.random() - .5) * 14); g.stroke(); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 4); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+  }
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.82, metalness: 0.02 }));
+  table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
+
+  // ---- dice: a real rounded cube (3 boxes + 12 edge cylinders + 8 corner spheres) with pip decals
+  const DIE = 0.63, R = 0.075;
+  const DCOL = ['#C8372D', '#2F6DB5', '#E0B21F', '#3E8E4F', '#F2ECDA', '#2B2B2B'];
+  const PIP = ['#FFFFFF', '#FFFFFF', '#1B1915', '#FFFFFF', '#1B1915', '#FFFFFF'];
+  const pipCache = {};
+  function pipTex(v, col) {
+    const k = v + col; if (pipCache[k]) return pipCache[k];
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+    g.clearRect(0, 0, 256, 256); g.fillStyle = col;
+    const P = { 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]], 5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [2, 0], [0, 1], [2, 1], [0, 2], [2, 2]] }[v];
+    for (const [x, y] of P) { g.beginPath(); g.arc(58 + x * 70, 58 + y * 70, 22, 0, Math.PI * 2); g.fill(); }
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; pipCache[k] = t; return t;
+  }
+  const bodyMats = DCOL.map((c) => new THREE.MeshStandardMaterial({ color: C(c), roughness: 0.32, metalness: 0.0 }));
+  const edgeGeo = new THREE.CylinderGeometry(R, R, DIE - 2 * R, 14); const cornerGeo = new THREE.SphereGeometry(R, 14, 10);
+  const boxA = new THREE.BoxGeometry(DIE, DIE - 2 * R, DIE - 2 * R), boxB = new THREE.BoxGeometry(DIE - 2 * R, DIE, DIE - 2 * R), boxC = new THREE.BoxGeometry(DIE - 2 * R, DIE - 2 * R, DIE);
+  const pipGeo = new THREE.PlaneGeometry(DIE - 2 * R - 0.02, DIE - 2 * R - 0.02);
+  function makeDie(colour, top, yaw) {
+    const g = new THREE.Group(); const m = bodyMats[colour];
+    for (const geo of [boxA, boxB, boxC]) { const b = new THREE.Mesh(geo, m); b.castShadow = true; b.receiveShadow = true; g.add(b); }
+    const h = DIE / 2 - R;
+    for (const [ax, sx, sy] of [['y', 1, 1], ['y', -1, 1], ['y', 1, -1], ['y', -1, -1], ['x', 1, 1], ['x', -1, 1], ['x', 1, -1], ['x', -1, -1], ['z', 1, 1], ['z', -1, 1], ['z', 1, -1], ['z', -1, -1]]) {
+      const e = new THREE.Mesh(edgeGeo, m); e.castShadow = true;
+      if (ax === 'y') e.position.set(sx * h, 0, sy * h);
+      else if (ax === 'x') { e.rotation.z = Math.PI / 2; e.position.set(0, sx * h, sy * h); }
+      else { e.rotation.x = Math.PI / 2; e.position.set(sx * h, sy * h, 0); }
+      g.add(e);
+    }
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) { const s = new THREE.Mesh(cornerGeo, m); s.position.set(sx * h, sy * h, sz * h); s.castShadow = true; g.add(s); }
+    // faces: top = `top`, bottom = 7-top, sides from the rest with opposite pairs summing to 7
+    const rest = [1, 2, 3, 4, 5, 6].filter((v) => v !== top && v !== 7 - top);
+    const faces = { py: top, ny: 7 - top, pz: rest[0], nz: 7 - rest[0], px: rest[1], nx: 7 - rest[1] };
+    const d = DIE / 2 + 0.002;
+    const put = (v, pos, rot) => { const p = new THREE.Mesh(pipGeo, new THREE.MeshStandardMaterial({ map: pipTex(v, PIP[colour]), transparent: true, roughness: 0.5, depthWrite: false })); p.position.copy(pos); p.rotation.set(rot[0], rot[1], rot[2]); g.add(p); };
+    put(faces.py, new THREE.Vector3(0, d, 0), [-Math.PI / 2, 0, 0]);
+    put(faces.ny, new THREE.Vector3(0, -d, 0), [Math.PI / 2, 0, 0]);
+    put(faces.pz, new THREE.Vector3(0, 0, d), [0, 0, 0]);
+    put(faces.nz, new THREE.Vector3(0, 0, -d), [0, Math.PI, 0]);
+    put(faces.px, new THREE.Vector3(d, 0, 0), [0, Math.PI / 2, 0]);
+    put(faces.nx, new THREE.Vector3(-d, 0, 0), [0, -Math.PI / 2, 0]);
+    g.rotation.y = yaw || 0;
+    return g;
+  }
+
+  // ---- crew sheet: 3.5 x 2.5 card, 0.03 thick
+  const SW = 3.5, SD = 2.5, ST = 0.03;
+  const sheetTex = []; for (let i = 0; i < 6; i++) sheetTex.push(await tex('sheet-' + i + '.jpg'));
+  const cream = new THREE.MeshStandardMaterial({ color: C('#E9E3D1'), roughness: 0.75 });
+  function makeSheet(i) {
+    const mats = [cream, cream, new THREE.MeshStandardMaterial({ map: sheetTex[i], roughness: 0.68 }), cream, cream, cream];
+    const m = new THREE.Mesh(new THREE.BoxGeometry(SW, ST, SD), mats); m.castShadow = true; m.receiveShadow = true; m.position.y = ST / 2; return m;
+  }
+  // slot centres in sheet-local x/z (measured off the texture; texture is 384 px/in)
+  const CREW_X = [0.68 - 1.75, 1.385 - 1.75, 2.09 - 1.75], CREW_Z = 1.125 - 1.25, PAY_Z = 1.79 - 1.25, OWN = [2.855 - 1.75, 1.46 - 1.25];
+  // place a die on a sheet at local (x,z); returns a world-positioned group added to the sheet's parent
+  function dieOnSheet(sheet, colour, v, lx, lz, yaw) {
+    const d = makeDie(colour, v, yaw); d.position.set(lx, ST + DIE / 2, lz); sheet.add(d); return d;
+  }
+
+  // ---- the box: 7 x 1.6 x 5, lid on
+  const BW = 7, BH = 1.6, BD = 5;
+  const tTop = await tex('box-top.jpg'), tSide = await tex('box-side.jpg'), tEnd = await tex('box-end.jpg');
+  function makeBox() {
+    const mats = [
+      new THREE.MeshStandardMaterial({ map: tEnd, roughness: 0.55 }), new THREE.MeshStandardMaterial({ map: tEnd, roughness: 0.55 }),
+      new THREE.MeshStandardMaterial({ map: tTop, roughness: 0.5 }), new THREE.MeshStandardMaterial({ color: C('#1B1915'), roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ map: tSide, roughness: 0.55 }), new THREE.MeshStandardMaterial({ map: tSide, roughness: 0.55 }),
+    ];
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.castShadow = true; body.receiveShadow = true; body.position.y = BH / 2; g.add(body);
+    // a lid seam
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.012, 0.02, BD + 0.012), new THREE.MeshStandardMaterial({ color: C('#0E0C0A'), roughness: 0.9 })); seam.position.y = BH * 0.72; g.add(seam);
+    return g;
+  }
+
+  const rnd = (seed) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
+
+
+  // frame a world-space box: pick a view direction, then back the camera off until every corner fits
+  function frame(min, max, elevDeg, azimDeg, margin) {
+    const c = new THREE.Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
+    const el = elevDeg * Math.PI / 180, az = azimDeg * Math.PI / 180;
+    const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    const corners = [];
+    for (const x of [min[0], max[0]]) for (const y of [min[1], max[1]]) for (const z of [min[2], max[2]]) corners.push(new THREE.Vector3(x, y, z));
+    let dist = 5;
+    for (let it = 0; it < 60; it++) {
+      camera.position.copy(c).addScaledVector(dir, dist); camera.lookAt(c); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+      let ok = true;
+      for (const p of corners) { const v = p.clone().project(camera); if (Math.abs(v.x) > margin || Math.abs(v.y) > margin) { ok = false; break; } }
+      if (ok) break; dist *= 1.06;
+    }
+  }
+
+  // ================================================================ scenes
+  if (SCENE === 'hero') {
+    const box = makeBox(); box.position.set(-2.2, 0, -1.6); box.rotation.y = 0.36; scene.add(box);
+    // one crew sheet mid-job, front right
+    const s = makeSheet(2); s.position.set(2.7, 0, 1.3); s.rotation.y = -0.16; scene.add(s);
+    dieOnSheet(s, 1, 2, CREW_X[0], CREW_Z, 0); dieOnSheet(s, 2, 4, CREW_X[1], CREW_Z, 0); dieOnSheet(s, 3, 6, CREW_X[2], CREW_Z, 0);
+    dieOnSheet(s, 0, 5, CREW_X[0], PAY_Z, 0); dieOnSheet(s, 0, 3, CREW_X[2], PAY_Z, 0);
+    dieOnSheet(s, 0, 2, OWN[0], OWN[1], 0);
+    // a few loose dice on the table in front of the box, spaced so nothing touches
+    const r = rnd(7);
+    const loose = [[-5.4, 1.4, 4, 6], [-4.4, 2.1, 5, 2], [-3.3, 1.5, 3, 5], [-2.2, 2.2, 1, 1], [-1.0, 1.6, 0, 4]];
+    for (const [x, z, c, v] of loose) { const d = makeDie(c, v, r() * 1.2); d.position.set(x, DIE / 2, z); scene.add(d); }
+    frame([-6.2, 0, -4.2], [4.7, 1.6, 2.7], 40, 9, 0.96);
+  }
+
+  if (SCENE === 'table') {
+    // four crews around the table, sheets facing inward; box parked at the back
+    const box = makeBox(); box.position.set(-0.6, 0, -8.6); box.rotation.y = 0.12; scene.add(box);
+    const seats = [
+      { pos: [0, 0, 3.4], rot: 0, me: 0 },
+      { pos: [4.7, 0, -0.2], rot: Math.PI / 2, me: 1 },
+      { pos: [0, 0, -3.8], rot: Math.PI, me: 2 },
+      { pos: [-4.7, 0, -0.2], rot: -Math.PI / 2, me: 3 },
+    ];
+    const r = rnd(3);
+    const crewsFor = [[[1, 1], [3, 4], [2, 5]], [[0, 2], [2, 3], [3, 6]], [[3, 2], [1, 4], [0, 6]], [[2, 1], [0, 3], [1, 5]]];
+    seats.forEach((st, k) => {
+      const s = makeSheet([0, 1, 4, 5][k]); s.position.set(st.pos[0], 0, st.pos[2]); s.rotation.y = st.rot; scene.add(s);
+      crewsFor[k].forEach(([c, v], i) => dieOnSheet(s, c, v, CREW_X[i], CREW_Z, 0));
+      dieOnSheet(s, st.me, 4, CREW_X[0], PAY_Z, 0); dieOnSheet(s, st.me, 3, CREW_X[1], PAY_Z, 0);
+      dieOnSheet(s, st.me, 2, OWN[0], OWN[1], 0);
+      // the rest of this player's hand in a row beside the sheet (local coords, clear of the card edge)
+      [[2.35, -1.0], [2.35, -0.05], [2.35, 0.9]].forEach(([lx, lz], j) => dieOnSheet(s, st.me, [6, 5, 1][j], lx, lz, (r() - .5) * .24));
+    });
+    frame([-6.2, 0, -8.4], [6.2, 1.6, 5.2], 46, 4, 0.97);
+  }
+
+  if (SCENE === 'kit') {
+    // what's in the box: lid top-left, six sheets in a 3x2 grid, six rows of eight dice
+    const box = makeBox(); box.position.set(-4.6, 0, -4.4); scene.add(box);
+    for (let i = 0; i < 6; i++) { const s = makeSheet(i); s.position.set(1.3 + (i % 3) * 3.8, 0, -5.6 + Math.floor(i / 3) * 2.85); scene.add(s); }
+    for (let c = 0; c < 6; c++) for (let k = 0; k < 8; k++) { const d = makeDie(c, ((c * 3 + k) % 6) + 1, 0); d.position.set(-1.6 + k * 0.86, DIE / 2, -0.6 + c * 0.9); scene.add(d); }
+    frame([-8.2, 0, -7.0], [9.0, 1.6, 4.4], 56, 0, 0.97);
+  }
+
+  renderer.render(scene, camera);
+  // a second pass so shadow maps settle
+  await new Promise((r) => setTimeout(r, 50)); renderer.render(scene, camera);
+  window.__done = true;
+})();
+</script>
+</body></html>
