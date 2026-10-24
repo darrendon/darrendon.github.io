@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Too Many Crooks! — playtest build</title>
+<meta name="description" content="Too Many Crooks! — a dice negotiation game. Play against bots or host an online table for 3 to 6 players.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Courier+Prime:wght@400;700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEE9D8; --paper2:#E4DEC9; --ink:#1B1915; --soft:#6E6A5C; --red:#A5321E; --red2:#C94B33;
+  --slot:#DFD9C2; --line:#C2BBA2; --ok:#2F6B3A; --grid:rgba(58,72,78,.06); --fiber:rgba(92,90,72,.045);
+  --c0:#C8372D; --c1:#2F6DB5; --c2:#E0B21F; --c3:#3E8E4F; --c4:#F2ECDA; --c5:#2B2B2B;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:Figtree,system-ui,sans-serif;color:var(--ink);
+  background:
+    repeating-linear-gradient(0deg,var(--grid) 0 .5px,transparent .5px 12px),
+    repeating-linear-gradient(90deg,var(--grid) 0 .5px,transparent .5px 12px),
+    repeating-linear-gradient(94deg,var(--fiber) 0 2px,transparent 2px 5px),
+    var(--paper);
+  min-height:100%;
+}
+h1,h2,h3,.osw{font-family:Oswald,sans-serif;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin:0}
+.mono{font-family:'Courier Prime',monospace;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+button{font:inherit;cursor:pointer}
+.btn{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.8px;text-transform:uppercase;font-size:14px;
+  padding:9px 16px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:4px}
+.btn:hover{background:#fff}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.red:hover{background:var(--red2)}
+.btn.ghost{background:transparent;border-color:var(--soft);color:var(--soft)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{font-size:12px;padding:6px 10px}
+input,select{font:inherit;padding:8px 10px;border:1.5px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink)}
+.muted{color:var(--soft)}
+.small{font-size:13px}
+.hide{display:none!important}
+
+/* ---------------- lobby ---------------- */
+#lobby{max-width:760px;margin:0 auto;padding:28px 18px 60px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.masthead h1{font-size:34px;letter-spacing:1.5px}
+.masthead .tag{color:var(--red)}
+.card{background:#fff;border:1.5px solid var(--ink);border-radius:6px;padding:16px;margin:12px 0;box-shadow:3px 3px 0 rgba(27,25,21,.12)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:13px;padding:8px 12px;border:1.5px solid var(--ink);background:var(--paper);border-radius:4px}
+.tabs button.on{background:var(--ink);color:#fff}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--soft)}
+.seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.seat{border:1.5px solid var(--line);border-radius:4px;padding:8px 10px;display:flex;align-items:center;gap:8px;background:var(--paper)}
+.seat .dot{width:14px;height:14px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.25)}
+.seat .nm{font-weight:600;flex:1;font-size:14px}
+.seat .bot{font-size:11px;color:var(--soft)}
+.seat button{font-size:11px;padding:3px 7px}
+.code{font-family:'Courier Prime',monospace;font-size:34px;font-weight:700;letter-spacing:8px;color:var(--red);padding:6px 0}
+.msg{color:var(--red);font-size:13px;min-height:18px}
+.rules{columns:2;column-gap:28px;font-size:14px;line-height:1.45}
+.rules p{break-inside:avoid;margin:0 0 10px}
+.rules b{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--red);font-size:13px}
+@media (max-width:640px){.rules{columns:1}}
+
+/* ---------------- game ---------------- */
+#game{display:grid;grid-template-columns:1fr 300px;grid-template-rows:auto 1fr;min-height:100vh}
+@media (max-width:980px){#game{grid-template-columns:1fr}}
+.top{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:8px 14px;border-bottom:2px solid var(--ink);background:var(--paper);flex-wrap:wrap;position:sticky;top:0;z-index:5}
+.top h1{font-size:20px;letter-spacing:1.2px;white-space:nowrap}
+.top .job{font-family:'Courier Prime',monospace;font-weight:700;letter-spacing:1px;color:var(--red);font-size:13px;white-space:nowrap}
+.top .phase{font-family:Oswald,sans-serif;font-weight:600;font-size:15px;letter-spacing:.6px;text-transform:uppercase;flex:1;min-width:160px}
+.top .timer{font-family:'Courier Prime',monospace;font-size:20px;font-weight:700;min-width:50px;text-align:center}
+.top .timer.low{color:var(--red)}
+.top .tcode{font-family:'Courier Prime',monospace;font-weight:700;letter-spacing:3px;color:var(--red)}
+main{padding:12px 14px 80px;min-width:0}
+aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;flex-direction:column;min-height:0;max-height:calc(100vh - 50px);position:sticky;top:50px}
+@media (max-width:980px){aside{position:static;max-height:none;border-left:0;border-top:1.5px solid var(--line)}}
+.score{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.sc{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;background:#fff;font-size:14px}
+.sc .dot{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)}
+.sc .n{font-family:Oswald,sans-serif;font-weight:700;font-size:18px;letter-spacing:.5px;min-width:26px;text-align:right}
+.sc.me{border-color:var(--ink);box-shadow:2px 2px 0 rgba(27,25,21,.15)}
+.sc.turn{outline:2px solid var(--red);outline-offset:1px}
+.sc .lead{color:var(--red);font-size:11px;font-weight:700}
+
+.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:12px}
+.sheet{background:var(--paper);border:1.5px solid var(--ink);border-radius:5px;padding:8px 10px 10px;position:relative;min-width:0}
+.sheet.me{background:#fff;grid-column:1/-1}
+.sheet.target{outline:2px dashed var(--red);outline-offset:2px;cursor:pointer}
+.sheet.target:hover{background:#fff}
+.sheet .hd{display:flex;align-items:center;gap:8px;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:8px}
+.sheet .hd .dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)}
+.sheet .hd .nm{font-family:Oswald,sans-serif;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet .hd .st{font-family:'Courier Prime',monospace;font-size:11px;font-weight:700;color:var(--red);letter-spacing:.5px;white-space:nowrap}
+.bands{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bandcol{min-width:0}
+.bandcol .bl{font-family:Oswald,sans-serif;font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--soft);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bandcol .bn{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:var(--red);text-align:center;letter-spacing:.5px;margin-bottom:3px}
+.slot{min-height:44px;border:1.5px dashed var(--line);border-radius:5px;background:var(--slot);display:flex;flex-wrap:wrap;gap:4px;padding:4px;justify-content:center;align-content:flex-start}
+.slot.crew{border-style:solid;border-color:var(--ink)}
+.kept{margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:30px}
+.kept .lbl{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--soft)}
+
+/* dice */
+.die{width:34px;height:34px;border-radius:7px;display:inline-grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:5px;flex:none;position:relative;border:1px solid rgba(0,0,0,.35);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.25),0 1px 2px rgba(0,0,0,.35);user-select:none}
+.die i{width:6px;height:6px;border-radius:50%;background:currentColor;place-self:center;visibility:hidden}
+.die[data-v="1"] i:nth-child(5),
+.die[data-v="2"] i:nth-child(3),.die[data-v="2"] i:nth-child(7),
+.die[data-v="3"] i:nth-child(3),.die[data-v="3"] i:nth-child(5),.die[data-v="3"] i:nth-child(7),
+.die[data-v="4"] i:nth-child(1),.die[data-v="4"] i:nth-child(3),.die[data-v="4"] i:nth-child(7),.die[data-v="4"] i:nth-child(9),
+.die[data-v="5"] i:nth-child(1),.die[data-v="5"] i:nth-child(3),.die[data-v="5"] i:nth-child(5),.die[data-v="5"] i:nth-child(7),.die[data-v="5"] i:nth-child(9),
+.die[data-v="6"] i:nth-child(1),.die[data-v="6"] i:nth-child(3),.die[data-v="6"] i:nth-child(4),.die[data-v="6"] i:nth-child(6),.die[data-v="6"] i:nth-child(7),.die[data-v="6"] i:nth-child(9){visibility:visible}
+.die.sm{width:26px;height:26px;padding:4px;border-radius:5px}.die.sm i{width:4.5px;height:4.5px}
+.p0{background:var(--c0);color:#fff}.p1{background:var(--c1);color:#fff}.p2{background:var(--c2);color:#1B1915}
+.p3{background:var(--c3);color:#fff}.p4{background:var(--c4);color:#1B1915}.p5{background:var(--c5);color:#fff}
+.dot.p0{background:var(--c0)}.dot.p1{background:var(--c1)}.dot.p2{background:var(--c2)}.dot.p3{background:var(--c3)}.dot.p4{background:var(--c4)}.dot.p5{background:var(--c5)}
+.die.pick{cursor:pointer}
+.die.pick:hover{transform:translateY(-2px)}
+.die.sel{outline:3px solid var(--red);outline-offset:2px;transform:translateY(-3px)}
+.die.dim{opacity:.35}
+.die.staged{opacity:.55;outline:2px dashed var(--red);outline-offset:1px}
+.die .tag{position:absolute;right:-6px;top:-8px;background:var(--red);color:#fff;font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;padding:1px 4px;border-radius:3px;line-height:1.2}
+.die .pay{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);background:var(--ink);color:#fff;font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;padding:0 4px;border-radius:3px;white-space:nowrap}
+.die .pay.zero{background:var(--red)}
+
+/* hand + action bar */
+.hand{background:#fff;border:1.5px solid var(--ink);border-radius:5px;padding:10px;margin-bottom:12px}
+.hand .hd{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.hand .hd h3{font-size:14px;flex:1}
+.dice{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;min-height:40px}
+.actions{position:fixed;left:0;right:300px;bottom:0;background:var(--paper);border-top:2px solid var(--ink);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:4}
+@media (max-width:980px){.actions{right:0}}
+.actions .hint{flex:1;min-width:200px;font-size:14px}
+.actions .hint b{color:var(--red)}
+
+/* side panel */
+.side-h{font-family:Oswald,sans-serif;font-weight:700;font-size:12px;letter-spacing:.8px;text-transform:uppercase;padding:8px 12px;border-bottom:1.5px solid var(--line);color:var(--soft);display:flex;gap:8px}
+.side-h button{font-size:11px;padding:2px 7px;border:1px solid var(--line);background:transparent;border-radius:3px;color:var(--soft)}
+.side-h button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.feed{flex:1;overflow:auto;padding:8px 12px;font-size:13px;line-height:1.4;min-height:200px}
+.feed .m{margin:0 0 6px}
+.feed .m .who{font-weight:700}
+.feed .m.sys{color:var(--soft);font-size:12px}
+.feed .m.sys .j{font-family:'Courier Prime',monospace;color:var(--red);font-weight:700;margin-right:4px}
+.chatbox{display:flex;gap:6px;padding:8px;border-top:1.5px solid var(--line)}
+.chatbox input{flex:1;min-width:0}
+.quick{display:flex;gap:4px;flex-wrap:wrap;padding:0 8px 8px}
+.quick button{font-size:11px;padding:3px 7px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--ink)}
+
+/* summary */
+.modal{position:fixed;inset:0;background:rgba(27,25,21,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:14px}
+.modal .box{background:var(--paper);border:2px solid var(--ink);border-radius:6px;max-width:860px;width:100%;max-height:92vh;overflow:auto;padding:16px 18px;box-shadow:6px 6px 0 rgba(27,25,21,.25)}
+.modal h2{font-size:22px;margin-bottom:4px}
+.modal .sub{font-family:'Courier Prime',monospace;color:var(--red);font-weight:700;font-size:12px;letter-spacing:1px;margin-bottom:12px}
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.sumh{background:#fff;border:1.5px solid var(--ink);border-radius:5px;padding:10px}
+.sumh .hd{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sumh .hd .nm{font-family:Oswald,sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-size:14px;flex:1}
+.sumh .hd .pts{font-family:Oswald,sans-serif;font-weight:700;font-size:18px}
+.sumh .line{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.sumh .line .who{flex:1}
+.sumh .line .amt{font-family:'Courier Prime',monospace;font-weight:700}
+.sumh .line .amt.zero{color:var(--red)}
+.sumh .own{font-size:12px;color:var(--soft);margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.standings{display:flex;flex-direction:column;gap:6px;margin:10px 0 14px}
+.standings .r{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:1.5px solid var(--line);border-radius:4px;font-size:15px}
+.standings .r.win{border-color:var(--red);box-shadow:2px 2px 0 rgba(165,50,30,.25)}
+.standings .r .n{font-family:Oswald,sans-serif;font-weight:700;font-size:20px;margin-left:auto}
+.toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:4px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ LOBBY -->
+<div id="lobby">
+  <div class="masthead">
+    <h1>Too Many Crooks!</h1>
+    <span class="mono tag">Playtest build</span>
+    <span class="muted small">3–6 players · about 25 minutes</span>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <label>Your name <input id="name" maxlength="16" placeholder="Your name"></label>
+    </div>
+    <div class="tabs" id="tabs">
+      <button data-tab="local" class="on">Play vs bots</button>
+      <button data-tab="host">Host a table</button>
+      <button data-tab="join">Join a table</button>
+    </div>
+
+    <div id="tab-local">
+      <div class="row">
+        <label>Players <select id="l-n"><option>3</option><option selected>4</option><option>5</option><option>6</option></select></label>
+        <label>Send timer <select id="l-timer"><option value="0" selected>Off</option><option value="60">60 s</option><option value="90">90 s</option><option value="120">120 s</option></select></label>
+        <button class="btn red" id="l-start" style="align-self:flex-end">Deal me in</button>
+      </div>
+      <p class="muted small">Bots take the other seats. Each one has a personality — some pay fair, one stacks everything on a favourite, one is honest right up until the last job.</p>
+    </div>
+
+    <div id="tab-host" class="hide">
+      <div class="row">
+        <label>Seats <select id="h-n"><option>3</option><option selected>4</option><option>5</option><option>6</option></select></label>
+        <label>Send timer <select id="h-timer"><option value="0">Off</option><option value="60">60 s</option><option value="90" selected>90 s</option><option value="120">120 s</option></select></label>
+        <button class="btn red" id="h-open" style="align-self:flex-end">Open a table</button>
+      </div>
+      <p class="muted small">You get a 5-letter code. Friends open this same link, enter the code, and take a seat. Empty seats get bots when you start. Your browser runs the game, so keep this tab open. Talk in the chat, or over a call — promises are made out loud and nothing is binding.</p>
+      <div id="h-lobby" class="hide">
+        <div class="code" id="h-code"></div>
+        <div class="muted small" id="h-relay"></div>
+        <div class="seats" id="h-seats"></div>
+        <div class="row"><button class="btn red" id="h-start">Start the game</button><button class="btn ghost" id="h-close">Close table</button></div>
+      </div>
+    </div>
+
+    <div id="tab-join" class="hide">
+      <div class="row">
+        <label>Table code <input id="j-code" maxlength="5" placeholder="ABCDE" style="font-family:'Courier Prime',monospace;letter-spacing:4px;text-transform:uppercase;width:150px"></label>
+        <button class="btn red" id="j-go" style="align-self:flex-end">Join</button>
+      </div>
+      <div id="j-lobby" class="hide">
+        <div class="muted small" id="j-status"></div>
+        <div class="seats" id="j-seats"></div>
+        <p class="muted small">Waiting for the host to start. Click an empty seat to move there.</p>
+      </div>
+    </div>
+    <div class="msg" id="home-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:16px;margin-bottom:10px">How it plays</h2>
+    <div class="rules">
+      <p><b>The idea.</b> You can't use your own people on a job. You crew up from contacts your rivals send over, and they crew up from yours. Whoever runs a job picks who goes on it and what each of them walks away with.</p>
+      <p><b>Roll.</b> Everyone rolls in the open: 8 dice on job 1, then 7, then 6.</p>
+      <p><b>Send.</b> In turn, send exactly 4 dice to rivals' jobs — any split, never your own. What you didn't send is what you have to pay people with.</p>
+      <p><b>Crew.</b> Every crew is one of each kind: an <em>inside man</em> (a 1 or 2), a <em>getaway driver</em> (3 or 4) and <em>the muscle</em> (5 or 6). Never two of a kind. You score the total of your crew.</p>
+      <p><b>Cuts.</b> At the same time and in secret, hand out your kept dice to your crew: 3 of them on job 1, 2 on jobs 2 and 3. Stack several on one person if you like. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing.</p>
+      <p><b>Your cut.</b> On jobs 1 and 2 one kept die is left over — score it, it's yours. On job 3 both go out, and your crew scores double.</p>
+      <p><b>Promises.</b> Say anything, agree anything. None of it binds you. There are two more jobs after this one, and everyone chooses who they send to next time.</p>
+    </div>
+  </div>
+  <p class="muted small" style="text-align:center">Too Many Crooks! is a game by Darren Don · What's Good Board Games</p>
+</div>
+
+<!-- ============================================================ GAME -->
+<div id="game" class="hide">
+  <div class="top">
+    <h1>Too Many Crooks!</h1>
+    <span class="job" id="t-job">JOB 1 OF 3</span>
+    <span class="phase" id="t-phase"></span>
+    <span class="timer" id="t-timer"></span>
+    <span class="tcode" id="t-code"></span>
+    <button class="btn sm ghost" id="t-leave">Leave</button>
+  </div>
+  <main>
+    <div class="score" id="score"></div>
+    <div class="sheets" id="sheets"></div>
+    <div class="hand" id="hand"></div>
+  </main>
+  <aside>
+    <div class="side-h"><span style="flex:1">Table talk</span><button id="f-chat" class="on">Chat</button><button id="f-log">Log</button></div>
+    <div class="feed" id="feed"></div>
+    <div class="quick" id="quick"></div>
+    <div class="chatbox"><input id="chat-in" maxlength="200" placeholder="Make a promise…"><button class="btn sm" id="chat-go">Say</button></div>
+  </aside>
+  <div class="actions" id="actions"></div>
+</div>
+<div id="modal" class="modal hide"></div>
+<div class="toast" id="toast"></div>
+
+<script src="engine.js"></script>
+<script>
+/* ============================================================ NET (same relay pattern as Dim Sum Rush) */
+(function (root) {
+  'use strict';
+  const T = root.TMC;
+  const BROKERS = [
+    { key: 'E', url: 'wss://broker.emqx.io:8084/mqtt', name: 'EMQX' },
+    { key: 'H', url: 'wss://broker.hivemq.com:8884/mqtt', name: 'HiveMQ' },
+    { key: 'M', url: 'wss://test.mosquitto.org:8081', name: 'Mosquitto' },
+  ];
+  const TOPIC_ROOT = 'whatsgood/toomanycrooks/v1/';
+  const SANDBOXED = /claude/i.test(location.hostname) || /claudeusercontent|anthropic/i.test(location.hostname);
+  const LIB_SOURCES = [
+    'https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js',
+  ];
+  let libLoad = null;
+  function loadLib() {
+    if (root.mqtt) return Promise.resolve(root.mqtt);
+    if (libLoad) return libLoad;
+    libLoad = new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= LIB_SOURCES.length) { libLoad = null; reject(new Error('Could not load the networking library. Check your connection or ad blocker.')); return; }
+        const s = document.createElement('script'); s.src = LIB_SOURCES[i++];
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; s.remove(); tryNext(); } }, 9000);
+        s.onload = () => { if (done) return; done = true; clearTimeout(t); if (root.mqtt) resolve(root.mqtt); else { s.remove(); tryNext(); } };
+        s.onerror = () => { if (done) return; done = true; clearTimeout(t); s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+    return libLoad;
+  }
+  const makeCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; let c = ''; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; };
+  const token = () => { try { let t = localStorage.getItem('tmc-token'); if (!t) { t = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('tmc-token', t); } return t; } catch (e) { return 'anon-' + Math.random().toString(36).slice(2); } };
+  const cleanId = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+  function connectBroker(mqtt, broker, opts) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const client = mqtt.connect(broker.url, Object.assign({ clean: true, connectTimeout: 7000, reconnectPeriod: 2000, keepalive: 30, clientId: 'tmc_' + Math.random().toString(16).slice(2, 12) }, opts || {}));
+      const to = setTimeout(() => { if (!done) { done = true; try { client.end(true); } catch (e) {} reject(new Error('timeout')); } }, 8000);
+      client.once('connect', () => { if (!done) { done = true; clearTimeout(to); resolve(client); } });
+      const fail = (e) => { if (!done) { done = true; clearTimeout(to); try { client.end(true); } catch (e2) {} reject(e || new Error('connection closed')); } };
+      client.on('error', fail); client.on('close', () => fail(new Error('connection refused'))); client.on('offline', () => fail(new Error('offline')));
+    });
+  }
+  async function connectAny(mqtt, list, optsFor) {
+    let last = null;
+    for (const b of list) { try { const c = await connectBroker(mqtt, b, optsFor ? optsFor(b) : null); return { client: c, broker: b }; } catch (e) { last = e; } }
+    throw new Error('Could not reach any relay server' + (last ? ' (' + (last.message || last) + ')' : '') + (SANDBOXED ? '. This page is running inside claude.ai, which blocks outside connections; use the copy hosted on the website for online play.' : '. Try again, or try a different network.'));
+  }
+  const parse = (p) => { try { return JSON.parse(p.toString()); } catch (e) { return null; } };
+
+  // Runs the engine plus the bots on a timer so humans can follow along.
+  class Runner {
+    constructor() { this.game = null; this.cb = null; this.t = null; }
+    onUpdate(cb) { this.cb = cb; }
+    start(players, opts) { this.game = new T.Game(players, opts); this.game.start(); this.schedule(600); this.cb && this.cb(); }
+    view(seat) { return this.game ? this.game.view(seat) : null; }
+    act(seat, a) { if (!this.game) return { ok: false, error: 'No game' }; const r = this.game.act(seat, a); if (r.ok) { this.cb && this.cb(); this.schedule(700); } return r; }
+    schedule(ms) { clearTimeout(this.t); this.t = setTimeout(() => this.tick(), ms); }
+    tick() {
+      const g = this.game; if (!g) return;
+      const S = g.state;
+      if (S.phase === 'over') return;
+      // timer for humans
+      if (S.phase === 'send' && S.timer) {
+        const cur = g.currentSender();
+        if (cur >= 0 && !S.players[cur].bot && Date.now() - S.turnStart > S.timer * 1000 + 1500) { g.forceSend(cur); this.cb && this.cb(); }
+      }
+      const did = g.botStep();
+      if (did) { this.cb && this.cb(); this.schedule(S.phase === 'send' ? 1100 : 500); }
+      else this.schedule(1000);
+    }
+    stop() { clearTimeout(this.t); this.game = null; }
+  }
+
+  class LocalSession {
+    constructor(N, name, timer) { this.kind = 'local'; this.seat = 0; this.runner = new Runner(); this.N = N; this.name = name; this.timer = timer; }
+    onUpdate(cb) { this.runner.onUpdate(cb); }
+    start() {
+      const players = [{ name: this.name || 'You', bot: false }];
+      const names = T.BOT_NAMES.slice().sort(() => Math.random() - 0.5);
+      for (let i = 1; i < this.N; i++) players.push({ name: names[i - 1], bot: true });
+      this.runner.start(players, { timer: this.timer });
+    }
+    view() { return this.runner.view(this.seat); }
+    act(a) { return this.runner.act(this.seat, a); }
+    isHost() { return true; }
+    leave() { this.runner.stop(); }
+  }
+
+  class HostSession {
+    constructor(N, name, timer) {
+      this.kind = 'host'; this.N = N; this.name = name || 'Host'; this.timer = timer; this.seat = 0;
+      this.seats = [{ name: this.name, bot: false, token: 'host', connected: true, last: 0 }];
+      for (let i = 1; i < N; i++) this.seats.push({ name: null, bot: true, token: null, connected: false, last: 0 });
+      this.runner = new Runner(); this.started = false;
+      this.runner.onUpdate(() => { this.broadcastViews(); this.cb && this.cb(); });
+    }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    hostSeat() { return this.seats.findIndex((x) => x.token === 'host'); }
+    async open() {
+      const mqtt = await loadLib();
+      const { client, broker } = await connectAny(mqtt, BROKERS);
+      this.client = client; this.broker = broker;
+      this.code = broker.key + makeCode(); this.topic = TOPIC_ROOT + this.code;
+      await new Promise((res, rej) => client.subscribe(this.topic + '/h', { qos: 1 }, (e) => (e ? rej(e) : res())));
+      client.on('message', (t, p) => { if (t === this.topic + '/h') this.onMessage(parse(p)); });
+      client.on('connect', () => { this.pushLobby(); if (this.started) this.broadcastViews(); });
+      this.presenceTimer = setInterval(() => this.checkPresence(), 10000);
+      return this.code;
+    }
+    sendTo(i, m) { const s = this.seats[i]; if (!s || !s.token || s.bot || s.token === 'host') return; try { this.client.publish(this.topic + '/g/' + s.token, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    replyRaw(tok, m) { try { this.client.publish(this.topic + '/g/' + tok, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    checkPresence() { const now = Date.now(); let ch = false; for (const s of this.seats) if (!s.bot && s.token !== 'host' && s.connected && now - s.last > 45000) { s.connected = false; ch = true; } if (ch) this.pushLobby(); }
+    onMessage(m) {
+      if (!m || !m.from) return;
+      const tok = cleanId(m.from);
+      let seat = this.seats.findIndex((s) => s.token === tok);
+      if (m.t === 'hello') {
+        const name = String(m.name || 'Guest').slice(0, 16) || 'Guest';
+        if (seat < 0) {
+          if (this.started) { this.replyRaw(tok, { t: 'rejected', reason: 'The game has already started.' }); return; }
+          seat = this.seats.findIndex((s) => s.bot && !s.token);
+          if (seat < 0) { this.replyRaw(tok, { t: 'rejected', reason: 'The table is full.' }); return; }
+          this.seats[seat] = { name, bot: false, token: tok, connected: true, last: Date.now() };
+        } else { this.seats[seat].connected = true; this.seats[seat].last = Date.now(); this.seats[seat].name = name; }
+        this.sendTo(seat, { t: 'welcome', seat, code: this.code });
+        this.pushLobby();
+        if (this.started) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) });
+        return;
+      }
+      if (seat < 0) return;
+      this.seats[seat].last = Date.now();
+      if (!this.seats[seat].connected) { this.seats[seat].connected = true; this.pushLobby(); }
+      if (m.t === 'ping') { if (this.started && m.needView) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) }); return; }
+      if (m.t === 'bye') { this.seats[seat].connected = false; this.pushLobby(); return; }
+      if (m.t === 'sit') { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].bot) { const a = this.seats[seat]; this.seats[seat] = this.seats[to]; this.seats[to] = a; this.seat = this.hostSeat(); this.pushLobby(); } return; }
+      if (m.t === 'act') {
+        if (m.a && m.a.type === 'next') { this.sendTo(seat, { t: 'err', msg: 'Only the host moves to the next job.' }); return; }
+        const r = this.runner.act(seat, m.a || {});
+        if (!r.ok) this.sendTo(seat, { t: 'err', msg: r.error });
+      }
+    }
+    lobbyState() { return { code: this.code, N: this.N, started: this.started, relay: this.broker && this.broker.name, seats: this.seats.map((s) => ({ name: s.bot ? null : s.name, bot: s.bot, connected: s.connected })) }; }
+    pushLobby() { const st = this.lobbyState(); this.seats.forEach((s, i) => this.sendTo(i, { t: 'lobby', state: st, seat: i })); this.lobbyCb && this.lobbyCb(st); }
+    startGame() {
+      if (this.started) return; this.started = true;
+      const names = T.BOT_NAMES.slice().sort(() => Math.random() - 0.5); let bi = 0;
+      const players = this.seats.map((s) => (s.bot ? { name: names[bi++ % names.length] + ' (bot)', bot: true } : { name: s.name, bot: false }));
+      this.seat = this.hostSeat();
+      this.pushLobby();
+      this.runner.start(players, { timer: this.timer });
+    }
+    broadcastViews() { this.seats.forEach((s, i) => this.sendTo(i, { t: 'view', view: this.runner.view(i) })); }
+    view() { return this.runner.view(this.seat); }
+    act(a) { return this.runner.act(this.seat, a); }
+    isHost() { return true; }
+    leave() { this.runner.stop(); clearInterval(this.presenceTimer); try { this.seats.forEach((s, i) => this.sendTo(i, { t: 'closed' })); this.client && this.client.end(); } catch (e) {} }
+  }
+
+  class GuestSession {
+    constructor(code, name) { this.kind = 'guest'; this.code = code.toUpperCase().replace(/[^A-Z]/g, ''); this.name = name || 'Guest'; this.seat = null; this._view = null; }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    onError(cb) { this.errCb = cb; }
+    async connect() {
+      const mqtt = await loadLib();
+      const broker = BROKERS.find((b) => b.key === this.code[0]);
+      if (!broker || this.code.length !== 5) throw new Error('That does not look like a table code (5 letters).');
+      this.token = cleanId(token() + '-' + this.name.toLowerCase());
+      this.topic = TOPIC_ROOT + this.code;
+      const my = this.topic + '/g/' + this.token;
+      const { client } = await connectAny(mqtt, [broker], () => ({ will: { topic: this.topic + '/h', payload: JSON.stringify({ t: 'bye', from: this.token }), qos: 1 } }));
+      this.client = client;
+      await new Promise((res, rej) => client.subscribe(my, { qos: 1 }, (e) => (e ? rej(e) : res())));
+      const hello = () => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'hello', name: this.name, from: this.token }), { qos: 1 }); } catch (e) {} };
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table answered with that code. Check the code and that the host still has the page open.')); } }, 12000);
+        client.on('message', (t, p) => {
+          if (t !== my) return; const m = parse(p); if (!m) return;
+          if (m.t === 'welcome') { this.seat = m.seat; if (!settled) { settled = true; clearTimeout(to); resolve(); } }
+          else if (m.t === 'rejected') { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.lobbyCb && this.lobbyCb({ error: m.reason }); }
+          else if (m.t === 'lobby') { this.lobby = m.state; this.seat = m.seat; this.lobbyCb && this.lobbyCb(m.state); }
+          else if (m.t === 'view') { this._view = m.view; this.cb && this.cb(); }
+          else if (m.t === 'err') { this.errCb && this.errCb(m.msg); }
+          else if (m.t === 'closed') { this.lobbyCb && this.lobbyCb({ error: 'The host closed the table.' }); }
+        });
+        hello();
+      });
+      client.on('connect', () => hello());
+      this.pingTimer = setInterval(() => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'ping', from: this.token, needView: !this._view }), { qos: 0 }); } catch (e) {} }, 15000);
+    }
+    sit(seat) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'sit', seat, from: this.token }), { qos: 1 }); } catch (e) {} }
+    view() { return this._view; }
+    act(a) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'act', a, from: this.token }), { qos: 1 }); } catch (e) { return { ok: false, error: 'Not connected' }; } return { ok: true, pending: true }; }
+    isHost() { return false; }
+    leave() { clearInterval(this.pingTimer); try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'bye', from: this.token }), { qos: 1 }); this.client.end(); } catch (e) {} }
+  }
+  root.TMCNet = { LocalSession, HostSession, GuestSession, SANDBOXED };
+})(window);
+</script>
+<script>
+/* ============================================================ UI */
+(function () {
+  'use strict';
+  const T = window.TMC, NET = window.TMCNet;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const BANDN = ['Inside man', 'Getaway driver', 'The muscle'], BANDS = ['Inside', 'Driver', 'Muscle'], BANDR = ['1 · 2', '3 · 4', '5 · 6'];
+  let session = null, view = null, feedMode = 'chat', lastSeq = -1, lastChatLen = 0;
+  // local selection state
+  let staged = [];        // [{dieId,to}] during my send turn
+  let pickDie = null;     // die id picked in hand, waiting for a target
+  let crewSel = null;     // array of die ids
+  let paySel = {};        // keptId -> crewId
+  let pickKept = null;    // kept die id waiting for a crew target
+  let submitted = { crew: false, pay: false };
+
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); }
+  const nm = (i) => (view && view.players[i] ? view.players[i].name : '?');
+  const dieHTML = (d, cls, extra) => '<span class="die p' + d.owner + (cls ? ' ' + cls : '') + '" data-v="' + d.v + '" data-id="' + d.id + '"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>' + (extra || '') + '</span>';
+
+  /* ---------------- lobby wiring */
+  try { $('name').value = localStorage.getItem('tmc-name') || ''; } catch (e) {}
+  $('tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
+    ['local', 'host', 'join'].forEach((k) => $('tab-' + k).classList.toggle('hide', b.dataset.tab !== k));
+    $('home-msg').textContent = '';
+  });
+  const myName = () => { const n = $('name').value.trim().slice(0, 16) || 'You'; try { localStorage.setItem('tmc-name', n); } catch (e) {} return n; };
+
+  $('l-start').onclick = () => {
+    session = new NET.LocalSession(+$('l-n').value, myName(), +$('l-timer').value);
+    bind(session); session.start(); showGame('');
+  };
+  $('h-open').onclick = async () => {
+    $('h-open').disabled = true; $('home-msg').textContent = 'Connecting to a relay…';
+    try {
+      session = new NET.HostSession(+$('h-n').value, myName(), +$('h-timer').value);
+      session.onLobby((st) => renderLobby('h', st));
+      bind(session);
+      const code = await session.open();
+      $('h-code').textContent = code; $('h-relay').textContent = 'Relay: ' + (session.broker ? session.broker.name : '');
+      $('h-lobby').classList.remove('hide'); $('home-msg').textContent = ''; renderLobby('h', session.lobbyState());
+    } catch (e) { $('home-msg').textContent = e.message; $('h-open').disabled = false; }
+  };
+  $('h-start').onclick = () => { session.startGame(); showGame(session.code); };
+  $('h-close').onclick = () => { session.leave(); session = null; $('h-lobby').classList.add('hide'); $('h-open').disabled = false; };
+  $('j-go').onclick = async () => {
+    $('j-go').disabled = true; $('home-msg').textContent = 'Looking for the table…';
+    try {
+      session = new NET.GuestSession($('j-code').value, myName());
+      session.onLobby((st) => { if (st.error) { $('home-msg').textContent = st.error; return; } renderLobby('j', st); if (st.started && !$('lobby').classList.contains('hide')) showGame(st.code); });
+      session.onError((m) => toast(m));
+      bind(session);
+      await session.connect();
+      $('j-lobby').classList.remove('hide'); $('home-msg').textContent = '';
+      $('j-status').textContent = 'Seated at table ' + session.code + '. Waiting for the host.';
+    } catch (e) { $('home-msg').textContent = e.message; $('j-go').disabled = false; }
+  };
+  function renderLobby(kind, st) {
+    if (!st || st.error) return;
+    const el = $(kind + '-seats'); el.innerHTML = '';
+    st.seats.forEach((s, i) => {
+      const d = document.createElement('div'); d.className = 'seat';
+      const mine = (kind === 'h' && session.hostSeat() === i) || (kind === 'j' && session.seat === i);
+      d.innerHTML = '<span class="dot p' + i + '"></span><span class="nm">' + (s.bot ? '<span class="bot">Bot</span>' : esc(s.name) + (s.connected ? '' : ' <span class="bot">(away)</span>')) + (mine ? ' <span class="bot">— you</span>' : '') + '</span>';
+      if (kind === 'j' && s.bot && !st.started) { const b = document.createElement('button'); b.className = 'btn sm ghost'; b.textContent = 'Sit here'; b.onclick = () => session.sit(i); d.appendChild(b); }
+      el.appendChild(d);
+    });
+  }
+  function bind(s) { s.onUpdate(() => { view = s.view(); if (view) render(); }); }
+  function showGame(code) {
+    $('lobby').classList.add('hide'); $('game').classList.remove('hide');
+    $('t-code').textContent = code ? 'TABLE ' + code : '';
+    view = session.view(); if (view) render();
+  }
+  function leaveTable() { session && session.leave(); session = null; view = null; $('modal').classList.add('hide'); $('game').classList.add('hide'); $('lobby').classList.remove('hide'); $('h-lobby').classList.add('hide'); $('j-lobby').classList.add('hide'); $('h-open').disabled = false; $('j-go').disabled = false; }
+  $('t-leave').onclick = () => { if (view && view.phase !== 'over' && !confirm('Leave the table?')) return; leaveTable(); };
+
+  /* ---------------- chat */
+  $('f-chat').onclick = () => { feedMode = 'chat'; $('f-chat').classList.add('on'); $('f-log').classList.remove('on'); renderFeed(); };
+  $('f-log').onclick = () => { feedMode = 'log'; $('f-log').classList.add('on'); $('f-chat').classList.remove('on'); renderFeed(); };
+  const say = (t) => { if (!session || !t.trim()) return; session.act({ type: 'chat', text: t.trim() }); $('chat-in').value = ''; };
+  $('chat-go').onclick = () => say($('chat-in').value);
+  $('chat-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') say($('chat-in').value); });
+  const QUICK = ['Send me a 6 and my best cut is yours.', 'I need an inside man — who has a 1 or 2?', 'I pay whoever completes my crew.', 'You stiffed me last job. Nothing for you.', 'Deal.', 'No promises.'];
+  $('quick').innerHTML = QUICK.map((q) => '<button>' + esc(q) + '</button>').join('');
+  $('quick').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) say(b.textContent); });
+
+  /* ---------------- render */
+  function render() {
+    const v = view; if (!v) return;
+    const me = v.me, job = v.jobs[v.job], last = v.job === v.jobs.length - 1;
+    if (v.seq !== lastSeq) {
+      // phase changed? reset local selections
+      if (!render._phase || render._phase !== v.phase || render._job !== v.job) { staged = []; pickDie = null; crewSel = null; paySel = {}; pickKept = null; submitted = { crew: false, pay: false }; }
+      render._phase = v.phase; render._job = v.job; lastSeq = v.seq;
+    }
+    $('t-job').textContent = 'JOB ' + (v.job + 1) + ' OF 3' + (last ? ' — CREW SCORES DOUBLE' : '');
+    const myTurn = v.phase === 'send' && v.sender === me;
+    let ph = '';
+    if (v.phase === 'send') ph = myTurn ? 'Your turn — send 4 dice' : nm(v.sender) + ' is sending';
+    else if (v.phase === 'crew') ph = v.crewDone[me] ? 'Waiting for the others to crew up' : 'Pick your crew';
+    else if (v.phase === 'pay') ph = v.payDone[me] ? 'Waiting for the others to pay' : 'Hand out the cuts — in secret';
+    else if (v.phase === 'summary') ph = 'Job ' + (v.job + 1) + ' done';
+    else if (v.phase === 'over') ph = 'Game over';
+    $('t-phase').textContent = ph;
+
+    // scoreboard
+    $('score').innerHTML = v.players.map((p, i) => '<div class="sc' + (i === me ? ' me' : '') + (v.phase === 'send' && v.sender === i ? ' turn' : '') + '"><span class="dot p' + i + '"></span><span>' + esc(p.name) + (i === me ? ' (you)' : '') + '</span>' + (v.leader === i && v.job > 0 ? '<span class="lead">LEAD</span>' : '') + '<span class="n">' + v.scores[i] + '</span></div>').join('');
+
+    // sheets: rivals + me
+    const order = [...Array(v.N).keys()].filter((i) => i !== me);
+    let html = '';
+    for (const i of order) html += sheetHTML(i, false);
+    html += sheetHTML(me, true);
+    $('sheets').innerHTML = html;
+
+    // hand
+    renderHand();
+    renderActions();
+    renderFeed();
+    renderTimer();
+    if (v.phase === 'summary' || v.phase === 'over') renderSummary(); else $('modal').classList.add('hide');
+  }
+
+  function sheetHTML(i, mine) {
+    const v = view, me = v.me;
+    const k = v.kitchens[i], crew = v.crews[i], pays = v.pays[i];
+    const stagedHere = staged.filter((s) => s.to === i).length;
+    let st = '';
+    if (v.phase === 'send' && v.sender === i) st = 'SENDING';
+    else if (v.phase === 'crew') st = v.crewDone[i] ? 'CREW SET' : 'CREWING';
+    else if (v.phase === 'pay') st = v.payDone[i] ? 'PAID' : 'PAYING';
+    const target = v.phase === 'send' && v.sender === me && !mine && pickDie;
+    let out = '<div class="sheet' + (mine ? ' me' : '') + (target ? ' target' : '') + '" data-seat="' + i + '">';
+    out += '<div class="hd"><span class="dot p' + i + '"></span><span class="nm">' + esc(nm(i)) + (mine ? ' — your job' : '') + '</span><span class="st">' + st + (stagedHere ? ' +' + stagedHere : '') + '</span></div>';
+    out += '<div class="bands">';
+    for (let b = 0; b < 3; b++) {
+      const dice = k.filter((d) => T.band(d.v) === b);
+      const crewHere = crew.find((d) => T.band(d.v) === b);
+      const showCrew = v.phase === 'pay' || v.phase === 'summary' || v.phase === 'over' || (v.phase === 'crew' && v.crewDone[i] && !mine);
+      out += '<div class="bandcol"><div class="bl">' + (mine ? BANDN[b] : BANDS[b]) + '</div><div class="bn">' + BANDR[b] + '</div><div class="slot' + (showCrew && crewHere ? ' crew' : '') + '">';
+      // dice in this band
+      const list = dice.slice().sort((a, b2) => b2.v - a.v);
+      for (const d of list) {
+        let cls = '', extra = '';
+        if (mine && v.phase === 'crew' && !v.crewDone[me]) { cls = 'pick' + (crewSel && crewSel.includes(d.id) ? ' sel' : ' dim'); }
+        else if (showCrew) { const on = crew.some((c) => c.id === d.id); cls = on ? '' : 'dim'; if (on && (v.phase === 'summary' || v.phase === 'over') && v.summary) { const h = v.summary.hosts[i]; const got = h.given[d.owner] || 0; extra = '<span class="pay' + (got ? '' : ' zero') + '">' + (got ? '+' + got : 'nothing') + '</span>'; } }
+        if (mine && v.phase === 'pay' && !v.payDone[me] && crew.some((c) => c.id === d.id)) { cls = 'pick' + (pickKept ? ' sel' : ''); const tot = Object.keys(paySel).filter((kk) => paySel[kk] === d.id).reduce((a, kk) => a + v.kept[me].find((x) => x.id === kk).v, 0); if (tot) extra = '<span class="pay">+' + tot + '</span>'; }
+        out += dieHTML(d, cls, extra);
+      }
+      // staged sends from me into this kitchen
+      if (!mine && v.phase === 'send' && v.sender === me) for (const s of staged.filter((x) => x.to === i)) { const d = v.hands[me].find((x) => x.id === s.dieId); if (d && T.band(d.v) === b) out += dieHTML(d, 'staged'); }
+      out += '</div></div>';
+    }
+    out += '</div>';
+    // hand line: everyone rolls in the open, so rivals' dice are visible all job
+    if (v.phase === 'send') {
+      out += '<div class="kept"><span class="lbl">' + (mine ? 'YOUR HAND · ' + v.hands[i].length + ' DICE' : 'THEIR ROLL · ' + v.hands[i].length + ' LEFT') + '</span>';
+      if (!mine) for (const d of v.hands[i]) out += dieHTML(d, 'sm');
+      out += '</div>';
+    } else {
+      out += '<div class="kept"><span class="lbl">' + (mine ? 'YOUR HAND' : 'THEIR HAND') + '</span>';
+      const assignedIds = (v.phase === 'pay' && mine) ? paySel : ((v.phase === 'summary' || v.phase === 'over' || (v.phase === 'pay' && v.payDone[i] && pays)) ? (pays || {}) : {});
+      for (const d of (v.kept[i] || [])) {
+        const given = assignedIds[d.id];
+        let cls = 'sm';
+        if (mine && v.phase === 'pay' && !v.payDone[me]) cls += ' pick' + (pickKept === d.id ? ' sel' : '') + (given ? ' staged' : '');
+        else if (given) cls += ' dim';
+        out += dieHTML(d, cls);
+      }
+      out += '</div>';
+    }
+    out += '</div>';
+    return out;
+  }
+  const job = (v) => v.jobs[v.job];
+
+  function renderHand() {
+    const v = view, me = v.me, el = $('hand');
+    if (v.phase !== 'send') { el.classList.add('hide'); return; }
+    el.classList.remove('hide');
+    const myTurn = v.sender === me;
+    const hand = v.hands[me];
+    let h = '<div class="hd"><h3>' + (myTurn ? 'Your dice — pick one, then click a rival\'s job' : 'Your dice') + '</h3><span class="muted small">' + (myTurn ? staged.length + ' of ' + job(v).send + ' chosen' : 'You send ' + job(v).send + ' and keep ' + (hand.length - job(v).send)) + '</span></div><div class="dice">';
+    for (const d of hand) {
+      const s = staged.find((x) => x.dieId === d.id);
+      let cls = myTurn ? 'pick' : '';
+      let extra = '';
+      if (s) { cls += ' staged'; extra = '<span class="tag">→ ' + esc(nm(s.to)).slice(0, 6) + '</span>'; }
+      if (pickDie === d.id) cls += ' sel';
+      h += dieHTML(d, cls, extra);
+    }
+    h += '</div>';
+    el.innerHTML = h;
+  }
+
+  function renderActions() {
+    const v = view, me = v.me, el = $('actions');
+    let h = '';
+    if (v.phase === 'send') {
+      if (v.sender === me) {
+        h = '<span class="hint">Send <b>exactly ' + job(v).send + '</b> dice to rivals. Click a die, then a job. Click a staged die to take it back.</span>' +
+            '<button class="btn ghost" id="a-clear">Clear</button><button class="btn red" id="a-send"' + (staged.length !== job(v).send ? ' disabled' : '') + '>Send them out</button>';
+      } else h = '<span class="hint">Waiting for <b>' + esc(nm(v.sender)) + '</b> to send. Talk, promise, bargain.</span>';
+    } else if (v.phase === 'crew') {
+      if (v.crewDone[me]) h = '<span class="hint">Crew set. Waiting for the others.</span>';
+      else if (!v.kitchens[me].length) h = '<span class="hint">Nobody showed up.</span>';
+      else {
+        if (!crewSel) crewSel = T.bestCrew(v.kitchens[me]).map((d) => d.id);
+        h = '<span class="hint">One of each kind. Click a die to swap it in. You score the total' + (v.job === 2 ? ', <b>doubled</b>' : '') + '.</span><button class="btn red" id="a-crew">Confirm crew</button>';
+      }
+    } else if (v.phase === 'pay') {
+      if (v.payDone[me]) h = '<span class="hint">Cuts handed out. Waiting for the reveal.</span>';
+      else {
+        const need = v.handOut, have = Object.keys(paySel).length;
+        h = '<span class="hint">Hand out <b>' + need + '</b> of your kept dice: click a die in your hand, then a crew member. <b>' + have + ' of ' + need + '</b> placed' + (need < v.crews[me].length ? ' — someone gets nothing' : '') + '.</span>' +
+            '<button class="btn ghost" id="a-pclear">Clear</button><button class="btn red" id="a-pay"' + (have !== need ? ' disabled' : '') + '>Hand them out</button>';
+      }
+    } else if (v.phase === 'summary') {
+      h = '<span class="hint">Job ' + (v.job + 1) + ' is done.</span>' + (session.isHost() ? '<button class="btn red" id="a-next">Next job</button>' : '<span class="muted small">The host starts the next job.</span>') + '<button class="btn" id="a-show">Show the split</button>';
+    } else if (v.phase === 'over') {
+      h = '<span class="hint">That was the last job.</span><button class="btn" id="a-show">Final standings</button>';
+    }
+    el.innerHTML = h;
+    const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+    on('a-clear', () => { staged = []; pickDie = null; render(); });
+    on('a-send', () => { const r = session.act({ type: 'send', assign: staged }); if (r && !r.ok) toast(r.error); staged = []; pickDie = null; });
+    on('a-crew', () => { const r = session.act({ type: 'crew', dieIds: crewSel }); if (r && !r.ok) toast(r.error); else submitted.crew = true; });
+    on('a-pclear', () => { paySel = {}; pickKept = null; render(); });
+    on('a-pay', () => { const r = session.act({ type: 'pay', assign: paySel }); if (r && !r.ok) toast(r.error); else submitted.pay = true; });
+    on('a-next', () => session.act({ type: 'next' }));
+    on('a-show', () => renderSummary());
+  }
+
+  // clicks on dice and sheets
+  document.addEventListener('click', (e) => {
+    const v = view; if (!v) return; const me = v.me;
+    const die = e.target.closest('.die'), sheet = e.target.closest('.sheet');
+    if (v.phase === 'send' && v.sender === me) {
+      if (die && e.target.closest('#hand')) {
+        const id = die.dataset.id;
+        const s = staged.findIndex((x) => x.dieId === id);
+        if (s >= 0) { staged.splice(s, 1); pickDie = null; render(); return; }
+        pickDie = pickDie === id ? null : id; render(); return;
+      }
+      if (die && die.classList.contains('staged') && sheet) { const id = die.dataset.id; staged = staged.filter((x) => x.dieId !== id); render(); return; }
+      if (sheet && pickDie) {
+        const to = +sheet.dataset.seat;
+        if (to === me) { toast('Never your own job.'); return; }
+        if (staged.length >= job(v).send) { toast('That is all four.'); return; }
+        staged.push({ dieId: pickDie, to }); pickDie = null; render(); return;
+      }
+    }
+    if (v.phase === 'crew' && !v.crewDone[me] && die && sheet && +sheet.dataset.seat === me) {
+      const id = die.dataset.id; const d = v.kitchens[me].find((x) => x.id === id); if (!d) return;
+      const b = T.band(d.v);
+      crewSel = (crewSel || []).filter((cid) => T.band(v.kitchens[me].find((x) => x.id === cid).v) !== b);
+      crewSel.push(id); render(); return;
+    }
+    if (v.phase === 'pay' && !v.payDone[me] && die && sheet && +sheet.dataset.seat === me) {
+      const id = die.dataset.id;
+      const isKept = v.kept[me].some((x) => x.id === id), isCrew = v.crews[me].some((x) => x.id === id);
+      if (isKept) { if (paySel[id]) { delete paySel[id]; pickKept = null; } else pickKept = pickKept === id ? null : id; render(); return; }
+      if (isCrew && pickKept) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { toast('That is all ' + v.handOut + '.'); return; } paySel[pickKept] = id; pickKept = null; render(); return; }
+    }
+  });
+
+  function renderFeed() {
+    const v = view, el = $('feed');
+    if (feedMode === 'chat') el.innerHTML = v.chat.length ? v.chat.map((c) => '<p class="m"><span class="who" style="color:' + ['var(--c0)', 'var(--c1)', '#9a7a0c', 'var(--c3)', '#6b6b6b', 'var(--c5)'][c.seat] + '">' + esc(nm(c.seat)) + '</span> ' + esc(c.text) + '</p>').join('') : '<p class="m sys">Nothing said yet. Promises are made here — and broken at the table.</p>';
+    else el.innerHTML = v.log.map((l) => '<p class="m sys"><span class="j">J' + l.job + '</span>' + esc(l.msg) + '</p>').join('');
+    if (feedMode === 'chat' && v.chat.length !== lastChatLen) { lastChatLen = v.chat.length; }
+    el.scrollTop = el.scrollHeight;
+  }
+
+  let timerInt = null;
+  function renderTimer() {
+    const v = view, el = $('t-timer');
+    clearInterval(timerInt);
+    if (v.phase !== 'send' || !v.timer || v.players[v.sender].bot) { el.textContent = ''; el.classList.remove('low'); return; }
+    const tick = () => { const left = Math.max(0, Math.round(v.timer - (Date.now() - v.turnStart) / 1000)); el.textContent = left + 's'; el.classList.toggle('low', left <= 15); };
+    tick(); timerInt = setInterval(tick, 500);
+  }
+
+  function renderSummary() {
+    const v = view, s = v.summary; if (!s) return;
+    const m = $('modal'); m.classList.remove('hide');
+    let h = '<div class="box"><h2>' + (v.phase === 'over' ? 'The split' : 'Job ' + s.job + ' — the split') + '</h2><div class="sub">' + (s.last ? 'LAST JOB — CREWS SCORED DOUBLE' : 'WHO PAID WHOM') + '</div>';
+    if (v.phase === 'over') {
+      const ranked = v.players.map((p, i) => ({ i, s: v.scores[i] })).sort((a, b) => b.s - a.s);
+      h += '<div class="standings">' + ranked.map((r, k) => '<div class="r' + (k === 0 ? ' win' : '') + '"><span class="dot p' + r.i + '" style="width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)"></span><span>' + esc(nm(r.i)) + (r.i === v.me ? ' (you)' : '') + '</span><span class="n">' + r.s + '</span></div>').join('') + '</div>';
+    }
+    h += '<div class="sumgrid">';
+    for (const hst of s.hosts) {
+      h += '<div class="sumh"><div class="hd"><span class="dot p' + hst.seat + '" style="width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)"></span><span class="nm">' + esc(nm(hst.seat)) + '</span><span class="pts">+' + (hst.crewPts + hst.own) + '</span></div>';
+      if (hst.noCrew) h += '<div class="line muted">Nobody showed up. Kept everything.</div>';
+      for (const c of hst.crew) h += '<div class="line">' + dieHTML({ id: 'x', v: c.v, owner: c.owner }, 'sm') + '<span class="who">' + esc(nm(c.owner)) + '</span><span class="amt' + (c.paid ? '' : ' zero') + '">' + (c.paid ? '+' + c.paid : 'NOTHING') + '</span></div>';
+      h += '<div class="own">Crew ' + hst.crewPts + (s.last ? ' (doubled)' : '') + ' · own cut ' + hst.own + '</div></div>';
+    }
+    h += '</div><div class="row" style="margin-top:14px">' + (v.phase === 'summary' && session.isHost() ? '<button class="btn red" id="m-next">Next job</button>' : '') + (v.phase === 'over' ? '<button class="btn red" id="m-again">Back to the lobby</button>' : '') + '<button class="btn" id="m-close">Close</button></div></div>';
+    m.innerHTML = h;
+    const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+    on('m-close', () => m.classList.add('hide'));
+    on('m-next', () => { m.classList.add('hide'); session.act({ type: 'next' }); });
+    on('m-again', () => leaveTable());
+  }
+})();
+</script>
+</body>
+</html>
