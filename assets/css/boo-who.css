@@ -41,7 +41,9 @@
 .night .r1{background:#B8603D}.night .r2{background:#2A2856}.night .r3{background:#6A3590}
 @media (max-width:820px){.night{grid-template-columns:1fr}}
 
+.g-boo .renders{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g-boo .renders img{aspect-ratio:16/10}
+@media (max-width:520px){.g-boo .renders{grid-template-columns:1fr}}
 .g-boo .play-frame iframe{height:min(88vh,940px)}
 .g-boo .g-cta{background:#2A2856}
 .g-boo .g-cta h2{font-family:var(--display);font-weight:900;font-stretch:112%}

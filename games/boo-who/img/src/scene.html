@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script src="/assets/vendor/three.r128.min.js"></script>
+</head><body>
+<script>
+/* Boo Who? — still render of the deck box. Units are inches. ?scene=box  &w=1600&h=1000
+   Nothing touches anything else: the box, every card, token and the candle has clear table around it. */
+(async function () {
+  const q = new URLSearchParams(location.search);
+  const W = +q.get('w') || 1600, H = +q.get('h') || 1000;
+  const TEX = '/games/boo-who/img/src/tex/', IMG = '/games/boo-who/img/';
+  const C = (h) => new THREE.Color(h).convertSRGBToLinear();
+  const loader = new THREE.TextureLoader();
+  const tex = (u) => new Promise((res, rej) => loader.load(u, (t) => { t.anisotropy = 16; t.encoding = THREE.sRGBEncoding; res(t); }, undefined, rej));
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(W, H);
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = C('#1A1716');
+  scene.fog = new THREE.Fog(C('#1A1716'), 30, 60);
+  const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
+
+  scene.add(new THREE.HemisphereLight(0xe9e2ff, 0x5a3a24, 0.42));
+  const key = new THREE.DirectionalLight(0xfff0dc, 0.62); key.position.set(7, 13, 9); key.castShadow = true;
+  key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 50 });
+  key.shadow.radius = 5; key.shadow.bias = -0.0004; scene.add(key);
+  const rim = new THREE.DirectionalLight(0xb9b0ff, 0.22); rim.position.set(-9, 6, -8); scene.add(rim);
+
+  // table: polished mahogany, like the other Boo Who? renders
+  function woodTexture() {
+    const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
+    const gr = g.createLinearGradient(0, 0, 0, 1024); gr.addColorStop(0, '#5A2410'); gr.addColorStop(.5, '#6E2E14'); gr.addColorStop(1, '#5A2410');
+    g.fillStyle = gr; g.fillRect(0, 0, 1024, 1024);
+    let s = 11; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    for (let i = 0; i < 420; i++) {
+      g.strokeStyle = 'rgba(' + (i % 3 ? '140,62,28' : '40,14,6') + ',' + (0.05 + r() * 0.12) + ')'; g.lineWidth = 2 + r() * 6;
+      g.beginPath(); const y = r() * 1024; g.moveTo(0, y);
+      g.bezierCurveTo(260, y + (r() - .5) * 60, 760, y + (r() - .5) * 60, 1024, y + (r() - .5) * 20); g.stroke();
+    }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+  }
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.38, metalness: 0.05 }));
+  table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
+
+  // ---- cards: 2.5 x 3.5 with rounded corners
+  const CW = 2.5, CH = 3.5, CT = 0.014, CR = 0.14;
+  function rr(w, h, r) {
+    const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
+    s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+  }
+  function capGeo(w, h, r) {
+    const g = new THREE.ShapeGeometry(rr(w, h, r), 8); const p = g.attributes.position, uv = g.attributes.uv;
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getY(i) + h / 2) / h);
+    return g;
+  }
+  const cardCap = capGeo(CW, CH, CR);
+  const edgeMat = new THREE.MeshStandardMaterial({ color: C('#EDE6F4'), roughness: 0.8 });
+  async function card(url, x, z, yaw = 0, n = 1) {
+    const g = new THREE.Group(), h = CT * n;
+    const e = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(CW, CH, CR), { depth: h, bevelEnabled: false, curveSegments: 8 }), edgeMat);
+    e.rotation.x = -Math.PI / 2; e.castShadow = true; e.receiveShadow = true; g.add(e);
+    const f = new THREE.Mesh(cardCap, new THREE.MeshStandardMaterial({ map: await tex(url), roughness: 0.55, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    f.rotation.x = -Math.PI / 2; f.position.y = h + 0.002; f.receiveShadow = true; g.add(f);
+    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+  }
+
+  // ---- Boo tokens: 0.9 in discs, drawn to match the page's token art
+  function tokenTexture(color, label) {
+    const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
+    if (label === 'BOO') {
+      g.fillStyle = color; g.fillRect(0, 0, 512, 512);
+      g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 14; g.beginPath(); g.arc(256, 256, 226, 0, 7); g.stroke();
+      g.save(); g.translate(256, 196); g.scale(1.5, 1.5); g.translate(-50, -55);
+      g.fillStyle = '#fff'; g.fill(new Path2D('M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z'));
+      g.fillStyle = color; g.beginPath(); g.ellipse(36, 48, 7, 10, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(64, 48, 7, 10, 0, 0, 7); g.fill(); g.restore();
+      g.fillStyle = '#fff'; g.font = '800 74px Figtree, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('BOO!', 256, 400);
+    } else {
+      g.fillStyle = '#FBF5E8'; g.fillRect(0, 0, 512, 512);
+      g.strokeStyle = color; g.lineWidth = 44; g.beginPath(); g.arc(256, 256, 214, 0, 7); g.stroke();
+      g.fillStyle = color; g.font = '800 250px Figtree, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(label, 256, 270);
+    }
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; t.center.set(0.5, 0.5); t.rotation = Math.PI / 2; return t;
+  }
+  function token(color, label, x, z, yaw = 0) {
+    const side = new THREE.MeshStandardMaterial({ color: C(color), roughness: 0.6 });
+    const top = new THREE.MeshStandardMaterial({ map: tokenTexture(color, label), roughness: 0.55 });
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.1, 64), [side, top, side]);
+    m.position.set(x, 0.05, z); m.rotation.y = yaw; m.castShadow = true; m.receiveShadow = true; scene.add(m);
+  }
+
+  // ---- the deck box: 2.75 x 3.85 x 0.8, tuck lid closed
+  const BW = 2.75, BH = 0.8, BD = 3.85;
+  async function box(x, z, yaw = 0) {
+    const tTop = await tex(TEX + 'box-top.jpg'), tSide = await tex(TEX + 'box-side.jpg'), tEnd = await tex(TEX + 'box-end.jpg');
+    const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.45 });
+    // long sides run along z: turn their art a quarter turn so it reads along the side
+    tSide.center.set(0.5, 0.5); tSide.rotation = Math.PI / 2;
+    const tSide2 = tSide.clone(); tSide2.needsUpdate = true; tSide2.rotation = -Math.PI / 2;
+    const mats = [M(tSide2), M(tSide), M(tTop), new THREE.MeshStandardMaterial({ color: C('#1E1B3E'), roughness: 0.8 }), M(tEnd), M(tEnd)];
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.castShadow = true; body.receiveShadow = true; body.position.y = BH / 2; g.add(body);
+    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+  }
+
+  // ---- a candle on a brass dish, for the parlour light
+  function candle(x, z) {
+    const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.8, 0.08, 48), new THREE.MeshStandardMaterial({ color: C('#B08A4A'), roughness: 0.35, metalness: 0.6 }));
+    dish.position.set(x, 0.04, z); dish.castShadow = true; dish.receiveShadow = true; scene.add(dish);
+    const wax = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 1.7, 40), new THREE.MeshStandardMaterial({ color: C('#F3E9D2'), roughness: 0.6, emissive: C('#3A2A10'), emissiveIntensity: 0.4 }));
+    wax.position.set(x, 0.93, z); wax.castShadow = true; scene.add(wax);
+    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 16), new THREE.MeshBasicMaterial({ color: C('#FFD38A') }));
+    flame.scale.set(1, 1.9, 1); flame.position.set(x, 1.98, z); scene.add(flame);
+    const glow = new THREE.PointLight(0xffb560, 0.9, 16, 2); glow.position.set(x, 2.3, z); scene.add(glow);
+  }
+
+  function frame(min, max, elevDeg, azimDeg, margin) {
+    const c = new THREE.Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
+    const el = elevDeg * Math.PI / 180, az = azimDeg * Math.PI / 180;
+    const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    const corners = [];
+    for (const x of [min[0], max[0]]) for (const y of [min[1], max[1]]) for (const z of [min[2], max[2]]) corners.push(new THREE.Vector3(x, y, z));
+    let dist = 5;
+    for (let it = 0; it < 400; it++) {
+      camera.position.copy(c).addScaledVector(dir, dist); camera.lookAt(c); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+      let ok = true;
+      for (const p of corners) { const v = p.clone().project(camera); if (Math.abs(v.x) > margin || Math.abs(v.y) > margin) { ok = false; break; } }
+      if (ok) break; dist *= 1.01;
+    }
+  }
+
+  await document.fonts.load('800 80px Figtree').catch(() => {});
+
+  // the box with its lid art up, the two roles beside it, a face-down card, and one player's Boos
+  await box(-3.7, -0.4, 0.32);
+  await card(IMG + 'card-ghost.webp', 0.5, -0.9, -0.07);
+  await card(IMG + 'card-living.webp', 3.6, -0.6, 0.08);
+  await card(IMG + 'card-back.webp', 6.9, -1.0, 0.16, 12);
+  token('#2E5EAA', '3', -0.4, 2.55); token('#2E5EAA', '2', 0.75, 2.75); token('#2E5EAA', '1', 1.9, 2.55);
+  token('#E0619E', 'BOO', 3.15, 2.8, 0.3); token('#2E9E5B', 'BOO', 4.35, 2.6, -0.4);
+  candle(4.6, -4.7);
+  frame([-5.6, 0, -5.0], [8.4, 1.0, 3.3], 50, 4, 0.97);
+
+  renderer.render(scene, camera);
+  await new Promise((r) => setTimeout(r, 60)); renderer.render(scene, camera);
+  window.__done = true;
+})();
+</script>
+</body></html>

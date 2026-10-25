@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Boo Who? deck box lid: 2.75 x 3.85 in, drawn at 1000 x 1400 */
+:root{--violet:#2B2856;--violet-hi:#3A3570;--gold:#D8B46A;--gold-d:#9C7A3C;--cream:#F4E7C6;--night:#363D74}
+html,body{margin:0;background:#000}
+#box{width:1000px;height:1400px;position:relative;overflow:hidden;color:var(--cream);
+  background:
+    radial-gradient(70% 50% at 50% 42%,rgba(90,84,160,.35),transparent 70%),
+    var(--violet)}
+/* the card back's diamond lattice */
+#box::before{content:"";position:absolute;inset:0;opacity:.55;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='76' height='76'><g fill='none' stroke='%23B89A5E' stroke-opacity='.45' stroke-width='1.4'><path d='M38 14 L62 38 L38 62 L14 38 Z'/></g><circle cx='38' cy='38' r='2.2' fill='%23B89A5E' fill-opacity='.5'/></svg>");background-size:76px 76px;background-position:12px 4px}
+.frame{position:absolute;inset:30px;border:5px solid var(--gold);border-radius:26px}
+.frame::after{content:"";position:absolute;inset:12px;border:1.5px solid rgba(216,180,106,.65);border-radius:16px}
+.corner{position:absolute;width:64px;height:64px;border:3px solid var(--gold)}
+.corner::after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.c1{top:66px;left:66px;border-right:0;border-bottom:0}.c1::after{left:12px;top:12px}
+.c2{top:66px;right:66px;border-left:0;border-bottom:0}.c2::after{right:12px;top:12px}
+.c3{bottom:66px;left:66px;border-right:0;border-top:0}.c3::after{left:12px;bottom:12px}
+.c4{bottom:66px;right:66px;border-left:0;border-top:0}.c4::after{right:12px;bottom:12px}
+.kick{position:absolute;top:96px;left:0;right:0;text-align:center;font-family:"IM Fell English SC";font-size:38px;letter-spacing:9px;text-indent:9px;color:var(--gold)}
+/* an arched parlour window with the ghost inside */
+.win{position:absolute;left:170px;top:168px;width:660px;height:690px;border-radius:330px 330px 18px 18px;padding:10px;background:linear-gradient(#E6C67E,#A9843F);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.win .in{width:100%;height:100%;border-radius:320px 320px 10px 10px;overflow:hidden;position:relative;background:var(--night);box-shadow:inset 0 0 0 3px #23214A}
+.win .in::before{content:"";position:absolute;inset:-6px;background:url(/games/boo-who/img/card-ghost.webp) no-repeat;background-size:740px 1036px;background-position:-50px -74px;
+  -webkit-mask:radial-gradient(64% 60% at 50% 52%,#000 74%,transparent 100%)}
+.win .in::after{content:"";position:absolute;inset:16px;border-radius:306px 306px 4px 4px;border:1.5px solid rgba(232,204,140,.6)}
+h1{position:absolute;left:0;right:0;top:880px;margin:0;text-align:center;font-family:Spectral,serif;font-weight:700;font-size:178px;line-height:1;letter-spacing:-1px;color:var(--cream);
+  text-shadow:0 5px 0 var(--gold-d),0 14px 26px rgba(0,0,0,.45)}
+.tag{position:absolute;left:0;right:0;top:1085px;text-align:center;font-family:"IM Fell English";font-style:italic;font-size:50px;color:#E9DDF6}
+.by{position:absolute;left:0;right:0;top:1158px;text-align:center;font-family:"IM Fell English SC";font-size:36px;letter-spacing:5px;color:var(--gold)}
+.strip{position:absolute;left:150px;right:150px;bottom:92px;border-top:2px solid rgba(216,180,106,.7);padding-top:14px;display:flex;justify-content:space-between;
+  font-family:"IM Fell English SC";font-size:30px;letter-spacing:4px;color:var(--cream)}
+</style></head><body>
+<div id="box">
+  <div class="frame"></div><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+  <div class="kick">A paranoia party game</div>
+  <div class="win"><div class="in"></div></div>
+  <h1>Boo Who?</h1>
+  <div class="tag">Everyone can see it but you.</div>
+  <div class="by">A game by Darren Don</div>
+  <div class="strip"><span>4–8 players</span><span>15 minutes</span></div>
+</div>
+<script>document.fonts.ready.then(()=>{const i=new Image();i.onload=()=>window.__done=true;i.src='/games/boo-who/img/card-ghost.webp'})</script>
+</body></html>

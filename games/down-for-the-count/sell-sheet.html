@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Down for the Count — sell sheet</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Source for down-for-the-count-sell-sheet.pdf: print at US Letter landscape, no margins, backgrounds on. */
+:root{--paper:#FFFCF4;--ink:#1C1530;--soft:#5A5170;--red:#CC162C;--gold:#FFD630;--navy:#101A3D;--panel:#FFF0BF}
+*{box-sizing:border-box}
+html,body{margin:0;background:#8E9499}
+@page{size:11in 8.5in;margin:0}
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
+.sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;color:var(--ink);
+  font-family:Figtree,system-ui,sans-serif;font-size:9.1pt;line-height:1.33;background:var(--paper);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet::before{content:"";position:absolute;inset:.22in;border:3px solid var(--ink);border-radius:10px;pointer-events:none}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:.3in;padding:.42in 0 .12in;border-bottom:3px solid var(--ink);margin:0 .5in}
+.pill{display:inline-block;font:800 9pt/1 Archivo;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:4px 10px;margin-bottom:8px}
+h1{font-family:Archivo;font-weight:900;font-style:italic;font-stretch:112%;font-size:35pt;line-height:.95;white-space:nowrap;letter-spacing:-.02em;margin:0;
+  color:var(--paper);-webkit-text-stroke:1.6px var(--ink);paint-order:stroke fill;text-shadow:2.5px 2.5px 0 var(--red),5px 5px 0 var(--ink)}
+.tag{margin:9px 0 0;font:700 13pt/1.25 Figtree}
+.tag i{color:var(--red);font-style:normal}
+.by{text-align:right;font-size:9pt;line-height:1.35;color:var(--soft)}
+.by b{display:block;font:900 15pt/1.1 Archivo;font-style:italic;font-stretch:110%;color:var(--ink)}
+main{display:grid;grid-template-columns:1.16fr 1fr;gap:.28in;padding:.16in .5in .1in;min-height:0;flex:1}
+.art{display:flex;flex-direction:column;gap:.14in;min-height:0;justify-content:center}
+.render{border:3px solid var(--ink);border-radius:8px;background:var(--navy);overflow:hidden;aspect-ratio:16/10;flex:none;box-shadow:3px 3px 0 var(--ink)}
+.render img{width:100%;height:100%;object-fit:cover;display:block}
+.cards{display:grid;grid-template-columns:repeat(10,1fr);gap:.05in}
+.cards img{width:100%;border-radius:4px;display:block;box-shadow:1.5px 1.5px 0 var(--ink)}
+.copy{display:flex;flex-direction:column;gap:.1in;min-height:0}
+h2{font:900 12.5pt/1 Archivo;font-style:italic;font-stretch:110%;letter-spacing:.01em;margin:0 0 4px;color:var(--red);text-transform:uppercase}
+p{margin:0}
+ul{list-style:none;margin:0;padding:0}
+li{position:relative;padding-left:15px;margin:0 0 4px}
+li::before{content:"";position:absolute;left:0;top:.42em;width:8px;height:8px;background:var(--red);clip-path:polygon(50% 0,62% 32%,100% 20%,72% 50%,100% 80%,62% 68%,50% 100%,38% 68%,0 80%,28% 50%,0 20%,38% 32%)}
+.ends{display:grid;grid-template-columns:repeat(3,1fr);gap:.07in}
+.ee{border:2px solid var(--ink);border-radius:6px;background:var(--panel);padding:.05in .09in;font-size:8.7pt;line-height:1.3;box-shadow:2px 2px 0 var(--ink)}
+.ee b{display:block;font:900 10.5pt/1.1 Archivo;font-style:italic;color:var(--red)}
+.ee.last{background:var(--red);color:var(--paper)}
+.ee.last b{color:var(--gold)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:2px .14in;margin:0;font-size:9.2pt}
+dt{font:800 8.6pt/1.5 Archivo;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+dd{margin:0}
+footer{margin:0 .5in;padding:.09in 0 .38in;border-top:3px solid var(--ink);display:flex;justify-content:space-between;align-items:center;font-size:9pt;color:var(--soft)}
+footer b{font:900 11pt/1 Archivo;font-style:italic;color:var(--ink);margin-right:8px}
+footer .u{color:var(--red);font-weight:700}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div>
+      <span class="pill">Available for licensing</span>
+      <h1>DOWN FOR THE COUNT</h1>
+      <p class="tag">A wrestling climbing card game for 2–6 players · <i>Last one standing wins.</i></p>
+    </div>
+    <div class="by"><b>Darren Don</b>What's Good Board Games<br>darren@whatsgoodboardgames.com</div>
+  </header>
+  <main>
+    <div class="art">
+      <div class="render"><img src="/games/down-for-the-count/img/render-hero.webp" alt=""></div>
+      <div class="cards" id="cards"></div>
+    </div>
+    <div class="copy">
+      <div>
+        <h2>The game</h2>
+        <p>Every card in your hand is a move you can still make. Climb the move on the table with a bigger set or run, or take a count to stay in it: a reversal steals a card off the move, a kick out pulls one of your face-down count cards into your hand. Play your last card and you tap out; take one count too many and you're pinned. The last wrestler standing wins the round. Three rounds make a match.</p>
+      </div>
+      <div>
+        <h2>Why it works</h2>
+        <ul>
+          <li><b>Cards are stamina.</b> A climbing game where emptying your hand knocks you out, so every card spent is one you can't answer with later. Players play the cheapest move that climbs and sweat the rest.</li>
+          <li><b>The count is a clock.</b> Two or three face-down cards per wrestler, open for everyone to see. Each count spent buys a card and moves you one step closer to the pin.</li>
+          <li><b>Finishers.</b> A move nobody can answer costs three or four cards: against a wrestler with no count left it ends their round, against anyone else it's a gift.</li>
+          <li><b>One deck, 2 to 6.</b> Sixty cards, the same rules at every count. Hand and count sizes are tuned by simulation for each player count; heads-up is a quick duel.</li>
+        </ul>
+      </div>
+      <div class="ends">
+        <div class="ee"><b>Tapped out</b>Play your last card</div>
+        <div class="ee"><b>Pinned</b>No count left and no answer</div>
+        <div class="ee last"><b>Last standing</b>Wins the round</div>
+      </div>
+      <div>
+        <h2>At a glance</h2>
+        <dl>
+          <dt>Players</dt><dd>2–6 (one deck, hand and count sizes by player count)</dd>
+          <dt>Genre</dt><dd>Climbing card game, last one standing</dd>
+          <dt>Length</dt><dd>About 15 minutes, 3 short rounds</dd>
+          <dt>Components</dt><dd>60 cards (ranks 1–10, six of each), small box</dd>
+          <dt>Ready</dt><dd>Rules, print-and-play, browser build with bots, balance simulations</dd>
+        </dl>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <span><b>Play it now</b><span class="u">darrendon.github.io/games/down-for-the-count</span></span>
+    <span>Darren Don · darren@whatsgoodboardgames.com</span>
+  </footer>
+</div>
+<script>
+document.getElementById('cards').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => `<img src="/games/down-for-the-count/img/card-${n}.webp" alt="">`).join('');
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>
