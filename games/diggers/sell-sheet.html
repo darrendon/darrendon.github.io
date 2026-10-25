@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diggers — sell sheet</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+:root{--paper:#F6EFDC;--ink:#24180E;--soft:#6B5A44;--red:#A8452D;--line:#CDBE9C;--panel:#EFE4C8}
+*{box-sizing:border-box}
+html,body{margin:0;background:#8E9499}
+@page{size:11in 8.5in;margin:0}
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
+.sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;color:var(--ink);
+  font-family:Spectral,Georgia,serif;font-size:9.3pt;line-height:1.33;background:var(--paper);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet::before{content:"";position:absolute;inset:.22in;border:2px solid var(--ink);pointer-events:none}
+.sheet::after{content:"";position:absolute;inset:.27in;border:.75px solid var(--soft);pointer-events:none}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:.3in;padding:.4in 0 .12in;border-bottom:2px solid var(--ink);margin:0 .5in}
+.pill{display:inline-block;font-family:"IM Fell English SC";font-size:10pt;letter-spacing:.14em;color:var(--red);border:1.5px solid var(--red);border-radius:3px;padding:1px 8px;margin-bottom:6px}
+h1{font-family:Rye;font-weight:400;font-size:54pt;line-height:.92;letter-spacing:.03em;margin:0}
+.tag{margin:6px 0 0;font-family:"IM Fell English";font-size:14pt}
+.tag i{color:var(--red)}
+.by{text-align:right;font-size:9pt;line-height:1.35;color:var(--soft)}
+.by b{display:block;font-family:"IM Fell English SC";font-weight:400;font-size:14pt;letter-spacing:.04em;color:var(--ink)}
+main{display:grid;grid-template-columns:1.18fr 1fr;gap:.28in;padding:.16in .5in .1in;min-height:0;flex:1}
+.art{display:flex;flex-direction:column;gap:.11in;min-height:0}
+.render{border:1.5px solid var(--ink);background:#17120D;overflow:hidden;flex:1;min-height:0}
+.render img{width:100%;height:100%;object-fit:cover;display:block}
+.species{display:grid;grid-template-columns:repeat(6,1fr);gap:.06in}
+.sp{border:1.5px solid var(--ink);background:#fff;display:flex;flex-direction:column;align-items:center;padding:.05in .02in .04in;gap:1px}
+.sp svg{width:.3in;height:.3in;stroke:var(--ink);stroke-width:1}
+.sp b{font-family:"IM Fell English";font-weight:400;font-size:8.3pt;line-height:1.1;text-align:center}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:.06in}
+.cards img{width:100%;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.35);display:block}
+.copy{display:flex;flex-direction:column;gap:.09in;min-height:0}
+h2{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:.06em;margin:0 0 3px;color:var(--red)}
+p{margin:0}
+ul{list-style:none;margin:0;padding:0}
+li{position:relative;padding-left:14px;margin:0 0 4px}
+li::before{content:"";position:absolute;left:0;top:.5em;width:7px;height:7px;border-radius:1.5px;background:var(--red)}
+.seasons{display:grid;grid-template-columns:repeat(3,1fr);gap:.07in}
+.ss{border:1.5px solid var(--ink);background:#fff;padding:.05in .09in;font-size:8.8pt;line-height:1.3}
+.ss b{display:block;font-family:"IM Fell English SC";font-weight:400;font-size:10pt;letter-spacing:.08em;color:var(--red)}
+.ss.last{background:var(--ink);color:#F6EFDC;border-color:var(--ink)}
+.ss.last b{color:#E9A07F}
+dl{display:grid;grid-template-columns:auto 1fr;gap:2px .14in;margin:0;font-size:9.2pt}
+dt{font-family:"IM Fell English SC";font-size:10pt;letter-spacing:.05em;color:var(--soft)}
+dd{margin:0}
+footer{margin:0 .5in;padding:.09in 0 .38in;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;font-size:9pt;color:var(--soft)}
+footer b{font-family:"IM Fell English SC";font-weight:400;font-size:11pt;letter-spacing:.05em;color:var(--ink);margin-right:8px}
+footer .u{color:var(--red);font-weight:600}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div>
+      <span class="pill">Available for licensing</span>
+      <h1>DIGGERS</h1>
+      <p class="tag">A contested-lane climbing card game for 2–4 players · <i>Dig it up before they do.</i></p>
+    </div>
+    <div class="by"><b>Darren Don</b>What's Good Board Games<br>darren@whatsgoodboardgames.com</div>
+  </header>
+  <main>
+    <div class="art">
+      <div class="render"><img src="/games/diggers/img/render-hero.webp" alt=""></div>
+      <div class="cards" id="cards"></div>
+      <div class="species" id="species"></div>
+    </div>
+    <div class="copy">
+      <div>
+        <h2>The game</h2>
+        <p>Rival paleontologists work the same badlands. Between every pair of neighboring camps is a dig site, and it belongs to whoever brought up the finer find there last. Play runs of numbers or matched sets from a hand you are never allowed to sort, poach bones from the sites beside you, and hand a specimen across in return. Three field seasons; most prestige wins.</p>
+      </div>
+      <div>
+        <h2>Why it works</h2>
+        <ul>
+          <li><b>A hand you can't sort.</b> Only cards that sit side by side can be played together, so every turn is a small puzzle. Poaching lets you slot exactly the bone you need into the gap.</li>
+          <li><b>Every site is shared.</b> Each find you lay is a target for the neighbor across it, and an end bone they can take. The specimen you send back can be a gift or dead weight.</li>
+          <li><b>A built-in arc.</b> Sites are worth 1, then 2, then 4 prestige, and finds grow from 3 to 5 cards. In simulated games the final season overturns the leader about a third of the time.</li>
+          <li><b>One small deck.</b> 54 cards, four guides and four markers fit a 60-card box. Each species' nine cards assemble into a full fossil slab.</li>
+        </ul>
+      </div>
+      <div class="seasons">
+        <div class="ss"><b>Season 1</b>Sites worth 1 · finds up to 3</div>
+        <div class="ss"><b>Season 2</b>Sites worth 2 · finds up to 4</div>
+        <div class="ss last"><b>Season 3</b>Sites worth 4 · finds up to 5</div>
+      </div>
+      <div>
+        <h2>At a glance</h2>
+        <dl>
+          <dt>Players</dt><dd>2–4 (scales by deck and sites, no rule changes)</dd>
+          <dt>Genre</dt><dd>Climbing card game, area control</dd>
+          <dt>Length</dt><dd>20–30 minutes, 3 seasons</dd>
+          <dt>Components</dt><dd>54 fossil cards, 4 field guides, 4 dig-site markers</dd>
+          <dt>Ready</dt><dd>Rules, print-and-play, browser build, balance simulations</dd>
+        </dl>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <span><b>Play it now</b><span class="u">darrendon.github.io/games/diggers</span></span>
+    <span>Darren Don · darren@whatsgoodboardgames.com</span>
+  </footer>
+</div>
+<script src="/games/diggers/img/src/fossil-art.js"></script>
+<script>
+document.getElementById('species').innerHTML = SPECIES.map(sp => `<div class="sp"><svg viewBox="0 0 24 24"><path d="${sp.sym}" fill="${sp.suit}" fill-rule="evenodd"/></svg><b>${sp.name}</b></div>`).join('');
+document.getElementById('cards').innerHTML = [2, 14, 23, 35, 46, 59].map(id => `<img src="/games/diggers/img/src/tex/face-${id}.jpg" alt="">`).join('');
+Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>

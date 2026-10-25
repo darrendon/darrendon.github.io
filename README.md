@@ -8,6 +8,7 @@ Portfolio site for Darren Don, board game designer at What's Good Board Games. P
 - `/games/dim-sum-rush/` — sell sheet, 3D component mockups, the playable build (embedded from the `dim-sum-rush` repo's Pages site at `/dim-sum-rush/`) and rules in brief
 - `/games/boo-who/` — rendered mockups, the playable build (hosted in this repo at `/games/boo-who/play/`), sell sheet, print-and-play PDF and rules in brief
 - `/games/too-many-crooks/` — rendered mockups, the playable build with online tables (hosted in this repo at `/games/too-many-crooks/play/`), sell sheet, print-and-play PDF and rules in brief
+- `/games/diggers/` — rendered mockups, the playable build against bots (hosted in this repo at `/games/diggers/play/`), the six species, sell sheet, print-and-play PDF and rules in brief
 
 ## Assets
 - `assets/css/boo-who.css` — Boo Who? skin on top of the shared game-page layout in `dim-sum-rush.css`
@@ -18,7 +19,11 @@ Portfolio site for Darren Don, board game designer at What's Good Board Games. P
 - `games/too-many-crooks/sell-sheet.html` — source for `too-many-crooks-sell-sheet.pdf` (same print settings)
 - `games/too-many-crooks/img/src/` — sources for the Too Many Crooks! mockups: `scene.html` (three.js stills, `?scene=hero|table|kit`), the box and crew-sheet art it textures from, and the rendered textures in `tex/`
 - `games/too-many-crooks/play/engine.js` — the rules engine and bots; it also runs in node, so bot-only games can be checked headless
-- Fonts are self-hosted Latin subsets (SIL Open Font License): Archivo, Instrument Sans, IBM Plex Mono, Bagel Fat One, Figtree, Oswald, Courier Prime
+- `assets/css/diggers.css` — Diggers skin on top of the shared game-page layout
+- `games/diggers/sell-sheet.html` and `games/diggers/print-and-play.html` — sources for the two Diggers PDFs (sell sheet: US Letter landscape; print-and-play: US Letter portrait; no margins, backgrounds on)
+- `games/diggers/img/src/` — sources for the Diggers mockups: `scene.html` (three.js stills, `?scene=hero|table|kit`), the box, field-guide and marker art, `fossil-art.js` (draws the six skeleton slabs every card face is cut from) and `card-print.js` (composes print-ready faces with bleed); rendered textures in `tex/`
+- `games/diggers/play/index.html` — the playtest build; its script also runs in node (`module.exports`), so bot-only games can be checked headless
+- Fonts are self-hosted Latin subsets (SIL Open Font License): Archivo, Instrument Sans, IBM Plex Mono, Bagel Fat One, Figtree, Oswald, Courier Prime, Rye, IM Fell English, Spectral
 
 ## Adding a game
 Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, and add a card to the Games section of `index.html`.
