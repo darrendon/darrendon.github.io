@@ -178,7 +178,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
   const BOTS = ['Hacksaw Hal', 'The Duchess', 'Rocket Ruiz', 'Big Moe', 'Lady Lariat'];
   const COLORS = ['#ffd630', '#2f7bff', '#3cc75a', '#ff7a1a', '#8c4bff', '#13c2b0'];
   const app = document.getElementById('app'), ov = document.getElementById('ov'), ovBody = document.getElementById('ov-body'), live = document.getElementById('live');
-  let g = null, sel = [], mode = null, timer = null, lastLog = 0, pops = [], chosenN = 4, showRules = false;
+  let g = null, sel = [], mode = null, timer = null, lastLog = 0, pops = [], chosenN = 4, showRules = false, tough = true;
+  try { if (localStorage.getItem('dftc-bots') === 'casual') tough = false; } catch (e) {}
 
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const cardImg = (r, cls, attrs) => '<span class="card ' + (cls || '') + '" ' + (attrs || '') + '><img src="' + IMG + 'card-' + r + '.webp" alt="' + r + '" width="240" height="336"></span>';
@@ -194,6 +195,9 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
       '<div class="startbox"><h2>How many wrestlers?</h2>' +
       '<div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5, 6].map((n) => '<button type="button" data-n="' + n + '" aria-pressed="' + (n === chosenN) + '">' + n + '</button>').join('') + '</div>' +
       '<p class="setup-note" id="note"></p>' +
+      '<h2>Bots</h2><div class="pick-n" role="group" aria-label="Bot strength">' +
+      '<button type="button" data-bots="tough" aria-pressed="' + tough + '">Tough</button><button type="button" data-bots="casual" aria-pressed="' + !tough + '">Casual</button></div>' +
+      '<p class="setup-note" id="botnote"></p>' +
       '<div><button class="go" type="button" id="start">Ring the bell</button></div></div>' +
       rulesPanel(true);
     const note = () => {
@@ -204,7 +208,14 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     app.querySelectorAll('[data-n]').forEach((b) => b.addEventListener('click', () => {
       chosenN = +b.dataset.n; app.querySelectorAll('[data-n]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); note();
     }));
-    note();
+    const botnote = () => { document.getElementById('botnote').textContent = tough
+      ? 'Tough bots think ahead: before each move they play out the rest of the round many ways, using only what they could see at the table.'
+      : 'Casual bots play the cheapest move that beats the table and save their big moves for a wrestler with no count left.'; };
+    app.querySelectorAll('[data-bots]').forEach((b) => b.addEventListener('click', () => {
+      tough = b.dataset.bots === 'tough'; app.querySelectorAll('[data-bots]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      try { localStorage.setItem('dftc-bots', tough ? 'tough' : 'casual'); } catch (e) {} botnote();
+    }));
+    note(); botnote();
     document.getElementById('start').addEventListener('click', start);
   }
   function start() {
@@ -221,7 +232,13 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     if (g.roundOver) { timer = setTimeout(roundModal, 900); return; }
     if (g.turn === 0) return;
     const humanOut = g.status[0] !== 'in';
-    timer = setTimeout(() => { E.act(g, E.botAction(g)); afterAct(); }, humanOut ? 420 : 820);
+    const pace = humanOut ? 420 : 820;
+    // think first (time-capped so slow phones stay responsive), then wait out the rest of the beat before acting
+    timer = setTimeout(() => {
+      const t0 = Date.now();
+      const a = tough ? E.smartAction(g, { samples: 48, ms: humanOut ? 250 : 600 }) : E.botAction(g);
+      timer = setTimeout(() => { E.act(g, a); afterAct(); }, Math.max(0, pace - 100 - (Date.now() - t0)));
+    }, 100);
   }
   function afterAct() {
     const a = g.lastAction;

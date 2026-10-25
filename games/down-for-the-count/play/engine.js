@@ -104,10 +104,12 @@
     g.status = Array(g.n).fill('in'); g.out = [];
     g.cur = null; g.owner = null; g.touched = false; g.lap = null;
     g.turn = g.opener; g.roundOver = false; g.played = {}; g.lastAction = null;
+    // public information: cards face up on the table or in the discard, cards known to be in a hand, face-down discards
+    g.seen = {}; g.known = Array.from({ length: g.n }, () => ({})); g.fdDiscard = 0;
     say(g, 'Round ' + g.round + ' of ' + g.rounds + '. ' + V(g, g.opener, 'opens', 'open') + '.', 'round');
     beginTurn(g);
   }
-  function say(g, text, kind, who) { g.log.push({ text, kind: kind || 'info', who: who == null ? null : who, round: g.round }); }
+  function say(g, text, kind, who) { if (g.quiet) return; g.log.push({ text, kind: kind || 'info', who: who == null ? null : who, round: g.round }); }
   function active(g) { const a = []; for (let p = 0; p < g.n; p++) if (g.status[p] === 'in') a.push(p); return a; }
   function nextActive(g, p) { for (let k = 1; k <= g.n; k++) { const q = (p + k) % g.n; if (g.status[q] === 'in') return q; } return p; }
 
@@ -149,7 +151,7 @@
     g.lastAction = { p, a };
     if (a.type === 'takeback') {
       if (!o.takeback.includes(a.rank)) throw new Error('illegal takeback');
-      g.hands[p].push(a.rank); g.hands[p].sort((x, y) => x - y);
+      g.hands[p].push(a.rank); g.hands[p].sort((x, y) => x - y); fromTable(g, p, a.rank);
       const rest = without(g.cur, a.rank);
       say(g, 'Nobody touched it, so ' + V(g, p, 'takes', 'take') + ' the ' + a.rank + ' back' + (rest ? '; ' + describe(rest) + ' stays up.' : ' and the table clears.'), 'takeback', p);
       if (rest) { g.cur = rest; g.touched = true; } else clearTable(g);
@@ -159,7 +161,10 @@
       const m = classify(a.cards);
       if (!m || !o.plays.some((x) => x.type === m.type && x.size === m.size && x.top === m.top)) throw new Error('illegal play');
       removeCards(g.hands[p], m.cards);
-      for (const r of m.cards) g.played[r] = (g.played[r] || 0) + 1;
+      for (const r of m.cards) {
+        g.played[r] = (g.played[r] || 0) + 1; g.seen[r] = (g.seen[r] || 0) + 1;
+        if (g.known[p][r]) g.known[p][r]--;
+      }
       say(g, V(g, p, g.cur ? 'answers with' : 'opens with', g.cur ? 'answer with' : 'open with') + ' ' + describe(m) + '.', 'play', p);
       g.cur = m; g.owner = p; g.touched = false; g.lap = null;
       if (!g.hands[p].length) {
@@ -170,8 +175,8 @@
     }
     if (a.type === 'reverse') {
       if (!o.reverse.includes(a.rank)) throw new Error('illegal reversal');
-      g.counts[p].pop();
-      g.hands[p].push(a.rank); g.hands[p].sort((x, y) => x - y);
+      g.counts[p].pop(); g.fdDiscard++;
+      g.hands[p].push(a.rank); g.hands[p].sort((x, y) => x - y); fromTable(g, p, a.rank);
       const rest = without(g.cur, a.rank);
       say(g, V(g, p, 'reverses', 'reverse') + ', taking the ' + a.rank + (rest ? '' : ' and clearing the table') + '. ' + countText(g.counts[p].length), 'reverse', p);
       if (rest) { g.cur = rest; g.touched = true; } else clearTable(g);
@@ -188,6 +193,7 @@
     }
     throw new Error('unknown action');
   }
+  function fromTable(g, p, r) { g.seen[r]--; g.known[p][r] = (g.known[p][r] || 0) + 1; }
   function V(g, p, third, second) { return g.names[p] + ' ' + (g.you === p ? second : third); }
   function countText(k) { return k === 0 ? 'No count left!' : k + ' count left.'; }
 
@@ -275,6 +281,81 @@
     return g.rnd() < 0.5 ? { type: 'reverse', rank: best } : { type: 'kickout' };
   }
 
-  const API = { SETUP, classify, beats, describe, beatHint, legalPlays, takeOptions, newMatch, options, act, botAction, nextRound, active, nextActive };
+
+  // ------------------------------------------------------------------ the look-ahead bot
+  // Before each decision it deals out the cards it can't see in many different ways, consistent with everything that has
+  // happened in public (cards played, cards taken back into a hand, hand sizes, counts), plays the rest of the round out
+  // with the quick heuristic bots for each candidate move, and picks the move that finishes highest on average.
+  // It never looks at hidden cards: other hands, every count pile (its own too), face-down discards and the set-aside cards.
+  function hiddenPool(g, me) {
+    const left = {};
+    for (let r = 1; r <= g.top; r++) left[r] = 6;
+    const take = (r, k) => { left[r] -= k; };
+    for (const r of g.hands[me]) take(r, 1);
+    for (const r in g.seen) take(+r, g.seen[r]);
+    for (let q = 0; q < g.n; q++) if (q !== me) for (const r in g.known[q]) take(+r, g.known[q][r]);
+    const pool = [];
+    for (let r = 1; r <= g.top; r++) for (let k = 0; k < left[r]; k++) pool.push(r);
+    return pool;
+  }
+  function determinize(g, me, rnd) {
+    const pool = shuffle(hiddenPool(g, me), rnd);
+    const h = {
+      n: g.n, names: g.names, bots: g.bots, top: g.top, handSize: g.handSize, countSize: g.countSize, rounds: 1, round: 1,
+      scores: Array(g.n).fill(0), history: [], opener: g.opener, log: [], quiet: true, over: false, you: -1,
+      status: g.status.slice(), out: g.out.slice(), cur: g.cur, owner: g.owner, touched: g.touched, lap: g.lap,
+      turn: g.turn, phase: g.phase, roundOver: false, played: {}, seen: {}, known: g.known.map(() => ({})), fdDiscard: 0, aside: g.aside,
+      rnd, lastAction: null
+    };
+    h.hands = g.hands.map((hand, q) => {
+      if (q === me) return hand.slice();
+      const out = [];
+      for (const r in g.known[q]) for (let k = 0; k < g.known[q][r]; k++) out.push(+r);
+      while (out.length < hand.length && pool.length) out.push(pool.pop());
+      return out.sort((a, b) => a - b);
+    });
+    h.counts = g.counts.map((c) => c.map(() => pool.length ? pool.pop() : 1));
+    return h;
+  }
+  function cloneSim(h) {
+    return Object.assign({}, h, { hands: h.hands.map((x) => x.slice()), counts: h.counts.map((x) => x.slice()), status: h.status.slice(), out: h.out.slice(),
+      scores: h.scores.slice(), history: [], known: h.known, seen: {}, played: {}, rnd: rngFrom((h.rnd() * 4294967296) >>> 0) });
+  }
+  function finish(h, me) { // points `me` scores this round: first out 1 ... last standing n
+    let guard = 0;
+    while (!h.roundOver && h.status[me] === 'in' && guard++ < 4000) act(h, botAction(h));
+    if (h.status[me] !== 'in') return h.out.indexOf(me) + 1;
+    return h.n;
+  }
+  function candidates(g) {
+    const o = options(g), hand = g.hands[g.turn], out = [];
+    if (g.phase === 'takeback') return o.takeback.map((r) => ({ type: 'takeback', rank: r }));
+    const groups = {};
+    for (const m of o.plays) { const k = m.type + m.size; (groups[k] = groups[k] || []).push(m); }
+    for (const k in groups) groups[k].sort((a, b) => cost(a, hand) - cost(b, hand)).slice(0, 2).forEach((m) => out.push({ type: 'play', cards: m.cards }));
+    for (const r of o.reverse) out.push({ type: 'reverse', rank: r });
+    if (o.kickOut) out.push({ type: 'kickout' });
+    return out;
+  }
+  function smartAction(g, opts) {
+    opts = opts || {};
+    const me = g.turn, cands = candidates(g);
+    if (cands.length <= 1) return cands[0] || botAction(g);
+    const rnd = rngFrom((g.rnd() * 4294967296) >>> 0);
+    const total = cands.map(() => 0);
+    const samples = opts.samples || 48, deadline = opts.ms ? Date.now() + opts.ms : Infinity;
+    let done = 0;
+    for (let s = 0; s < samples; s++) {
+      const base = determinize(g, me, rnd);
+      cands.forEach((a, i) => { const h = cloneSim(base); act(h, a); total[i] += h.roundOver || h.status[me] !== 'in' ? (h.status[me] === 'in' ? h.n : h.out.indexOf(me) + 1) : finish(h, me); });
+      done++;
+      if (Date.now() > deadline && done >= 12) break;
+    }
+    let best = 0;
+    for (let i = 1; i < cands.length; i++) if (total[i] > total[best]) best = i;
+    return cands[best];
+  }
+
+  const API = { smartAction, hiddenPool, SETUP, classify, beats, describe, beatHint, legalPlays, takeOptions, newMatch, options, act, botAction, nextRound, active, nextActive };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.DFTC = API;
 })(typeof window !== 'undefined' ? window : this);
