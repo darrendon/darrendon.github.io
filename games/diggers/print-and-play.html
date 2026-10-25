@@ -61,16 +61,16 @@ td.n{font-family:Rye}
       <p>You are rival paleontologists working the same badlands. Between every pair of neighboring camps lies a <b>dig site</b>, and a site belongs to whoever brought up the finest find there last. Over three field seasons, earn the most <b>prestige</b> from the sites you hold.</p>
       <h2>Components</h2>
       <ul>
-        <li><b>54 fossil cards:</b> numbers 1 to 9, six of each. Each copy of a number comes from a different dinosaur, and a species' nine cards lay out in three rows of three as one fossil slab. Species is only art; it never affects play.</li>
+        <li><b>54 fossil cards:</b> six species (five dinosaurs and a pterosaur), each numbered 1 to 9. A species' nine cards lay out in three rows of three as one fossil slab. Species only sets the deck size; it never affects play.</li>
         <li><b>4 field guides</b> (reference cards)</li>
         <li><b>4 dig-site markers</b> (thin strips)</li>
       </ul>
       <h2>Setup</h2>
-      <table><tr><th>Diggers</th><th>Deck</th><th>Hand</th><th>Sites</th></tr>
-        <tr><td class="n">2</td><td>remove 8s and 9s (42 cards)</td><td>12</td><td>3, all between you</td></tr>
-        <tr><td class="n">3</td><td>all 54 cards</td><td>11</td><td>1 between each pair of neighbors</td></tr>
-        <tr><td class="n">4</td><td>all 54 cards</td><td>10</td><td>1 between each pair of neighbors</td></tr></table>
-      <p>Place the markers, shuffle, and deal each digger a hand.</p>
+      <table><tr><th>Diggers</th><th>Species</th><th>Hand</th><th>Sites</th></tr>
+        <tr><td class="n">2</td><td>any 4 (36 cards)</td><td>12</td><td>3, all between you</td></tr>
+        <tr><td class="n">3</td><td>any 5 (45 cards)</td><td>11</td><td>1 between each pair of neighbors</td></tr>
+        <tr><td class="n">4</td><td>all 6 (54 cards)</td><td>10</td><td>1 between each pair of neighbors</td></tr></table>
+      <p>Return any unused species to the box, place the markers, shuffle, and deal each digger a hand.</p>
       <div class="sites"><div><b>Two diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="10" r="6"/><circle cx="60" cy="60" r="6"/><rect x="18" y="33" width="22" height="4"/><rect x="49" y="33" width="22" height="4"/><rect x="80" y="33" width="22" height="4"/></svg></div>
         <div><b>Three diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="8" r="6"/><circle cx="20" cy="60" r="6"/><circle cx="100" cy="60" r="6"/><rect x="29" y="31" width="22" height="4" transform="rotate(-52 40 33)"/><rect x="69" y="31" width="22" height="4" transform="rotate(52 80 33)"/><rect x="49" y="58" width="22" height="4"/></svg></div>
         <div><b>Four diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="7" r="6"/><circle cx="60" cy="63" r="6"/><circle cx="18" cy="35" r="6"/><circle cx="102" cy="35" r="6"/><rect x="28" y="19" width="20" height="4" transform="rotate(-34 38 21)"/><rect x="72" y="19" width="20" height="4" transform="rotate(34 82 21)"/><rect x="28" y="47" width="20" height="4" transform="rotate(34 38 49)"/><rect x="72" y="47" width="20" height="4" transform="rotate(-34 82 49)"/></svg></div></div>
@@ -87,7 +87,7 @@ td.n{font-family:Rye}
         <li><b>A bone bed:</b> all the same number, such as 8-8-8.</li>
       </ul>
       <div class="ex"><img src="/games/diggers/img/src/tex/face-3.jpg" alt=""><img src="/games/diggers/img/src/tex/face-14.jpg" alt=""><img src="/games/diggers/img/src/tex/face-25.jpg" alt=""><span>A spine 3-4-5. The species don't matter.</span></div>
-      <p>Each season limits how many cards a find may have: <b>3</b>, then <b>4</b>, then <b>5</b> (see Seasons).</p>
+      <p>A find may have <b>up to 4 cards</b>.</p>
       <p><b>Which find is better:</b> more cards beats fewer. With the same count, a bone bed beats a spine. Still tied, the higher total wins. An exact tie does not beat.</p>
       <div class="ex"><img src="/games/diggers/img/src/tex/face-7.jpg" alt=""><img src="/games/diggers/img/src/tex/face-17.jpg" alt=""><span>A bone bed of two 7s beats any two-card spine, but loses to any three-card find.</span></div>
     </div>
@@ -112,11 +112,11 @@ td.n{font-family:Rye}
     </div>
     <div>
       <h2 style="margin-top:0">Seasons</h2>
-      <p>A game is three seasons. Each is worth more and allows bigger finds:</p>
-      <table><tr><th>Season</th><th>Each site is worth</th><th>Finds up to</th></tr>
-        <tr><td class="n">1</td><td>1 prestige</td><td>3 cards</td></tr>
-        <tr><td class="n">2</td><td>2 prestige</td><td>4 cards</td></tr>
-        <tr><td class="n">3</td><td>4 prestige</td><td>5 cards</td></tr></table>
+      <p>A game is three seasons, and each is worth more than the last:</p>
+      <table><tr><th>Season</th><th>Each site is worth</th></tr>
+        <tr><td class="n">1</td><td>1 prestige</td></tr>
+        <tr><td class="n">2</td><td>2 prestige</td></tr>
+        <tr><td class="n">3</td><td>4 prestige</td></tr></table>
       <h2>Ending a season</h2>
       <p>The moment any digger's hand is <b>empty</b>, the season ends. Nobody takes another turn. Each digger scores every site they hold, at that season’s value.</p>
       <p>Then clear every site, gather all the cards, shuffle, and deal fresh hands. Nothing carries over. The next digger to the left goes first.</p>
@@ -127,7 +127,7 @@ td.n{font-family:Rye}
         <li>Every card you play makes your hand shorter. Ending the season while you hold the most sites is the cleanest win.</li>
         <li>A big find is safe only until someone brings a bigger one. Watch how many cards your neighbors have left.</li>
         <li>The specimen you send can be a gift or a weight. A lone 1 between two 7s helps nobody.</li>
-        <li>Season three is worth as much as the first two together. Nobody is out of it.</li>
+        <li>Season three is worth more than the first two together. Nobody is out of it.</li>
       </ul>
     </div>
   </div>

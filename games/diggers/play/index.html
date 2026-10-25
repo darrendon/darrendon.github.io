@@ -189,7 +189,7 @@ const SPECIES = [
   { key: "stego", name: "Stegosaurus", rock: "green mudstone", suit: "#3fa155", base: "#5f9460", bands: ["#6aa16a", "#558a56", "#77ad74", "#5c935d", "#669b64"], seed: 37, sym: "M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" },
   { key: "bronto", name: "Brontosaurus", rock: "purple shale", suit: "#8a55c4", base: "#8a6aa8", bands: ["#9677b4", "#7e5f9c", "#a283bf", "#8768a5", "#9172ae"], seed: 41, sym: "M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" },
   { key: "ankylo", name: "Ankylosaurus", rock: "blue slate", suit: "#3a7fc4", base: "#5a84ad", bands: ["#6690b9", "#4f79a2", "#729cc4", "#5a86af", "#6189b2"], seed: 53, sym: "M1.5 12.6L13 11.2L13 13.4L1.5 14.4ZM12 12.2C12 9 14 7 16.6 7.4C18.4 7.6 19.2 8.8 19.4 9.6C21.4 9.8 22.6 11 22.6 12.4C22.6 13.8 21.4 15 19.4 15.2C19.2 16 18.4 17.2 16.6 17.4C14 17.8 12 15.6 12 12.2Z" },
-  { key: "para", name: "Parasaurolophus", rock: "golden limestone", suit: "#e0b52d", base: "#c4a14a", bands: ["#d0ad55", "#b8953f", "#dab863", "#c6a24b", "#bd9b45"], seed: 67, sym: "M2.4 15.6C2.6 12.6 5.4 11.2 8.6 11L12.6 10.4L19.6 2.6C20.4 1.8 21.8 2.6 21.4 3.6L15.8 11.4C17.2 12.6 17.2 15.6 15.2 17C13.8 18 12 18.2 10 18.2L5.4 18.4C3.6 18.4 2.4 17.2 2.4 15.6ZM12.4 13.2A1.3 1.3 0 1 0 12.41 13.2Z" },
+  { key: "ptera", name: "Pteranodon", rock: "golden limestone", suit: "#e0b52d", base: "#c4a14a", bands: ["#d0ad55", "#b8953f", "#dab863", "#c6a24b", "#bd9b45"], seed: 67, sym: "M0.8 15.4L11.2 11.2L13.4 9.8L21.6 2.2C22.4 1.6 23.4 2.4 22.8 3.2L17.2 10.4C18.6 11.8 18.6 14.6 16.8 16C15.2 17.2 12.8 17.2 10.8 16.8L0.8 15.4ZM14.6 12.2A1.3 1.3 0 1 0 14.61 12.2Z" },
 ];
 const BONE_NAMES = ["Jaws", "Skull", "Tail", "Shoulder", "Ribs", "Hips", "Forefoot", "Hind leg", "Hind foot"];
 const BONE_OVERRIDES = {
@@ -198,7 +198,7 @@ const BONE_OVERRIDES = {
   stego: { 1: "Skull", 2: "Neck & plates", 3: "Thagomizer" },
   bronto: { 1: "Skull", 2: "Long neck", 3: "Whip tail" },
   ankylo: { 1: "Skull", 2: "Horns", 3: "Tail club" },
-  para: { 1: "Bill", 2: "Crest" },
+  ptera: { 1: "Wing", 2: "Skull", 3: "Wing" },
 };
 function boneName(sp, v) { const o = BONE_OVERRIDES[SPECIES[sp].key]; return (o && o[v]) || BONE_NAMES[v - 1]; }
 
@@ -351,22 +351,24 @@ const FossilArt = (() => {
       P.detail(c => { c.strokeStyle = "rgba(110,90,60,.6)"; c.lineWidth = 0.7; for (const [x, y, r] of [[34, 87, 4.5], [48, 84, 5], [62, 84, 5], [76, 86, 4.5], [88, 92, 4], [42, 96, 4], [56, 102, 4], [82, 102, 3.6]]) { c.beginPath(); c.arc(x, y, r, 0, 6.283); c.stroke(); } });
       P.holeEll(68, 94, 3.8, 3.4); P.holeEll(16, 95, 3, 2.4);
     },
-    para(P) {
-      P.poly([[12, 62], [40, 66], [66, 64], [74, 62], [70, 70], [44, 72], [18, 68]]);
-      P.poly([[57, 42], [65, 34], [79, 22], [93, 8], [99, 10], [97, 16], [83, 30], [71, 42]], true, { shadeW: 2.4 });
-      P.poly([[5, 58], [10, 50], [22, 46], [38, 44], [54, 40], [66, 38], [76, 42], [80, 50], [76, 60], [62, 64], [40, 64], [20, 64], [8, 62]]);
-      P.detail(c => { c.strokeStyle = HOLE; c.lineWidth = 0.9; c.beginPath(); c.moveTo(66, 38); c.quadraticCurveTo(82, 24, 95, 11); c.stroke(); });
-      P.holeEll(64, 48, 3.6, 3.4); P.holeEll(27, 52, 7, 2.2, -0.1); P.holeEll(72, 56, 2.8, 4.2, 0.2);
+    ptera(P) {
+      P.poly([[4, 47], [40, 49], [70, 49], [74, 52], [42, 55], [12, 51]]);
+      P.poly([[60, 32], [72, 25], [110, 3], [114, 8], [82, 34]], true, { shadeW: 2.4 });
+      P.poly([[0, 43], [26, 38], [52, 33], [66, 30], [76, 33], [80, 40], [74, 47], [44, 47], [16, 46]]);
+      P.holeEll(68, 38, 3.2, 3); P.holeEll(48, 40, 9, 2.6, -0.08);
+      P.detail(c => { c.strokeStyle = "rgba(110,90,60,.6)"; c.lineWidth = 0.7; c.beginPath(); c.moveTo(70, 31); c.quadraticCurveTo(90, 18, 108, 7); c.stroke(); });
     },
   };
 
   // ---------- poses: each returns layers, back to front ----------
+  // Each animal is drawn at natural proportions in its own units (shoulder at 0,0; hips at about 150,0;
+  // y down), then rotated and scaled to fill the 300 x 420 slab (see FIT below).
   function standard(P, k) {
     const bp = resample(spline(k.back, 12), 3);
     const L = [];
     if (k.behind) L.push(...k.behind(bp));
     for (const f of k.far || []) L.push(() => { limb(P.far, f.pts, f.w); if (f.toes) toes(P.far, ...f.toes); });
-    L.push(() => ribs(P, bp, k.rib[0], k.rib[1], k.rib[2], k.ribLen, k.ribLean || 0.3));
+    L.push(() => ribs(P, bp, k.rib[0], k.rib[1], k.rib[2], k.ribLen, k.ribLean || 0.3, k.ribW || 4.2));
     if (k.gast) L.push(() => gastralia(P, ...k.gast));
     L.push(() => { const p = k.pelvis; P.ell(...p.ilium); P.line(p.pubis, p.pw); if (p.boot) P.ell(...p.boot); P.line(p.ischium, p.iw); });
     L.push(() => { vert(P, k.tail, k.tailO); vert(P, k.back, k.backO); });
@@ -377,121 +379,158 @@ const FossilArt = (() => {
     if (k.front) L.push(...k.front(bp));
     return L;
   }
-  const ribLen = (peak, base = 50) => t => Math.max(16, base + peak * Math.sin(Math.PI * Math.min(1, 0.12 + t * 0.9)) - 34 * t);
-  const FOOT_L = [LEFT - 0.55, LEFT - 0.2, LEFT - 0.9];
-  const FOOT_R = [0.15, -0.2, 0.45];
-  // torso shared by most species: shoulders left, hips right, head thrown back over the shoulders
-  const BACK = [[84, 206], [118, 192], [170, 188], [222, 212]];
-  const TAIL = [[222, 212], [252, 214], [278, 198], [292, 164], [292, 124], [280, 88], [262, 62], [240, 48], [222, 54]];
-  const NECK = [[150, 92], [140, 128], [114, 162], [84, 206]];
-  const PELVIS = { ilium: [220, 206, 34, 13, 0.05], pubis: [[210, 218], [190, 262]], pw: 7, ischium: [[232, 220], [252, 262]], iw: 6 };
-  const FORE = (w = 1) => ({ pts: [[92, 200], [70, 236], [48, 288], [52, 346], [34, 370]], w: [9, 13, 11, 7].map(x => x * w), toes: [34, 370, FOOT_L, 14, 4.6 * w] });
-  const HIND = (w = 1) => ({ pts: [[226, 222], [184, 300], [222, 358], [250, 380]], w: [16, 13, 8.5].map(x => x * w), toes: [250, 380, FOOT_R, 20, 5 * w] });
-  const FAR_FORE = (w = 1) => ({ pts: [[106, 210], [98, 268], [104, 326], [88, 352]], w: [12, 10, 7].map(x => x * w), toes: [88, 352, FOOT_L, 12, 4.2 * w] });
-  const FAR_HIND = (w = 1) => ({ pts: [[214, 222], [158, 290], [162, 352], [140, 374]], w: [14, 11, 7.5].map(x => x * w), toes: [140, 374, FOOT_L, 15, 4.6 * w] });
+  const ribLen = (peak, base) => t => Math.max(14, base + peak * Math.sin(Math.PI * Math.min(1, 0.1 + t * 0.92)) - 30 * t);
+  const FL = [LEFT - 0.55, LEFT - 0.2, LEFT - 0.9], FR = [0.15, -0.2, 0.45], FD = [DOWN + 0.6, DOWN + 0.2, DOWN - 0.2];
+  const along = (path, every, fn, from = 2) => { for (let i = from; i < path.length - 2; i += every) { const q = path[i + 1], r = path[i - 1]; const a = Math.atan2(q[1] - r[1], q[0] - r[0]); fn(path[i], Math.sin(a), -Math.cos(a), a); } };
 
   const POSE = {
+    // Tyrannosaurus: big skull on an S-shaped neck, tiny arms, long hind legs, tail about twice the body
     rex: P => standard(P, {
-      key: "rex", skull: { at: [152, 92], anchor: [97, 60], k: 1.4, rot: 0.1 },
-      neck: NECK, neckO: { step: 7, size: () => 15, spine: () => 8, cervical: () => 9 },
-      back: BACK, backO: { step: 8, size: () => 15, spine: () => 16 },
-      tail: TAIL, tailO: { step: 8, size: t => 15 - 7 * t, spine: t => 12 * (1 - t * .7), chevron: t => 12 * (1 - t * .7) },
-      rib: [94, 206, 11], ribLen: ribLen(78),
-      pelvis: { ...PELVIS, pubis: [[210, 218], [188, 268]], pw: 8, boot: [186, 273, 17, 7, 0.1] },
-      fore: { pts: [[94, 202], [82, 228], [74, 250], [70, 266]], w: [8, 6.5, 5.5], toes: [70, 266, [DOWN + 0.7, DOWN + 0.2], 12, 3] },
-      hind: HIND(1.3),
-      far: [{ pts: [[214, 222], [150, 288], [94, 330], [62, 360]], w: [17, 14, 9], toes: [62, 360, FOOT_L, 22, 4.6] }],
+      key: "rex", skull: { at: [34, -84], anchor: [97, 60], k: 0.98, rot: -0.95, flip: true },
+      neck: [[32, -82], [8, -66], [-6, -36], [0, 0]], neckO: { step: 8, size: () => 16, spine: () => 9, cervical: () => 10 },
+      back: [[0, 0], [40, -12], [100, -14], [150, 4]], backO: { step: 9, size: () => 17, spine: () => 20 },
+      tail: [[150, 4], [188, 2], [218, -18], [238, -50], [244, -88], [236, -124], [214, -152], [186, -168], [156, -172]],
+      tailO: { step: 9, size: t => 17 - 10 * t, spine: t => 15 * (1 - t * .7), chevron: t => 14 * (1 - t * .7) },
+      rib: [10, 140, 13], ribLen: ribLen(52, 38), ribW: 4.6,
+      pelvis: { ilium: [146, -2, 42, 15, 0.05], pubis: [[138, 10], [112, 72]], pw: 10, boot: [110, 78, 22, 9, 0.1], ischium: [[160, 12], [186, 62]], iw: 8 },
+      fore: { pts: [[10, -6], [-2, 26], [-12, 44], [-16, 56]], w: [10, 7.5, 6], toes: [-16, 56, [DOWN + 0.7, DOWN + 0.2], 9, 3.2] },
+      hind: { pts: [[154, 10], [118, 94], [160, 162], [198, 190]], w: [21, 16, 10.5], toes: [198, 190, FR, 30, 6] },
+      far: [{ pts: [[144, 10], [92, 82], [78, 152], [42, 180]], w: [18, 14, 9.5], toes: [42, 180, FL, 27, 5.5] }],
     }),
+    // Triceratops: a skull three-quarters as long as the body, short neck, sprawling forelegs shorter than the hind
     tri: P => standard(P, {
-      key: "tri", skull: { at: [156, 104], anchor: [80, 74], k: 1.32, rot: 0.08 },
-      neck: [[154, 104], [140, 134], [114, 164], [84, 206]], neckO: { step: 8, size: () => 16, spine: () => 6 },
-      back: BACK, backO: { step: 8, size: () => 15.5, spine: () => 13 },
-      tail: [[222, 212], [252, 214], [278, 198], [292, 164], [290, 128], [276, 100]], tailO: { step: 8, size: t => 15 - 7 * t, spine: t => 10 * (1 - t * .7), chevron: t => 10 * (1 - t * .7) },
-      rib: [94, 208, 11], ribLen: ribLen(84),
-      pelvis: PELVIS,
-      fore: FORE(1.4), hind: HIND(1.35), far: [FAR_FORE(1.35), FAR_HIND(1.3)],
+      key: "tri", skull: { at: [-10, -32], anchor: [80, 72], k: 1.15, rot: 1.25 },
+      neck: [[-10, -30], [-8, -14], [0, 0]], neckO: { step: 9, size: () => 18, spine: () => 7 },
+      back: [[0, 0], [40, -10], [100, -12], [150, 2]], backO: { step: 9, size: () => 18, spine: () => 15 },
+      tail: [[150, 2], [184, -4], [210, -26], [222, -58], [218, -92], [202, -118]],
+      tailO: { step: 9, size: t => 17 - 9 * t, spine: t => 12 * (1 - t * .7), chevron: t => 12 * (1 - t * .7) },
+      rib: [10, 140, 12], ribLen: ribLen(58, 44), ribW: 4.8,
+      pelvis: { ilium: [146, -2, 44, 16, 0.02], pubis: [[136, 10], [114, 48]], pw: 9, ischium: [[160, 12], [186, 58]], iw: 9 },
+      fore: { pts: [[12, -4], [-6, 36], [-22, 86], [-12, 130], [-22, 150]], w: [12, 18, 15, 10], toes: [-22, 150, FD, 13, 6] },
+      hind: { pts: [[154, 8], [130, 84], [158, 136], [184, 160]], w: [23, 18, 11.5], toes: [184, 160, FR, 20, 6.5] },
+      far: [
+        { pts: [[24, 4], [16, 64], [28, 112], [20, 136]], w: [16, 13, 9], toes: [20, 136, FL, 12, 5.5] },
+        { pts: [[142, 8], [100, 74], [102, 128], [80, 152]], w: [19, 16, 10], toes: [80, 152, FL, 17, 6] },
+      ],
     }),
+    // Stegosaurus: tiny head, short forelegs, hips high, big plates, four tail spikes
     stego: P => standard(P, {
-      key: "stego", skull: { at: [142, 96], anchor: [84, 104], k: 1.4, rot: 0.12 },
-      neck: [[140, 98], [134, 128], [112, 166], [84, 210]], neckO: { step: 7, size: t => 10 + 4 * t, spine: () => 4, cervical: () => 7 },
-      back: [[84, 210], [118, 186], [170, 176], [222, 204]], backO: { step: 8, size: () => 15, spine: () => 9 },
-      tail: [[222, 204], [252, 210], [278, 196], [292, 162], [292, 120], [280, 84], [264, 60]], tailO: { step: 8, size: t => 14.5 - 6 * t, spine: t => 8 * (1 - t * .7), chevron: t => 10 * (1 - t * .7) },
-      rib: [94, 208, 11], ribLen: ribLen(86),
-      pelvis: { ...PELVIS, ilium: [218, 198, 34, 12, 0.15] },
-      fore: FORE(1.25), hind: HIND(1.3), far: [FAR_FORE(1.2), FAR_HIND(1.25)],
+      key: "stego", skull: { at: [-22, -78], anchor: [84, 104], k: 0.44, rot: -1.1, flip: true },
+      neck: [[-22, -76], [-30, -50], [-22, -22], [0, 0]], neckO: { step: 7, size: t => 9 + 5 * t, spine: () => 4, cervical: () => 7 },
+      back: [[0, 0], [50, -34], [110, -46], [150, -28]], backO: { step: 9, size: () => 17, spine: () => 9 },
+      tail: [[150, -28], [184, -36], [210, -60], [222, -92], [218, -126], [202, -152], [180, -166]],
+      tailO: { step: 9, size: t => 16 - 8 * t, spine: t => 8 * (1 - t * .7), chevron: t => 11 * (1 - t * .7) },
+      rib: [10, 140, 12], ribLen: ribLen(56, 40), ribW: 4.6,
+      pelvis: { ilium: [140, -30, 40, 14, 0.12], pubis: [[130, -18], [108, 28]], pw: 8, ischium: [[152, -16], [178, 24]], iw: 8 },
+      fore: { pts: [[10, -10], [-6, 26], [-14, 66], [-8, 100], [-16, 118]], w: [11, 15, 12.5, 8.5], toes: [-16, 118, FD, 12, 5.5] },
+      hind: { pts: [[146, -20], [126, 66], [150, 124], [176, 148]], w: [21, 16.5, 10.5], toes: [176, 148, FR, 18, 6] },
+      far: [
+        { pts: [[22, -6], [16, 44], [26, 86], [18, 104]], w: [14, 11, 8], toes: [18, 104, FL, 11, 5] },
+        { pts: [[136, -20], [96, 56], [100, 114], [78, 138]], w: [18, 14, 9.5], toes: [78, 138, FL, 15, 5.5] },
+      ],
       behind: bp => {
+        const tp = resample(spline([[150, -28], [184, -36], [210, -60], [222, -92], [218, -126], [202, -152], [180, -166]], 12), 3);
         const plate = (x, y, w, h, lean) => P.poly([[x - w / 2, y + 3], [x - w * 0.5, y - h * 0.38], [x - w * 0.1 + lean, y - h], [x + w * 0.42 + lean * 0.5, y - h * 0.58], [x + w / 2, y + 3]], true, { shadeW: 5 });
-        const plates = []; const xs = [128, 142, 156, 170, 184, 198, 212, 226];
-        xs.forEach((x, i) => { const y = yAt(bp, x) - 4; const h = 30 + 50 * Math.sin(Math.PI * (0.2 + 0.7 * i / (xs.length - 1))); plates.push([x + (i % 2 ? 4 : 0), y, 22 + h * 0.24, h, 5]); });
+        const plates = [];
+        [[22, 26], [40, 36], [60, 46], [80, 56], [100, 62], [120, 62], [140, 54]].forEach(([x, h], i) => plates.push([x + (i % 2 ? 5 : 0), yAt(bp, x) - 6, 22 + h * 0.3, h, 6]));
         return [() => {
           for (const p of plates) plate(...p);
           P.detail(c => { c.strokeStyle = "rgba(110,90,60,.5)"; c.lineWidth = 0.7; for (const [x, y, w, h] of plates) for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(x + k * w * 0.12, y); c.lineTo(x + k * w * 0.18 + 2, y - h * 0.78); c.stroke(); } });
         }];
       },
-      front: () => [() => { for (const [x, y, dx, dy] of [[266, 64, 30, -14], [270, 72, 32, 0], [260, 58, -4, -30], [268, 62, 8, -32]]) P.poly([[x - 4.5, y + 2], [x + 4.5, y - 2], [x + dx, y + dy]], false); }],
+      front: () => [() => { for (const [x, y, dx, dy] of [[190, -160, -10, -32], [196, -156, 4, -34], [204, -150, 30, -20], [208, -144, 34, -6]]) P.poly([[x - 5, y + 2], [x + 5, y - 2], [x + dx, y + dy]], false); }],
     }),
+    // Brontosaurus: small head on a neck over twice the body, a long whip tail, pillar legs
     bronto: P => standard(P, {
-      key: "bronto", skull: { at: [76, 44], anchor: [42, 20], k: 1.8, rot: 0.15 },
-      neck: [[76, 42], [104, 26], [138, 30], [162, 58], [166, 102], [150, 150], [120, 184], [84, 206]], neckO: { step: 7.5, size: t => 9 + 8 * t, spine: t => 4 + 5 * t, cervical: t => 10 + 7 * t },
-      back: BACK, backO: { step: 8.5, size: () => 16.5, spine: () => 15 },
-      tail: [[222, 212], [252, 214], [280, 196], [294, 160], [294, 118], [282, 82], [260, 58], [234, 52], [216, 64], [212, 88], [226, 102], [244, 98], [248, 84]],
-      tailO: { step: 7.5, size: t => 16 - 11.5 * Math.pow(t, 0.7), spine: t => 12 * Math.max(0, 1 - t * 1.4), chevron: t => t < 0.7 ? 11 * (1 - t) : 0 },
-      rib: [96, 208, 11], ribLen: ribLen(84),
-      pelvis: { ...PELVIS, ilium: [220, 206, 34, 15, 0.05], pw: 8, iw: 7.5 },
-      fore: { ...FORE(1.5), toes: [34, 370, [LEFT - 0.4, LEFT - 0.8], 9, 6] }, hind: { ...HIND(1.45), toes: [250, 380, [0.1, -0.25], 13, 6] },
-      far: [{ ...FAR_FORE(1.45), toes: [88, 352, [LEFT - 0.4, LEFT - 0.8], 8, 5.4] }, { ...FAR_HIND(1.4), toes: [140, 374, [LEFT - 0.3, LEFT - 0.7], 11, 5.6] }],
+      key: "bronto", skull: { at: [72, -172], anchor: [42, 20], k: 0.85, rot: 0.35, flip: true },
+      neck: [[70, -170], [40, -188], [6, -186], [-26, -166], [-46, -132], [-52, -92], [-44, -54], [-24, -22], [0, 0]],
+      neckO: { step: 9, size: t => 9 + 9 * t, spine: t => 4 + 6 * t, cervical: t => 10 + 8 * t },
+      back: [[0, 0], [36, -10], [84, -10], [120, 4]], backO: { step: 9, size: () => 18, spine: () => 17 },
+      tail: [[120, 4], [156, 10], [192, 10], [226, 0], [254, -22], [272, -54], [276, -92], [264, -126], [240, -150], [210, -160], [182, -154], [166, -136]],
+      tailO: { step: 8, size: t => 17 - 12 * Math.pow(t, 0.7), spine: t => 13 * Math.max(0, 1 - t * 1.4), chevron: t => t < 0.7 ? 12 * (1 - t) : 0 },
+      rib: [10, 112, 11], ribLen: ribLen(52, 40), ribW: 4.8,
+      pelvis: { ilium: [116, -4, 38, 16, 0.02], pubis: [[106, 8], [92, 46]], pw: 9, ischium: [[128, 8], [146, 44]], iw: 8.5 },
+      fore: { pts: [[12, -6], [-4, 32], [-10, 92], [-6, 140], [-14, 160]], w: [12, 19, 16, 10.5], toes: [-14, 160, [LEFT - 0.4, LEFT - 0.8], 9, 6.5] },
+      hind: { pts: [[122, 4], [112, 82], [122, 136], [140, 158]], w: [22, 18, 11.5], toes: [140, 158, [0.1, -0.25], 12, 6.5] },
+      far: [
+        { pts: [[26, 0], [24, 64], [30, 118], [24, 142]], w: [17, 14, 9.5], toes: [24, 142, [LEFT - 0.4, LEFT - 0.8], 8, 5.5] },
+        { pts: [[110, 4], [90, 78], [94, 132], [80, 154]], w: [20, 16, 10.5], toes: [80, 154, [LEFT - 0.3, LEFT - 0.7], 11, 6] },
+      ],
     }),
+    // Ankylosaurus: low and wide, short legs, armour over everything, a heavy tail club
     ankylo: P => {
-      const neck = [[150, 104], [140, 136], [116, 168], [86, 212]];
-      const back = [[86, 212], [118, 200], [170, 196], [222, 214]];
-      const tail = [[222, 214], [252, 216], [278, 200], [292, 166], [290, 128], [276, 100], [258, 84]];
+      const neck = [[-30, -64], [-26, -40], [-14, -16], [0, 0]], back = [[0, 0], [40, -8], [100, -10], [150, 0]];
+      const tail = [[150, 0], [184, -6], [208, -30], [218, -62], [212, -96], [192, -122]];
       return standard(P, {
-        key: "ankylo", skull: { at: [154, 104], anchor: [98, 100], k: 1.3, rot: 0.06 },
-        neck, neckO: { step: 8, size: () => 13.5, spine: () => 3 },
-        back, backO: { step: 8, size: () => 15, spine: () => 6 },
-        tail, tailO: { step: 8, size: t => 14 - 5 * t, spine: t => 5 * (1 - t), chevron: t => 7 * (1 - t) },
-        rib: [96, 208, 11], ribLen: ribLen(70, 44), ribLean: 0.36,
-        pelvis: { ...PELVIS, ilium: [220, 208, 38, 15, 0], pw: 7.5, iw: 7 },
-        fore: FORE(1.45), hind: HIND(1.4), far: [FAR_FORE(1.4), FAR_HIND(1.35)],
+        key: "ankylo", skull: { at: [-30, -66], anchor: [98, 100], k: 0.62, rot: 1.15 },
+        neck, neckO: { step: 9, size: () => 16, spine: () => 3 },
+        back, backO: { step: 9, size: () => 17, spine: () => 6 },
+        tail, tailO: { step: 9, size: t => 16 - 6 * t, spine: t => 5 * (1 - t), chevron: t => 8 * (1 - t) },
+        rib: [10, 140, 12], ribLen: ribLen(40, 34), ribLean: 0.36, ribW: 4.8,
+        pelvis: { ilium: [146, -4, 48, 17, 0], pubis: [[136, 8], [122, 38]], pw: 9, ischium: [[160, 8], [180, 38]], iw: 8 },
+        fore: { pts: [[12, -4], [-2, 26], [-12, 62], [-6, 92], [-14, 106]], w: [11, 16, 13.5, 9.5], toes: [-14, 106, FD, 11, 6] },
+        hind: { pts: [[150, 6], [134, 60], [150, 98], [168, 114]], w: [21, 16.5, 11], toes: [168, 114, FR, 15, 6.5] },
+        far: [
+          { pts: [[24, 0], [20, 40], [28, 74], [20, 90]], w: [14, 12, 8.5], toes: [20, 90, FL, 10, 5.5] },
+          { pts: [[138, 6], [110, 52], [114, 90], [96, 106]], w: [18, 14, 9.5], toes: [96, 106, FL, 13, 6] },
+        ],
         front: bp => {
           const nk = resample(spline(neck, 12), 3), tl = resample(spline(tail, 12), 3);
-          const along = (path, every, fn) => { for (let i = 2; i < path.length - 2; i += every) { const q = path[i + 1], r = path[i - 1]; const a = Math.atan2(q[1] - r[1], q[0] - r[0]); fn(path[i], Math.sin(a), -Math.cos(a), a); } };
           return [() => {
-            along(bp, 5, (p, nx, ny, a) => { P.ell(p[0] + nx * 13, p[1] + ny * 13, 7.5, 5.4, a, { shadeW: 3.4 }); });
-            along(bp, 10, (p, nx, ny) => { P.poly([[p[0] + nx * 17 - 5, p[1] + ny * 17], [p[0] + nx * 17 + 5, p[1] + ny * 17], [p[0] + nx * 31 + 7, p[1] + ny * 31]], false); });
-            along(tl, 6, (p, nx, ny, a) => { P.ell(p[0] + nx * 11, p[1] + ny * 11, 6, 4.4, a, { shadeW: 3 }); });
-            along(nk.slice(8), 14, (p, nx, ny) => { P.line([[p[0] - nx * 12, p[1] - ny * 12], [p[0] + nx * 12, p[1] + ny * 12]], 7.5); });
-            P.ell(248, 70, 19, 12, -0.9); P.ell(262, 84, 18, 11, -0.9); P.ell(252, 82, 13, 13);
+            along(bp, 5, (p, nx, ny, a) => P.ell(p[0] + nx * 15, p[1] + ny * 15, 8.5, 6, a, { shadeW: 3.6 }));
+            along(bp, 9, (p, nx, ny) => P.poly([[p[0] + nx * 19 - 5, p[1] + ny * 19], [p[0] + nx * 19 + 5, p[1] + ny * 19], [p[0] + nx * 34 + 8, p[1] + ny * 34]], false));
+            along(tl, 6, (p, nx, ny, a) => P.ell(p[0] + nx * 12, p[1] + ny * 12, 7, 5, a, { shadeW: 3.2 }), 2);
+            along(nk, 4, (p, nx, ny) => P.line([[p[0] - nx * 13, p[1] - ny * 13], [p[0] + nx * 14, p[1] + ny * 14]], 8), 2);
+            P.ell(172, -132, 22, 14, 0.5); P.ell(186, -150, 20, 13, 0.5); P.ell(180, -140, 15, 15);
           }];
         },
       });
     },
-    para: P => {
-      return standard(P, {
-        key: "para", skull: { at: [140, 98], anchor: [76, 58], k: 1.35, rot: 0.1 },
-        neck: [[138, 98], [134, 130], [112, 164], [84, 206]], neckO: { step: 7, size: () => 13.5, spine: () => 7, cervical: () => 7 },
-        back: BACK, backO: { step: 7.5, size: () => 14, spine: () => 17 },
-        tail: TAIL, tailO: { step: 7.5, size: t => 14 - 7 * t, spine: t => 16 * (1 - t * .7), chevron: t => 14 * (1 - t * .7) },
-        rib: [94, 206, 11], ribLen: ribLen(78),
-        pelvis: { ...PELVIS, pubis: [[208, 218], [176, 250]], pw: 6, boot: [174, 252, 10, 6, 0.4], iw: 5.5 },
-        fore: { ...FORE(0.85), toes: [34, 370, FOOT_L, 13, 3.8] }, hind: HIND(1.15), far: [{ ...FAR_FORE(0.8) }, FAR_HIND(1.05)],
-        front: bp => {
-          const tail = resample(spline(TAIL, 12), 3);
-          return [() => P.detail(c => {
-            c.strokeStyle = "rgba(240,230,205,.8)"; c.lineWidth = 0.7;
-            const path = [...bp.filter(p => p[0] > 150), ...tail.slice(0, Math.floor(tail.length * 0.75))];
-            for (let i = 0; i < path.length - 8; i += 3) {
-              const p = path[i], q = path[i + 8];
-              const ang = Math.atan2(q[1] - p[1], q[0] - p[0]), nx = Math.sin(ang), ny = -Math.cos(ang);
-              c.beginPath(); c.moveTo(p[0] + nx * 14, p[1] + ny * 14); c.lineTo(q[0] + nx * 5, q[1] + ny * 5); c.stroke();
-              c.beginPath(); c.moveTo(p[0] + nx * 5, p[1] + ny * 5); c.lineTo(q[0] + nx * 14, q[1] + ny * 14); c.stroke();
-            }
-          })];
-        },
-      });
+    // Pteranodon: splayed as found, wings spread, the long wing finger sweeping up to each corner
+    ptera: P => {
+      const wing = sx => {
+        const X = x => x * sx;
+        return {
+          arm: [[X(-8), -26], [X(-50), 14], [X(-96), 96]],
+          mc: [[X(-96), 96], [X(-146), 40]],
+          finger: [[X(-146), 40], [X(-156), -24], [X(-157), -86], [X(-149), -140], [X(-134), -186]],
+          leg: [[X(-8), 32], [X(-24), 76], [X(-20), 126], [X(-30), 142]],
+          memb: [[X(-8), -18], [X(-50), 14], [X(-96), 96], [X(-146), 40], [X(-156), -24], [X(-157), -86], [X(-149), -140], [X(-134), -186], [X(-112), -140], [X(-80), -80], [X(-46), -30], [X(-20), 40]],
+        };
+      };
+      const W = [wing(1), wing(-1)];
+      return [
+        () => P.detail(c => { for (const w of W) { c.beginPath(); closedSmooth(c, w.memb); c.fillStyle = "rgba(40,24,10,.16)"; c.fill(); c.strokeStyle = "rgba(40,24,10,.3)"; c.lineWidth = 1; c.stroke(); } }),
+        () => { for (const w of W) { limb(P.far, w.leg, [9, 7.5, 5]); toes(P.far, w.leg[3][0], w.leg[3][1], w === W[0] ? FL : FR, 9, 3); } },
+        () => { for (let i = 0; i < 6; i++) { const y = -18 + i * 9, L = 30 - Math.abs(i - 2) * 4; P.line(spline([[0, y], [-L * 0.8, y + 6], [-L, y + 16]], 5), 3.4); P.line(spline([[0, y], [L * 0.8, y + 6], [L, y + 16]], 5), 3.4); } },
+        () => { P.ell(0, 30, 16, 10, 0); vert(P, [[0, -40], [0, -10], [0, 22], [0, 48]], { step: 7, size: () => 11, spine: () => 0 }); },
+        () => vert(P, [[6, -78], [2, -62], [0, -40]], { step: 6, size: () => 11, spine: () => 3 }),
+        () => { for (const w of W) {
+          P.line(w.arm.slice(0, 2), 12); P.knob(w.arm[1][0], w.arm[1][1], 8);
+          P.line(w.arm.slice(1), 8); P.line([[w.arm[1][0], w.arm[1][1] + 6], [w.arm[2][0], w.arm[2][1] + 4]], 5); P.knob(w.arm[2][0], w.arm[2][1], 8);
+          P.line(w.mc, 9); P.knob(w.mc[1][0], w.mc[1][1], 7.5);
+          for (let i = 0; i < w.finger.length - 1; i++) { P.line([w.finger[i], w.finger[i + 1]], 7.5 - i * 1.4); if (i) P.knob(w.finger[i][0], w.finger[i][1], 5.5 - i); }
+          toes(P, w.mc[1][0], w.mc[1][1], w === W[0] ? [0.3, 0.8, 1.3] : [Math.PI - 0.3, Math.PI - 0.8, Math.PI - 1.3], 12, 2.6);
+        } },
+        () => P.place({ at: [6, -80], anchor: [76, 44], k: 1.25, rot: 0 }, () => SKULL.ptera(P)),
+      ];
     },
   };
-
+  // fit each animal to the slab: rotate it, then scale and centre it inside the 300 x 420 world
+  const FIT_ROT = { rex: 0, tri: 0, stego: 0, bronto: 0.05, ankylo: 0, ptera: 0 };
+  const fitCache = {};
+  function fit(key) {
+    if (fitCache[key]) return fitCache[key];
+    const N = 1600, cv = document.createElement("canvas"); cv.width = cv.height = N;
+    const c = cv.getContext("2d", { willReadFrequently: true });
+    c.translate(N / 2, N / 2); c.rotate(FIT_ROT[key]);
+    POSE[key](pen(c, "out")).forEach(g => g());
+    const d = c.getImageData(0, 0, N, N).data; let x0 = N, x1 = 0, y0 = N, y1 = 0;
+    for (let y = 0; y < N; y += 2) for (let x = 0; x < N; x += 2) if (d[(y * N + x) * 4 + 3] > 20) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    const M = 8, k = Math.min((WW - 2 * M) / (x1 - x0), (WH - 2 * M) / (y1 - y0));
+    const tx = M + ((WW - 2 * M) - k * (x1 - x0)) / 2 - k * (x0 - N / 2), ty = M + ((WH - 2 * M) - k * (y1 - y0)) / 2 - k * (y0 - N / 2);
+    return (fitCache[key] = { k, tx, ty, rot: FIT_ROT[key] });
+  }
   // ---------- rock ----------
   function rock(ctx, sp, W, H, s) {
     const r = rng(sp.seed);
@@ -582,7 +621,8 @@ const FossilArt = (() => {
     const mk = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; return c; };
     // bones on their own layer
     const bones = mk(), bc = bones.getContext("2d");
-    bc.save(); bc.scale(s, s); bc.translate(pad, pad);
+    const F = fit(sp.key);
+    bc.save(); bc.scale(s, s); bc.translate(pad, pad); bc.translate(F.tx, F.ty); bc.scale(F.k, F.k); bc.rotate(F.rot);
     const n = POSE[sp.key](pen(bc, "out")).length;
     for (let g = 0; g < n; g++) for (const mode of ["out", "fill", "shade", "detail"]) POSE[sp.key](pen(bc, mode))[g]();
     bc.restore();
@@ -636,12 +676,12 @@ function cardName(c) { return `${SPECIES[SP(c)].name} ${V(c)}`; }
 
 // ===================== RULES ENGINE =====================
 const CONFIG = {
-  2: { maxVal: 7, hand: 12, lanes: [[0,1],[0,1],[0,1]] },
-  3: { maxVal: 9, hand: 11, lanes: [[0,1],[1,2],[2,0]] },
-  4: { maxVal: 9, hand: 10, lanes: [[0,1],[1,2],[2,3],[3,0]] },
+  2: { maxVal: 9, species: 4, hand: 12, lanes: [[0,1],[0,1],[0,1]] },
+  3: { maxVal: 9, species: 5, hand: 11, lanes: [[0,1],[1,2],[2,0]] },
+  4: { maxVal: 9, species: 6, hand: 10, lanes: [[0,1],[1,2],[2,3],[3,0]] },
 };
 const ROUND_VALUES = [1, 2, 4];
-const ROUND_CAPS = [3, 4, 5];
+const ROUND_CAPS = [4, 4, 4];
 let CAP = ROUND_CAPS[0];
 const TURN_CAP = 400;
 const NAMES = ["You", "Ashworth", "Penrose", "Hale"];
@@ -705,12 +745,12 @@ function dealRound(G) {
   CAP = ROUND_CAPS[G.round];
   G.last = null;
   const pool = [];
-  for (let v = 1; v <= G.cfg.maxVal; v++) for (let k = 0; k < 6; k++) pool.push(k * 10 + v);
+  for (let v = 1; v <= G.cfg.maxVal; v++) for (let k = 0; k < G.cfg.species; k++) pool.push(k * 10 + v);
   shuffle(pool);
   for (let k = 0; k < G.cfg.hand; k++) for (const p of G.players) p.hand.push(pool.pop());
   G.first = G.round % G.n; G.turn = G.first; G.turnCount = 0; G.phase = "play"; G.offer = null;
   const v = ROUND_VALUES[G.round];
-  addLog(G, `Season ${G.round + 1} opens. Each site is worth ${v} prestige, and finds may run up to ${CAP} bones.`);
+  addLog(G, `Season ${G.round + 1} opens. Each site is worth ${v} prestige.`);
 }
 function addLog(G, msg) { G.log.unshift(msg); if (G.log.length > 40) G.log.pop(); }
 
@@ -913,7 +953,7 @@ function centerHtml() {
     <div class="eyebrow">Season ${G.round + 1} of 3</div>
     <div class="big">${v}</div>
     <div class="small">prestige per site</div>
-    <div class="small">finds up to ${ROUND_CAPS[G.round]} bones</div>
+    <div class="small">finds up to ${CAP} bones</div>
     <div class="seasons">${ROUND_VALUES.map((x, k) => `<span class="${k === G.round ? "on" : ""}">${x}</span>`).join("")}</div>
   </div>`;
 }
@@ -946,7 +986,7 @@ function statusHtml() {
     const cards = ui.sel.map(k => me.hand[k]); const inf = meldInfo(cards);
     who = inf ? `Selected: ${describe(cards)}` : "Those bones don't belong together";
     const legal = inf ? myLanes(G, 0).filter(i => canPlayOn(G, i, inf)) : [];
-    hint = !inf ? `A spine runs in order (3-4-5 or 5-4-3); a bone bed is all one number. Finds this season run up to ${CAP} bones.` :
+    hint = !inf ? `A spine runs in order (3-4-5 or 5-4-3); a bone bed is all one number. Finds run up to ${CAP} bones.` :
       legal.length ? "Tap a highlighted site to excavate it there." : "It doesn't outshine any find beside your camp. Change the selection or poach instead.";
   } else {
     who = "Your turn to dig";
@@ -991,7 +1031,7 @@ function overlayHtml() {
   if (G.phase === "roundEnd") {
     return `<div class="overlay"><div class="modal" role="dialog" aria-label="Season results">
       <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}
-      <p>Every site is cleared and each camp gets a fresh rock face of ${G.cfg.hand}. Next season, sites are worth ${ROUND_VALUES[r.round + 1]} prestige and finds may run up to ${ROUND_CAPS[r.round + 1]} bones.</p>
+      <p>Every site is cleared and each camp gets a fresh rock face of ${G.cfg.hand}. Next season, sites are worth ${ROUND_VALUES[r.round + 1]} prestige.</p>
       <button class="primary" data-act="nextround">Open season ${r.round + 2}</button></div></div>`;
   }
   const st = standings(G);
@@ -1011,11 +1051,11 @@ function rulesHtml() {
   const c = G ? G.cfg : CONFIG[ui.setupN];
   return `<details class="rules" data-key="rules" ${ui.open.rules ? "open" : ""}><summary>Rules reference</summary><ul>
     <li><b>Your rock face is locked.</b> Fossils sit in the order they were dealt, and you can't rearrange them. It only changes when fossils come out or are set in.</li>
-    <li><b>Excavate:</b> take adjacent fossils, up to the season's limit (3, then 4, then 5), that form a <i>spine</i> (consecutive numbers in order, like 3-4-5) or a <i>bone bed</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more bones, then a bone bed over a spine, then the higher total. The old find is discarded and the site is yours.</li>
+    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>spine</i> (consecutive numbers in order, like 3-4-5) or a <i>bone bed</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more bones, then a bone bed over a spine, then the higher total. The old find is discarded and the site is yours.</li>
     <li><b>Poach:</b> take an end bone from a find at a site beside your camp and set it anywhere in your rock face. Then send any fossil from your rock face to the rival across that site. They keep it or turn it away, and a turned-away fossil is out of the dig this season.</li>
     <li><b>Closing a season:</b> the moment a digger's rock face is empty. Each site you hold earns prestige: 1 in the first season, 2 in the second, 4 in the third.</li>
     <li><b>Between seasons:</b> every site and rock face is cleared, the deck is reshuffled, and each camp gets ${c.hand} fresh fossils.</li>
-    <li><b>Deck:</b> remove the 8s and 9s for two diggers. Three and four diggers use all 54.</li>
+    <li><b>Deck:</b> two diggers play with four species (36 cards), three with five (45), four with all six (54).</li>
     <li><b>Tiebreaker:</b> most seasons closed by finishing your dig, then most prestige in the final season.</li>
   </ul></details>`;
 }
@@ -1027,16 +1067,16 @@ function catalogueHtml() {
       <figcaption><b style="--suit:${sp.suit}">${symSvg(s, "sym")}${sp.name}</b><span>${sp.rock}</span></figcaption>
     </figure>`).join("");
   return `<details class="rules catalogue" data-key="cat" ${ui.open.cat ? "open" : ""}><summary>The six skeletons</summary>
-    <p class="cat-note">Every number is a bone, and the six copies of each number come from six different dinosaurs, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species is only art; it never changes play. With two diggers the 8s and 9s stay in the box.</p>
+    <p class="cat-note">Every number is a bone, and the copies of each number come from different animals, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species is only art; it never changes play, though two diggers use four species and three use five.</p>
     <div class="slabs">${slabs}</div></details>`;
 }
 
 function setupHtml() {
-  const desc = { 2: "One rival · three sites between your camps · fossils 1–7 · 12 in your rock face", 3: "Two rivals · a site with each neighbor · fossils 1–9 · 11 in your rock face", 4: "Three rivals · a site with each neighbor · fossils 1–9 · 10 in your rock face" };
+  const desc = { 2: "One rival · three sites between your camps · four species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · five species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all six species · 10 in your rock face" };
   return `<div class="top"><div><div class="eyebrow">Playtest table</div><h1>Diggers</h1>
     <p class="sub">Rival paleontologists, three field seasons, and dig sites that go to whoever brings up the finer skeleton.</p></div></div>
   <div class="setup">
-    <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can run 3, then 4, then 5 bones.</p></div>
+    <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can run up to 4 bones.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
     <div class="actions"><button class="primary" data-act="start">Open the first season</button></div>
   </div>${rulesHtml()}${catalogueHtml()}`;
