@@ -12,6 +12,7 @@
   --soft:#BFC8CD;
   --red:#FF8A6B;
   --gold:#F5D27A;
+  --hot:#F0603F;
   --slot:#6F7E87;
   --line:rgba(242,236,218,.16);
   --line2:rgba(242,236,218,.07);
@@ -52,10 +53,12 @@ body.all .sheet{zoom:1;width:7.0in;margin:0 auto;display:grid;grid-template-colu
   letter-spacing:1.1px;color:var(--gold);line-height:1;white-space:nowrap}
 .tico svg{height:11px;width:11px;display:block;fill:var(--gold);stroke:var(--gold)}
 
-/* the score, ghosted into the paper */
-.mark{position:absolute;right:-.30in;bottom:-.30in;width:1.22in;height:1.22in;
-  opacity:.08;pointer-events:none;transform:rotate(-12deg)}
-.mark svg{width:100%;height:100%;display:block;fill:var(--ink);stroke:var(--ink)}
+/* heist loot scattered faintly across the sheet: cash, diamonds, masks, shades, sirens */
+.loot{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.13}
+.loot use,.loot g{fill:var(--ink);stroke:var(--ink)}
+.board > *:not(.loot):not(.tick){position:relative}
+.siren{display:flex;gap:1.5px;align-self:center;transform:translateY(1px)}
+.siren svg{width:10px;height:10px;display:block}
 
 /* ───────────── grid ───────────── */
 .grid{
@@ -76,28 +79,38 @@ body.all .sheet{zoom:1;width:7.0in;margin:0 auto;display:grid;grid-template-colu
   letter-spacing:.8px;line-height:1.45;margin-top:.5px}
 .band.jobs{font-size:6.5px;letter-spacing:.4px;text-transform:uppercase}
 
-.rowlab{font-size:7.6px;font-weight:600;letter-spacing:.7px;color:var(--soft);
-  writing-mode:vertical-rl;transform:rotate(180deg);text-align:center}
+.rowlab{font-size:7px;font-weight:700;letter-spacing:.8px;
+  writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
+  width:.17in;height:var(--d);border-radius:3px;display:flex;align-items:center;justify-content:center;line-height:1}
+/* gold = yours (scores for you), red = paid out to someone else */
+.rowlab.score{background:var(--gold);color:#1B2228}
+.rowlab.payout{background:var(--hot);color:#FFF6E8}
 
 .slot{width:var(--d);height:var(--d);border-radius:4px;background:var(--slot);
-  border:1.5px solid var(--ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
-.slot.pay{background:transparent;border:1.5px dashed var(--soft);box-shadow:none}
-.slot.own{border:1.5px solid var(--gold);background:rgba(14,16,20,.18);
-  grid-column:6;grid-row:2 / 4;align-self:center}
+  border:1.5px solid var(--gold);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);
+  display:flex;align-items:center;justify-content:center}
+.slot svg{width:.3in;height:.3in;fill:var(--ink);stroke:var(--ink);opacity:.22}
+.slot.pay{background:#867475;border:1.5px dashed var(--hot);box-shadow:none;flex-direction:column;gap:1px}
+.slot.pay .to{font-family:'Courier Prime',monospace;font-weight:700;font-size:6.2px;letter-spacing:.4px;color:#FFD6C8;line-height:1}
+.slot.pay .to b{font-size:9px;display:block;text-align:center;line-height:.9}
+.slot.own{border:1.5px solid var(--gold);background:#6F7670;
+  grid-column:6;grid-row:2 / 4;align-self:center;flex-direction:column}
+.slot.own .to{font-family:'Courier Prime',monospace;font-weight:700;font-size:6.2px;letter-spacing:.4px;color:var(--gold);line-height:1.2;text-align:center}
 
 .div{grid-column:5;grid-row:1 / 5;width:1px;height:100%;
   background:repeating-linear-gradient(180deg,var(--soft) 0 2px,transparent 2px 5px)}
 .mine{grid-column:6;grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1}
 .mine svg{height:16px;width:16px;display:block;fill:var(--gold);stroke:none;margin-bottom:2.5px}
 .mine .rname{color:var(--gold)}
+.mine .band.jobs{color:var(--ink)}
 
 /* brace under the three cut slots — it applies to the group, not to one column */
 .cutnote{grid-column:2 / 5;grid-row:4;position:relative;align-self:start;
   font-family:'Courier Prime',monospace;font-size:6.3px;font-weight:700;
-  letter-spacing:.35px;color:var(--soft);text-align:center;
+  letter-spacing:.35px;color:var(--hot);text-align:center;
   padding-top:6px;line-height:1;white-space:nowrap;width:100%}
 .cutnote::before{content:"";position:absolute;left:5px;right:5px;top:0;height:4px;
-  border:1px solid var(--soft);border-top:0;border-radius:0 0 2px 2px}
+  border:1px solid var(--hot);border-top:0;border-radius:0 0 2px 2px}
 .cutnote b{color:var(--ink)}
 
 /* the whole schedule, folded onto the sheet */
@@ -182,6 +195,30 @@ const TRUCK = `<svg viewBox="0 0 24 24" aria-hidden="true">
   <circle cx="18.0" cy="18.0" r="2.6" stroke="none"/>
 </svg>`;
 
+const SIREN = (c) => `<svg viewBox="0 0 24 24" aria-hidden="true">
+  <g stroke="${c}" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="1.2" x2="12" y2="3.6"/><line x1="3.6" y1="4.4" x2="5.4" y2="6.2"/><line x1="20.4" y1="4.4" x2="18.6" y2="6.2"/></g>
+  <path d="M6 17.5V12.5a6 6 0 0 1 12 0v5z" fill="${c}"/><path d="M8.6 12.6a3.4 3.4 0 0 1 2.6-3.3" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/>
+  <rect x="3.5" y="17.5" width="17" height="4" rx="1" fill="#F2ECDA"/>
+</svg>`;
+// loot for the wallpaper (single colour, drawn faintly)
+const LOOT_DEFS = `
+  <symbol id="l-cash" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M4 8h18v11H4zM13 10.3a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4z"/><path d="M2 5h18v1.8H3.8V16H2z"/></symbol>
+  <symbol id="l-gem" viewBox="0 0 24 24"><path d="M7 3h10l5 6.5L12 21 2 9.5z"/></symbol>
+  <symbol id="l-mask" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M1 10c0-3.4 4.3-4.4 7.3-3.4 1.8.6 2.7 1.4 3.7 1.4s1.9-.8 3.7-1.4c3-1 7.3 0 7.3 3.4 0 3.8-3.2 6.6-7 5.6-1.9-.5-2.8-2-4-2s-2.1 1.5-4 2c-3.8 1-7-1.8-7-5.6zM4.6 10.6a2.8 1.9 0 1 0 5.6 0 2.8 1.9 0 0 0-5.6 0zm9.2 0a2.8 1.9 0 1 0 5.6 0 2.8 1.9 0 0 0-5.6 0z"/></symbol>
+  <symbol id="l-shades" viewBox="0 0 24 24"><path d="M1.5 9h8.5q0 6.5-4.3 6.5T1.5 9zM14 9h8.5q0 6.5-4.3 6.5T14 9zM9.5 9h5v1.6h-5zM.6 6.4l1.8 2.8-1.2.8z"/><path d="M23.4 6.4l-1.8 2.8 1.2.8z"/></symbol>
+  <symbol id="l-bag" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M8.5 2.5h7l-2 4.2c4.2 1.6 7.2 5.1 7.2 9.2 0 4.1-3.9 6.1-8.7 6.1s-8.7-2-8.7-6.1c0-4.1 3-7.6 7.2-9.2zM11.2 11v1.2c-1.3.3-2.1 1.1-2.1 2.2 0 1.3 1 1.9 2.4 2.2 1 .2 1.4.5 1.4.9s-.4.7-1.1.7c-.8 0-1.3-.3-1.5-.9l-1.4.5c.3 1 1.1 1.6 2.3 1.8V21h1.4v-1.2c1.4-.3 2.2-1.1 2.2-2.3 0-1.3-.9-1.9-2.4-2.2-1-.2-1.4-.4-1.4-.8 0-.4.4-.6 1-.6.7 0 1.1.3 1.3.8l1.4-.5c-.3-.9-1-1.4-2-1.6V11z"/></symbol>
+  <symbol id="l-ring" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 8.5a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0 2.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4z"/><path d="M9 5.2 12 1.5l3 3.7-3 3.2z"/></symbol>
+  <symbol id="l-siren" viewBox="0 0 24 24"><path d="M6 17.5V12.5a6 6 0 0 1 12 0v5zM3.5 17.5h17v4h-17zM11 1h2v3h-2zM3 4.9l1.4-1.4 2 2-1.4 1.4zM21 4.9l-1.4-1.4-2 2 1.4 1.4z"/></symbol>`;
+// tucked into the empty margins, clear of every slot and label: [symbol, x, y, size, rotation] in css px on a 336 x 240 card
+const LOOT_AT = [
+  ['mask',   24, 40,20,-10],['shades', 24, 63,18, 12],
+  ['ring',  258, 90,15, -8],['gem',   306, 92,14, 14],
+  ['cash',  262,198,22,-12],['siren', 312,188,18, 10],['bag', 296,214,15,-6],
+  ['bag',    22,216,15,  8],['gem',    44,224,10,-10],
+];
+const LOOT = `<svg class="loot" viewBox="0 0 336 240" preserveAspectRatio="none" aria-hidden="true"><defs>${LOOT_DEFS}</defs>${
+  LOOT_AT.map(([n,x,y,sz,r])=>`<use href="#l-${n}" x="${x-sz/2}" y="${y-sz/2}" width="${sz}" height="${sz}" transform="rotate(${r} ${x} ${y})"/>`).join("")}</svg>`;
+
 const TARGETS = [
   {name:"THE DOCKS",       ico:ANCHOR},
   {name:"THE CASINO",      ico:CHIPS},
@@ -194,9 +231,10 @@ const TARGETS = [
 const board = (t) => `
 <div class="board">
   <i class="tick tl"></i><i class="tick tr"></i><i class="tick bl"></i><i class="tick br"></i>
-  <span class="mark">${t.ico}</span>
+  ${LOOT}
 
   <div class="head">
+    <span class="siren">${SIREN("#F0603F")}${SIREN("#5AA2F0")}</span>
     <span class="wordmark">TOO MANY <em>CROOKS!</em></span>
     <span class="rule-dot"></span>
     <span class="target"><span class="tico">${t.ico}</span>${t.name}</span>
@@ -217,17 +255,13 @@ const board = (t) => `
       <span class="band jobs">Jobs 1&ndash;2</span>
     </div>
 
-    <span class="rowlab c1 r2">ON THE JOB</span>
-    <span class="slot c2 r2"></span>
-    <span class="slot c3 r2"></span>
-    <span class="slot c4 r2"></span>
+    <span class="rowlab score c1 r2">YOU SCORE</span>
+    ${ROLES.map((r,i)=>`<span class="slot c${i+2} r2">${r.ico}</span>`).join("")}
 
-    <span class="rowlab c1 r3">THEIR CUT</span>
-    <span class="slot pay c2 r3"></span>
-    <span class="slot pay c3 r3"></span>
-    <span class="slot pay c4 r3"></span>
+    <span class="rowlab payout c1 r3">YOU PAY</span>
+    ${[2,3,4].map(c=>`<span class="slot pay c${c} r3"><span class="to"><b>&uarr;</b>THEIRS</span></span>`).join("")}
 
-    <span class="slot own"></span>
+    <span class="slot own"><span class="to">YOU<br>KEEP</span></span>
 
     <div class="cutnote">JOB 1 <b>PAY ALL 3</b> &nbsp;&middot;&nbsp; JOBS 2&amp;3 <b>PAY ANY 2</b></div>
   </div>
