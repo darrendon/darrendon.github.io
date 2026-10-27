@@ -2,113 +2,139 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Boo Who? · Sell Sheet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boo Who? — sell sheet</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
-/* Source for boo-who-sell-sheet.pdf (US Letter, landscape). */
-@page{size:11in 8.5in;margin:0}
-:root{--bg:#F1EEF7;--panel:#E3DDF0;--violet:#5B2E86;--night:#2A2856;--dusk:#B8603D;--witch:#6A3590;--living:#D9662B;
-  --ink:#1E1B32;--muted:#5D5878;--line:#D5CEE6}
+/* Source for boo-who-sell-sheet.pdf: print at US Letter landscape, no margins, backgrounds on.
+   Left: the box's own violet and diamond lattice, with the box, the two roles and the card back.
+   Right: cream paper, a three-panel strip showing one round. Nothing on the sheet overlaps anything else. */
+:root{--violet:#2B2856;--violet-hi:#3A3570;--gold:#D8B46A;--gold-d:#9C7A3C;--cream:#F4E7C6;--paper:#FBF7EE;--ink:#211E3D;--soft:#5F5A74;
+  --living:#D9662B;--ghost:#5B5F97;--death:#3B3552}
 *{box-sizing:border-box}
-html,body{margin:0;background:#888}
-.sheet{width:11in;height:8.5in;margin:0 auto;background:var(--bg);color:var(--ink);font-family:"Figtree",Arial,sans-serif;font-size:10pt;line-height:1.38;
-  display:grid;grid-template-rows:auto 1fr auto;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
-header{display:flex;justify-content:space-between;align-items:flex-end;padding:.36in 0 .16in;border-bottom:2px solid var(--ink);margin:0 .5in}
-h1{font-family:"Archivo",sans-serif;font-weight:900;font-stretch:118%;letter-spacing:-.02em;font-size:54pt;line-height:.9;color:var(--violet);margin:0}
-.tag{font-size:13pt;margin-top:8px;font-weight:600}
-.tag i{font-style:normal;color:var(--muted);font-weight:500}
-.by{text-align:right;font-size:9.5pt;color:var(--muted)}
-.by b{display:block;color:var(--ink);font-size:11pt}
-.pill{display:inline-block;margin-bottom:8px;font-size:8pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--night);color:#F1EEF7;padding:4px 9px;border-radius:99px}
-main{display:grid;grid-template-columns:1.32fr 1fr;gap:.32in;padding:.22in .5in .2in;min-height:0}
-.art{display:flex;flex-direction:column;gap:.14in;min-height:0}
-.render{aspect-ratio:16/10;border-radius:14px;background:#0d0b12;overflow:hidden}
-.render img{width:100%;height:100%;object-fit:cover;display:block}
-.pieces{display:grid;grid-template-columns:repeat(3,.62in) 1fr;gap:.12in;align-items:center}
-.pieces img{width:100%;aspect-ratio:5/7;border-radius:5px;display:block;box-shadow:0 1.5px 0 rgba(0,0,0,.18)}
-.toks{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:.08in .1in;border-radius:10px;background:var(--panel)}
-.tok{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font:800 14pt/1 "Archivo",sans-serif;background:#FBF5E8;color:var(--c);box-shadow:inset 0 0 0 3px var(--c)}
-.tok.down{background:var(--c);color:#fff;font-size:6pt;letter-spacing:.05em;align-content:center;gap:1px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)}
+html,body{margin:0;background:#8E9499}
+@page{size:11in 8.5in;margin:0}
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
+.sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;display:grid;grid-template-columns:4.15in 1fr;
+  color:var(--ink);background:var(--paper);font-family:Figtree,system-ui,sans-serif;font-size:10.5pt;line-height:1.38;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ---- left: the box side */
+.side{position:relative;overflow:hidden;background:radial-gradient(80% 50% at 50% 30%,rgba(90,84,160,.45),transparent 70%),var(--violet);border-right:4px solid var(--gold)}
+.side::before{content:"";position:absolute;inset:0;opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38'><g fill='none' stroke='%23B89A5E' stroke-opacity='.45' stroke-width='.8'><path d='M19 7 L31 19 L19 31 L7 19 Z'/></g><circle cx='19' cy='19' r='1.1' fill='%23B89A5E' fill-opacity='.5'/></svg>");background-size:38px 38px}
+.side .frame{position:absolute;inset:.18in;border:2px solid var(--gold);border-radius:14px}
+.side .frame::after{content:"";position:absolute;inset:6px;border:1px solid rgba(216,180,106,.55);border-radius:10px}
+.box{position:absolute;left:.62in;top:.5in;width:2.9in;transform:rotate(-3deg);border-radius:10px;box-shadow:0 0 0 2px var(--gold-d),10px 12px 0 rgba(0,0,0,.35)}
+.cards{position:absolute;left:.42in;right:.42in;top:5.02in;display:flex;justify-content:space-between}
+.cards figure{margin:0;width:.98in;display:flex;flex-direction:column;align-items:center;gap:5px}
+.cards img{width:100%;display:block;border-radius:6px;box-shadow:0 0 0 1.5px var(--gold),4px 5px 0 rgba(0,0,0,.35)}
+.cards figure:nth-child(1){transform:rotate(-4deg)} .cards figure:nth-child(3){transform:rotate(4deg)}
+.cards figcaption{font:12pt/1 "IM Fell English SC";letter-spacing:.06em;color:var(--cream)}
+.toks{position:absolute;left:.5in;right:.5in;top:7.02in;display:flex;justify-content:space-between}
+.tok{width:.42in;height:.42in;border-radius:50%;display:grid;place-items:center;font:800 15pt/1 Archivo,sans-serif;background:#FBF5E8;color:var(--c);box-shadow:inset 0 0 0 3px var(--c),0 2px 0 rgba(0,0,0,.35)}
+.tok.down{background:var(--c);color:#fff;font-size:5.5pt;letter-spacing:.05em;align-content:center;gap:1px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6),0 2px 0 rgba(0,0,0,.35)}
 .tok.down svg{width:44%;height:auto}
-.copy{display:flex;flex-direction:column;gap:.11in;min-height:0}
-.copy p{margin:0}
-h2{font-size:8.5pt;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
-ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
-li{padding-left:14px;position:relative}
-li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;border-radius:2px;background:var(--violet)}
-li b{font-weight:700}
-.night{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.night span{border-radius:7px;padding:5px 8px;color:#fff;font-size:8.5pt;line-height:1.25}
-.night b{display:block;font-size:9.5pt}
-dl{display:grid;grid-template-columns:auto 1fr;margin:0;border-top:1px solid var(--line)}
-dt,dd{margin:0;padding:5px 0;border-bottom:1px solid var(--line)}
-dt{font-size:8.5pt;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-right:14px;padding-top:7px}
-footer{background:var(--night);color:#F1EEF7;display:flex;justify-content:space-between;align-items:center;padding:.17in .5in;font-size:10pt}
-footer b{font-family:"Archivo",sans-serif;font-weight:900;font-stretch:112%;font-size:13pt;margin-right:8px}
-footer .u{font-weight:700}
+.toks-cap{position:absolute;left:0;right:0;top:7.56in;text-align:center;font:11pt/1 "IM Fell English SC";letter-spacing:.06em;color:var(--gold)}
+
+/* ---- right: the paper */
+.main{padding:.42in .5in .34in .44in;display:flex;flex-direction:column;min-width:0}
+.kicker{font:13pt/1 "IM Fell English SC";letter-spacing:.08em;color:var(--gold-d);margin:0 0 .12in}
+h1{margin:0;font:700 33pt/1.02 Spectral,Georgia,serif;letter-spacing:-.005em;color:var(--violet);text-shadow:0 3px 0 var(--gold)}
+h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,.55)}
+.pitch{margin:.2in 0 0;font-size:11.5pt;line-height:1.42;max-width:5.7in}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.24in}
+.panel{border:2px solid var(--violet);border-radius:8px;position:relative;display:flex;flex-direction:column;background:#fff;box-shadow:3px 3px 0 var(--gold)}
+.panel .art{height:2.2in;position:relative;overflow:hidden;border-bottom:2px solid var(--violet);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;gap:.12in}
+.panel .cap{position:absolute;top:-2px;left:-2px;z-index:2;background:var(--violet);color:var(--gold);border-radius:8px 0 8px 0;padding:4px 10px 3px;font:12pt/1 "IM Fell English SC";letter-spacing:.06em}
+.panel p{margin:0;padding:.08in .1in .1in;font-size:9.3pt;line-height:1.34}
+.p1 .art{background:#ECE6F7} .p2 .art{background:#F6E8D6} .p3 .art{background:#E8E3F2}
+.art img.c{width:.86in;border-radius:5px;box-shadow:0 0 0 1.5px var(--gold-d)}
+.col{display:flex;flex-direction:column;align-items:center;gap:.09in}
+.mini{display:flex;gap:.06in}
+.mini .tok{width:.3in;height:.3in;font-size:11pt;box-shadow:inset 0 0 0 2px var(--c)}
+.choice{display:flex;flex-direction:column;gap:.08in}
+.choice span{font:700 10.5pt/1 Spectral,serif;color:#fff;border-radius:99px;padding:6px 12px;text-align:center}
+.choice .run{background:var(--living)} .choice .stay{background:var(--ghost)}
+.badge{font:700 9.5pt/1 Spectral,serif;color:#fff;background:var(--death);border-radius:99px;padding:5px 10px}
+.facts{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:0 .34in;margin-top:auto;padding-top:.18in;border-top:2px solid var(--violet)}
+.facts b{display:block;font:700 22pt/1 Spectral,serif;color:var(--violet)}
+.facts span{font-size:9pt;color:var(--soft)}
+.ready{margin:.14in 0 0;font-size:9.6pt;color:var(--soft)}
+.ready b{color:var(--ink)}
+.ready u{text-decoration:none;color:var(--violet);font-weight:700}
+.contact{display:flex;justify-content:space-between;align-items:baseline;margin-top:.1in;font-size:9.6pt}
+.contact b{font:700 12pt/1 Spectral,serif;color:var(--violet)}
 </style>
 </head>
 <body>
 <div class="sheet">
-  <header>
-    <div>
-      <span class="pill">Available for licensing</span>
-      <h1>Boo Who?</h1>
-      <p class="tag">A paranoia party game for 4–8 players · <i>Everyone can see it but you.</i></p>
+  <aside class="side">
+    <div class="frame"></div>
+    <img class="box" src="/games/boo-who/img/src/tex/box-top.jpg" alt="">
+    <div class="cards">
+      <figure><img src="/games/boo-who/img/card-ghost.webp" alt=""><figcaption>Ghost</figcaption></figure>
+      <figure><img src="/games/boo-who/img/card-back.webp" alt=""><figcaption>Card back</figcaption></figure>
+      <figure><img src="/games/boo-who/img/card-living.webp" alt=""><figcaption>Living</figcaption></figure>
     </div>
-    <div class="by"><b>Darren Don</b>What's Good Board Games<br>darren@whatsgoodboardgames.com</div>
-  </header>
-  <main>
-    <div class="art">
-      <div class="render"><img src="/games/boo-who/img/sheet-render.jpg" alt=""></div>
-      <div class="pieces" aria-hidden="true">
-        <img src="/games/boo-who/img/card-ghost.webp" alt="">
-        <img src="/games/boo-who/img/card-living.webp" alt="">
-        <img src="/games/boo-who/img/card-back.webp" alt="">
-        <div class="toks">
-          <span class="tok" style="--c:#2E5EAA">3</span><span class="tok" style="--c:#2E5EAA">2</span><span class="tok" style="--c:#2E5EAA">1</span>
-          <span class="tok down" style="--c:#E0619E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E0619E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E0619E"/></svg>BOO!</span>
-          <span class="tok down" style="--c:#2E9E5B"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#2E9E5B"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#2E9E5B"/></svg>BOO!</span>
-          <span class="tok down" style="--c:#E8692E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E8692E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E8692E"/></svg>BOO!</span>
+    <div class="toks">
+      <span class="tok" style="--c:#2E5EAA">3</span><span class="tok" style="--c:#2E5EAA">2</span><span class="tok" style="--c:#2E5EAA">1</span>
+      <span class="tok down" style="--c:#E0619E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E0619E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E0619E"/></svg>BOO!</span>
+      <span class="tok down" style="--c:#2E9E5B"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#2E9E5B"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#2E9E5B"/></svg>BOO!</span>
+      <span class="tok down" style="--c:#E8692E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E8692E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E8692E"/></svg>BOO!</span>
+    </div>
+    <div class="toks-cap">A 3, a 2 and a 1 for every player</div>
+  </aside>
+
+  <main class="main">
+    <p class="kicker">A party game for 4–8 players · for licensing</p>
+    <h1>A hidden-role game where <em>everyone knows but you!</em></h1>
+    <p class="pitch">Your role card stands facing the table, so you can read every card except your own. Each round, everyone puts Boos on each other, then everyone runs or stays at the same moment. A Boo is a point for you if you call it right, and a payout for whoever put it there if you call it wrong.</p>
+
+    <div class="strip">
+      <div class="panel p1">
+        <span class="cap">Boo!</span>
+        <div class="art">
+          <div class="col">
+            <img class="c" src="/games/boo-who/img/card-back.webp" alt="">
+            <div class="mini"><span class="tok" style="--c:#2E9E5B">3</span><span class="tok" style="--c:#E0619E">2</span><span class="tok" style="--c:#E8692E">1</span></div>
+          </div>
         </div>
+        <p>Everyone puts a 3, a 2 and a 1 on three other players, all at once. Pile Boos on the Living, or bluff a Ghost into running.</p>
+      </div>
+      <div class="panel p2">
+        <span class="cap">Run or stay?</span>
+        <div class="art">
+          <img class="c" src="/games/boo-who/img/card-back.webp" alt="">
+          <div class="choice"><span class="run">Run!</span><span class="stay">Stay</span></div>
+        </div>
+        <p>On “3, 2, 1, boo who?” everyone points at once: at yourself to run, at the table to stay. Living should run. Ghosts should stay.</p>
+      </div>
+      <div class="panel p3">
+        <span class="cap">Flip!</span>
+        <div class="art">
+          <div class="col">
+            <img class="c" src="/games/boo-who/img/card-living.webp" alt="">
+            <span class="badge">Scared to death</span>
+          </div>
+        </div>
+        <p>Living, and you stayed? The 3, 2 and 1 on you pay 6 points to the players who put them there. Had you run, they'd be 3 points for you.</p>
       </div>
     </div>
-    <div class="copy">
-      <div>
-        <h2>The game</h2>
-        <p>Your role card faces out, so everyone can read it except you. Players put Boo tokens on each other, then everyone decides at once: run or stay. The Living should run; the Ghosts should stay. Your only clues are the Boos in front of you.</p>
-      </div>
-      <div>
-        <h2>Why it works</h2>
-        <ul>
-          <li><b>Paranoia on the table.</b> No secret chats or votes. A pile of Boos might be a warning, or bait.</li>
-          <li><b>Everyone acts at once.</b> Boos go down on a count of three; everyone runs or stays together.</li>
-          <li><b>Scoring in one line.</b> Right call: 1 point per Boo. Wrong call: your booers score their numbers.</li>
-          <li><b>Fits in a deck box.</b> Every piece is card-sized and flat, even the cardboard stands.</li>
-        </ul>
-      </div>
-      <div class="night">
-        <span style="background:var(--dusk)"><b>Dusk</b>A normal round</span>
-        <span style="background:var(--night)"><b>Midnight</b>Boos face down</span>
-        <span style="background:var(--witch)"><b>Witching Hour</b>Points doubled</span>
-      </div>
-      <div>
-        <h2>At a glance</h2>
-        <dl>
-          <dt>Players</dt><dd>4–8</dd>
-          <dt>Genre</dt><dd>Party, simultaneous</dd>
-          <dt>Length</dt><dd>About 15 minutes, 3 rounds</dd>
-          <dt>Components</dt><dd>17 role cards, 8 player boards, deck box</dd>
-          <dt>Ready</dt><dd>Print-and-play kit, playable online build</dd>
-        </dl>
-      </div>
+
+    <div class="facts">
+      <div><b>4–8</b><span>players</span></div>
+      <div><b>15 min</b><span>three rounds</span></div>
+      <div><b>10+</b><span>ages</span></div>
+      <div><b>17</b><span>cards, 8 stands, in a tuck box</span></div>
     </div>
+    <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser version with a tutorial and bots at <u>darrendon.github.io/games/boo-who</u></p>
+    <div class="contact"><span><b>Darren Don</b> &nbsp;What's Good Board Games</span><span>darren@whatsgoodboardgames.com</span></div>
   </main>
-  <footer>
-    <span><b>Play it now</b><span class="u">darrendon.github.io/games/boo-who</span></span>
-    <span>Darren Don · darren@whatsgoodboardgames.com</span>
-  </footer>
 </div>
+<script>
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
 </body>
 </html>

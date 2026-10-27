@@ -1,0 +1,853 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: "PopB"; src: url("/fonts/Poppins-Bold.ttf"); }
+@font-face { font-family: "PopX"; src: url("/fonts/Poppins-Bold.ttf"); }
+@font-face { font-family: "Lora"; font-style: italic; src: url("/fonts/Lora-Italic-Variable.ttf"); font-weight: 400 700; }
+body { margin: 0; background: #000; }
+canvas { display: block; }
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<script>
+"use strict";
+const Q = new URLSearchParams(location.hash.slice(1));
+const SCENE = Q.get("s") || "dusk";
+const W = +(Q.get("w") || 3200), H = +(Q.get("h") || 2000);
+const cv = document.getElementById("c"); cv.width = W; cv.height = H;
+const gl = cv.getContext("webgl2", { antialias: true, preserveDrawingBuffer: true });
+const aniso = gl.getExtension("EXT_texture_filter_anisotropic");
+
+// ---------------- math ----------------
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a) => { const l = Math.hypot(...a); return [a[0] / l, a[1] / l, a[2] / l]; };
+const M = {
+  I: () => [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1],
+  mul(a, b) { const o = new Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; },
+  T: (x, y, z) => [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1],
+  S: (x, y, z) => [x,0,0,0, 0,y,0,0, 0,0,z,0, 0,0,0,1],
+  RX: (a) => { const c = Math.cos(a), s = Math.sin(a); return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]; },
+  RY: (a) => { const c = Math.cos(a), s = Math.sin(a); return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]; },
+  RZ: (a) => { const c = Math.cos(a), s = Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; },
+  persp(fov, asp, n, f) { const t = 1 / Math.tan(fov / 2); return [t / asp,0,0,0, 0,t,0,0, 0,0,(f + n) / (n - f),-1, 0,0,2 * f * n / (n - f),0]; },
+  ortho(l, r, b, t, n, f) { return [2 / (r - l),0,0,0, 0,2 / (t - b),0,0, 0,0,-2 / (f - n),0, -(r + l) / (r - l),-(t + b) / (t - b),-(f + n) / (f - n),1]; },
+  look(e, c, u) { const z = norm(sub(e, c)), x = norm(cross(u, z)), y = cross(z, x);
+    return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -dot(x, e),-dot(y, e),-dot(z, e),1]; },
+  chain(...ms) { return ms.reduce((a, b) => M.mul(a, b)); },
+  normalMat(m) { // inverse-transpose of upper 3x3, returned as mat3 (column-major)
+    const a = m[0], b = m[1], c = m[2], d = m[4], e = m[5], f = m[6], g = m[8], h = m[9], i = m[10];
+    const A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g;
+    const det = a * A + b * B + c * C;
+    const inv = [A, -(b * i - c * h), b * f - c * e, B, a * i - c * g, -(a * f - c * d), C, -(a * h - b * g), a * e - b * d].map(v => v / det);
+    // inv is column-major inverse; transpose it
+    return [inv[0], inv[3], inv[6], inv[1], inv[4], inv[7], inv[2], inv[5], inv[8]];
+  },
+};
+
+// ---------------- geometry ----------------
+const G = () => ({ pos: [], nor: [], uv: [], idx: [] });
+function quad(g, c, U, V, n, uv0 = [0, 0], uv1 = [1, 1]) {
+  const b = g.pos.length / 3;
+  for (const [a, v] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    g.pos.push(c[0] + U[0] * a + V[0] * v, c[1] + U[1] * a + V[1] * v, c[2] + U[2] * a + V[2] * v);
+    g.nor.push(...n);
+    g.uv.push(uv0[0] + (a + 1) / 2 * (uv1[0] - uv0[0]), uv0[1] + (v + 1) / 2 * (uv1[1] - uv0[1]));
+  }
+  g.idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+}
+function box(g, cx, cy, cz, w, h, d) {
+  const x = w / 2, y = h / 2, z = d / 2;
+  quad(g, [cx, cy, cz + z], [x, 0, 0], [0, y, 0], [0, 0, 1]);
+  quad(g, [cx, cy, cz - z], [-x, 0, 0], [0, y, 0], [0, 0, -1]);
+  quad(g, [cx + x, cy, cz], [0, 0, -z], [0, y, 0], [1, 0, 0]);
+  quad(g, [cx - x, cy, cz], [0, 0, z], [0, y, 0], [-1, 0, 0]);
+  quad(g, [cx, cy + y, cz], [x, 0, 0], [0, 0, -z], [0, 1, 0]);
+  quad(g, [cx, cy - y, cz], [x, 0, 0], [0, 0, z], [0, -1, 0]);
+  return g;
+}
+function ring(g, ow, oh, iw, ih, z0, z1) {
+  const d = z1 - z0, zc = (z0 + z1) / 2, bh = (oh - ih) / 2, bw = (ow - iw) / 2;
+  box(g, 0, (oh + ih) / 4, zc, ow, bh, d); box(g, 0, -(oh + ih) / 4, zc, ow, bh, d);
+  box(g, (ow + iw) / 4, 0, zc, bw, ih, d); box(g, -(ow + iw) / 4, 0, zc, bw, ih, d);
+  return g;
+}
+function cylinder(r, h, seg = 64, uvScale = 1) {
+  const side = G(), top = G(), bot = G();
+  for (let i = 0; i <= seg; i++) {
+    const a = i / seg * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+    side.pos.push(r * c, -h / 2, r * s, r * c, h / 2, r * s); side.nor.push(c, 0, s, c, 0, s); side.uv.push(i / seg, 0, i / seg, 1);
+    if (i < seg) { const b = i * 2; side.idx.push(b, b + 1, b + 3, b, b + 3, b + 2); }
+  }
+  for (const [g, y, ny, sv] of [[top, h / 2, 1, -1], [bot, -h / 2, -1, 1]]) {
+    g.pos.push(0, y, 0); g.nor.push(0, ny, 0); g.uv.push(0.5, 0.5);
+    for (let i = 0; i <= seg; i++) {
+      const a = i / seg * Math.PI * 2, x = r * Math.cos(a), z = r * Math.sin(a);
+      g.pos.push(x, y, z); g.nor.push(0, ny, 0);
+      g.uv.push(0.5 + x / (2 * r) * uvScale, 0.5 + sv * z / (2 * r) * uvScale);
+      if (i < seg) g.idx.push(0, i + 1, i + 2);
+    }
+  }
+  return { side, top, bot };
+}
+function sphere(r, seg = 32) {
+  const g = G();
+  for (let i = 0; i <= seg; i++) for (let j = 0; j <= seg * 2; j++) {
+    const th = i / seg * Math.PI, ph = j / (seg * 2) * Math.PI * 2;
+    const n = [Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph)];
+    g.pos.push(n[0] * r, n[1] * r, n[2] * r); g.nor.push(...n); g.uv.push(j / (seg * 2), 1 - i / seg);
+  }
+  const row = seg * 2 + 1;
+  for (let i = 0; i < seg; i++) for (let j = 0; j < seg * 2; j++) {
+    const a = i * row + j, b = a + row; g.idx.push(a, b, a + 1, b, b + 1, a + 1);
+  }
+  return g;
+}
+// ---- flat die-cut pieces: ear-clip a 2D outline and extrude it
+function triangulate(pts) {
+  let area = 0; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; area += a[0] * b[1] - b[0] * a[1]; }
+  let idx = pts.map((_, i) => i); if (area < 0) idx.reverse();
+  const tris = []; const cr = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  let guard = 0;
+  while (idx.length > 3 && guard++ < 20000) {
+    let cut = false;
+    for (let i = 0; i < idx.length; i++) {
+      const ia = idx[(i + idx.length - 1) % idx.length], ib = idx[i], ic = idx[(i + 1) % idx.length];
+      const A = pts[ia], B = pts[ib], C = pts[ic];
+      if (cr(A, B, C) <= 1e-9) continue;
+      let inside = false;
+      for (const j of idx) { if (j === ia || j === ib || j === ic) continue; const P = pts[j];
+        if (cr(A, B, P) > 1e-9 && cr(B, C, P) > 1e-9 && cr(C, A, P) > 1e-9) { inside = true; break; } }
+      if (inside) continue;
+      tris.push([ia, ib, ic]); idx.splice(i, 1); cut = true; break;
+    }
+    if (!cut) break;
+  }
+  if (idx.length === 3) tris.push(idx.slice());
+  return tris;
+}
+function extrude(pts, t) {   // pts in any unit, counter-clockwise; faces at z = +-t/2
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = x1 - x0, h = y1 - y0;
+  const tris = triangulate(pts), front = G(), back = G(), side = G();
+  for (const p of pts) {
+    front.pos.push(p[0], p[1], t / 2); front.nor.push(0, 0, 1); front.uv.push((p[0] - x0) / w, (p[1] - y0) / h);
+    back.pos.push(p[0], p[1], -t / 2); back.nor.push(0, 0, -1); back.uv.push((x1 - p[0]) / w, (p[1] - y0) / h);
+  }
+  for (const [a, b, c] of tris) { front.idx.push(a, b, c); back.idx.push(a, c, b); }
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length]; const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; const n = [dy / l, -dx / l, 0];
+    const s = side.pos.length / 3;
+    side.pos.push(a[0], a[1], t / 2, b[0], b[1], t / 2, b[0], b[1], -t / 2, a[0], a[1], -t / 2);
+    for (let k = 0; k < 4; k++) { side.nor.push(...n); side.uv.push(0, 0); }
+    side.idx.push(s, s + 1, s + 2, s, s + 2, s + 3);
+  }
+  return { front, back, side };
+}
+// easel outlines in mm. Panel: x across, y up; slot rises from the bottom middle.
+const TT = 1.8;   // board thickness (drawn a touch thick so it reads)
+function arcPts(cx, cy, r, a0, a1, n = 8) { const o = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; o.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }
+const PANEL = [[-28, 0], [-TT / 2, 0], [-TT / 2, 7.5], [TT / 2, 7.5], [TT / 2, 0], [28, 0], [28, 44],
+  ...arcPts(28, 50, 6, -Math.PI / 2, -Math.PI).slice(1, -1), [22, 50], [-22, 50], ...arcPts(-28, 50, 6, 0, -Math.PI / 2).slice(1, -1), [-28, 44]];
+// Fin: u = depth (+ = toward the other players), y up. Hook at the front catches the card's bottom edge.
+const FIN = [[-30, 0], [22, 0], [22, 4], [20, 8], [17, 8], [17, 4], [15, 4], [6, 15], [TT / 2, 15], [TT / 2, 7.5], [-TT / 2, 7.5], [-TT / 2, 15], [-20, 15], [-30, 8]];
+function upload(g) {
+  const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  for (const [loc, arr, n] of [[0, g.pos, 3], [1, g.nor, 3], [2, g.uv, 2]]) {
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
+  }
+  const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(g.idx), gl.STATIC_DRAW);
+  return { vao, n: g.idx.length };
+}
+
+// ---------------- shaders ----------------
+function prog(vs, fs) {
+  const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+  gl.bindAttribLocation(p, 0, "aPos"); gl.bindAttribLocation(p, 1, "aNor"); gl.bindAttribLocation(p, 2, "aUv");
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u = {}; const cnt = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < cnt; i++) { const info = gl.getActiveUniform(p, i); u[info.name] = gl.getUniformLocation(p, info.name); }
+  return { p, u };
+}
+const VS = `#version 300 es
+in vec3 aPos; in vec3 aNor; in vec2 aUv;
+uniform mat4 uModel, uVP, uLightVP; uniform mat3 uNM;
+out vec3 vW; out vec3 vN; out vec2 vUv; out vec4 vL;
+void main(){ vec4 w = uModel * vec4(aPos,1.0); vW = w.xyz; vN = normalize(uNM * aNor); vUv = aUv; vL = uLightVP * w; gl_Position = uVP * w; }`;
+const FS = `#version 300 es
+precision highp float; precision highp sampler2DShadow;
+in vec3 vW; in vec3 vN; in vec2 vUv; in vec4 vL; out vec4 o;
+uniform sampler2D uTex; uniform int uHasTex; uniform vec3 uColor; uniform float uMetal, uShin, uSpec, uAlphaCut;
+uniform vec3 uEmis; uniform vec3 uKeyDir, uKeyCol, uPtPos, uPtCol, uSky, uGround, uCam, uFog;
+uniform sampler2DShadow uShadow; uniform vec2 uRes; uniform float uExpo, uVig, uRough;
+float shadow(vec4 lp){ vec3 p = lp.xyz / lp.w * 0.5 + 0.5; if (p.z > 1.0 || p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0) return 1.0;
+  float s = 0.0; vec2 t = 1.0 / vec2(textureSize(uShadow, 0));
+  for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++) s += texture(uShadow, vec3(p.xy + vec2(x, y) * t * 1.6, p.z - 0.0009));
+  return s / 25.0; }
+vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+void main(){
+  vec3 alb = uColor; float a = 1.0;
+  if (uHasTex == 1) { vec4 t = texture(uTex, vUv); alb *= pow(t.rgb, vec3(2.2)); a = t.a; }
+  if (a < uAlphaCut) discard;
+  vec3 N = normalize(vN); vec3 V = normalize(uCam - vW);
+  vec3 dif = alb * (1.0 - uMetal); vec3 spc = mix(vec3(uSpec), alb, uMetal);
+  float nrm = (uShin + 8.0) / 25.0;
+  vec3 L = normalize(-uKeyDir); float sh = shadow(vL);
+  float nl = max(dot(N, L), 0.0); vec3 Hh = normalize(L + V);
+  vec3 col = (dif * nl + spc * pow(max(dot(N, Hh), 0.0), uShin) * nl * nrm) * uKeyCol * sh;
+  vec3 Lp = uPtPos - vW; float d = length(Lp); Lp /= d; float att = 1.0 / (1.0 + 0.35 * d * d);
+  float np = max(dot(N, Lp), 0.0); vec3 Hp = normalize(Lp + V);
+  col += (dif * np + spc * pow(max(dot(N, Hp), 0.0), uShin) * np * nrm) * uPtCol * att;
+  col += dif * mix(uGround, uSky, N.y * 0.5 + 0.5);
+  vec3 R = reflect(-V, N);
+  vec3 env = mix(uGround * 1.5, uSky * 2.5 + uPtCol * 0.06, smoothstep(-0.3, 0.9, R.y));
+  env += uPtCol * 0.25 * pow(max(dot(R, Lp), 0.0), 18.0) * att * 4.0;
+  env += uKeyCol * 0.35 * pow(max(dot(R, L), 0.0), 10.0) * sh;
+  float fr = pow(1.0 - max(dot(N, V), 0.0), 5.0);
+  col += spc * env * (uMetal * (1.0 - uRough * 0.5) + fr * 0.12);
+  col += uEmis;
+  float fogd = length(uCam - vW);
+  col = pow(aces(col * uExpo), vec3(1.0 / 2.2));
+  col = mix(col, pow(uFog, vec3(1.0 / 2.2)), clamp((fogd - 16.0) / 22.0, 0.0, 1.0));
+  o = vec4(col, 1.0);
+}`;
+const SVS = `#version 300 es
+in vec3 aPos; uniform mat4 uModel, uLightVP; void main(){ gl_Position = uLightVP * uModel * vec4(aPos,1.0); }`;
+const SFS = `#version 300 es
+precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
+const GVS = `#version 300 es
+in vec3 aPos; uniform mat4 uVP; uniform vec3 uC, uR, uU; uniform float uSz; out vec2 vq;
+void main(){ vq = aPos.xy; vec3 w = uC + uR * aPos.x * uSz + uU * aPos.y * uSz; gl_Position = uVP * vec4(w, 1.0); }`;
+const GFS = `#version 300 es
+precision highp float; in vec2 vq; uniform vec3 uCol; uniform float uK; out vec4 o;
+void main(){ float r2 = dot(vq, vq); vec3 c = uCol * exp(-r2 * uK); o = vec4(c, 1.0); }`;
+
+// ---------------- textures ----------------
+function texFrom(src, opts = {}) {
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  const wrap = opts.repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE;
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
+  if (aniso) gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, 16);
+  return t;
+}
+const loadImg = (u) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
+function hash(x, y) { let h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return h - Math.floor(h); }
+function vnoise(x, y) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
+function fbm(x, y) { let s = 0, a = 0.5; for (let i = 0; i < 4; i++) { s += a * vnoise(x, y); x *= 2.03; y *= 2.03; a *= 0.5; } return s; }
+function woodCanvas(sz, dark, light, seed = 0) {
+  const c = document.createElement("canvas"); c.width = c.height = sz; const x = c.getContext("2d");
+  const im = x.createImageData(sz, sz); const D = im.data;
+  for (let j = 0; j < sz; j++) for (let i = 0; i < sz; i++) {
+    const n = fbm(i * 0.0025 + seed, j * 0.012 + seed);
+    const g = j * 0.018 + n * 3.2 + Math.sin(i * 0.002 + seed) * 1.2;
+    let r = g - Math.floor(g); r = Math.pow(Math.abs(Math.sin(r * Math.PI)), 3.0);
+    const f = fbm(i * 0.01 + 40, j * 0.15 + seed) * 0.22;
+    const t = Math.min(1, Math.max(0, 0.25 + r * 0.38 + f));
+    const k = (j * sz + i) * 4;
+    for (let ch = 0; ch < 3; ch++) D[k + ch] = dark[ch] + (light[ch] - dark[ch]) * t;
+    D[k + 3] = 255;
+  }
+  x.putImageData(im, 0, 0); return c;
+}
+function doilyCanvas(sz) {
+  const c = document.createElement("canvas"); c.width = c.height = sz; const x = c.getContext("2d"); const m = sz / 2;
+  x.clearRect(0, 0, sz, sz); x.fillStyle = "#f4eee2"; x.strokeStyle = "#f4eee2";
+  const R = m * 0.98;
+  // scalloped edge
+  x.beginPath(); const nS = 36;
+  for (let i = 0; i <= nS; i++) { const a = i / nS * Math.PI * 2; const a2 = (i + 0.5) / nS * Math.PI * 2;
+    if (i === 0) x.moveTo(m + Math.cos(a) * R * 0.9, m + Math.sin(a) * R * 0.9);
+    x.quadraticCurveTo(m + Math.cos(a2) * R * 1.02, m + Math.sin(a2) * R * 1.02, m + Math.cos(a2 + Math.PI / nS) * R * 0.9, m + Math.sin(a2 + Math.PI / nS) * R * 0.9); }
+  x.fill();
+  x.globalCompositeOperation = "destination-out";
+  const holes = (rad, cnt, hr) => { for (let i = 0; i < cnt; i++) { const a = i / cnt * Math.PI * 2; x.beginPath(); x.arc(m + Math.cos(a) * rad, m + Math.sin(a) * rad, hr, 0, Math.PI * 2); x.fill(); } };
+  holes(R * 0.82, 36, R * 0.045); holes(R * 0.7, 30, R * 0.03); holes(R * 0.6, 24, R * 0.05);
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; x.save(); x.translate(m, m); x.rotate(a);
+    x.beginPath(); x.ellipse(R * 0.36, 0, R * 0.12, R * 0.04, 0, 0, Math.PI * 2); x.fill(); x.restore(); }
+  holes(R * 0.18, 10, R * 0.025);
+  x.globalCompositeOperation = "source-over"; return c;
+}
+function tokenFace(hex, val) {
+  const sz = 512, c = document.createElement("canvas"); c.width = c.height = sz; const x = c.getContext("2d"); const m = sz / 2;
+  x.fillStyle = hex; x.fillRect(0, 0, sz, sz);
+  if (val === 0) { // BOO! side
+    x.strokeStyle = "rgba(255,255,255,.85)"; x.lineWidth = 12; x.beginPath(); x.arc(m, m, m * 0.84, 0, Math.PI * 2); x.stroke();
+    // ghost
+    x.fillStyle = "#fff"; x.save(); x.translate(m, m - 52); const s = 1.55;
+    x.beginPath(); x.moveTo(-40 * s, 34 * s); x.lineTo(-40 * s, -4 * s); x.arc(0, -4 * s, 40 * s, Math.PI, 0); x.lineTo(40 * s, 34 * s);
+    for (let i = 0; i < 4; i++) { const x0 = 40 * s - i * 20 * s; x.quadraticCurveTo(x0 - 10 * s, (i % 2 ? 26 : 44) * s, x0 - 20 * s, 34 * s); }
+    x.closePath(); x.fill();
+    x.fillStyle = hex; x.beginPath(); x.ellipse(-14 * s, -6 * s, 6 * s, 9 * s, 0, 0, Math.PI * 2); x.ellipse(14 * s, -6 * s, 6 * s, 9 * s, 0, 0, Math.PI * 2); x.fill();
+    x.beginPath(); x.ellipse(0, 12 * s, 5 * s, 6 * s, 0, 0, Math.PI * 2); x.fill(); x.restore();
+    x.fillStyle = "#fff"; x.font = "112px PopX"; x.textAlign = "center"; x.textBaseline = "alphabetic"; x.fillText("BOO!", m, m + 150);
+  } else { // value side
+    x.fillStyle = "#fbf5e8"; x.beginPath(); x.arc(m, m, m * 0.8, 0, Math.PI * 2); x.fill();
+    x.strokeStyle = hex; x.lineWidth = 8; x.beginPath(); x.arc(m, m, m * 0.7, 0, Math.PI * 2); x.stroke();
+    x.fillStyle = hex; x.font = "300px PopX"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(String(val), m, m + 22);
+  }
+  return c;
+}
+function frameBackCanvas() {
+  const c = woodCanvas(512, [44, 26, 16], [92, 58, 34], 7.3); const x = c.getContext("2d");
+  x.save(); x.translate(256, 96); x.rotate(-0.03);
+  x.fillStyle = "#d8b98a"; x.fillRect(-128, -44, 256, 88);
+  x.strokeStyle = "rgba(90,60,30,.5)"; x.lineWidth = 3; x.strokeRect(-118, -34, 236, 68);
+  x.fillStyle = "#4a2f1a"; x.font = "italic 600 40px Lora"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("No peeking!", 0, 2);
+  x.restore();
+  // brass hanger
+  x.fillStyle = "#b8903f"; x.beginPath(); x.arc(256, 470, 12, 0, Math.PI * 2); x.fill();
+  return c;
+}
+
+// panel art: 56 x 50 mm at 10 px/mm. owner side = "No peeking!", table side = quiet pattern
+function feltCanvas(sz) {   // a plain card-table felt: deep plum with a faint nap
+  const c = document.createElement("canvas"); c.width = c.height = sz; const x = c.getContext("2d");
+  const im = x.createImageData(sz, sz), D = im.data;
+  for (let j = 0; j < sz; j++) for (let i = 0; i < sz; i++) {
+    const n = fbm(i * 0.03, j * 0.03) * 0.6 + hash(i, j) * 0.4, k = (j * sz + i) * 4;
+    D[k] = 46 + n * 9; D[k + 1] = 34 + n * 7; D[k + 2] = 56 + n * 10; D[k + 3] = 255;
+  }
+  x.putImageData(im, 0, 0); return c;
+}
+function shade(hex, k) { const n = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)); return "rgb(" + n.map(v => Math.round(k < 1 ? v * k : v + (255 - v) * (k - 1))).join(",") + ")"; }
+function ghostIcon(x, cx, cy, s, fill, holes) {
+  x.save(); x.translate(cx, cy); x.fillStyle = fill; x.beginPath();
+  x.moveTo(-40 * s, 34 * s); x.lineTo(-40 * s, -4 * s); x.arc(0, -4 * s, 40 * s, Math.PI, 0); x.lineTo(40 * s, 34 * s);
+  for (let i = 0; i < 4; i++) { const x0 = 40 * s - i * 20 * s; x.quadraticCurveTo(x0 - 10 * s, (i % 2 ? 26 : 44) * s, x0 - 20 * s, 34 * s); }
+  x.closePath(); x.fill();
+  x.fillStyle = holes; x.beginPath(); x.ellipse(-14 * s, -6 * s, 6 * s, 9 * s, 0, 0, Math.PI * 2); x.ellipse(14 * s, -6 * s, 6 * s, 9 * s, 0, 0, Math.PI * 2); x.fill();
+  x.restore();
+}
+function panelCanvas(hex, owner) {
+  const c = document.createElement("canvas"); c.width = 560; c.height = 500; const x = c.getContext("2d");
+  const g = x.createLinearGradient(0, 0, 0, 500); g.addColorStop(0, shade(hex, 1.12)); g.addColorStop(1, shade(hex, 0.78));
+  x.fillStyle = g; x.fillRect(0, 0, 560, 500);
+  x.strokeStyle = "rgba(255,246,230,.9)"; x.lineWidth = 7;
+  x.beginPath(); x.moveTo(60, 50); x.lineTo(500, 50); x.lineTo(500, 450); x.lineTo(60, 450); x.closePath(); x.stroke();
+  x.lineWidth = 2.5; x.strokeRect(78, 68, 404, 364);
+  if (owner) {
+    ghostIcon(x, 280, 190, 1.55, "#fff6ea", hex);
+    x.fillStyle = "#fff6ea"; x.font = "italic 600 62px Lora"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("No peeking!", 280, 352);
+    x.font = "600 26px Lora"; x.fillStyle = "rgba(255,246,230,.8)"; x.fillText("· BOO WHO? ·", 280, 408);
+  } else {
+    x.fillStyle = "rgba(255,246,230,.18)";
+    for (let j = 0; j < 9; j++) for (let i = 0; i < 10; i++) { const px = 95 + i * 41 + (j % 2) * 20, py = 90 + j * 41; if (px < 470) { x.beginPath(); x.arc(px, py, 5, 0, Math.PI * 2); x.fill(); } }
+  }
+  return c;
+}
+function finCanvas(hex) {
+  const c = document.createElement("canvas"); c.width = 520; c.height = 150; const x = c.getContext("2d");
+  x.fillStyle = shade(hex, 0.9); x.fillRect(0, 0, 520, 150);
+  x.fillStyle = "rgba(255,246,230,.85)"; x.fillRect(0, 128, 520, 6); return c;
+}
+
+// ---------------- scene ----------------
+const COLORS = { red: "#D7263D", orange: "#E8692E", yellow: "#D9A514", green: "#2E9E5B", teal: "#178A8A", blue: "#2E5EAA", purple: "#6A4C93", pink: "#E0619E" };
+const hexRGB = (h) => [1, 3, 5].map(i => Math.pow(parseInt(h.slice(i, i + 2), 16) / 255, 2.2));
+const draws = []; // {mesh, model, mat}
+// every draw belongs to a named object, so the check mode can prove that no two objects overlap on screen
+let GID = null; const GROUPS = [];
+const grp = (name) => { GID = name + "#" + GROUPS.length; GROUPS.push(GID); return GID; };
+const add = (mesh, model, mat) => draws.push({ mesh, model, mat, gid: GID });
+const CLEAN = SCENE.startsWith("c_");
+const MAT = (o) => Object.assign({ color: [1, 1, 1], tex: null, metal: 0, shin: 30, spec: 0.04, emis: [0, 0, 0], cut: 0, rough: 0, shadow: true }, o);
+
+async function build() {
+  await document.fonts.load("112px PopX"); await document.fonts.load("italic 600 50px Lora"); await document.fonts.load("50px PopB");
+  const [gImg, lImg, bImg, sImg, btImg, bsImg, beImg] = await Promise.all(["ghost.png", "living.png", "back.png", "scorecard.png", "box-top.jpg", "box-side.jpg", "box-end.jpg"].map(loadImg));
+  const T = { ghost: texFrom(gImg), living: texFrom(lImg), back: texFrom(bImg), score: texFrom(sImg),
+    boxTop: texFrom(btImg), boxSide: texFrom(bsImg), boxEnd: texFrom(beImg), felt: texFrom(feltCanvas(1024), { repeat: true }),
+    wood: texFrom(woodCanvas(2048, [30, 17, 10], [82, 48, 27], 1.7)), floor: texFrom(woodCanvas(1024, [14, 9, 7], [34, 22, 15], 9.1), { repeat: true }),
+    doily: texFrom(doilyCanvas(1024)), fback: texFrom(frameBackCanvas()) };
+  const tokTex = {}; for (const [k, h] of Object.entries(COLORS)) for (const v of [0, 1, 2, 3]) tokTex[k + v] = texFrom(tokenFace(h, v));
+
+  const gold = MAT({ color: [0.78, 0.56, 0.24], metal: 1, shin: 60, rough: 0.35 });
+  const goldDark = MAT({ color: [0.55, 0.38, 0.15], metal: 1, shin: 40, rough: 0.5 });
+  const woodBack = MAT({ color: [0.5, 0.42, 0.36], tex: T.fback, shin: 12, spec: 0.03 });
+  const darkWood = MAT({ color: [0.07, 0.04, 0.025], shin: 20, spec: 0.05 });
+
+  // table (the clean scenes use a plain felt surface instead)
+  if (CLEAN) {
+    const fl = G(); quad(fl, [0, 0, 0], [40, 0, 0], [0, 0, -40], [0, 1, 0], [0, 0], [26, 26]);
+    add(upload(fl), M.I(), MAT({ color: [1, 1, 1], tex: T.felt, shin: 6, spec: 0.01 }));
+  }
+  const TR = SCENE === "dusk" || SCENE === "midnight" ? 6.6 : SCENE === "budget" ? 3.9 : 4.0;
+  const tcy = cylinder(TR, 0.3, 160, 1);
+  if (!CLEAN) {
+  add(upload(tcy.top), M.T(0, -0.15, 0), MAT({ color: [1, 0.92, 0.85], tex: T.wood, shin: 45, spec: 0.06 }));
+  add(upload(tcy.side), M.T(0, -0.15, 0), MAT({ color: [0.22, 0.12, 0.07], shin: 30, spec: 0.05 }));
+  add(upload(cylinder(TR * 0.98, 0.3, 160).bot), M.T(0, -0.16, 0), darkWood);
+
+  { const fl = G(); quad(fl, [0, -9, 0], [200, 0, 0], [0, 0, -200], [0, 1, 0], [0, 0], [40, 40]);
+    add(upload(fl), M.I(), MAT({ color: [0.6, 0.55, 0.5], tex: T.floor, shin: 10, shadow: false })); }
+  }
+  // frame meshes (local: front faces +z, centred; outer 1.56 x 1.96, top edge at y = 0.98)
+  // A slot runs through the top edge (z between SZ0 and SZ1) so the card drops in from above.
+  const SW = 1.14, SZ0 = -0.045, SZ1 = -0.008;
+  function ringS(g, ow, oh, iw, ih, z0, z1) {
+    const zc = (z0 + z1) / 2, d = z1 - z0, bh = (oh - ih) / 2, bw = (ow - iw) / 2, ty = (oh + ih) / 4;
+    box(g, 0, -ty, zc, ow, bh, d);
+    box(g, (ow + iw) / 4, 0, zc, bw, ih, d); box(g, -(ow + iw) / 4, 0, zc, bw, ih, d);
+    if (z1 <= SZ0 || z0 >= SZ1) { box(g, 0, ty, zc, ow, bh, d); return g; }
+    const sideW = (ow - SW) / 2;                                   // solid ends of the top bar
+    box(g, (ow + SW) / 4, ty, zc, sideW, bh, d); box(g, -(ow + SW) / 4, ty, zc, sideW, bh, d);
+    if (z1 > SZ1) box(g, 0, ty, (SZ1 + z1) / 2, SW, bh, z1 - SZ1);  // front lip of the slot
+    if (z0 < SZ0) box(g, 0, ty, (z0 + SZ0) / 2, SW, bh, SZ0 - z0);  // back lip of the slot
+    return g;
+  }
+  // ---- body of the frame (behind the moulding), with the slot cut through its top edge
+  const fg = G();
+  ringS(fg, 1.56, 1.96, 1.04, 1.44, -0.10, 0.0);
+  ringS(fg, 1.16, 1.56, 1.04, 1.44, -0.03, 0.04);           // sight edge that holds the card
+  const bodyMesh = upload(fg);
+
+  // ---- smooth rounded moulding swept round the rectangle (profile: inset d, height z)
+  function sweep(W, H, prof) {
+    const g = G();
+    // vertex normals per profile point (averaged from neighbouring segments)
+    const segN = []; for (let i = 0; i < prof.length - 1; i++) { const dd = prof[i + 1][0] - prof[i][0], dz = prof[i + 1][1] - prof[i][1]; const l = Math.hypot(dd, dz) || 1; segN.push([-dz / l, dd / l]); }
+    const vN = prof.map((_, i) => { const a = segN[Math.max(0, i - 1)], b = segN[Math.min(segN.length - 1, i)]; const n = [a[0] + b[0], a[1] + b[1]]; const l = Math.hypot(...n) || 1; return [n[0] / l, n[1] / l]; });
+    // sides: outward dir o, along dir t, half-lengths
+    const sides = [[[0, 1], [1, 0], W / 2, H / 2], [[0, -1], [-1, 0], W / 2, H / 2], [[-1, 0], [0, 1], H / 2, W / 2], [[1, 0], [0, -1], H / 2, W / 2]];
+    for (const [o, t, halfLen, halfOff] of sides) {
+      for (let i = 0; i < prof.length - 1; i++) {
+        const b = g.pos.length / 3;
+        for (const j of [i, i + 1]) {
+          const [d, z] = prof[j], [ni, nz] = vN[j];
+          const off = halfOff - d, len = halfLen - d;
+          for (const sgn of [-1, 1]) {
+            g.pos.push(o[0] * off + t[0] * len * sgn, o[1] * off + t[1] * len * sgn, z);
+            g.nor.push(-o[0] * ni, -o[1] * ni, nz); g.uv.push(0, 0);
+          }
+        }
+        g.idx.push(b, b + 1, b + 3, b, b + 3, b + 2);
+      }
+    }
+    return g;
+  }
+  const P = [[0, 0], [0, 0.03], [0.004, 0.038], [0.016, 0.042], [0.026, 0.036], [0.034, 0.04], [0.05, 0.062], [0.075, 0.09], [0.105, 0.11], [0.135, 0.116],
+             [0.165, 0.108], [0.19, 0.088], [0.207, 0.066], [0.216, 0.05], [0.222, 0.046], [0.244, 0.046], [0.25, 0.054], [0.256, 0.054], [0.26, 0.046], [0.26, 0.0]];
+  const mouldMesh = upload(sweep(1.56, 1.96, P));
+  const bandMesh = upload(sweep(1.56 - 2 * 0.222, 1.96 - 2 * 0.222, [[0, 0.047], [0.022, 0.047]]));   // pale inner flat
+
+  // ---- baked ornaments: fine beads on both edges + one corner ornament mirrored to all four corners
+  function addSph(g, cx, cy, cz, sx, sy, sz, rot = 0, seg = 10) {
+    const b = g.pos.length / 3, c = Math.cos(rot), s = Math.sin(rot);
+    for (let i = 0; i <= seg; i++) for (let j = 0; j <= seg * 2; j++) {
+      const th = i / seg * Math.PI, ph = j / (seg * 2) * Math.PI * 2;
+      const n = [Math.sin(th) * Math.cos(ph), Math.sin(th) * Math.sin(ph), Math.cos(th)];
+      const lx = n[0] * sx, ly = n[1] * sy;
+      g.pos.push(cx + lx * c - ly * s, cy + lx * s + ly * c, cz + n[2] * sz);
+      const nx = n[0] / sx, ny = n[1] / sy, nz = n[2] / sz, l = Math.hypot(nx, ny, nz);
+      g.nor.push((nx * c - ny * s) / l, (nx * s + ny * c) / l, nz / l); g.uv.push(0, 0);
+    }
+    const row = seg * 2 + 1;
+    for (let i = 0; i < seg; i++) for (let j = 0; j < seg * 2; j++) { const a = b + i * row + j; g.idx.push(a, a + row, a + 1, a + row, a + row + 1, a + 1); }
+  }
+  const bg = G();
+  for (const [w, h, z, r, step] of [[1.56 - 0.032, 1.96 - 0.032, 0.04, 0.0075, 0.02], [1.56 - 0.506, 1.96 - 0.506, 0.054, 0.0065, 0.017]]) {
+    for (const [x0, y0, x1, y1] of [[-w / 2, h / 2, w / 2, h / 2], [w / 2, -h / 2, -w / 2, -h / 2], [-w / 2, -h / 2, -w / 2, h / 2], [w / 2, h / 2, w / 2, -h / 2]]) {
+      const n = Math.round(Math.hypot(x1 - x0, y1 - y0) / step);
+      for (let i = 0; i < n; i++) { const t = i / n; addSph(bg, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, z, r, r, r, 0, 5); }
+    }
+  }
+  const beadMesh = upload(bg);
+  // one corner ornament for the top-left corner (corner at -0.78, +0.98); x grows inward along the top edge, -y inward down the side
+  const og = G(), CX = -0.78, CY = 0.98;
+  const at = (dx, dy) => [CX + dx, CY - dy];
+  // palmette fan pointing out of the corner
+  for (let k = -3; k <= 3; k++) {
+    const a = Math.PI * 0.75 + k * 0.21, len = 0.125 - Math.abs(k) * 0.01;
+    const [x, y] = at(0.13, 0.13); addSph(og, x + Math.cos(a) * len * 0.85, y + Math.sin(a) * len * 0.85, 0.11, len, 0.03, 0.03, a);
+  }
+  { const [x, y] = at(0.14, 0.14); addSph(og, x, y, 0.145, 0.068, 0.068, 0.045); addSph(og, x, y, 0.185, 0.028, 0.028, 0.02); }                 // rosette boss
+  for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; const [x, y] = at(0.13, 0.13); addSph(og, x + Math.cos(a) * 0.075 + 0.01, y + Math.sin(a) * 0.075 - 0.01, 0.13, 0.04, 0.02, 0.02, a); }
+  // scrolling tendrils along both edges, curling at the ends, with leaves and droplets
+  for (const along of [0, 1]) {
+    const pt = (u, v) => along === 0 ? at(u, v) : at(v, u);
+    const N = 26;
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, u = 0.17 + t * 0.3, v = 0.12 + Math.sin(t * Math.PI) * 0.035 - t * 0.02;
+      const r = 0.032 * (1 - t * 0.55); const [x, y] = pt(u, v); addSph(og, x, y, 0.11 + (1 - t) * 0.015, r, r, r * 0.85, 0, 7);
+    }
+    for (let i = 0; i <= 14; i++) {                                         // curl at the tip
+      const a = i / 14 * Math.PI * 1.6, rr = 0.035 * (1 - i / 22);
+      const [x, y] = pt(0.47 + Math.sin(a) * rr, 0.1 - (1 - Math.cos(a)) * rr * -1); addSph(og, x, y, 0.105, 0.016, 0.016, 0.013, 0, 6);
+    }
+    for (const [u, v, rot] of [[0.24, 0.165, 0.5], [0.33, 0.07, -0.6], [0.41, 0.15, 0.4]]) {   // acanthus leaves
+      const [x, y] = pt(u, v); const r2 = along === 0 ? rot : Math.PI / 2 - rot; addSph(og, x, y, 0.11, 0.065, 0.025, 0.022, r2, 8);
+    }
+    for (let k = 0; k < 3; k++) { const [x, y] = pt(0.53 + k * 0.03, 0.115 + (k % 2) * 0.012); addSph(og, x, y, 0.09, 0.011 - k * 0.002, 0.011 - k * 0.002, 0.009, 0, 6); }
+  }
+  const cornerMesh = upload(og);
+
+  const orn = upload(sphere(1, 18));
+  const cardG = G(); quad(cardG, [0, 0, 0], [0.54, 0, 0], [0, 0.74, 0], [0, 0, 1]); const cardMesh = upload(cardG);
+  const backG = G(); quad(backG, [0, 0, 0], [-0.76, 0, 0], [0, 0.96, 0], [0, 0, -1]); const backMesh = upload(backG);
+  const panelMesh = upload(box(G(), 0, 0, 0, 1.52, 1.92, 0.03));
+  const legMesh = upload(box(G(), 0, 0, 0, 0.13, 1.4, 0.035));
+  const slotDark = upload(box(G(), 0, 0, 0, SW, 0.05, SZ1 - SZ0));
+  const rimG = G();
+  box(rimG, 0, 0, SZ1 + 0.007, SW + 0.04, 0.012, 0.014); box(rimG, 0, 0, SZ0 - 0.007, SW + 0.04, 0.012, 0.014);
+  box(rimG, SW / 2 + 0.013, 0, (SZ0 + SZ1) / 2, 0.014, 0.012, SZ1 - SZ0 + 0.028); box(rimG, -SW / 2 - 0.013, 0, (SZ0 + SZ1) / 2, 0.014, 0.012, SZ1 - SZ0 + 0.028);
+  const rimMesh = upload(rimG);
+  const gilt = MAT({ color: [0.95, 0.72, 0.32], metal: 1, shin: 70, rough: 0.25 });
+  const giltBright = MAT({ color: [1.0, 0.8, 0.4], metal: 1, shin: 110, rough: 0.12 });
+  const giltPale = MAT({ color: [0.98, 0.84, 0.52], metal: 0.75, shin: 30, rough: 0.6 });
+  const blackVelvet = MAT({ color: [0.012, 0.008, 0.01], shin: 4, spec: 0.0 });
+
+  function frame(world, cardTex, opts = {}) {
+    grp("frame");
+    const tilt = -0.2;
+    const base = M.chain(world, M.T(0, 0.98 * Math.cos(tilt) + 0.01, 0), M.RX(tilt));
+    add(bodyMesh, base, gilt);
+    add(mouldMesh, base, gilt);
+    add(bandMesh, base, giltPale);
+    add(beadMesh, base, giltBright);
+    for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) add(cornerMesh, M.chain(base, M.S(sx, sy, 1)), giltBright);
+    add(slotDark, M.chain(base, M.T(0, 0.955, (SZ0 + SZ1) / 2)), blackVelvet);
+    add(rimMesh, M.chain(base, M.T(0, 0.986, 0)), giltBright);
+    const cz = (SZ0 + SZ1) / 2;
+    if (cardTex) add(cardMesh, M.chain(base, M.T(0, opts.cardLift || 0, cz)), MAT({ color: [0.95, 0.95, 0.95], tex: cardTex, shin: 25, spec: 0.05 }));
+    if (opts.cardOut) add(cardMesh, M.chain(base, M.T(0, opts.cardOut, cz), M.RY(Math.PI)), MAT({ tex: T.back, shin: 25, spec: 0.05 }));
+    add(panelMesh, M.chain(base, M.T(0, 0, -0.115)), MAT({ color: [0.09, 0.025, 0.035], shin: 6, spec: 0.01 }));
+    add(backMesh, M.chain(base, M.T(0, 0, -0.131)), woodBack);
+    add(legMesh, M.chain(base, M.T(0, 0.4, -0.14), M.RX(0.58), M.T(0, -0.68, -0.02)), MAT({ color: [0.2, 0.11, 0.06], shin: 15 }));
+    add(orn, M.chain(base, M.T(0, 0.4, -0.15), M.S(0.04, 0.04, 0.03)), gilt);
+  }
+
+  // tokens
+  const tc = cylinder(0.2, 0.065, 64);
+  const tokTop = upload(tc.top), tokBot = upload(tc.bot), tokSide = upload(tc.side);
+  function token(colour, val, x, z, rot, opts = {}) {
+    grp("token " + colour + val);
+    const up = opts.up || 0; // 0 = BOO side up, 1 = value side up
+    let m = M.chain(M.T(x, 0.0325 + (opts.y || 0), z), M.RY(rot));
+    if (opts.tilt) m = M.chain(m, M.RX(opts.tilt));
+    if (up) m = M.mul(m, M.RX(Math.PI));
+    const c = hexRGB(COLORS[colour]);
+    add(tokTop, m, MAT({ tex: tokTex[colour + 0], shin: 40, spec: 0.06 }));
+    add(tokBot, m, MAT({ tex: tokTex[colour + val], shin: 40, spec: 0.06 }));
+    add(tokSide, m, MAT({ color: c.map(v => v * 0.75), shin: 30, spec: 0.05 }));
+  }
+
+  // ---- budget edition: two-piece cardboard easel, thin punched tokens, tuck box
+  const K = 1.48 / 88;                                    // scene units per mm (card is 88 mm tall)
+  const chip = MAT({ color: [0.30, 0.27, 0.24], shin: 6, spec: 0.01 });
+  const pE = extrude(PANEL, TT), fE = extrude(FIN, TT);
+  const panelMesh2 = { front: upload(pE.front), back: upload(pE.back), side: upload(pE.side) };
+  const finMesh = { front: upload(fE.front), back: upload(fE.back), side: upload(fE.side) };
+  const paperTex = {};
+  const ptex = (hex) => paperTex[hex] || (paperTex[hex] = { own: texFrom(panelCanvas(hex, true)), tab: texFrom(panelCanvas(hex, false)), fin: texFrom(finCanvas(hex)) });
+  const cardTh = 0.32;
+  const th = Math.atan2(17 - 0.25 - TT / 2, 50 - 4);       // lean angle: hook to the panel's top edge
+  function piecePanel(m, hex) {   // m maps panel mm-space
+    const t = ptex(hex);
+    add(panelMesh2.front, m, MAT({ tex: t.tab, shin: 14, spec: 0.03 }));
+    add(panelMesh2.back, m, MAT({ tex: t.own, shin: 14, spec: 0.03 }));
+    add(panelMesh2.side, m, chip);
+  }
+  function pieceFin(m, hex) {
+    const t = ptex(hex);
+    add(finMesh.front, m, MAT({ tex: t.fin, shin: 14, spec: 0.03 })); add(finMesh.back, m, MAT({ tex: t.fin, shin: 14, spec: 0.03 })); add(finMesh.side, m, chip);
+  }
+  function easel(world, hex, cardTex) {
+    grp("stand " + hex);
+    const W = M.chain(world, M.S(K, K, K));               // local mm space; +z faces the other players
+    piecePanel(W, hex);
+    pieceFin(M.chain(W, M.RY(-Math.PI / 2)), hex);
+    if (cardTex) {
+      const bu = 17 - cardTh / 2 - 0.05, by = 4;          // card's bottom edge sits on the seat behind the hook
+      const cu = bu - Math.sin(th) * 44, cy = by + Math.cos(th) * 44;
+      const cm = M.chain(world, M.T(0, cy * K, cu * K), M.RX(-th));
+      add(cardMesh, M.chain(cm, M.T(0, 0, cardTh / 2 * K)), MAT({ color: [0.95, 0.95, 0.95], tex: cardTex, shin: 25, spec: 0.05 }));
+      add(cardMesh, M.chain(cm, M.T(0, 0, -cardTh / 2 * K), M.RY(Math.PI)), MAT({ color: [0.95, 0.95, 0.95], tex: T.back, shin: 25, spec: 0.05 }));
+    }
+  }
+  const tcs = cylinder(9 * K, 2.0 * K, 64);
+  const tsTop = upload(tcs.top), tsBot = upload(tcs.bot), tsSide = upload(tcs.side);
+  function chipToken(colour, val, x, z, rot, opts = {}) {
+    grp("token " + colour + val);
+    let m = M.chain(M.T(x, 1.0 * K + (opts.y || 0), z), M.RY(rot));
+    if (opts.up) m = M.mul(m, M.RX(Math.PI));
+    add(tsTop, m, MAT({ tex: tokTex[colour + 0], shin: 14, spec: 0.03 }));
+    add(tsBot, m, MAT({ tex: tokTex[colour + val], shin: 14, spec: 0.03 }));
+    add(tsSide, m, chip);
+  }
+  function tuckBox(x, z, rot) {   // the deck box, 70 x 98 x 20 mm, lying lid up, with its own lid, side and end art
+    grp("box");
+    const w = 70 * K, d = 98 * K, h = 20 * K, m = M.chain(M.T(x, 0, z), M.RY(rot));
+    const face = (c, U, V, n, tex) => { const g = G(); quad(g, c, U, V, n); add(upload(g), m, MAT({ tex, shin: 22, spec: 0.05 })); };
+    face([0, h, 0], [w / 2, 0, 0], [0, 0, -d / 2], [0, 1, 0], T.boxTop);
+    face([w / 2, h / 2, 0], [0, 0, -d / 2], [0, h / 2, 0], [1, 0, 0], T.boxSide);
+    face([-w / 2, h / 2, 0], [0, 0, d / 2], [0, h / 2, 0], [-1, 0, 0], T.boxSide);
+    face([0, h / 2, d / 2], [w / 2, 0, 0], [0, h / 2, 0], [0, 0, 1], T.boxEnd);
+    face([0, h / 2, -d / 2], [-w / 2, 0, 0], [0, h / 2, 0], [0, 0, -1], T.boxEnd);
+  }
+  function flatPieces(x, z, rot, hex, colour, opts = {}) {   // one player's board, punched out and laid flat, every piece clear of the next
+    const base = M.chain(M.T(x, 0, z), M.RY(rot));
+    grp("panel " + colour); piecePanel(M.chain(base, M.T(0, TT / 2 * K, 0.42), M.S(K, K, K), M.RX(Math.PI / 2), M.RZ(Math.PI)), hex);
+    grp("fin " + colour); pieceFin(M.chain(base, M.T(0.06, TT / 2 * K, 0.8), M.S(K, K, K), M.RX(-Math.PI / 2)), hex);
+    const up = opts.up || [1, 1, 1];
+    [3, 2, 1].forEach((v, i) => chipToken(colour, v, x + (i - 1) * 0.37, z + 1.13, 0, { up: up[i] }));
+    return base;
+  }
+
+  // candle
+  function candle(x, z, s = 1) {
+    grp("candle");
+    const dish = cylinder(0.34 * s, 0.05, 64);
+    add(upload(dish.top), M.T(x, 0.03, z), MAT({ color: [0.75, 0.52, 0.22], metal: 1, shin: 50, rough: 0.3 }));
+    add(upload(dish.side), M.T(x, 0.03, z), MAT({ color: [0.6, 0.4, 0.16], metal: 1, shin: 40 }));
+    const cnd = cylinder(0.12 * s, 0.6 * s, 48);
+    add(upload(cnd.side), M.T(x, 0.06 + 0.3 * s, z), MAT({ color: [0.95, 0.88, 0.74], shin: 8, spec: 0.02, emis: [0.05, 0.025, 0.005] }));
+    add(upload(cnd.top), M.T(x, 0.06 + 0.3 * s, z), MAT({ color: [0.98, 0.92, 0.8], emis: [0.12, 0.06, 0.02] }));
+    add(orn, M.chain(M.T(x, 0.06 + 0.6 * s + 0.1 * s, z), M.S(0.045 * s, 0.11 * s, 0.045 * s)), MAT({ color: [0, 0, 0], emis: [9, 5.2, 1.6], shadow: false }));
+    return [x, 0.06 + 0.6 * s + 0.12 * s, z];
+  }
+
+  // flat card on table
+  function flatCard(tex, x, z, rot, y = 0.002) {
+    grp("card");
+    const g = G(); quad(g, [0, 0, 0], [0.5, 0, 0], [0, 0, -0.7], [0, 1, 0]);
+    add(upload(g), M.chain(M.T(x, y, z), M.RY(rot)), MAT({ color: [0.82, 0.82, 0.82], tex, shin: 20, spec: 0.04 }));
+  }
+  function deck(x, z, rot, n = 6, tex = null) {
+    grp("deck");
+    const th = CLEAN ? 0.0062 : 0.012;                    // clean scenes: real card thickness
+    const m = M.chain(M.T(x, 0, z), M.RY(rot));
+    add(upload(box(G(), 0, th * n / 2, 0, CLEAN ? 1.06 : 1.0, th * n, CLEAN ? 1.48 : 1.4)), m, MAT({ color: [0.92, 0.88, 0.8], shin: 10 }));
+    const g = G(); quad(g, [0, th * n + 0.001, 0], [CLEAN ? 0.53 : 0.5, 0, 0], [0, 0, CLEAN ? -0.74 : -0.7], [0, 1, 0]);
+    add(upload(g), m, MAT({ tex: tex || T.back, shin: 25, spec: 0.05 }));
+  }
+  function doily(x, z, r) {
+    grp("doily");
+    const g = G(); quad(g, [0, 0.003, 0], [r, 0, 0], [0, 0, -r], [0, 1, 0]);
+    add(upload(g), M.T(x, 0, z), MAT({ tex: T.doily, cut: 0.5, shin: 5, spec: 0.01 }));
+  }
+
+  let cam, look, fov, flame, light;
+  if (SCENE === "dusk" || SCENE === "midnight") {
+    const N = 5, RF = 5.0, RP = 4.05;
+    const roles = ["ghost", "ghost", "living", "ghost", "living"];
+    const piles = [
+      [["blue", 2], ["pink", 1], ["green", 3]],
+      [["red", 3], ["orange", 1]],
+      [["blue", 3], ["green", 2], ["orange", 3], ["pink", 2]],
+      [["red", 1], ["orange", 2], ["blue", 1]],
+      [["green", 1], ["red", 2]],
+    ];
+    for (let i = 0; i < N; i++) {
+      const th = i / N * Math.PI * 2;
+      const world = M.chain(M.T(RF * Math.sin(th), 0, RF * Math.cos(th)), M.RY(th + Math.PI));
+      frame(world, i === 0 ? T[roles[0]] : T[roles[i]]);
+      // pile in front of the frame, toward the centre; seat 0's pile sits a little to the side so the camera sees it
+      const tx = Math.cos(th), tz = -Math.sin(th);                 // tangent
+      const off = i === 0 ? (SCENE === "midnight" ? 1.9 : -1.7) : 0;
+      piles[i].forEach(([col, v], k) => {
+        const a = (k - (piles[i].length - 1) / 2) * 0.5 + off + (hash(i, k) - 0.5) * 0.04;
+        const rr = RP - (hash(k, i) - 0.5) * 0.08 - (k % 2) * 0.1;
+        token(col, v, rr * Math.sin(th) + tx * a, rr * Math.cos(th) + tz * a, (hash(i * 3, k) - 0.5) * 1.1 + (SCENE === "midnight" ? 0.25 : -0.25), { up: SCENE === "dusk" ? 1 : 0 });
+      });
+    }
+    doily(0, 0, 1.25);
+    flame = candle(0, 0, 1.15);
+    deck(1.5, -0.9, 0.5, 8);
+    if (SCENE === "midnight") flatCard(T.score, 2.6, 2.65, -0.35); else flatCard(T.score, -2.95, 2.25, 0.35);
+    cam = [-3.5, 6.5, 13.2]; look = [0.3, 0.3, 0.5]; fov = 34;
+    if (SCENE === "midnight") { cam = [3.4, 5.8, 13.0]; look = [-0.3, 0.35, 0.4]; }
+  } else if (SCENE === "frames") {
+    frame(M.chain(M.T(-1.05, 0, 0), M.RY(0.38)), T.living);
+    frame(M.chain(M.T(1.15, 0, -0.2), M.RY(Math.PI - 0.6)), null, { cardOut: 0.95 });
+    token("purple", 3, -0.55, 1.15, 0.25, { up: 1 }); token("teal", 2, 0.02, 1.32, -0.3, { up: 1 }); token("pink", 1, 1.25, 1.2, 0.2, { up: 0 });
+    flame = candle(0.05, -2.7, 1.0);
+    cam = [0.15, 2.7, 6.2]; look = [0.1, 1.0, 0]; fov = 32;
+  } else if (SCENE === "slot") {
+    frame(M.chain(M.T(0, 0, 0), M.RY(0.28)), T.ghost, { cardLift: 0.62 });
+    token("blue", 3, -0.55, 0.95, 0.2, { up: 1 }); token("red", 2, 0.0, 1.05, -0.2, { up: 1 });
+    flame = candle(-1.75, 0.75, 0.8);
+    cam = [0.95, 4.4, 2.75]; look = [0.0, 0.9, 0.05]; fov = 36;
+  } else if (SCENE === "tokens") {
+    const cols = ["red", "blue", "green", "yellow"];
+    // front row: each colour shown BOO! side, then number side
+    token("red", 3, -1.0, -0.02, 0.15, { up: 0 }); token("red", 3, -0.5, 0.0, -0.1, { up: 1 });
+    token("blue", 2, 0.0, -0.03, 0.4, { up: 0 }); token("blue", 2, 0.5, 0.0, 0.1, { up: 1 });
+    token("pink", 1, 1.0, -0.02, -0.3, { up: 0 });
+    // back row
+    token("green", 1, -0.75, 0.52, 0.2, { up: 1 }); token("purple", 2, -0.25, 0.54, -0.25, { up: 0 });
+    token("teal", 3, 0.25, 0.53, -0.15, { up: 1 }); token("orange", 3, 0.75, 0.52, 0.25, { up: 1 });
+    // a neat little stack: the top token sits squarely on the one below
+    token("yellow", 2, 1.25, 0.53, 0.15, { up: 1 });
+    flatCard(T.living, -0.35, -1.12, -0.12); flatCard(T.ghost, 0.85, -1.05, 0.2);
+    flame = candle(-2.2, -2.0, 0.9);
+    cam = [0.14, 2.2, 2.85]; look = [0.14, 0.0, -0.05]; fov = 36;
+  }
+  if (SCENE === "easel") {
+    easel(M.chain(M.T(-0.7, 0, -0.1), M.RY(0.42)), COLORS.purple, T.ghost);
+    easel(M.chain(M.T(0.95, 0, -0.35), M.RY(Math.PI - 0.62)), COLORS.teal, T.living);
+    flatPieces(1.55, 0.75, 0, COLORS.pink, "pink");
+    tuckBox(-1.72, 0.8, 0.12);
+    deck(-0.42, 1.25, -0.08, 3);
+    chipToken("teal", 3, 0.32, 1.0, 0.3, { up: 1 }); chipToken("pink", 2, 0.66, 1.14, -0.2, { up: 1 }); chipToken("orange", 1, 0.42, 1.44, 0.1, { up: 0 });
+    flame = candle(-2.3, -1.9, 1.0);
+    cam = [0.05, 2.9, 5.4]; look = [0.0, 0.45, 0.35]; fov = 36;
+  } else if (SCENE === "budget") {
+    const N = 5, RF = 2.95, RP = 2.3;
+    const roles = ["ghost", "ghost", "living", "ghost", "living"], seat = ["orange", "blue", "red", "green", "pink"];
+    const piles = [[["blue", 2], ["pink", 1], ["green", 3]], [["red", 3], ["orange", 1]], [["blue", 3], ["green", 2], ["orange", 3], ["pink", 2]], [["red", 1], ["orange", 2], ["blue", 1]], [["green", 1], ["red", 2]]];
+    for (let i = 0; i < N; i++) {
+      const a = i / N * Math.PI * 2;
+      easel(M.chain(M.T(RF * Math.sin(a), 0, RF * Math.cos(a)), M.RY(a + Math.PI)), COLORS[seat[i]], T[roles[i]]);
+      const tx = Math.cos(a), tz = -Math.sin(a), off = i === 0 ? 0.75 : 0;
+      piles[i].forEach(([col, v], k) => {
+        const s = (k - (piles[i].length - 1) / 2) * 0.36 + off + (hash(i, k) - 0.5) * 0.03, rr = RP - (k % 2) * 0.07;
+        chipToken(col, v, rr * Math.sin(a) + tx * s, rr * Math.cos(a) + tz * s, hash(i * 3, k) * 2, { up: 1 });
+      });
+    }
+    doily(0, 0, 0.8);
+    flame = candle(0, 0, 0.8);
+    cam = [-1.95, 3.7, 7.2]; look = [0.2, 0.25, 0.45]; fov = 34;
+  }
+  let glow = true;
+  if (SCENE === "c_box") {           // hero: the box, a Ghost and a Living in their stands, one player's Boos
+    tuckBox(-1.68, 0.3, 0.2);
+    easel(M.chain(M.T(-0.3, 0, -0.35), M.RY(0.1)), COLORS.blue, T.ghost);
+    easel(M.chain(M.T(1.15, 0, -0.35), M.RY(-0.1)), COLORS.orange, T.living);
+    [["blue", 3, 1], ["blue", 2, 1], ["blue", 1, 1], ["pink", 2, 0], ["green", 1, 0]].forEach(([c, v, up], i) => chipToken(c, v, -0.4 + i * 0.44, 1.22, 0, { up }));
+    flame = candle(2.45, -0.75, 0.85);
+    cam = [0.25, 3.05, 6.0]; look = [0.2, 0.5, -0.15]; fov = 32;
+  } else if (SCENE === "c_kit") {    // everything in the box, laid out flat
+    tuckBox(-3.75, 0.05, 0);
+    deck(-2.35, -0.85, 0, 9, T.ghost); deck(-2.35, 1.05, 0, 8, T.living);
+    const cols = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink"];
+    cols.forEach((c, i) => flatPieces(-0.75 + (i % 4) * 1.22, i < 4 ? -1.75 : 0.42, 0, COLORS[c], c, { up: [1, 1, 0] }));
+    flame = [-5, 3.5, -4]; glow = false;
+    cam = [-0.3, 8.6, 2.2]; look = [-0.3, 0, 0.12]; fov = 36;
+  } else if (SCENE === "c_table" || SCENE === "c_deluxe") {   // five players, seen from above so nothing hides anything
+    const deluxe = SCENE === "c_deluxe", N = 5, RF = deluxe ? 3.4 : 2.75, RP = deluxe ? 1.95 : 1.8;
+    const roles = ["ghost", "ghost", "living", "ghost", "living"], seat = ["orange", "blue", "red", "green", "pink"];
+    const piles = [[["blue", 2], ["pink", 1], ["green", 3]], [["red", 3], ["orange", 1]], [["blue", 3], ["green", 2], ["orange", 3], ["pink", 2]], [["red", 1], ["orange", 2], ["blue", 1]], [["green", 1], ["red", 2]]];
+    for (let i = 0; i < N; i++) {
+      const a = (i + 0.5) / N * Math.PI * 2, world = M.chain(M.T(RF * Math.sin(a), 0, RF * Math.cos(a)), M.RY(a + Math.PI));
+      if (deluxe) frame(world, T[roles[i]]); else easel(world, COLORS[seat[i]], T[roles[i]]);
+      const tx = Math.cos(a), tz = -Math.sin(a);
+      piles[i].forEach(([col, v], k) => {
+        const sp = (k - (piles[i].length - 1) / 2) * (deluxe ? 0.58 : 0.43);
+        if (deluxe) token(col, v, RP * Math.sin(a) + tx * sp, RP * Math.cos(a) + tz * sp, a, { up: 1 });
+        else chipToken(col, v, RP * Math.sin(a) + tx * sp, RP * Math.cos(a) + tz * sp, a, { up: 1 });
+      });
+    }
+    flame = candle(0, 0, deluxe ? 1.0 : 0.8);
+    cam = deluxe ? [0, 9.6, 8.6] : [0, 7.0, 7.2]; look = [0, 0.3, 0.1]; fov = deluxe ? 38 : 37;
+  }
+  light = SCENE === "midnight"
+    ? { dir: norm([0.55, -1.0, -0.35]), col: [0.5, 0.62, 1.0].map(v => v * 1.3), pt: [1.0, 0.62, 0.28].map(v => v * 6.5), sky: [0.03, 0.04, 0.08], ground: [0.02, 0.015, 0.02], fog: [0.01, 0.01, 0.02], expo: 1.25 }
+    : { dir: norm([-0.55, -1.0, -0.6]), col: [1.0, 0.8, 0.6].map(v => v * 2.4), pt: [1.0, 0.62, 0.28].map(v => v * 3.2), sky: [0.13, 0.11, 0.14], ground: [0.06, 0.04, 0.03], fog: [0.012, 0.009, 0.009], expo: 1.05 };
+  if (CLEAN) light.fog = [0.016, 0.011, 0.02];
+  return { cam, look, fov, flame, light, glow };
+}
+
+async function main() {
+  const S = await build();
+  const main = prog(VS, FS), sh = prog(SVS, SFS), gp = prog(GVS, GFS);
+  // shadow map
+  const SM = 4096, dtex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, dtex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, SM, SM, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dtex, 0);
+  gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
+  const span = SCENE === "dusk" || SCENE === "midnight" || SCENE === "c_deluxe" ? 7.5 : SCENE === "budget" || CLEAN ? 5.6 : 4.2;
+  const L = S.light, lpos = [-L.dir[0] * 20, -L.dir[1] * 20, -L.dir[2] * 20];
+  const lightVP = M.mul(M.ortho(-span, span, -span, span, 1, 45), M.look(lpos, [0, 0, 0], [0, 1, 0]));
+  gl.viewport(0, 0, SM, SM); gl.enable(gl.DEPTH_TEST); gl.clear(gl.DEPTH_BUFFER_BIT);
+  gl.useProgram(sh.p); gl.uniformMatrix4fv(sh.u.uLightVP, false, lightVP);
+  gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3.0);
+  for (const d of S.draws || draws) { if (!d.mat.shadow) continue; gl.uniformMatrix4fv(sh.u.uModel, false, d.model); gl.bindVertexArray(d.mesh.vao); gl.drawElements(gl.TRIANGLES, d.mesh.n, gl.UNSIGNED_INT, 0); }
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  // main pass
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H);
+  const fogc = L.fog; gl.clearColor(...fogc.map(v => Math.pow(v, 1 / 2.2)), 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const VP = M.mul(M.persp(S.fov * Math.PI / 180, W / H, 0.1, 80), M.look(S.cam, S.look, [0, 1, 0]));
+  gl.useProgram(main.p); const u = main.u;
+  gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniformMatrix4fv(u.uLightVP, false, lightVP);
+  gl.uniform3fv(u.uKeyDir, L.dir); gl.uniform3fv(u.uKeyCol, L.col); gl.uniform3fv(u.uPtPos, S.flame); gl.uniform3fv(u.uPtCol, L.pt);
+  gl.uniform3fv(u.uSky, L.sky); gl.uniform3fv(u.uGround, L.ground); gl.uniform3fv(u.uCam, S.cam); gl.uniform3fv(u.uFog, fogc);
+  gl.uniform2f(u.uRes, W, H); gl.uniform1f(u.uExpo, L.expo); gl.uniform1f(u.uVig, 0.85);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, dtex); gl.uniform1i(u.uShadow, 1);
+  gl.uniform1i(u.uTex, 0);
+  for (const d of draws) {
+    const m = d.mat; gl.uniformMatrix4fv(u.uModel, false, d.model); gl.uniformMatrix3fv(u.uNM, false, M.normalMat(d.model));
+    gl.uniform3fv(u.uColor, m.color); gl.uniform1f(u.uMetal, m.metal); gl.uniform1f(u.uShin, m.shin); gl.uniform1f(u.uSpec, m.spec);
+    gl.uniform3fv(u.uEmis, m.emis); gl.uniform1f(u.uAlphaCut, m.cut); gl.uniform1f(u.uRough, m.rough);
+    gl.uniform1i(u.uHasTex, m.tex ? 1 : 0); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, m.tex);
+    gl.bindVertexArray(d.mesh.vao); gl.drawElements(gl.TRIANGLES, d.mesh.n, gl.UNSIGNED_INT, 0);
+  }
+  if (Q.get("check")) window.__check = overlapCheck(VP);
+  // candle glow
+  if (S.glow !== false) {
+  const view = M.look(S.cam, S.look, [0, 1, 0]); const R = [view[0], view[4], view[8]], Uv = [view[1], view[5], view[9]];
+  const qg = G(); quad(qg, [0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]); const qm = upload(qg);
+  gl.useProgram(gp.p); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false);
+  gl.uniformMatrix4fv(gp.u.uVP, false, VP); gl.uniform3fv(gp.u.uC, S.flame); gl.uniform3fv(gp.u.uR, R); gl.uniform3fv(gp.u.uU, Uv);
+  for (const [sz, col, k] of [[1.6, [0.22, 0.12, 0.04], 5.0], [0.45, [0.5, 0.35, 0.15], 6.0]]) {
+    gl.uniform1f(gp.u.uSz, sz); gl.uniform3fv(gp.u.uCol, col); gl.uniform1f(gp.u.uK, k);
+    gl.bindVertexArray(qm.vao); gl.drawElements(gl.TRIANGLES, qm.n, gl.UNSIGNED_INT, 0);
+  }
+  }
+  gl.finish();
+  window.__done = true;
+}
+// Draw each object's silhouette on its own; any two silhouettes that share pixels overlap on screen.
+// "near" also flags pairs closer than PAD pixels, and "cut" flags objects touching the frame edge.
+function overlapCheck(VP) {
+  const MW = 800, MH = Math.round(800 * H / W), PAD = 3;
+  const mp = prog(`#version 300 es
+in vec3 aPos; in vec3 aNor; in vec2 aUv; uniform mat4 uModel, uVP; void main(){ gl_Position = uVP * uModel * vec4(aPos, 1.0); }`,
+    `#version 300 es
+precision highp float; out vec4 o; void main(){ o = vec4(1.0); }`);
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, MW, MH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  gl.viewport(0, 0, MW, MH); gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND); gl.useProgram(mp.p); gl.uniformMatrix4fv(mp.u.uVP, false, VP);
+  const px = new Uint8Array(MW * MH * 4), masks = {}, cut = [];
+  for (const g of GROUPS) {
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    for (const d of draws) if (d.gid === g) { gl.uniformMatrix4fv(mp.u.uModel, false, d.model); gl.bindVertexArray(d.mesh.vao); gl.drawElements(gl.TRIANGLES, d.mesh.n, gl.UNSIGNED_INT, 0); }
+    gl.readPixels(0, 0, MW, MH, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    const m = new Uint8Array(MW * MH); let edge = false, any = false;
+    for (let i = 0; i < MW * MH; i++) if (px[i * 4]) { m[i] = 1; any = true; const x = i % MW, y = (i / MW) | 0; if (x === 0 || y === 0 || x === MW - 1 || y === MH - 1) edge = true; }
+    if (!any) { cut.push(g + " (off screen)"); continue; }
+    if (edge) cut.push(g);
+    masks[g] = m;
+  }
+  const dil = (m) => { const o = new Uint8Array(m.length); for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (m[y * MW + x])
+    for (let dy = -PAD; dy <= PAD; dy++) for (let dx = -PAD; dx <= PAD; dx++) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < MW && Y < MH) o[Y * MW + X] = 1; } return o; };
+  const names = Object.keys(masks), dm = {}; names.forEach(n => dm[n] = dil(masks[n]));
+  const overlap = [], near = [];
+  for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+    const a = masks[names[i]], b = masks[names[j]], da = dm[names[i]]; let c = 0, n = 0;
+    for (let k = 0; k < a.length; k++) { if (b[k]) { if (a[k]) c++; else if (da[k]) n++; } }
+    if (c) overlap.push([names[i], names[j], c]); else if (n) near.push([names[i], names[j], n]);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.enable(gl.DEPTH_TEST);
+  return { overlap, near, cut, objects: names.length };
+}
+main().catch(e => { window.__err = String(e && e.stack || e); });
+</script>
+</body></html>

@@ -4,53 +4,57 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
 <title>Boo Who?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IM+Fell+English+SC&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
 /* Layout: a parlour table seen from above — seats as portrait cards, one action panel underneath, a quiet log at the foot. */
 :root {
-  --bg: #ecebf3;          /* faded lilac wallpaper */
-  --surface: #f8f7fc;
-  --surface-2: #e2e0ee;
-  --ink: #26223a;
-  --muted: #6a6585;
-  --line: #cfcbe0;
-  --ghost: #5b5f97;       /* ghost violet */
-  --ghost-soft: #dcdcf1;
+  --bg: #f7f2e6;          /* parchment, as on the game page */
+  --surface: #fffdf8;
+  --surface-2: #efe6d0;
+  --ink: #211e3d;
+  --muted: #5f5a74;
+  --line: #e2d6b8;
+  --ghost: #2b2856;       /* the box's violet */
+  --ghost-soft: #ebe5f4;
+  --gold: #d8b46a; --gold-d: #9c7a3c;
   --living: #d9662b;      /* warm living orange */
   --living-soft: #fbe6d9;
   --candle: #e3a23a;      /* candlelight accent */
   --death: #3b3552;
   --good: #2e8a5b;
   --bad: #b8344a;
-  --focus: #5b5f97;
-  --font-display: "Sniglet", "Trebuchet MS", system-ui, sans-serif;
+  --focus: #2b2856;
+  --font-display: "Spectral", Georgia, serif;
+  --font-caps: "IM Fell English SC", Georgia, serif;
   --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #19161f; --surface: #231f2d; --surface-2: #2e2939; --ink: #ece9f5; --muted: #a8a2bf;
-    --line: #3b3549; --ghost: #9da2e0; --ghost-soft: #34345a; --living: #f08a52; --living-soft: #4a2c1e;
+    --bg: #17152c; --surface: #221f40; --surface-2: #2b2856; --ink: #f4e7c6; --muted: #bdb4d2;
+    --line: #38335e; --ghost: #e6c67e; --ghost-soft: #2b2856; --living: #f08a52; --living-soft: #4a2c1e;
     --candle: #f0b85a; --death: #8a80b0; --good: #5cc28d; --bad: #f07b8d; --focus: #b6b9f0; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #19161f; --surface: #231f2d; --surface-2: #2e2939; --ink: #ece9f5; --muted: #a8a2bf;
-  --line: #3b3549; --ghost: #9da2e0; --ghost-soft: #34345a; --living: #f08a52; --living-soft: #4a2c1e;
+  --bg: #17152c; --surface: #221f40; --surface-2: #2b2856; --ink: #f4e7c6; --muted: #bdb4d2;
+  --line: #38335e; --ghost: #e6c67e; --ghost-soft: #2b2856; --living: #f08a52; --living-soft: #4a2c1e;
   --candle: #f0b85a; --death: #8a80b0; --good: #5cc28d; --bad: #f07b8d; --focus: #b6b9f0; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font-body); margin: 0; }
 .wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 18px; }
 header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; }
-h1 { font: 800 clamp(2rem, 6vw, 2.8rem)/1 var(--font-display); margin: 0; letter-spacing: .01em; }
-.tag { margin: 4px 0 0; color: var(--ghost); font-style: italic; }
+h1 { font: 700 clamp(2.2rem, 6vw, 3rem)/1 var(--font-display); margin: 0; letter-spacing: -.01em; color: var(--ghost); text-shadow: 0 3px 0 var(--gold); }
+.tag { margin: 6px 0 0; color: var(--gold-d); font: 1.05rem var(--font-caps); letter-spacing: .05em; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) h1 { color: var(--ink); text-shadow: 0 3px 0 var(--gold-d); } :root:not([data-theme="light"]) .tag { color: var(--gold); } }
 .meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pill { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
 .steps { display: flex; flex-wrap: wrap; gap: 6px; }
-.step { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; color: var(--muted); border: 1px dashed var(--line); }
+.step { font: .92rem var(--font-caps); letter-spacing: .05em; padding: 4px 10px; border-radius: 999px; color: var(--muted); border: 1px dashed var(--line); }
 .step.on { color: var(--ink); border: 1px solid var(--ghost); background: var(--ghost-soft); }
 
 .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
@@ -67,12 +71,12 @@ h1 { font: 800 clamp(2rem, 6vw, 2.8rem)/1 var(--font-display); margin: 0; letter
 .card { position: relative; aspect-ratio: 5 / 7; width: 100%; border-radius: 10px; overflow: hidden; transition: transform .35s ease; box-shadow: 0 2px 6px rgba(20, 14, 40, .25); background: #2a2650; }
 .card img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .card.hidden .veil { position: absolute; inset: auto 8px 10px; padding: 5px 6px; border-radius: 8px; background: rgba(20, 16, 40, .78); color: #f3ead2; font: 400 .72rem/1.3 var(--font-body); text-align: center; }
-.card.hidden .q { position: absolute; inset: 0 0 auto; margin-top: 12%; text-align: center; font: 800 2rem var(--font-display); color: #f3ead2; text-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.card.hidden .q { position: absolute; inset: 0 0 auto; margin-top: 12%; text-align: center; font: 700 2rem var(--font-display); color: #f3ead2; text-shadow: 0 2px 6px rgba(0,0,0,.5); }
 .card.flip { animation: flip .5s ease; }
 @keyframes flip { 0% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
 .boos { display: flex; flex-wrap: wrap; gap: 4px; min-height: 32px; align-items: center; }
 /* Two-sided Boo tokens: number side is cream with the owner's colour; BOO! side is the owner's colour with a little ghost */
-.boo { --c: #888; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #fbf5e8; color: var(--c); font: 800 1.05rem/1 var(--font-display); box-shadow: inset 0 0 0 3px var(--c), 0 1px 2px rgba(0,0,0,.25); font-variant-numeric: tabular-nums; }
+.boo { --c: #888; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #fbf5e8; color: var(--c); font: 700 1.05rem/1 var(--font-display); box-shadow: inset 0 0 0 3px var(--c), 0 1px 2px rgba(0,0,0,.25); font-variant-numeric: tabular-nums; }
 .boo.down { background: var(--c); color: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,.55), 0 1px 2px rgba(0,0,0,.25); }
 .boo.down svg { width: 58%; height: auto; }
 .boo.new { animation: pop .3s ease both; }
@@ -85,7 +89,7 @@ h1 { font: 800 clamp(2rem, 6vw, 2.8rem)/1 var(--font-display); margin: 0; letter
 .arc span.on { color: #fff; border-color: transparent; }
 .arc span.done { text-decoration: line-through; text-decoration-color: var(--muted); }
 .twist { display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; border-radius: 12px; color: #fff; font-size: .92rem; }
-.twist b { font: 800 1.05rem var(--font-display); letter-spacing: .02em; white-space: nowrap; }
+.twist b { font: 700 1.05rem var(--font-display); letter-spacing: .02em; white-space: nowrap; }
 .r1, .arc span.r1 { background: #b8603d; } .r2, .arc span.r2 { background: #2a2856; } .r3, .arc span.r3 { background: #6a3590; }
 .boocount { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .badge { font-size: .74rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; justify-self: start; color: #fff; }
@@ -96,7 +100,7 @@ h1 { font: 800 clamp(2rem, 6vw, 2.8rem)/1 var(--font-display); margin: 0; letter
 .choice { font-size: .78rem; color: var(--muted); }
 
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; }
-.panel h2 { font: 800 1.35rem/1.2 var(--font-display); margin: 0; text-wrap: balance; }
+.panel h2 { font: 700 1.35rem/1.2 var(--font-display); margin: 0; text-wrap: balance; }
 .panel p { margin: 0; max-width: 65ch; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 button.btn { font: 700 1rem var(--font-body); border-radius: 12px; padding: 10px 16px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -115,10 +119,25 @@ label.toggle { display: inline-flex; gap: 8px; align-items: center; font-size: .
 details.rules, .log { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
 details.rules summary { cursor: pointer; font-weight: 700; }
 details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px; max-width: 70ch; }
-.log h3 { margin: 0 0 6px; font: 800 1rem var(--font-display); }
+.log h3 { margin: 0 0 6px; font: 700 1rem var(--font-display); }
 .log ol { margin: 0; padding-left: 1.2em; font-size: .85rem; color: var(--muted); display: grid; gap: 2px; max-height: 200px; overflow: auto; }
+/* tutorial coach and start screen */
+.coach { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; background: #24224a; color: #f3ead2; border: 2px solid #c9a14f; }
+.coach .who { font: 700 .78rem var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: #e6c67e; }
+.coach p { margin: 0; max-width: 70ch; }
+.coach b { color: #fff; }
+.coach .btn { justify-self: start; }
+.seat.spot { border-color: #c9a14f; box-shadow: 0 0 0 3px #c9a14f; animation: spot 1.4s ease-in-out infinite; }
+@keyframes spot { 50% { box-shadow: 0 0 0 7px rgba(201,161,79,.35); } }
+.intro { display: grid; gap: 14px; }
+.intro .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.intro .choice-card { display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); }
+.intro .choice-card h3 { margin: 0; font: 700 1.2rem var(--font-display); }
+.intro .choice-card p { color: var(--muted); }
+.intro .cards { display: flex; gap: 10px; }
+.intro .cards img { width: 84px; border-radius: 7px; box-shadow: 0 2px 6px rgba(20,14,40,.3); }
 .byround { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-@media (prefers-reduced-motion: reduce) { .boo, .boo.turn, .card.flip { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .boo, .boo.turn, .card.flip, .seat.spot { animation: none; } }
 </style>
 </head>
 <body>
@@ -174,6 +193,35 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   const R = () => ARC[S.round - 1];
 
   let S = null;
+  // ---- tutorial: one scripted Dusk round at five players, with a coach ----
+  // You are Living, so the right call is to run. Bram is the other Living. Every bot's Boos and call are fixed,
+  // so the coach can point at what really happens: your 3 on Bram pays when he stays, your bluff on Cleo pays when she runs.
+  const TUT = {
+    roles: ["L", "G", "L", "G", "G"],                                    // You, Agnes, Bram, Cleo, Dmitri
+    plans: [null, [[0, 3], [2, 2], [3, 1]], [[3, 3], [0, 2], [4, 1]], [[2, 3], [4, 2], [0, 1]], [[0, 2], [1, 3], [2, 1]]],
+    runs: [null, false, false, true, false],                             // Agnes stays, Bram stays (wrong), Cleo runs (wrong), Dmitri stays
+    force: { 1: [2, 3], 2: [3, 2] },                                     // beat: [target, value] you're asked to play
+  };
+  function startTutorial() {
+    S = { n: 5, round: 0, phase: "setup", showOdds: false, log: [], tut: { step: 0 },
+      players: COLORS.slice(0, 5).map(([name, color], i) => ({ name, color, human: i === 0, score: 0, role: null,
+        ran: null, result: null, gained: 0, byRound: [], noise: 0 })) };
+    S.round = 1;
+    S.players.forEach((p, i) => { p.role = TUT.roles[i]; p.left = [3, 2, 1]; p.used = []; });
+    S.boos = S.players.map(() => []); S.plans = S.players.map(() => []);
+    S.botPlans = TUT.plans.map(pl => pl && pl.map(m => m.slice()));
+    S.beat = 1; S.sel = 3; S.phase = "boo";
+    log("Tutorial: one Dusk round at five players, with a coach.");
+    render();
+  }
+  const tutStep = (k) => { S.tut.step = k; render(); };
+  // which seats you may pick, and with which Boo, while the coach is guiding you
+  function tutAllows(i) {
+    if (!S.tut) return true;
+    if (S.tut.step < 2) return false;
+    const f = TUT.force[S.beat];
+    return f ? i === f[0] : true;
+  }
   const $ = (id) => document.getElementById(id);
   const rand = (a) => a[Math.floor(Math.random() * a.length)];
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -181,7 +229,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
 
   function newGame(n) {
-    S = { n, round: 0, phase: "setup", showOdds: S ? S.showOdds : false, log: [],
+    S = { n, round: 0, phase: "setup", showOdds: S && S.showOdds || false, log: [], tut: null,
       players: COLORS.slice(0, n).map(([name, color], i) => ({ name, color, human: i === 0, score: 0, role: null,
         ran: null, result: null, gained: 0, byRound: [], noise: 0.06 + Math.random() * 0.1 })) };
     startRound();
@@ -259,7 +307,8 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   function humanBoo(t) {
     if (S.phase !== "boo") return;
     const me = S.players[0];
-    if (t === 0 || me.used.includes(t) || !me.left.includes(S.sel)) return;
+    if (t === 0 || me.used.includes(t) || !me.left.includes(S.sel) || !tutAllows(t)) return;
+    if (S.tut && TUT.force[S.beat] && S.sel !== TUT.force[S.beat][1]) return;
     const moves = S.players.map((p, i) => i === 0 ? [t, S.sel] : S.botPlans[i][S.beat - 1]);
     moves.forEach(([tgt, v], i) => {
       S.boos[tgt].push({ o: i, v, b: S.beat }); S.plans[i].push([tgt, v]);
@@ -267,16 +316,18 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
     });
     log(`Boo ${S.beat}: ` + moves.map(([tgt, v], i) => `${S.players[i].name} → ${S.players[tgt].name}${R().hidden && i !== 0 ? " (face down)" : ` (${v})`}`).join(", "));
     S.fresh = S.beat;
-    if (S.beat < vals().length) { S.beat++; S.sel = me.left[0]; }
+    if (S.beat < vals().length) { S.beat++; S.sel = S.tut && TUT.force[S.beat] ? TUT.force[S.beat][1] : me.left[0]; }
     else S.phase = "decide";
+    if (S.tut) { S.tut.step++; if (S.phase === "decide") S.showOdds = true; }
     render();
   }
 
   function decide(run) {
     if (S.phase !== "decide") return;
-    S.players.forEach((p, i) => { p.ran = i === 0 ? run : botRuns(i); });
+    S.players.forEach((p, i) => { p.ran = i === 0 ? run : S.tut ? TUT.runs[i] : botRuns(i); });
     score();
     S.phase = "reveal";
+    if (S.tut) S.tut.step = 6;
     render(true);
   }
 
@@ -326,7 +377,47 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
     const alt = p.role === "G" ? "Ghost card: a glowing bedsheet ghost" : "Living card: a kid in a bedsheet costume";
     return `<div class="card${flip && i === 0 ? " flip" : ""}"><img src="${ART[p.role]}" alt="${alt}"></div>`;
   }
+  function coachHTML() {
+    const st = S.tut.step, me = S.players[0], box = (body, next) => `<div class="coach" role="note"><span class="who">Your coach</span>${body}${next ? `<button class="btn primary" id="${next[0]}">${next[1]}</button>` : ""}</div>`;
+    if (st === 0) return box(`<p>That's you, top left. <b>Your card faces out</b>, so everyone else at the table can read it, but you can't. You might be a Ghost, who belongs in this house, or a Living guest, who should get out.</p>`, ["tnext", "Next"]);
+    if (st === 1) return box(`<p>You <i>can</i> read everyone else's card. Agnes, Cleo and Dmitri are Ghosts, and Bram is Living. With five players the deck holds 5 Living and 6 Ghosts. You can see one Living, so <b>4 of the 7 cards you can't see are Living</b>. From the cards alone, there's a 57% chance you're Living. The Boos will tell you more.</p>`, ["tnext", "Next"]);
+    if (st === 2) return box(`<p>Everyone has Boos worth 3, 2 and 1, and places one at the same moment, three times, on three different players. If a player makes the <b>wrong call</b>, every Boo on them pays its owner the number on it. Put your <b>3 on Bram</b>: he's Living, so if he stays, your 3 pays you 3.</p>`);
+    if (st === 3) return box(`<p>Look at your seat: <b>Agnes's 3 and Dmitri's 2 landed on you.</b> People often boo the Living, hoping they'll stay. But a Boo also gives you a point if you call it right, so a pile can be bait too. Now a bluff: put your <b>2 on Cleo</b>. She's a Ghost, and a pile of Boos might scare her into running.</p>`);
+    if (st === 4) return box(`<p>Your last Boo is the 1. Put it on anyone you haven't booed yet: Agnes or Dmitri.</p>`);
+    if (st === 5) return box(`<p>Four Boos sit in front of you: Agnes's 3, Dmitri's 2, Bram's 2 and Cleo's 1. <b>Call it right and each one is a point for you.</b> Call it wrong and they pay 8 between them. Lots of Boos usually means the table thinks you're Living, and the cards already leaned that way. Run or stay? Everyone answers at once.</p>`);
+    if (st === 6) {
+      const you = me.ran
+        ? `You ran, and you were Living: <b>escaped</b>, 1 point for each of your 4 Boos.`
+        : `You stayed, but you were Living: <b>scared to death</b>. Each player who booed you scored their number instead.`;
+      return box(`<p>${you} Bram stayed and was Living too, so he's scared to death and <b>your 3 on him paid 3</b>. Cleo ran but was a Ghost: spooked, so <b>your 2 bluff paid 2</b>. Agnes and Dmitri stayed and were Ghosts: haunting, a point per Boo.</p>`, ["tdone", "Next"]);
+    }
+    return "";
+  }
+  function introHTML() {
+    return `<div class="intro">
+      <h2>Everyone can see your card but you.</h2>
+      <p>Each round, players put Boos on each other. Then everyone decides at once: run if you think you're Living, stay if you think you're a Ghost. The Boos in front of you are your only clues.</p>
+      <div class="choices">
+        <div class="choice-card"><div class="cards"><img src="${ART.G}" alt="A Ghost card"><img src="${ART.L}" alt="A Living card"></div>
+          <h3>New to Boo Who?</h3><p>A coach walks you through one round at a five-player table. About three minutes.</p>
+          <button class="btn primary" id="learn">Learn to play</button></div>
+        <div class="choice-card"><div class="cards"><img src="${ART.back}" alt="A card back"></div>
+          <h3>Play the whole night</h3><p>Dusk, Midnight and the Witching Hour against bots that read the table.</p>
+          <div class="row"><select id="pc3" aria-label="Number of players">${[4,5,6,7,8].map(k => `<option ${k === 5 ? "selected" : ""} value="${k}">${k} players</option>`).join("")}</select>
+          <button class="btn warm" id="play">Play a game</button></div></div>
+      </div></div>`;
+  }
   function render(flip) {
+    if (S.phase === "intro" || S.phase === "tutdone") {
+      $("meta").innerHTML = ""; $("steps").innerHTML = ""; $("seats").innerHTML = "";
+      $("panel").innerHTML = S.phase === "intro" ? introHTML() : `<div class="coach" role="note"><span class="who">Your coach</span>
+        <p>That's a whole round. A game is <b>one long night of three rounds</b>: <b>Dusk</b> is just like this one; at <b>Midnight</b> the Boos go face down, so you see whose Boo it is but not its number until everything flips at the end; and in the <b>Witching Hour</b> every point counts double. Highest total wins.</p>
+        <div class="row"><button class="btn warm" id="play">Play a game</button><button class="btn" id="learn">Replay the tutorial</button></div></div>`;
+      const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
+      on("learn", startTutorial); on("play", () => newGame(+($("pc3") ? $("pc3").value : 5)));
+      $("log").innerHTML = (S.log || []).slice(-40).map(l => `<li>${l}</li>`).join("");
+      return;
+    }
     const me = S.players[0], nb = vals().length;
     $("meta").innerHTML = `<div class="arc" aria-label="The night so far">${ARC.map((r, k) => `<span class="${k === S.round - 1 ? "on " + r.cls : k < S.round - 1 ? "done" : ""}">${r.name}</span>`).join("")}</div>` +
       `<span class="pill">${S.n} players</span><span class="pill">Deck: ${S.n} Living, ${GHOSTS[S.n]} Ghosts</span>`;
@@ -336,8 +427,9 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
 
     const picking = S.phase === "boo";
     $("seats").innerHTML = S.players.map((p, i) => {
-      const pickable = picking && i !== 0 && !me.used.includes(i);
-      const cls = ["seat", i === 0 ? "me" : "", pickable ? "pickable" : "", picking && !pickable && i !== 0 ? "disabled" : ""].join(" ");
+      const pickable = picking && i !== 0 && !me.used.includes(i) && tutAllows(i);
+      const spot = S.tut && ((S.tut.step === 0 && i === 0) || (S.tut.step === 1 && i !== 0) || (pickable && TUT.force[S.beat]) || (S.tut.step === 5 && i === 0));
+      const cls = ["seat", i === 0 ? "me" : "", pickable ? "pickable" : "", picking && !pickable && i !== 0 && !(S.tut && S.tut.step < 2) ? "disabled" : "", spot ? "spot" : ""].join(" ");
       const res = (S.phase === "reveal" || S.phase === "over") && p.result
         ? `<span class="badge ${p.result[1]}">${p.result[0]}</span><span class="choice">${p.ran ? "Ran" : "Stayed"}${p.gained ? ` · +${p.gained} this round` : ""}</span>` : "";
       const tag = pickable ? "button" : "div";
@@ -361,7 +453,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
 
     let html = "";
     if (S.phase === "boo") {
-      const chips = me.left.map(v => `<button class="pickboo" data-v="${v}" aria-pressed="${v === S.sel}" aria-label="Use your ${v}">${booChip(0, v, true)}</button>`).join("");
+      const chips = me.left.map(v => `<button class="pickboo" data-v="${v}" aria-pressed="${v === S.sel}" aria-label="Use your ${v}" ${S.tut && TUT.force[S.beat] && v !== TUT.force[S.beat][1] ? "disabled" : ""}>${booChip(0, v, true)}</button>`).join("");
       html = `${twist()}<h2>Boo ${S.beat} of ${nb}: pick a Boo, then a player</h2>
         <div class="row">${chips}</div>
         <p>Everyone places one Boo at the same moment. Each of your Boos goes to a different player.${me.used.length ? ` You've already booed ${me.used.map(t => S.players[t].name).join(" and ")}.` : ""} A Boo can mean “I think you're Living” or “I hope you panic and run.” If they make the right call, it's ${R().x > 1 ? "2 points" : "a point"} for them.${R().hidden ? " Tonight your Boo lands face down, so nobody else sees its number." : ""}</p>
@@ -380,7 +472,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
         : (me.ran ? "You were a Ghost all along. Spooked!" : "You were a Ghost, and you stayed. Well read.");
       html = `<h2>${verdict}</h2>
         <ul class="results">${S.summary.map(l => `<li>${l}</li>`).join("")}<li>You scored ${me.gained} this round.</li></ul>
-        <div class="row"><button class="btn primary" id="next">${S.round >= ROUNDS ? "See who won" : "Next round"}</button></div>`;
+        ${S.tut ? "" : `<div class="row"><button class="btn primary" id="next">${S.round >= ROUNDS ? "See who won" : "Next round"}</button></div>`}`;
     } else if (S.phase === "over") {
       const top = Math.max(...S.players.map(p => p.score));
       const w = S.players.filter(p => p.score === top);
@@ -392,10 +484,13 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
         <div class="row"><label for="pc">Players</label><select id="pc">${[4,5,6,7,8].map(k => `<option ${k === S.n ? "selected" : ""}>${k}</option>`).join("")}</select>
         <button class="btn primary" id="again">Play again</button></div>`;
     }
-    $("panel").innerHTML = html + (S.phase !== "over" ? `<div class="row"><label for="pc2" class="odds">New game with</label><select id="pc2">${[4,5,6,7,8].map(k => `<option ${k === S.n ? "selected" : ""}>${k}</option>`).join("")}</select><span class="odds">players</span><button class="btn" id="restart">Restart</button></div>` : "");
+    if (S.tut) html = coachHTML() + (S.tut.step < 2 ? `<h2>Meet the table</h2>` : html);
+    $("panel").innerHTML = html + (S.phase !== "over" ? `<div class="row"><label for="pc2" class="odds">New game with</label><select id="pc2">${[4,5,6,7,8].map(k => `<option ${k === S.n ? "selected" : ""}>${k}</option>`).join("")}</select><span class="odds">players</span><button class="btn" id="restart">${S.tut ? "Skip the tutorial" : "Restart"}</button>${S.tut ? "" : `<button class="btn" id="learn">Learn to play</button>`}</div>` : "");
     const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
     on("run", () => decide(true)); on("stay", () => decide(false)); on("next", nextRound);
     on("again", () => newGame(+$("pc").value)); on("restart", () => newGame(+$("pc2").value));
+    on("learn", startTutorial); on("tnext", () => tutStep(S.tut.step + 1));
+    on("tdone", () => { S.phase = "tutdone"; S.tut = null; render(); });
     document.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { S.sel = +b.dataset.v; render(); }));
     const t = $("oddsToggle"); if (t) t.addEventListener("change", () => { S.showOdds = t.checked; render(); });
     $("log").innerHTML = S.log.slice(-40).map(l => `<li>${l}</li>`).join("");
@@ -404,7 +499,8 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   }
 
   function start(data) {
-    if (data && data.state && data.state.boos) { S = data.state; render(); } else { newGame(5); }
+    if (data && data.state && (data.state.boos || data.state.phase === "intro")) { S = data.state; render(); }
+    else { S = { phase: "intro", log: [] }; render(); }
   }
   window.claude?.hot?.snapshot?.(() => ({ state: S }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});

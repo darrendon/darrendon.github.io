@@ -6,7 +6,7 @@ Portfolio site for Darren Don, board game designer at What's Good Board Games. P
 - `/` — home: games, how I work with publishers, about
 - `/contact/` — contact details and quick-request email links
 - `/games/dim-sum-rush/` — sell sheet, 3D component mockups, the playable build (embedded from the `dim-sum-rush` repo's Pages site at `/dim-sum-rush/`) and rules in brief
-- `/games/boo-who/` — rendered mockups, the playable build (hosted in this repo at `/games/boo-who/play/`), sell sheet, print-and-play PDF and rules in brief
+- `/games/boo-who/` — rendered mockups, the playable build with a tutorial (hosted in this repo at `/games/boo-who/play/`), sell sheet, print-and-play PDF and rules in brief
 - `/games/too-many-crooks/` — rendered mockups, the playable build with online tables (hosted in this repo at `/games/too-many-crooks/play/`), sell sheet, print-and-play PDF and rules in brief
 - `/games/diggers/` — rendered mockups, the playable build against bots (hosted in this repo at `/games/diggers/play/`), the six species, sell sheet, print-and-play PDF and rules in brief
 - `/games/down-for-the-count/` — rendered mockups, the playable build against bots (hosted in this repo at `/games/down-for-the-count/play/`), the ten cards and box art, sell sheet, print-and-play PDF and rules in brief
@@ -16,8 +16,10 @@ Portfolio site for Darren Don, board game designer at What's Good Board Games. P
 - `assets/js/dsr-scene.js` — interactive 3D mockup (three.js r128, vendored in `assets/vendor/`)
 - `assets/img/tex/` — tile, tile-back and box textures drawn from the game's own art (the "by Darren Don" line on `box-top.webp` was added on top of the original texture; the stills in `games/dim-sum-rush/img/` are `DSRScene.mount(el, {view, still: true, pixelRatio: 2})` captures)
 - `games/dim-sum-rush/sell-sheet.html` — source for `dim-sum-rush-sell-sheet.pdf` (print to PDF at US Letter landscape, backgrounds on)
-- `games/boo-who/sell-sheet.html` — source for `boo-who-sell-sheet.pdf` (same print settings)
-- `games/boo-who/img/src/` — the Boo Who? deck box: `box-top.html`, `box-side.html`, `box-end.html` (rendered to `tex/`) and `scene.html` (three.js still for `render-box.webp`). The lid in `render-kit.webp` and `sheet-render.jpg` was painted in from `tex/box-top.jpg`, since that scene's source isn't in this repo
+- `games/boo-who/sell-sheet.html` — source for `boo-who-sell-sheet.pdf` (US Letter landscape, no margins, backgrounds on)
+- `games/boo-who/img/src/` — the Boo Who? deck box art: `box-top.html`, `box-side.html`, `box-end.html` (rendered to `tex/`)
+- `games/boo-who/img/src/render/` — the Boo Who? mockups: `render.html` is a small WebGL renderer (no libraries) with every scene in it; `python3 shoot3d.py c_box c_kit c_table c_deluxe` renders `render-box`, `render-kit`, `render-table` and `render-deluxe` into `out/` (convert to webp for `img/`). `python3 check3d.py <scenes>` draws each object's silhouette on its own and reports any two that overlap on screen, sit closer than 3 px, or touch the frame edge: every published render passes with zero. `card-faces.html` and `card-back.html` are the SVG card art; the Poppins and Lora fonts in `fonts/` are SIL Open Font License
+- `games/boo-who/play/index.html` — built from a single-file source with the card art inlined; it includes a scripted tutorial round (`TUT` in the script) and the three-round night
 - `games/too-many-crooks/sell-sheet.html` — source for `too-many-crooks-sell-sheet.pdf` (same print settings)
 - `games/too-many-crooks/img/src/` — sources for the Too Many Crooks! mockups: `scene.html` (three.js stills, `?scene=hero|table|kit`), the box and crew-sheet art it textures from, and the rendered textures in `tex/`
 - `games/too-many-crooks/play/engine.js` — the rules engine and bots; it also runs in node, so bot-only games can be checked headless

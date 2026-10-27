@@ -1,0 +1,118 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: "Lora"; src: url("file:///usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf"); font-weight: 400 700; }
+@font-face { font-family: "Lora"; font-style: italic; src: url("file:///usr/share/fonts/truetype/google-fonts/Lora-Italic-Variable.ttf"); font-weight: 400 700; }
+body { margin: 0; background: #222; display: flex; gap: 20px; padding: 20px; }
+</style></head>
+<body>
+<!-- ================= GHOST: a luminous sheet that dissolves into wisps ================= -->
+<svg id="ghost" viewBox="0 0 250 350" width="1000" height="1400">
+  <defs>
+    <radialGradient id="gbg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#5f6aa8"></stop><stop offset=".55" stop-color="#363c74"></stop><stop offset="1" stop-color="#1a1a3a"></stop></radialGradient>
+    <radialGradient id="gaura" cx="50%" cy="45%" r="50%"><stop offset="0" stop-color="#bfe6ff" stop-opacity=".5"></stop><stop offset="1" stop-color="#bfe6ff" stop-opacity="0"></stop></radialGradient>
+    <linearGradient id="ggold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e4ab"></stop><stop offset=".5" stop-color="#c9a14f"></stop><stop offset="1" stop-color="#8f6a26"></stop></linearGradient>
+    <linearGradient id="gfade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6fbff" stop-opacity=".98"></stop><stop offset=".5" stop-color="#e4f3ff" stop-opacity=".93"></stop><stop offset=".78" stop-color="#c6e3fb" stop-opacity=".55"></stop><stop offset="1" stop-color="#a9d4f7" stop-opacity="0"></stop></linearGradient>
+    <linearGradient id="gside" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9cc2e8" stop-opacity=".25"></stop><stop offset=".3" stop-color="#9cc2e8" stop-opacity="0"></stop><stop offset=".62" stop-color="#8fb6df" stop-opacity="0"></stop><stop offset="1" stop-color="#7fa6d6" stop-opacity=".5"></stop></linearGradient>
+    <radialGradient id="gsheen" cx="40%" cy="30%" r="40%"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"></stop><stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop></radialGradient>
+  </defs>
+  <rect width="250" height="350" rx="14" fill="url(#gbg)"></rect>
+  <g fill="#e6ecff" opacity=".7"><circle cx="46" cy="76" r="1.2"></circle><circle cx="206" cy="64" r="1.5"></circle><circle cx="198" cy="150" r="1"></circle><circle cx="50" cy="168" r="1"></circle><circle cx="212" cy="214" r="1.3"></circle><circle cx="40" cy="236" r="1.4"></circle></g>
+  <path d="M198 74 a12 12 0 1 1 -12 -15 a9.5 9.5 0 0 0 12 15 z" fill="#f4e6c2" opacity=".85"></path>
+  <rect x="11" y="11" width="228" height="328" rx="8" fill="none" stroke="url(#ggold)" stroke-width="2.2"></rect>
+  <rect x="17" y="17" width="216" height="316" rx="5" fill="none" stroke="#e9d39a" stroke-opacity=".5" stroke-width=".8"></rect>
+  <g transform="translate(22 22)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#ggold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#ggold)"></circle></g>
+  <g transform="translate(228 22) scale(-1 1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#ggold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#ggold)"></circle></g>
+  <g transform="translate(22 328) scale(1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#ggold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#ggold)"></circle></g>
+  <g transform="translate(228 328) scale(-1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#ggold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#ggold)"></circle></g>
+  <ellipse cx="125" cy="160" rx="86" ry="106" fill="url(#gaura)"></ellipse>
+  <!-- sheet -->
+  <path d="M85 104 A40 40 0 0 1 165 104 C176 106 188 100 197 86 C203 76 215 80 211 93 C207 106 202 118 204 132 C210 168 207 204 194 236
+           q-11 10 -22 1 q-11 10 -22 1 q-11 10 -22 0 q-11 10 -22 0 q-11 10 -22 -1 q-11 10 -22 -1
+           C44 204 40 168 46 132 C48 118 43 106 39 93 C35 80 47 76 53 86 C62 100 74 106 85 104 Z" fill="url(#gfade)"></path>
+  <path d="M85 104 A40 40 0 0 1 165 104 C176 106 188 100 197 86 C203 76 215 80 211 93 C207 106 202 118 204 132 C210 168 207 204 194 236
+           q-11 10 -22 1 q-11 10 -22 1 q-11 10 -22 0 q-11 10 -22 0 q-11 10 -22 -1 q-11 10 -22 -1
+           C44 204 40 168 46 132 C48 118 43 106 39 93 C35 80 47 76 53 86 C62 100 74 106 85 104 Z" fill="url(#gside)"></path>
+  <ellipse cx="112" cy="84" rx="22" ry="16" fill="url(#gsheen)"></ellipse>
+  <!-- soft folds -->
+  <path d="M104 140 Q97 190 90 236" fill="none" stroke="#a9cbec" stroke-opacity=".45" stroke-width="1.3" stroke-linecap="round"></path>
+  <path d="M146 140 Q153 190 160 236" fill="none" stroke="#a9cbec" stroke-opacity=".45" stroke-width="1.3" stroke-linecap="round"></path>
+  <path d="M125 146 Q126 196 125 240" fill="none" stroke="#c4def5" stroke-opacity=".4" stroke-width="1.1" stroke-linecap="round"></path>
+  <path d="M190 130 Q198 172 186 226" fill="none" stroke="#a9cbec" stroke-opacity=".35" stroke-width="1.1" stroke-linecap="round"></path>
+  <path d="M60 130 Q52 172 64 226" fill="none" stroke="#c4def5" stroke-opacity=".35" stroke-width="1.1" stroke-linecap="round"></path>
+  <!-- wisps -->
+  <path d="M80 246 q10 8 2 20" fill="none" stroke="#bfe0fb" stroke-opacity=".38" stroke-width="1.6" stroke-linecap="round"></path>
+  <path d="M125 250 q-8 10 0 22" fill="none" stroke="#bfe0fb" stroke-opacity=".32" stroke-width="1.6" stroke-linecap="round"></path>
+  <path d="M170 246 q-10 8 -2 20" fill="none" stroke="#bfe0fb" stroke-opacity=".38" stroke-width="1.6" stroke-linecap="round"></path>
+  <!-- face -->
+  <ellipse cx="111" cy="100" rx="8" ry="12" fill="#29274f"></ellipse>
+  <ellipse cx="139" cy="100" rx="8" ry="12" fill="#29274f"></ellipse>
+  <circle cx="113.5" cy="95" r="2.6" fill="#ffffff"></circle><circle cx="141.5" cy="95" r="2.6" fill="#ffffff"></circle>
+  <ellipse cx="99" cy="117" rx="5.5" ry="3" fill="#c7d6f2" opacity=".85"></ellipse><ellipse cx="151" cy="117" rx="5.5" ry="3" fill="#c7d6f2" opacity=".85"></ellipse>
+  <ellipse cx="125" cy="119" rx="3.4" ry="4.2" fill="#29274f"></ellipse>
+  <g fill="#dff2ff" opacity=".55"><circle cx="70" cy="262" r="2"></circle><circle cx="182" cy="236" r="1.6"></circle><circle cx="160" cy="272" r="1.2"></circle><circle cx="86" cy="214" r="1.2"></circle></g>
+  <path d="M60 287 h130 l11 13 l-11 13 h-130 l-11 -13 z" fill="url(#ggold)"></path>
+  <path d="M63 290 h124 l8.5 10 l-8.5 10 h-124 l-8.5 -10 z" fill="none" stroke="#7a5a1e" stroke-opacity=".5" stroke-width=".8"></path>
+  <text x="125" y="307" text-anchor="middle" font-family="Lora" font-weight="700" font-size="19" fill="#29274f" letter-spacing="5">GHOST</text>
+</svg>
+
+<!-- ================= LIVING: same silhouette, but a solid cotton sheet, hands, legs, eyes ================= -->
+<svg id="living" viewBox="0 0 250 350" width="1000" height="1400">
+  <defs>
+    <radialGradient id="lbg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#8f5a5c"></stop><stop offset=".55" stop-color="#5a3040"></stop><stop offset="1" stop-color="#2a1622"></stop></radialGradient>
+    <radialGradient id="laura" cx="50%" cy="45%" r="50%"><stop offset="0" stop-color="#ffd59a" stop-opacity=".5"></stop><stop offset="1" stop-color="#ffd59a" stop-opacity="0"></stop></radialGradient>
+    <linearGradient id="lgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3d69a"></stop><stop offset=".5" stop-color="#c99446"></stop><stop offset="1" stop-color="#8c5f24"></stop></linearGradient>
+    <linearGradient id="lcloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf2"></stop><stop offset=".7" stop-color="#fbefe0"></stop><stop offset="1" stop-color="#f1dcc4"></stop></linearGradient>
+    <linearGradient id="lside" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9a77e" stop-opacity=".25"></stop><stop offset=".3" stop-color="#d9a77e" stop-opacity="0"></stop><stop offset=".62" stop-color="#c98f66" stop-opacity="0"></stop><stop offset="1" stop-color="#b97b52" stop-opacity=".5"></stop></linearGradient>
+    <radialGradient id="lsheen" cx="40%" cy="30%" r="40%"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"></stop><stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop></radialGradient>
+    <pattern id="sock" width="12" height="6" patternUnits="userSpaceOnUse"><rect width="12" height="3" fill="#e5763a"></rect><rect y="3" width="12" height="3" fill="#fff4e8"></rect></pattern>
+  </defs>
+  <rect width="250" height="350" rx="14" fill="url(#lbg)"></rect>
+  <g fill="#ffe8c8" opacity=".55"><circle cx="46" cy="76" r="1.2"></circle><circle cx="206" cy="64" r="1.4"></circle><circle cx="48" cy="200" r="1.1"></circle><circle cx="210" cy="220" r="1.2"></circle></g>
+  <rect x="11" y="11" width="228" height="328" rx="8" fill="none" stroke="url(#lgold)" stroke-width="2.2"></rect>
+  <rect x="17" y="17" width="216" height="316" rx="5" fill="none" stroke="#e9c98a" stroke-opacity=".5" stroke-width=".8"></rect>
+  <g transform="translate(22 22)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <g transform="translate(228 22) scale(-1 1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <g transform="translate(22 328) scale(1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <g transform="translate(228 328) scale(-1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <ellipse cx="125" cy="160" rx="86" ry="106" fill="url(#laura)"></ellipse>
+  <!-- floor shadow, legs, sneakers -->
+  <ellipse cx="125" cy="270" rx="42" ry="5.5" fill="#12070d" opacity=".45"></ellipse>
+  <rect x="108" y="230" width="11" height="32" fill="url(#sock)"></rect>
+  <rect x="131" y="230" width="11" height="32" fill="url(#sock)"></rect>
+  <path d="M101 268 q0 -9 10 -9 h9 q4 0 4 5 v4 z" fill="#2f2640"></path>
+  <path d="M126 268 v-4 q0 -5 4 -5 h9 q10 0 10 9 z" fill="#2f2640"></path>
+  <rect x="100" y="266" width="25" height="3" rx="1.5" fill="#fff6ea"></rect><rect x="125" y="266" width="25" height="3" rx="1.5" fill="#fff6ea"></rect>
+  <!-- hands up -->
+  <g fill="#f6c6a0"><circle cx="205" cy="80" r="8.5"></circle><circle cx="45" cy="80" r="8.5"></circle></g>
+  <g stroke="#f6c6a0" stroke-width="4.4" stroke-linecap="round" fill="none">
+    <path d="M205 76 l-1 -14"></path><path d="M209 76 l4 -12"></path><path d="M212 80 l9 -7"></path><path d="M200 77 l-6 -10"></path><path d="M198 84 l-8 -2"></path>
+    <path d="M45 76 l1 -14"></path><path d="M41 76 l-4 -12"></path><path d="M38 80 l-9 -7"></path><path d="M50 77 l6 -10"></path><path d="M52 84 l8 -2"></path>
+  </g>
+  <!-- sheet: same silhouette, cuffs where the flaps were, a plain sewn hem -->
+  <path d="M85 104 A40 40 0 0 1 165 104 C176 106 188 100 197 88 L213 94 C207 106 202 118 204 132 C210 168 207 202 194 230
+           C170 240 150 236 125 238 C100 236 80 240 56 230
+           C43 202 40 168 46 132 C48 118 43 106 37 94 L53 88 C62 100 74 106 85 104 Z" fill="url(#lcloth)"></path>
+  <path d="M85 104 A40 40 0 0 1 165 104 C176 106 188 100 197 88 L213 94 C207 106 202 118 204 132 C210 168 207 202 194 230
+           C170 240 150 236 125 238 C100 236 80 240 56 230
+           C43 202 40 168 46 132 C48 118 43 106 37 94 L53 88 C62 100 74 106 85 104 Z" fill="url(#lside)"></path>
+  <path d="M56 230 C80 240 100 236 125 238 C150 236 170 240 194 230" fill="none" stroke="#d6b08a" stroke-width="1.4" stroke-dasharray="2.5 2"></path>
+  <ellipse cx="112" cy="84" rx="22" ry="16" fill="url(#lsheen)"></ellipse>
+  <path d="M104 140 Q97 188 91 232" fill="none" stroke="#dcb898" stroke-opacity=".55" stroke-width="1.3" stroke-linecap="round"></path>
+  <path d="M146 140 Q153 188 159 232" fill="none" stroke="#dcb898" stroke-opacity=".55" stroke-width="1.3" stroke-linecap="round"></path>
+  <path d="M125 146 Q126 194 125 236" fill="none" stroke="#e8cdb4" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"></path>
+  <path d="M190 130 Q198 170 188 222" fill="none" stroke="#dcb898" stroke-opacity=".45" stroke-width="1.1" stroke-linecap="round"></path>
+  <path d="M60 130 Q52 170 62 222" fill="none" stroke="#e8cdb4" stroke-opacity=".45" stroke-width="1.1" stroke-linecap="round"></path>
+  <!-- cut eye holes with real eyes peeking through -->
+  <ellipse cx="111" cy="100" rx="8" ry="12" fill="#22161f"></ellipse>
+  <ellipse cx="139" cy="100" rx="8" ry="12" fill="#22161f"></ellipse>
+  <ellipse cx="111" cy="101" rx="5" ry="5.6" fill="#fff6ea"></ellipse><ellipse cx="139" cy="101" rx="5" ry="5.6" fill="#fff6ea"></ellipse>
+  <circle cx="113.4" cy="101.5" r="2.6" fill="#3b2416"></circle><circle cx="141.4" cy="101.5" r="2.6" fill="#3b2416"></circle>
+  <circle cx="114.2" cy="100.4" r=".9" fill="#ffffff"></circle><circle cx="142.2" cy="100.4" r=".9" fill="#ffffff"></circle>
+  <path d="M160 76 q5 8 0 12 q-5 -4 0 -12 z" fill="#8fd3ff"></path>
+  <text x="66" y="58" text-anchor="middle" font-family="Lora" font-style="italic" font-weight="700" font-size="14" fill="#ffb26b" transform="rotate(-10 66 58)">boo!</text>
+  <path d="M60 287 h130 l11 13 l-11 13 h-130 l-11 -13 z" fill="#d9662b"></path>
+  <path d="M63 290 h124 l8.5 10 l-8.5 10 h-124 l-8.5 -10 z" fill="none" stroke="#ffd9a8" stroke-opacity=".6" stroke-width=".8"></path>
+  <text x="125" y="307" text-anchor="middle" font-family="Lora" font-weight="700" font-size="19" fill="#fff6ea" letter-spacing="5">LIVING</text>
+</svg>
+</body></html>

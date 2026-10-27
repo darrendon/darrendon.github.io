@@ -1,0 +1,124 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: "Lora"; src: url("file:///usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf"); font-weight: 400 700; }
+@font-face { font-family: "Lora"; font-style: italic; src: url("file:///usr/share/fonts/truetype/google-fonts/Lora-Italic-Variable.ttf"); font-weight: 400 700; }
+body { margin: 0; background: #222; display: flex; gap: 20px; padding: 20px; }
+</style></head>
+<body>
+<!-- ================= GHOST: a floating sheet, no hands, no legs ================= -->
+<svg id="ghost" viewBox="0 0 250 350" width="1000" height="1400">
+  <defs>
+    <radialGradient id="gbg" cx="50%" cy="42%" r="75%"><stop offset="0" stop-color="#eee9ff"></stop><stop offset=".55" stop-color="#cdc3f3"></stop><stop offset="1" stop-color="#a294dc"></stop></radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3dc9c"></stop><stop offset=".5" stop-color="#c9a14f"></stop><stop offset="1" stop-color="#9a7430"></stop></linearGradient>
+    <linearGradient id="gsheet" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"></stop><stop offset=".6" stop-color="#ffffff"></stop><stop offset="1" stop-color="#d6cff0"></stop></linearGradient>
+  </defs>
+  <rect width="250" height="350" rx="14" fill="url(#gbg)"></rect>
+  <g fill="#b9afe6" opacity=".7"><circle cx="48" cy="72" r="1.6"></circle><circle cx="204" cy="60" r="2"></circle><circle cx="190" cy="150" r="1.3"></circle><circle cx="44" cy="190" r="1.5"></circle><circle cx="214" cy="226" r="1.4"></circle></g>
+  <path d="M200 70 a12 12 0 1 1 -12 -15 a9.5 9.5 0 0 0 12 15 z" fill="#f2d991"></path>
+  <rect x="11" y="11" width="228" height="328" rx="8" fill="none" stroke="url(#gold)" stroke-width="2.2"></rect>
+  <rect x="17" y="17" width="216" height="316" rx="5" fill="none" stroke="#c9a14f" stroke-opacity=".45" stroke-width=".8"></rect>
+  <g transform="translate(22 22)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#gold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#gold)"></circle></g>
+  <g transform="translate(228 22) scale(-1 1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#gold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#gold)"></circle></g>
+  <g transform="translate(22 328) scale(1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#gold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#gold)"></circle></g>
+  <g transform="translate(228 328) scale(-1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#gold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#gold)"></circle></g>
+  <!-- floating shadow -->
+  <ellipse cx="125" cy="280" rx="44" ry="5.5" fill="#8d82c4" opacity=".35"></ellipse>
+  <path d="M83 102 A42 42 0 0 1 167 102 C178 106 190 104 202 92 Q214 86 212 104 C224 140 222 182 206 212 Q206.8 222.0 196.9 223.0 Q195.7 233.0 185.7 232.1 Q182.5 241.8 172.6 239.2 Q167.7 248.5 158.0 244.6 Q151.5 253.2 142.0 248.2 Q134.3 256.0 125.0 250.0 Q115.7 256.0 108.0 248.2 Q98.5 253.2 92.0 244.6 Q82.3 248.5 77.4 239.2 Q67.5 241.8 64.3 232.1 Q54.3 233.0 53.1 223.0 Q43.2 222.0 44.0 212.0 C28 182 26 140 38 104 Q36 86 48 92 C60 104 72 106 83 102 Z" fill="#3a2f7a" opacity=".16" transform="translate(4 5)"></path>
+  <!-- the sheet: same drape as the costume, flaps end in soft points, wavy hem -->
+  <path d="M83 102 A42 42 0 0 1 167 102 C178 106 190 104 202 92 Q214 86 212 104 C224 140 222 182 206 212 Q206.8 222.0 196.9 223.0 Q195.7 233.0 185.7 232.1 Q182.5 241.8 172.6 239.2 Q167.7 248.5 158.0 244.6 Q151.5 253.2 142.0 248.2 Q134.3 256.0 125.0 250.0 Q115.7 256.0 108.0 248.2 Q98.5 253.2 92.0 244.6 Q82.3 248.5 77.4 239.2 Q67.5 241.8 64.3 232.1 Q54.3 233.0 53.1 223.0 Q43.2 222.0 44.0 212.0 C28 182 26 140 38 104 Q36 86 48 92 C60 104 72 106 83 102 Z" fill="url(#gsheet)" stroke="#9d92d2" stroke-width="1.8"></path>
+  <path d="M104 142 Q97 196 90 242" fill="none" stroke="#cfc7ee" stroke-width="1.6" stroke-linecap="round"></path>
+  <path d="M146 142 Q153 196 160 242" fill="none" stroke="#cfc7ee" stroke-width="1.6" stroke-linecap="round"></path>
+  <path d="M125 148 Q126 200 125 246" fill="none" stroke="#d9d2f2" stroke-width="1.4" stroke-linecap="round"></path>
+  <path d="M192 122 Q202 168 194 214" fill="none" stroke="#cfc7ee" stroke-width="1.4" stroke-linecap="round"></path>
+  <path d="M58 122 Q48 168 56 214" fill="none" stroke="#d9d2f2" stroke-width="1.4" stroke-linecap="round"></path>
+  <!-- solid ghostly eyes, blush, tiny mouth -->
+  <ellipse cx="110" cy="98" rx="8.5" ry="12.5" fill="#2a2440"></ellipse>
+  <ellipse cx="140" cy="98" rx="8.5" ry="12.5" fill="#2a2440"></ellipse>
+  <circle cx="112.5" cy="92.5" r="2.6" fill="#ffffff"></circle><circle cx="142.5" cy="92.5" r="2.6" fill="#ffffff"></circle>
+  <ellipse cx="98" cy="116" rx="6" ry="3.4" fill="#ffadc4" opacity=".75"></ellipse><ellipse cx="152" cy="116" rx="6" ry="3.4" fill="#ffadc4" opacity=".75"></ellipse>
+  <ellipse cx="125" cy="118" rx="3.6" ry="4.4" fill="#2a2440"></ellipse>
+  <!-- floaty wisps under the hem -->
+  <path d="M98 262 q6 5 0 10" fill="none" stroke="#b9afe6" stroke-width="1.6" stroke-linecap="round" opacity=".7"></path>
+  <path d="M125 266 q-6 5 0 10" fill="none" stroke="#b9afe6" stroke-width="1.6" stroke-linecap="round" opacity=".7"></path>
+  <path d="M152 262 q6 5 0 10" fill="none" stroke="#b9afe6" stroke-width="1.6" stroke-linecap="round" opacity=".7"></path>
+  <path d="M60 287 h130 l11 13 l-11 13 h-130 l-11 -13 z" fill="url(#gold)"></path>
+  <path d="M63 290 h124 l8.5 10 l-8.5 10 h-124 l-8.5 -10 z" fill="none" stroke="#7a5a1e" stroke-opacity=".5" stroke-width=".8"></path>
+  <text x="125" y="307" text-anchor="middle" font-family="Lora" font-weight="700" font-size="19" fill="#3a3170" letter-spacing="5">GHOST</text>
+</svg>
+
+<!-- ================= LIVING: a kid in a bedsheet costume ================= -->
+<svg id="living" viewBox="0 0 250 350" width="1000" height="1400">
+  <defs>
+    <radialGradient id="lbg" cx="50%" cy="42%" r="75%"><stop offset="0" stop-color="#fff0e0"></stop><stop offset=".55" stop-color="#ffd2aa"></stop><stop offset="1" stop-color="#ee9d66"></stop></radialGradient>
+    <linearGradient id="lgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ebcb82"></stop><stop offset=".5" stop-color="#bf8d42"></stop><stop offset="1" stop-color="#8c5f24"></stop></linearGradient>
+    <linearGradient id="lsheet" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"></stop><stop offset=".6" stop-color="#fffdfa"></stop><stop offset="1" stop-color="#f0dccb"></stop></linearGradient>
+    <pattern id="sock" width="12" height="6" patternUnits="userSpaceOnUse"><rect width="12" height="3" fill="#e5763a"></rect><rect y="3" width="12" height="3" fill="#fff4e8"></rect></pattern>
+  </defs>
+  <rect width="250" height="350" rx="14" fill="url(#lbg)"></rect>
+  <rect x="11" y="11" width="228" height="328" rx="8" fill="none" stroke="url(#lgold)" stroke-width="2.2"></rect>
+  <rect x="17" y="17" width="216" height="316" rx="5" fill="none" stroke="#bf8d42" stroke-opacity=".45" stroke-width=".8"></rect>
+  <g transform="translate(22 22)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <g transform="translate(228 22) scale(-1 1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <g transform="translate(22 328) scale(1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <g transform="translate(228 328) scale(-1 -1)"><path d="M0 22 V8 Q0 0 8 0 H22" fill="none" stroke="url(#lgold)" stroke-width="1.6"></path><circle cx="10" cy="10" r="2.4" fill="url(#lgold)"></circle></g>
+  <!-- standing shadow -->
+  <ellipse cx="125" cy="268" rx="40" ry="5.5" fill="#b9733f" opacity=".3"></ellipse>
+  <!-- legs: striped socks and sneakers poking out underneath -->
+  <rect x="108" y="234" width="11" height="28" fill="url(#sock)"></rect>
+  <rect x="131" y="234" width="11" height="28" fill="url(#sock)"></rect>
+  <path d="M101 268 q0 -9 10 -9 h9 q4 0 4 5 v4 z" fill="#3c3150"></path>
+  <path d="M126 268 v-4 q0 -5 4 -5 h9 q10 0 10 9 z" fill="#3c3150"></path>
+  <rect x="100" y="266" width="25" height="3" rx="1.5" fill="#fffaf3"></rect><rect x="125" y="266" width="25" height="3" rx="1.5" fill="#fffaf3"></rect>
+  <!-- hands up: "boo!" -->
+  <g fill="#f6c6a0">
+    <circle cx="207" cy="96" r="9"></circle>
+    <circle cx="43" cy="96" r="9"></circle>
+  </g>
+  <g stroke="#f6c6a0" stroke-width="4.6" stroke-linecap="round" fill="none">
+    <path d="M207 92 l-1 -15"></path><path d="M211 92 l4 -13"></path><path d="M214 96 l9 -8"></path><path d="M202 93 l-7 -11"></path><path d="M200 100 l-8 -2"></path>
+    <path d="M43 92 l1 -15"></path><path d="M39 92 l-4 -13"></path><path d="M36 96 l-9 -8"></path><path d="M48 93 l7 -11"></path><path d="M50 100 l8 -2"></path>
+  </g>
+  <path d="M83 102 A42 42 0 0 1 167 102 C178 106 190 106 200 102 L212 108 C224 142 222 182 206 212 C190 230 160 240 125 241 C90 240 60 230 44 212 C28 182 26 142 38 108 L50 102 C60 106 72 106 83 102 Z" fill="#7a3a12" opacity=".16" transform="translate(4 5)"></path>
+  <!-- the costume sheet: same drape, cuffs at the wrists, plain hem ending above the knees -->
+  <path d="M83 102 A42 42 0 0 1 167 102 C178 106 190 106 200 102 L212 108 C224 142 222 182 206 212 C190 230 160 240 125 241 C90 240 60 230 44 212 C28 182 26 142 38 108 L50 102 C60 106 72 106 83 102 Z" fill="url(#lsheet)" stroke="#c99a74" stroke-width="1.8"></path>
+  <path d="M104 142 Q97 192 91 234" fill="none" stroke="#ecd4bf" stroke-width="1.6" stroke-linecap="round"></path>
+  <path d="M146 142 Q153 192 159 234" fill="none" stroke="#ecd4bf" stroke-width="1.6" stroke-linecap="round"></path>
+  <path d="M125 148 Q126 196 125 238" fill="none" stroke="#efdccb" stroke-width="1.4" stroke-linecap="round"></path>
+  <path d="M192 122 Q202 168 194 214" fill="none" stroke="#ecd4bf" stroke-width="1.4" stroke-linecap="round"></path>
+  <path d="M58 122 Q48 168 56 214" fill="none" stroke="#efdccb" stroke-width="1.4" stroke-linecap="round"></path>
+  <!-- cut-out eye holes with real, nervous eyes peeking through -->
+  <ellipse cx="110" cy="98" rx="8.5" ry="12.5" fill="#2a2235"></ellipse>
+  <ellipse cx="140" cy="98" rx="8.5" ry="12.5" fill="#2a2235"></ellipse>
+  <ellipse cx="110" cy="99" rx="5.2" ry="5.8" fill="#fffaf3"></ellipse><ellipse cx="140" cy="99" rx="5.2" ry="5.8" fill="#fffaf3"></ellipse>
+  <circle cx="112.5" cy="99.5" r="2.7" fill="#3b2416"></circle><circle cx="142.5" cy="99.5" r="2.7" fill="#3b2416"></circle>
+  <circle cx="113.4" cy="98.4" r=".9" fill="#ffffff"></circle><circle cx="143.4" cy="98.4" r=".9" fill="#ffffff"></circle>
+  <path d="M162 72 q5 8 0 12 q-5 -4 0 -12 z" fill="#8fd3ff"></path>
+  <text x="70" y="70" text-anchor="middle" font-family="Lora" font-style="italic" font-weight="700" font-size="15" fill="#d9662b" transform="rotate(-10 70 70)">boo!</text>
+  <path d="M60 287 h130 l11 13 l-11 13 h-130 l-11 -13 z" fill="#d9662b"></path>
+  <path d="M63 290 h124 l8.5 10 l-8.5 10 h-124 l-8.5 -10 z" fill="none" stroke="#fff1de" stroke-opacity=".55" stroke-width=".8"></path>
+  <text x="125" y="307" text-anchor="middle" font-family="Lora" font-weight="700" font-size="19" fill="#fff6ea" letter-spacing="5">LIVING</text>
+</svg>
+<svg id="back" viewBox="0 0 250 350" width="1000" height="1400">
+  <defs>
+    <pattern id="dam" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M10 2 L18 10 L10 18 L2 10 Z" fill="none" stroke="#c9a14f" stroke-opacity=".28" stroke-width=".8"/>
+      <circle cx="10" cy="10" r="1.2" fill="#c9a14f" fill-opacity=".35"/>
+    </pattern>
+    <linearGradient id="bgold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6e4ab"/><stop offset=".5" stop-color="#c9a14f"/><stop offset="1" stop-color="#8f6a26"/>
+    </linearGradient>
+  </defs>
+  <rect width="250" height="350" rx="14" fill="#2a2850"/>
+  <rect x="17" y="17" width="216" height="316" rx="5" fill="url(#dam)"/>
+  <rect x="11" y="11" width="228" height="328" rx="8" fill="none" stroke="url(#bgold)" stroke-width="2.2"/>
+  <rect x="17" y="17" width="216" height="316" rx="5" fill="none" stroke="#e9d39a" stroke-opacity=".5" stroke-width=".8"/>
+  <circle cx="125" cy="160" r="58" fill="#2a2850" stroke="url(#bgold)" stroke-width="2.4"/>
+  <circle cx="125" cy="160" r="51" fill="#38366b" stroke="#e9d39a" stroke-opacity=".5" stroke-width=".8"/>
+  <g transform="translate(125 160)">
+    <path d="M-26 30 V-4 A26 26 0 0 1 26 -4 V30 q-4.33 8 -8.67 0 q-4.33 -6 -8.67 0 q-4.33 8 -8.67 0 q-4.33 -6 -8.67 0 q-4.33 8 -8.67 0 q-4.33 -6 -8.65 0 z" fill="#fbfaff"/>
+    <text x="0" y="12" text-anchor="middle" font-family="Lora" font-weight="700" font-size="26" fill="#2a2850">?</text>
+  </g>
+  <text x="125" y="262" text-anchor="middle" font-family="Lora" font-weight="700" font-style="italic" font-size="24" fill="#e9d39a">Boo Who?</text>
+</svg>
+</body></html>
