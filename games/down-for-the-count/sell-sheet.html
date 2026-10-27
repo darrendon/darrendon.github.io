@@ -47,6 +47,11 @@ h1 em{font-style:normal;color:var(--red)}
 .art img.c{position:absolute;width:.7in;border-radius:5px;border:2.5px solid var(--ink)}
 .art .pin{position:absolute;left:4%;right:4%;bottom:0;width:92%}
 .arrow{position:absolute;font:900 22pt/1 Archivo;color:var(--ink)}
+.ladder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:.02in;padding:0 .03in}
+.ladder .g{display:flex}
+.ladder .g img{width:.37in;border-radius:3px;border:1.5px solid var(--ink);display:block}
+.ladder .g img+img{margin-left:-.27in}
+.ladder b{font:900 13pt/1 Archivo;color:var(--ink)}
 .facts{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:0 .34in;margin-top:auto;padding-top:.18in;border-top:3px solid var(--ink)}
 .facts b{display:block;font:900 22pt/1 Archivo;font-stretch:82%}
 .facts span{font-size:9pt;color:var(--soft)}
@@ -68,19 +73,13 @@ h1 em{font-style:normal;color:var(--red)}
   <main class="main">
     <p class="kicker">Wrestling card game · 2–5 players</p>
     <h1>A shedding game where you <em>don't want to shed!</em></h1>
-    <p class="pitch">Every card in your hand is a move you can still make, so you'd rather keep them. Each turn you top the move on the table or spend stamina to stay in the match. Play your last card and you tap out. Run out of stamina and the ref counts you out. The last wrestler standing wins the round.</p>
+    <p class="pitch">Every card in your hand is a move you can still make, so you'd rather keep them. Each turn you beat the move on the table or spend stamina to stay in the match. Play your last card and you tap out. Run out of stamina and the ref counts you out. The last wrestler standing wins the round.</p>
 
     <div class="strip">
       <div class="panel p1">
-        <span class="cap">Top the move</span>
-        <div class="art">
-          <img class="c" src="/games/down-for-the-count/img/card-5.webp" alt="" style="left:.1in;top:.62in;transform:rotate(-8deg)">
-          <img class="c" src="/games/down-for-the-count/img/card-5.webp" alt="" style="left:.3in;top:.68in;transform:rotate(-2deg)">
-          <span class="arrow" style="left:.98in;top:.86in">›</span>
-          <img class="c" src="/games/down-for-the-count/img/card-7.webp" alt="" style="left:.92in;top:.26in;transform:rotate(3deg)">
-          <img class="c" src="/games/down-for-the-count/img/card-7.webp" alt="" style="left:1.1in;top:.32in;transform:rotate(8deg)">
-        </div>
-        <p>Play more cards than the move on the table, or the same number of higher ones. Two 7s beat two 5s.</p>
+        <span class="cap">Beat the move</span>
+        <div class="art"><div class="ladder" aria-label="two 5s, beaten by two 7s, beaten by three 3s"><span class="g"><img src="/games/down-for-the-count/img/card-5.webp" alt=""><img src="/games/down-for-the-count/img/card-5.webp" alt=""></span><b>›</b><span class="g"><img src="/games/down-for-the-count/img/card-7.webp" alt=""><img src="/games/down-for-the-count/img/card-7.webp" alt=""></span><b>›</b><span class="g"><img src="/games/down-for-the-count/img/card-3.webp" alt=""><img src="/games/down-for-the-count/img/card-3.webp" alt=""><img src="/games/down-for-the-count/img/card-3.webp" alt=""></span></div></div>
+        <p>More cards always wins. Same number of cards? Higher wins.</p>
       </div>
       <div class="panel p2">
         <span class="cap">Or spend stamina</span>

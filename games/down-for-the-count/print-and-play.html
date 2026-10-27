@@ -32,6 +32,7 @@ td{border-bottom:.6px solid rgba(28,21,48,.25);padding:2px 4px}
 .box{border:2px solid #1C1530;border-radius:6px;background:#FFF0BF;padding:.08in .12in;margin:.06in 0 .1in;box-shadow:2px 2px 0 #1C1530}
 .ex{display:flex;gap:.05in;align-items:center;margin:.02in 0 .04in}
 .ex img{width:.4in;border-radius:3px}
+.ladder .g{display:flex}.ladder .g img+img{margin-left:-.26in}.ladder b{font:900 15pt/1 Archivo;margin:0 .04in}
 .ex span{font-size:9pt;color:#4D4668;margin-left:.06in}
 .small{font-size:8.8pt;color:#4D4668}
 .foot{position:absolute;left:.66in;right:.66in;bottom:.42in;display:flex;justify-content:space-between;font:800 8.5pt/1 Archivo;letter-spacing:.08em;text-transform:uppercase;color:#5A5170}
@@ -70,11 +71,11 @@ td{border-bottom:.6px solid rgba(28,21,48,.25);padding:2px 4px}
     </div>
     <div>
       <h2>Answering a move</h2>
-      <p>To play on top of the move on the table, yours has to beat it. The first rule that applies decides:</p>
+      <p>To play on top of the move on the table, yours has to beat it. <b>More cards always wins. Same number of cards? Higher wins.</b></p><div class="ex ladder"><span class="g"><img src="/games/down-for-the-count/img/card-5.webp" alt=""><img src="/games/down-for-the-count/img/card-5.webp" alt=""></span><b>›</b><span class="g"><img src="/games/down-for-the-count/img/card-7.webp" alt=""><img src="/games/down-for-the-count/img/card-7.webp" alt=""></span><b>›</b><span class="g"><img src="/games/down-for-the-count/img/card-3.webp" alt=""><img src="/games/down-for-the-count/img/card-3.webp" alt=""><img src="/games/down-for-the-count/img/card-3.webp" alt=""></span></div><p>In full, the first rule that applies decides:</p>
       <ol>
-        <li><b>Bigger beats smaller.</b> More cards wins, whatever the type or rank.</li>
-        <li><b>Same size: a set beats a run.</b> A pair beats a 2-run; three 6s beat 4-5-6.</li>
-        <li><b>Same size and type: higher rank wins.</b> Runs compare by their top card.</li>
+        <li><b>More cards always wins,</b> whatever the type or numbers.</li>
+        <li><b>Same number of cards: a set beats a run.</b> A pair beats a 2-run; three 6s beat 4-5-6.</li>
+        <li><b>Same number and type: higher wins.</b> Runs compare by their top card.</li>
       </ol>
       <div class="box"><b>5-5</b> is on the table: beat it with a higher pair, or any move of 3 or 4 cards. <b>5-6-7</b> is on the table: beat it with any three of a kind, a 3-run topping out on 8, 9 or 10, or any 4-card move.</div>
       <h2>Your turn</h2>
