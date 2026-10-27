@@ -108,7 +108,7 @@ const FossilArt = (() => {
       const sp = o.spine ? o.spine(t) : 0;
       if (sp > 0.5) P.line([[p[0], p[1]], [p[0] + nx * sp - tx * sp * 0.3, p[1] + ny * sp - ty * sp * 0.3]], Math.max(1.4, s * 0.32));
       const ch = o.chevron ? o.chevron(t) : 0;
-      if (ch > 0.5) P.line([[p[0], p[1]], [p[0] - nx * ch - tx * ch * 0.45, p[1] - ny * ch - ty * ch * 0.45]], Math.max(1.2, s * 0.24));
+      if (ch > 0.5 && i >= 3) P.line([[p[0], p[1]], [p[0] - nx * ch - tx * ch * 0.45, p[1] - ny * ch - ty * ch * 0.45]], Math.max(1.2, s * 0.24));
       const cr = o.cervical ? o.cervical(t) : 0;
       if (cr > 0.5) P.line([[p[0] - nx * s * 0.3, p[1] - ny * s * 0.3], [p[0] - nx * s * 0.6 + tx * cr, p[1] - ny * s * 0.6 + ty * cr]], 1.3);
       P.ell(p[0], p[1], s * 0.62, s * 0.44, a, { shadeW: s * 0.35 });
@@ -188,7 +188,9 @@ const FossilArt = (() => {
     for (const f of k.far || []) L.push(() => { limb(P.far, f.pts, f.w); if (f.toes) toes(P.far, ...f.toes); });
     L.push(() => ribs(P, bp, k.rib[0], k.rib[1], k.rib[2], k.ribLen, k.ribLean || 0.3, k.ribW || 4.2));
     if (k.gast) L.push(() => gastralia(P, ...k.gast));
-    L.push(() => { const p = k.pelvis; P.ell(...p.ilium); P.line(p.pubis, p.pw); if (p.boot) P.ell(...p.boot); P.line(p.ischium, p.iw); });
+    // the lower hip bones are kept short so they tuck in beside the thigh instead of jutting out behind
+    const part = (seg, f) => [seg[0], [seg[0][0] + (seg[1][0] - seg[0][0]) * f, seg[0][1] + (seg[1][1] - seg[0][1]) * f]];
+    L.push(() => { const p = k.pelvis; P.ell(...p.ilium); P.line(part(p.pubis, 0.5), p.pw); const q = part(p.ischium, 0.22)[1]; P.ell((p.ischium[0][0] + q[0]) / 2, (p.ischium[0][1] + q[1]) / 2, p.iw * 1.1, p.iw * 0.9, 0.9); });
     L.push(() => { vert(P, k.tail, k.tailO); vert(P, k.back, k.backO); });
     L.push(() => vert(P, k.neck, k.neckO));
     L.push(() => { limb(P, k.fore.pts, k.fore.w); if (k.fore.toes) toes(P, ...k.fore.toes); });
