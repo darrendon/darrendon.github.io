@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Down for the Count — playtest build</title>
-<meta name="description" content="Down for the Count — a wrestling climbing card game. Play 2 to 6 players against bots in your browser.">
+<meta name="description" content="Down for the Count — a wrestling climbing card game. Play 2 to 5 players against bots in your browser.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
@@ -175,7 +175,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
   const E = window.DFTC;
   const IMG = '/games/down-for-the-count/img/play/';
   const WORD = { 1: 'TAP!', 2: 'BIFF!', 3: 'BAM!', 4: 'POW!', 5: 'WHAP!', 6: 'THUD!', 7: 'WHAM!', 8: 'CRACK!', 9: 'SMASH!', 10: 'BOOM!' };
-  const BOTS = ['Hacksaw Hal', 'The Duchess', 'Rocket Ruiz', 'Big Moe', 'Lady Lariat'];
+  const BOTS = ['Hacksaw Hal', 'The Duchess', 'Rocket Ruiz', 'Big Moe'];
   const COLORS = ['#ffd630', '#2f7bff', '#3cc75a', '#ff7a1a', '#8c4bff', '#13c2b0'];
   const app = document.getElementById('app'), ov = document.getElementById('ov'), ovBody = document.getElementById('ov-body'), live = document.getElementById('live');
   let g = null, sel = [], mode = null, timer = null, lastLog = 0, pops = [], chosenN = 4, showRules = false, tough = true;
@@ -190,10 +190,10 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     clearTimeout(timer); g = null; ov.hidden = true;
     app.innerHTML =
       '<div class="hero"><div><h1>Down for<br>the Count</h1>' +
-      '<p class="tag">A wrestling climbing card game for 2–6. Beat the move on the table or take a count. Run out of cards and you tap out; run out of count and you’re pinned. Last one standing wins.</p></div>' +
+      '<p class="tag">A wrestling climbing card game for 2–5. Beat the move on the table or take a count. Run out of cards and you tap out; run out of count and you’re pinned. Last one standing wins.</p></div>' +
       '<div class="fan"><img src="' + IMG + 'card-4.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-10.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-7.webp" alt="" width="240" height="336"></div></div>' +
       '<div class="startbox"><h2>How many wrestlers?</h2>' +
-      '<div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5, 6].map((n) => '<button type="button" data-n="' + n + '" aria-pressed="' + (n === chosenN) + '">' + n + '</button>').join('') + '</div>' +
+      '<div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5].map((n) => '<button type="button" data-n="' + n + '" aria-pressed="' + (n === chosenN) + '">' + n + '</button>').join('') + '</div>' +
       '<p class="setup-note" id="note"></p>' +
       '<h2>Bots</h2><div class="pick-n" role="group" aria-label="Bot strength">' +
       '<button type="button" data-bots="tough" aria-pressed="' + tough + '">Tough</button><button type="button" data-bots="casual" aria-pressed="' + !tough + '">Casual</button></div>' +
@@ -203,7 +203,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     const note = () => {
       const [top, hand, count] = E.SETUP[chosenN];
       document.getElementById('note').textContent = 'You and ' + (chosenN - 1) + ' bot' + (chosenN > 2 ? 's' : '') + '. ' + hand + ' cards each and ' + count + ' count cards' +
-        (top < 10 ? ', ranks 1–8' : '') + (chosenN === 2 ? '. Heads-up has no kick out: if you can’t beat it, you reverse.' : '.') + ' Three rounds.';
+        (top < 10 ? ', ranks 1–' + top : '') + (chosenN === 2 ? '. Heads-up has no kick out: if you can’t beat it, you reverse.' : '.') + ' Three rounds.';
     };
     app.querySelectorAll('[data-n]').forEach((b) => b.addEventListener('click', () => {
       chosenN = +b.dataset.n; app.querySelectorAll('[data-n]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); note();

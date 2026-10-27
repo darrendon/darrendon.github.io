@@ -22,8 +22,8 @@
   document.body.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = C('#0F1838');
-  scene.fog = new THREE.Fog(C('#0F1838'), 40, 80);
+  scene.background = C('#D9DEE8');
+  scene.fog = new THREE.Fog(C('#D9DEE8'), 40, 80);
   const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 300);
 
   scene.add(new THREE.HemisphereLight(0xfff3e2, 0x8a7458, 0.5));
@@ -33,16 +33,16 @@
   const rim = new THREE.DirectionalLight(0xffd9a8, 0.36); rim.position.set(-10, 7, -9); scene.add(rim);
   const fill = new THREE.DirectionalLight(0xdfe8ff, 0.16); fill.position.set(-6, 5, 10); scene.add(fill);
 
-  // table: a ring canvas, deep blue with a faint weave
+  // table: a ring canvas, pale grey with a faint weave
   function matTexture() {
     const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
-    g.fillStyle = '#1B3A86'; g.fillRect(0, 0, 1024, 1024);
+    g.fillStyle = '#E9ECF2'; g.fillRect(0, 0, 1024, 1024);
     let s = 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
     for (let i = 0; i < 1024; i += 4) { g.fillStyle = 'rgba(255,255,255,' + (0.015 + r() * 0.02) + ')'; g.fillRect(0, i, 1024, 1); g.fillStyle = 'rgba(0,0,20,' + (0.02 + r() * 0.03) + ')'; g.fillRect(i, 0, 1, 1024); }
     for (let i = 0; i < 900; i++) { g.fillStyle = 'rgba(' + (r() < .5 ? '255,255,255' : '0,0,30') + ',' + (0.02 + r() * 0.04) + ')'; g.fillRect(r() * 1024, r() * 1024, 2 + r() * 10, 1 + r() * 2); }
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 6); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
   }
-  const table = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), new THREE.MeshStandardMaterial({ map: matTexture(), roughness: 0.92, metalness: 0 }));
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), new THREE.MeshStandardMaterial({ map: matTexture(), roughness: 0.95, metalness: 0, color: C('#C8CCD6') }));
   table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
 
   // ---- cards: poker size with rounded corners

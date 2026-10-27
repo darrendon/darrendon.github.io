@@ -1,16 +1,16 @@
 /* Down for the Count skin: a comic-book fight card. Colours taken from the cards and the box. */
 .g-dftc{
   --g-bg:#FFFCF4; --g-panel:#FFF0BF; --g-panel-hi:#FFF7DC; --g-face:#FFFFFF;
-  --g-red:#CC162C;            /* the page accent slot: the box's crimson */
-  --g-gold:#FFD630; --g-jade:#1C1530; --g-ink:#1C1530; --g-muted:#5A5170; --g-line:#E8DDC0;
+  --g-red:#245CE8;            /* the page accent slot: the box's royal blue */
+  --g-gold:#FFCC28; --ft-red:#E8303F; --g-jade:#1C1530; --g-ink:#1C1530; --g-muted:#5A5170; --g-line:#E8DDC0;
   --ft-display:"Archivo","Arial Black",system-ui,sans-serif; --ft-navy:#101A3D;
 }
 @media (prefers-color-scheme: dark){
-  .g-dftc{--g-bg:#101A3D; --g-panel:#17234F; --g-panel-hi:#1E2C60; --g-red:#FF5468; --g-jade:#0B1230;
+  .g-dftc{--g-bg:#101A3D; --g-panel:#17234F; --g-panel-hi:#1E2C60; --g-red:#7FA6FF; --g-jade:#0B1230;
     --g-ink:#FFFCF4; --g-muted:#B9C0DC; --g-line:#2A3870}
 }
 .g-dftc .g-hero h1{font-family:var(--ft-display);font-weight:900;font-style:italic;font-stretch:112%;letter-spacing:-.02em;line-height:.92;
-  color:#FFFCF4;text-shadow:3px 3px 0 var(--g-red),6px 6px 0 #1C1530;-webkit-text-stroke:2px #1C1530;paint-order:stroke fill;margin-bottom:8px}
+  color:#FFFCF4;text-shadow:3px 3px 0 var(--ft-red),6px 6px 0 #1C1530;-webkit-text-stroke:2px #1C1530;paint-order:stroke fill;margin-bottom:8px}
 .g-dftc .pill{background:#FFD630;color:#1C1530;border:2px solid #1C1530;font-weight:800}
 .g-dftc h2,.g-dftc h3{font-family:var(--ft-display);font-weight:900;font-style:italic;font-stretch:110%;letter-spacing:-.01em}
 .g-dftc .label{font-family:var(--ft-display);font-weight:800;letter-spacing:.1em;color:var(--g-red)}
@@ -19,7 +19,7 @@
 @media (prefers-color-scheme: dark){.g-dftc.game .btn.red{color:#101A3D;border-color:#FFFCF4}}
 
 /* hero: a still render with view buttons */
-.g-dftc .viewer{background:var(--ft-navy);border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530}
+.g-dftc .viewer{background:#D9DEE8;border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530}
 .g-dftc .viewer .stage{aspect-ratio:16/10}
 .g-dftc .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
 .g-dftc .viewer .bar{background:var(--g-panel);border-top:3px solid #1C1530}
@@ -29,7 +29,7 @@
 .endings div{border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;background:var(--g-panel);border:3px solid #1C1530;box-shadow:4px 4px 0 #1C1530;color:var(--g-ink)}
 .endings b{font-family:var(--ft-display);font-weight:900;font-style:italic;font-stretch:110%;font-size:22px;line-height:1;color:var(--g-red)}
 .endings span{font-size:15px}
-.endings .last{background:#CC162C;color:#FFFCF4}
+.endings .last{background:#245CE8;color:#FFFCF4}
 .endings .last b{color:#FFD630}
 @media (max-width:820px){.endings{grid-template-columns:1fr}}
 
@@ -55,11 +55,11 @@
 .g-dftc .play-frame iframe{height:min(92vh,1040px)}
 .g-dftc .mode{border-color:#1C1530}
 .g-dftc .set{border-top-color:var(--g-red)}
-.g-dftc .g-cta{background:#CC162C;border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530}
+.g-dftc .g-cta{background:#245CE8;border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530}
 .g-dftc .g-cta .btn.light{color:#1C1530}
 .g-dftc .preview img{border:3px solid #1C1530}
 
 /* home page card */
 .feature.g-dftc h3{font-family:var(--ft-display);font-weight:900;font-style:italic;font-stretch:112%;letter-spacing:-.01em}
-.feature.g-dftc .feature-art{background:#101A3D;padding:0}
+.feature.g-dftc .feature-art{background:#D9DEE8;padding:0}
 .feature.g-dftc .feature-art img{width:100%;height:100%;object-fit:cover}

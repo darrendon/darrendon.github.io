@@ -1,6 +1,7 @@
-"""Shared drawing helpers for the Down for the Count art: sunbursts, halftone, outlined type, card frames and the card back (card_back()).
-The mask faces and poster box in here are from an earlier art pass and are no longer used."""
+"""Shared drawing helpers for the Down for the Count art: outlined type, card frames, spotlights and tints.
+The mask and poster code further down is from an earlier art pass and is unused."""
 import os
+"""Down for the Count — ornate luchador card set: faces, card back (top-down ring), box front (fight poster)."""
 import math, subprocess, os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
