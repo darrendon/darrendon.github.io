@@ -10,10 +10,10 @@
 
   // Camera presets: target, distance, yaw (theta), pitch from vertical (phi)
   const VIEWS = {
-    all:   { t: [0.4, 0.6, 0.35], d: 12.4, th: 0.0,  ph: 1.02 },
-    box:   { t: [-1.6, 0.9, -1.3],  d: 9.4,  th: -0.32, ph: 0.78 },
-    tiles: { t: [0.45, 0.55, 2.25],  d: 7.4,  th: 0.18, ph: 0.98 },
-    bag:   { t: [3.2, 1.0, -0.1],   d: 7.6,  th: 0.62, ph: 1.08 },
+    all:   { t: [1.15, 0.6, 0.75], d: 14.2, th: 0.0,  ph: 1.02 },
+    box:   { t: [-2.4, 0.6, -1.8], d: 9.8, th: -0.12, ph: 0.8 },
+    tiles: { t: [-1.6, 0.3, 3.5],  d: 6.9,  th: 0.0,  ph: 0.5 },
+    bag:   { t: [5.3, 0.9, 0.3],   d: 7.9,  th: -0.18, ph: 1.0 },
   };
 
   function roundedRect(w, h, r) {
@@ -80,18 +80,19 @@
     for (let b = 0; b < 4; b++) backMat[b] = new THREE.MeshStandardMaterial({ map: tex('back-' + b), transparent: true, alphaTest: 0.5, roughness: 0.38 });
 
     // Tile geometry (shared)
-    const TW = 0.7, TH = 1.0, TR = 0.085, BV = 0.03;
+    // Domino-thin tiles: ~30 × 40 mm face, ~8 mm thick (bone face bonded to a coloured back)
+    const TW = 0.7, TH = 1.0, TR = 0.05, BV = 0.025, BONE = 0.09, BACK = 0.05;
     const shape = roundedRect(TW, TH, TR);
-    const boneGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.26, bevelEnabled: true, bevelThickness: BV, bevelSize: BV, bevelSegments: 3, curveSegments: 6 });
-    const backGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.1, bevelEnabled: true, bevelThickness: BV, bevelSize: BV, bevelSegments: 3, curveSegments: 6 });
-    backGeo.translate(0, 0, -0.15);
+    const boneGeo = new THREE.ExtrudeGeometry(shape, { depth: BONE, bevelEnabled: true, bevelThickness: BV, bevelSize: BV, bevelSegments: 3, curveSegments: 6 });
+    const backGeo = new THREE.ExtrudeGeometry(shape, { depth: BACK, bevelEnabled: true, bevelThickness: BV, bevelSize: BV, bevelSegments: 3, curveSegments: 6 });
+    backGeo.translate(0, 0, -BACK - 0.02);
     const planeGeo = new THREE.PlaneGeometry(TW + BV * 1.2, TH + BV * 1.2);
     const boneMat = new THREE.MeshStandardMaterial({ color: C('#F1E8D4'), roughness: 0.4 });
     const bandMat = BAND.map((c) => new THREE.MeshStandardMaterial({ color: C(c), roughness: 0.38 }));
-    const FACE_Z = 0.26 + BV + 0.002, BACK_Z = -0.15 - BV - 0.002;
+    const FACE_Z = BONE + BV + 0.002, BACK_Z = -BACK - 0.02 - BV - 0.002;
 
     function tile(r) {
-      const g = new THREE.Group(), b = bandOf(r);
+      const g = new THREE.Group(), b = bandOf(r); g.name = 'tile ' + r;
       const bone = new THREE.Mesh(boneGeo, boneMat); bone.castShadow = bone.receiveShadow = true; g.add(bone);
       const back = new THREE.Mesh(backGeo, bandMat[b]); back.castShadow = true; g.add(back);
       const face = new THREE.Mesh(planeGeo, faceMaterial(r)); face.position.z = FACE_Z; g.add(face);
@@ -100,13 +101,13 @@
     }
     // poses: standing facing +z, flat face-up, flat face-down
     function standing(r, x, z, yaw, lean) {
-      const t = tile(r); t.position.set(x, TH / 2 + BV, z); t.rotation.set(-(lean || 0.08), yaw || 0, 0, 'YXZ'); stage.add(t); return t;
+      const t = tile(r); t.name += ' standing @' + x.toFixed(2) + ',' + z.toFixed(2); t.position.set(x, TH / 2 + BV, z); t.rotation.set(-(lean || 0.08), yaw || 0, 0, 'YXZ'); stage.add(t); return t;
     }
     function faceUp(r, x, z, yaw) {
-      const t = tile(r); t.rotation.set(-Math.PI / 2, 0, yaw || 0); t.position.set(x, 0.15 + BV, z); stage.add(t); return t;
+      const t = tile(r); t.name += ' up @' + x.toFixed(2) + ',' + z.toFixed(2); t.rotation.set(-Math.PI / 2, 0, yaw || 0); t.position.set(x, BACK + 0.02 + BV, z); stage.add(t); return t;
     }
     function faceDown(r, x, z, yaw) {
-      const t = tile(r); t.rotation.set(Math.PI / 2, 0, yaw || 0); t.position.set(x, 0.26 + BV, z); stage.add(t); return t;
+      const t = tile(r); t.name += ' down @' + x.toFixed(2) + ',' + z.toFixed(2); t.rotation.set(Math.PI / 2, 0, yaw || 0); t.position.set(x, BONE + BV, z); stage.add(t); return t;
     }
 
     // Game box
@@ -121,8 +122,8 @@
       new THREE.MeshStandardMaterial({ map: side, roughness: 0.55 }),
     ];
     const box = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), boxMats);
-    box.castShadow = box.receiveShadow = true;
-    box.position.set(-1.7, BH / 2, -1.6); box.rotation.y = 0.16;
+    box.castShadow = box.receiveShadow = true; box.name = 'box';
+    box.position.set(-2.4, BH / 2, -2.4); box.rotation.y = 0.16;
     stage.add(box);
 
     // Tile bag (lathe + cloth folds)
@@ -139,7 +140,7 @@
       pos.setXYZ(i, v.x * k, y, v.z * k);
     }
     bagGeo.computeVertexNormals();
-    const bag = new THREE.Group();
+    const bag = new THREE.Group(); bag.name = 'bag';
     const cloth = new THREE.Mesh(bagGeo, new THREE.MeshStandardMaterial({ color: C('#8E2418'), roughness: 0.95, side: THREE.DoubleSide }));
     cloth.castShadow = cloth.receiveShadow = true; bag.add(cloth);
     const gold = new THREE.MeshStandardMaterial({ color: C('#E9B44F'), roughness: 0.45, metalness: 0.1 });
@@ -149,13 +150,14 @@
       const cord = new THREE.Mesh(new THREE.TubeGeometry(c, 24, 0.035, 8, false), gold); cord.castShadow = true; bag.add(cord);
       const bead = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), gold); bead.position.copy(c.getPoint(1)); bead.castShadow = true; bag.add(bead);
     });
-    bag.position.set(3.35, 0, -0.55); bag.rotation.y = -0.5; stage.add(bag);
+    bag.position.set(5.2, 0, -1.1); bag.rotation.y = -0.5; stage.add(bag);
 
-    // Tiles: a cart (hand) of standing tiles, a Chef's Special laid flat, and a few face-down tiles by the bag
-    [2, 3, 5, 7, 8, 11].forEach((r, i) => standing(r, -2.25 + i * 0.84, 1.55, 0, 0.1));
-    [12, 12, 12, 12].forEach((r, i) => faceUp(r, -0.7 + i * 0.82, 3.0, 0));
-    faceDown(1, 2.15, 1.25, 0.5); faceDown(5, 2.85, 1.7, -0.35); faceDown(9, 3.6, 1.15, 0.9); faceDown(10, 3.05, 0.55, 0.15);
-    faceUp(6, 4.25, 1.9, -0.6);
+    // Tiles: a cart (hand) of standing tiles, a Chef's Special laid flat in front of it, and a few tiles
+    // spilled in front of the bag. Everything sits apart so nothing overlaps from the preset camera angles.
+    [2, 3, 5, 7, 8, 11].forEach((r, i) => standing(r, -4.0 + i * 0.92, 2.5, 0, 0.1));
+    [12, 12, 12, 12].forEach((r, i) => faceUp(r, -1.9 + i * 0.9, 3.8, 0));
+    faceDown(1, 3.65, 1.35, 0.12); faceDown(9, 4.7, 1.4, -0.1); faceDown(5, 5.75, 1.35, 0.12);
+    faceUp(6, 6.8, 1.45, -0.12);
 
     // Camera rig
     const cur = { t: new THREE.Vector3(), d: 0, th: 0, ph: 0 }, goal = { t: new THREE.Vector3(), d: 0, th: 0, ph: 0 };
@@ -194,7 +196,7 @@
       renderer.setSize(w, h, false); canvas.style.width = '100%'; canvas.style.height = '100%';
       camera.aspect = w / h;
       // pull back a little on tall/narrow frames so everything stays in shot
-      camera.zoom = Math.min(1, (w / h) / 1.45) * 0.98 + 0.02;
+      camera.zoom = Math.min(1, (w / h) / 1.62) * 0.98 + 0.02;
       camera.updateProjectionMatrix(); dirty = true;
     }
     if (window.ResizeObserver) new ResizeObserver(resize).observe(el); else window.addEventListener('resize', resize);
@@ -206,7 +208,7 @@
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(function step(now) {
         if (!visible) return;
-        if (!userTouched) { goal.th = sway0 + Math.sin((now - t0) / 4200) * 0.38; dirty = true; }
+        if (!userTouched) { goal.th = sway0 + Math.sin((now - t0) / 4200) * 0.12; dirty = true; }
         const k = 0.085;
         const moving = Math.abs(goal.th - cur.th) + Math.abs(goal.ph - cur.ph) + Math.abs(goal.d - cur.d) + goal.t.distanceTo(cur.t) > 0.0005;
         if (moving) { cur.th += (goal.th - cur.th) * k; cur.ph += (goal.ph - cur.ph) * k; cur.d += (goal.d - cur.d) * k; cur.t.lerp(goal.t, k); dirty = true; }
@@ -228,6 +230,7 @@
       setView(name) { setGoal(name); if (!opts.still) loop(); },
       renderNow() { place(); renderer.render(scene, camera); },
       canvas,
+      _debug: { scene, stage, camera, renderer, ground },
     };
   }
 

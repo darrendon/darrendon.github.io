@@ -13,7 +13,7 @@ Portfolio site for Darren Don, board game designer at What's Good Board Games. P
 
 ## Assets
 - `assets/css/boo-who.css` — Boo Who? skin on top of the shared game-page layout in `dim-sum-rush.css`
-- `assets/js/dsr-scene.js` — interactive 3D mockup (three.js r128, vendored in `assets/vendor/`)
+- `assets/js/dsr-scene.js` — interactive 3D mockup (three.js r128, vendored in `assets/vendor/`); tiles are domino-thin (bone face on a coloured back). `games/dim-sum-rush/img/src/shoot3d.py check all:800:500 box:600:400 tiles:600:400 bag:600:400` renders each object's silhouette on its own and reports any two that overlap on screen, sit closer than 3 px, or are cut by the frame (every preset passes with zero); `shoot3d.py shoot all:1600:1000:2:hero.png` saves a 2× still
 - `assets/img/tex/` — tile, tile-back and box textures drawn from the game's own art (the "by Darren Don" line on `box-top.webp` was added on top of the original texture; the stills in `games/dim-sum-rush/img/` are `DSRScene.mount(el, {view, still: true, pixelRatio: 2})` captures)
 - `games/dim-sum-rush/sell-sheet.html` — source for `dim-sum-rush-sell-sheet.pdf` (print to PDF at US Letter landscape, backgrounds on)
 - `games/boo-who/sell-sheet.html` — source for `boo-who-sell-sheet.pdf` (US Letter landscape, no margins, backgrounds on)
