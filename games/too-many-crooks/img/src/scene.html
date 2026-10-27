@@ -142,13 +142,16 @@
     // one crew sheet mid-job, front right
     const s = makeSheet(2); s.position.set(2.7, 0, 1.3); s.rotation.y = -0.16; scene.add(s);
     dieOnSheet(s, 1, 2, CREW_X[0], CREW_Z, 0); dieOnSheet(s, 2, 4, CREW_X[1], CREW_Z, 0); dieOnSheet(s, 3, 6, CREW_X[2], CREW_Z, 0);
-    dieOnSheet(s, 0, 5, CREW_X[0], PAY_Z, 0); dieOnSheet(s, 0, 3, CREW_X[2], PAY_Z, 0);
+    // cut slots stay empty: dice in back-to-back slots read as touching from any table-height camera
     dieOnSheet(s, 0, 2, OWN[0], OWN[1], 0);
     // a few loose dice on the table in front of the box, spaced so nothing touches
     const r = rnd(7);
-    const loose = [[-5.4, 1.4, 4, 6], [-4.4, 2.1, 5, 2], [-3.3, 1.5, 3, 5], [-2.2, 2.2, 1, 1], [-1.0, 1.6, 0, 4]];
-    for (const [x, z, c, v] of loose) { const d = makeDie(c, v, r() * 1.2); d.position.set(x, DIE / 2, z); scene.add(d); }
-    frame([-6.2, 0, -4.2], [4.7, 1.6, 2.7], 40, 9, 0.96);
+    // five dice in a loose row parallel to the box's front edge, well clear of it so nothing reads as touching from the camera
+    const ca = Math.cos(0.36), sa = Math.sin(0.36);
+    const edge = (t, off) => [-2.2 - 3.5 * ca + 2.5 * sa + t * ca + off * sa, -1.6 + 3.5 * sa + 2.5 * ca - t * sa + off * ca];
+    const loose = [[0.4, 2.0, 4, 6], [1.3, 1.85, 5, 2], [2.2, 2.0, 3, 5], [3.1, 1.85, 1, 1], [4.0, 2.0, 0, 4]];
+    for (const [t, off, c, v] of loose) { const [x, z] = edge(t, off); const d = makeDie(c, v, 0.36 + (r() - 0.5) * 0.5); d.position.set(x, DIE / 2, z); scene.add(d); }
+    frame([-6.4, 0, -4.2], [4.7, 1.6, 3.6], 46, 9, 0.96);
   }
 
   if (SCENE === 'table') {
@@ -165,12 +168,11 @@
     seats.forEach((st, k) => {
       const s = makeSheet([0, 1, 4, 5][k]); s.position.set(st.pos[0], 0, st.pos[2]); s.rotation.y = st.rot; scene.add(s);
       crewsFor[k].forEach(([c, v], i) => dieOnSheet(s, c, v, CREW_X[i], CREW_Z, 0));
-      dieOnSheet(s, st.me, 4, CREW_X[0], PAY_Z, 0); dieOnSheet(s, st.me, 3, CREW_X[1], PAY_Z, 0);
       dieOnSheet(s, st.me, 2, OWN[0], OWN[1], 0);
       // the rest of this player's hand in a row beside the sheet (local coords, clear of the card edge)
       [[2.35, -1.0], [2.35, -0.05], [2.35, 0.9]].forEach(([lx, lz], j) => dieOnSheet(s, st.me, [6, 5, 1][j], lx, lz, (r() - .5) * .24));
     });
-    frame([-6.2, 0, -8.4], [6.2, 1.6, 5.2], 46, 4, 0.97);
+    frame([-6.2, 0, -11.3], [6.2, 1.6, 5.2], 84, 0, 0.95);
   }
 
   if (SCENE === 'kit') {
