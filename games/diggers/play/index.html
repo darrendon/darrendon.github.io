@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diggers — playtest build</title>
+<title>Diggers — play in your browser</title>
 <meta name="description" content="Diggers — a contested-lane climbing card game of rival paleontologists. Play 2 to 4 players against bots in your browser.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
@@ -1247,7 +1247,7 @@ function catalogueHtml() {
 
 function setupHtml() {
   const desc = { 2: "One rival · three sites between your camps · four species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · five species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all six species · 10 in your rock face" };
-  return `<div class="top"><div><div class="eyebrow">Playtest table</div><h1>Diggers</h1>
+  return `<div class="top"><div><div class="eyebrow">A new dig</div><h1>Diggers</h1>
     <p class="sub">Rival paleontologists, three field seasons, and dig sites that go to whoever brings up the finer skeleton.</p></div></div>
   <div class="setup">
     <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can run up to 4 bones.</p></div>
@@ -1259,7 +1259,7 @@ function setupHtml() {
 function render() {
   if (!root) return;
   if (!G) { root.innerHTML = setupHtml(); return; }
-  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : `${G.n} diggers · playtest`}</div><h1>Diggers</h1></div>
+  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : `${G.n} diggers`}</div><h1>Diggers</h1></div>
     <button data-act="setup">New expedition</button></div>
     ${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
 }
