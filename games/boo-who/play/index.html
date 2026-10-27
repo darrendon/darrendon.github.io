@@ -147,7 +147,6 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   <header>
     <div>
       <h1>Boo Who?</h1>
-      <p class="tag">Everyone can see it but you.</p>
     </div>
     <div class="meta" id="meta"></div>
   </header>
@@ -373,7 +372,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   const faceDown = () => R().hidden && (S.phase === "boo" || S.phase === "decide");
   function cardHTML(p, i, flip) {
     const hidden = i === 0 && !(S.phase === "reveal" || S.phase === "over");
-    if (hidden) return `<div class="card hidden"><img src="${ART.back}" alt="Your card, facing away from you"><span class="q">?</span><span class="veil">Everyone can see it but you</span></div>`;
+    if (hidden) return `<div class="card hidden"><img src="${ART.back}" alt="Your card, facing away from you"><span class="q">?</span><span class="veil">Your card faces the table</span></div>`;
     const alt = p.role === "G" ? "Ghost card: a glowing bedsheet ghost" : "Living card: a kid in a bedsheet costume";
     return `<div class="card${flip && i === 0 ? " flip" : ""}"><img src="${ART[p.role]}" alt="${alt}"></div>`;
   }
@@ -395,7 +394,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   }
   function introHTML() {
     return `<div class="intro">
-      <h2>Everyone can see your card but you.</h2>
+      <h2>Your card faces the table, so you’re the only one who can’t read it.</h2>
       <p>Each round, players put Boos on each other. Then everyone decides at once: run if you think you're Living, stay if you think you're a Ghost. The Boos in front of you are your only clues.</p>
       <div class="choices">
         <div class="choice-card"><div class="cards"><img src="${ART.G}" alt="A Ghost card"><img src="${ART.L}" alt="A Living card"></div>
