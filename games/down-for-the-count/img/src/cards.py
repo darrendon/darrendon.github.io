@@ -149,7 +149,7 @@ def box_front(BW=1200, BH=1500):
     # bottom strip on the apron
     t1 = L.text_layer(54, 'A WRESTLING CARD GAME', L.BLACK_I, L.WHITE, L.INK, 6, shadow=False, spacing=2)
     L.paste_center(bg, t1, BW / 2, mat_y + 40 + 72)
-    t2 = L.text_layer(36, '2–5 PLAYERS  ·  15 MINUTES  ·  AGES 8+', L.BLACK, (255, 236, 170), L.INK, 0, shadow=False, spacing=2)
+    t2 = L.text_layer(36, '2–5 PLAYERS  ·  15 MINUTES', L.BLACK, (255, 236, 170), L.INK, 0, shadow=False, spacing=2)
     L.paste_center(bg, t2, BW / 2, mat_y + 40 + 140)
     by = L.text_layer(40, 'BY DARREN DON', L.BLACK_I, L.WHITE, L.INK, 6, shadow=False, spacing=4)
     L.paste_center(bg, by, BW / 2, 596)
