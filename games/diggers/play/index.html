@@ -710,7 +710,7 @@ const FossilArt = (() => {
   return { build, slab, cell, WW, WH };
 })();
 
-// A card is species * 10 + value. Value drives the rules; species only matters for articulated spines.
+// A card is species * 10 + value. Value drives the rules; species only matters for suited runs.
 const V = c => c % 10, SP = c => Math.floor(c / 10);
 function cardName(c) { return `${SPECIES[SP(c)].name} ${V(c)}`; }
 
@@ -739,7 +739,7 @@ function meldInfo(cards) {
   let up = true, down = true;
   for (let i = 0; i < n - 1; i++) { if (c[i+1] - c[i] !== 1) up = false; if (c[i] - c[i+1] !== 1) down = false; }
   if (!(up || down)) return null;
-  // an articulated spine (every bone from one species) outranks a bone bed, which outranks a mixed spine
+  // a suited run (every card one species) outranks a set, which outranks a run
   return [n, cards.every(x => SP(x) === SP(cards[0])) ? 2 : 0, sum];
 }
 function slices(h) {
@@ -758,13 +758,13 @@ function bestInsert(h, card) {
 function describe(cards) {
   const inf = meldInfo(cards); if (!inf) return "not a proper find";
   const c = cards.map(V);
-  if (inf[0] === 1) return `a lone ${c[0]}`;
+  if (inf[0] === 1) return `a single ${c[0]}`;
   if (inf[1] === 1) {
     const word = { 2: "two", 3: "three", 4: "four", 5: "five" }[inf[0]];
-    return `a bone bed of ${word} ${c[0]}s`;
+    return `a set of ${word} ${c[0]}s`;
   }
-  if (inf[1] === 2) return `an articulated ${SPECIES[SP(cards[0])].name} spine ${c.join("-")}`;
-  return `a spine ${c.join("-")}`;
+  if (inf[1] === 2) return `a suited ${SPECIES[SP(cards[0])].name} run ${c.join("-")}`;
+  return `a run ${c.join("-")}`;
 }
 function myLanes(G, p) { return G.lanes.map((l, i) => i).filter(i => G.lanes[i].a === p || G.lanes[i].b === p); }
 function neighbor(G, i, p) { const l = G.lanes[i]; return l.a === p ? l.b : l.a; }
@@ -937,18 +937,18 @@ const TUT_STEPS = [
     text: () => `Along the bottom are your twelve fossils, in the order they were dealt. They're <b>locked</b>: you can never rearrange them, so only fossils sitting side by side can come out together. Each one is a number from 1 to 9 from one of the species.` },
   { next: true, focus: "sites", title: "Three dig sites",
     text: () => `Between your camp and Prof. Ashworth's lie Como Bluff, Garden Park and Morrison. On your turn you either <b>excavate</b> a find at a site or <b>poach</b> from one. Whoever holds a site when the season closes earns its prestige: 1 now, 2 next season, 4 in the last.` },
-  { act: "play", cards: [13, 34, 5], lane: 0, title: "Excavate a spine",
-    text: () => `A <b>spine</b> is numbers in order. Tap your 3, 4 and 5, which sit side by side, then tap <b>Como Bluff</b>. An unclaimed site takes any find.` },
+  { act: "play", cards: [13, 34, 5], lane: 0, title: "Excavate a run",
+    text: () => `A <b>run</b> is numbers in order. Tap your 3, 4 and 5, which sit side by side, then tap <b>Como Bluff</b>. An unclaimed site takes any find.` },
   { act: "scout", lane: 0, place: 2, send: 31, title: "Poach it back",
-    text: () => ui.mode === "placeScout" ? `Now set the 6 into your rock face. Tap the glowing gap just before your 7 and 8: that lines up a 6-7-8 spine for later.`
+    text: () => ui.mode === "placeScout" ? `Now set the 6 into your rock face. Tap the glowing gap just before your 7 and 8: that lines up a 6-7-8 run for later.`
       : ui.mode === "chooseOffer" ? `Every poach costs a fossil: send one across to Ashworth. Your lone 1 fits nothing, so tap it. He can keep it or turn it away, and a turned-away fossil is out for the season.`
-      : `Ashworth laid a <b>bone bed</b> of three 6s over your spine and took Como Bluff. A bone bed is all one number, and at the same size it beats a spine. Instead of excavating, poach: tap an outlined 6 at either end of his find.` },
-  { act: "play", cards: [22, 23, 24], lane: 1, title: "An articulated spine",
-    text: () => `Ashworth kept your 1 and laid three 5s at Garden Park. Look at your 2, 3 and 4: all Stegosaurus, bones from one skeleton. That's an <b>articulated spine</b>, and it beats a bone bed of the same size. Tap them, then tap <b>Garden Park</b>.` },
-  { act: "play", cards: ["P", 27, 18], lane: 0, title: "More bones wins",
-    text: () => `Ashworth staked Morrison with 7-8-9, but Como Bluff now holds only his two leftover 6s. A find with more bones always wins, whatever its kind. Tap your 6-7-8 and take <b>Como Bluff</b> back.` },
+      : `Ashworth laid a <b>set</b> of three 6s over your run and took Como Bluff. A set is all one number, and at the same size it beats a run. Instead of excavating, poach: tap an outlined 6 at either end of his find.` },
+  { act: "play", cards: [22, 23, 24], lane: 1, title: "A suited run",
+    text: () => `Ashworth kept your 1 and laid three 5s at Garden Park. Look at your 2, 3 and 4: all Stegosaurus, bones from one skeleton. That's a <b>suited run</b>, and it beats a set of the same size. Tap them, then tap <b>Garden Park</b>.` },
+  { act: "play", cards: ["P", 27, 18], lane: 0, title: "More cards wins",
+    text: () => `Ashworth staked Morrison with 7-8-9, but Como Bluff now holds only his two leftover 6s. A find with more cards always wins, whatever its kind. Tap your 6-7-8 and take <b>Como Bluff</b> back.` },
   { act: "play", cards: [9, 39, 19], lane: 2, title: "Close the season",
-    text: () => `The 1 you sent came back to bite: Ashworth made a bone bed of three 1s and laid it over his own spine at Morrison. When finds match in size and kind, the <b>higher total</b> wins. Your three 9s are your last fossils. Play them at <b>Morrison</b>: emptying your rock face closes the season on the spot.` },
+    text: () => `The 1 you sent came back to bite: Ashworth made a set of three 1s and laid it over his own run at Morrison. When finds match in size and kind, the <b>higher total</b> wins. Your three 9s are your last fossils. Play them at <b>Morrison</b>: emptying your rock face closes the season on the spot.` },
 ];
 let tut = null;
 function startTutorial() {
@@ -1125,7 +1125,7 @@ function centerHtml() {
     <div class="eyebrow">Season ${G.round + 1} of 3</div>
     <div class="big">${v}</div>
     <div class="small">prestige per site</div>
-    <div class="small">finds up to ${CAP} bones</div>
+    <div class="small">finds up to ${CAP} cards</div>
     <div class="seasons">${ROUND_VALUES.map((x, k) => `<span class="${k === G.round ? "on" : ""}">${x}</span>`).join("")}</div>
   </div>`;
 }
@@ -1159,7 +1159,7 @@ function statusHtml() {
     const cards = ui.sel.map(k => me.hand[k]); const inf = meldInfo(cards);
     who = inf ? `Selected: ${describe(cards)}` : "Those bones don't belong together";
     const legal = inf ? myLanes(G, 0).filter(i => canPlayOn(G, i, inf)) : [];
-    hint = !inf ? `A spine runs in order (3-4-5 or 5-4-3); a bone bed is all one number. Finds run up to ${CAP} bones.` :
+    hint = !inf ? `A run is numbers in order (3-4-5 or 5-4-3); a set is all one number. Finds can be up to ${CAP} cards.` :
       legal.length ? "Tap a highlighted site to excavate it there." : "It doesn't outshine any find beside your camp. Change the selection or poach instead.";
   } else {
     who = "Your turn to dig";
@@ -1225,7 +1225,7 @@ function rulesHtml() {
   const c = G ? G.cfg : CONFIG[ui.setupN];
   return `<details class="rules" data-key="rules" ${ui.open.rules ? "open" : ""}><summary>Rules reference</summary><ul>
     <li><b>Your rock face is locked.</b> Fossils sit in the order they were dealt, and you can't rearrange them. It only changes when fossils come out or are set in.</li>
-    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>spine</i> (consecutive numbers in order, like 3-4-5) or a <i>bone bed</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more bones, then the better kind, then the higher total. A spine all from one species is <i>articulated</i> and beats a bone bed of the same size; a bone bed beats a mixed spine. The old find is discarded and the site is yours.</li>
+    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>run</i> (consecutive numbers in order, like 3-4-5) or a <i>set</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more cards, then the better kind, then the higher total. A <i>suited run</i> (all one species) beats a set of the same size; a set beats a run. The old find is discarded and the site is yours.</li>
     <li><b>Poach:</b> take an end bone from a find at a site beside your camp and set it anywhere in your rock face. Then send any fossil from your rock face to the rival across that site. They keep it or turn it away, and a turned-away fossil is out of the dig this season.</li>
     <li><b>Closing a season:</b> the moment a digger's rock face is empty. Each site you hold earns prestige: 1 in the first season, 2 in the second, 4 in the third.</li>
     <li><b>Between seasons:</b> every site and rock face is cleared, the deck is reshuffled, and each camp gets ${c.hand} fresh fossils.</li>
@@ -1241,7 +1241,7 @@ function catalogueHtml() {
       <figcaption><b style="--suit:${sp.suit}">${symSvg(s, "sym")}${sp.name}</b><span>${sp.rock}</span></figcaption>
     </figure>`).join("");
   return `<details class="rules catalogue" data-key="cat" ${ui.open.cat ? "open" : ""}><summary>The six skeletons</summary>
-    <p class="cat-note">Every number is a bone, and the copies of each number come from different animals, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species matters once: a spine whose bones all come from one animal is articulated, and outranks a bone bed of the same size. Two diggers use four species and three use five.</p>
+    <p class="cat-note">Every number is a bone, and the copies of each number come from different animals, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species matters once: a suited run, every card from one animal, outranks a set of the same size. Two diggers use four species and three use five.</p>
     <div class="slabs">${slabs}</div></details>`;
 }
 
@@ -1250,7 +1250,7 @@ function setupHtml() {
   return `<div class="top"><div><div class="eyebrow">A new dig</div><h1>Diggers</h1>
     <p class="sub">Rival paleontologists, three field seasons, and dig sites that go to whoever brings up the finer skeleton.</p></div></div>
   <div class="setup">
-    <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can run up to 4 bones.</p></div>
+    <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can be up to 4 cards.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
     <div class="actions"><button class="primary" data-act="start">Open the first season</button><button class="tutbtn" data-act="tutorial">New here? Take the 2-minute field lesson</button></div>
   </div>${rulesHtml()}${catalogueHtml()}`;
