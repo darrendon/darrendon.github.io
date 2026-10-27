@@ -46,8 +46,10 @@ td.n{font-family:Rye}
 .grid img{width:2.5in;height:3.5in;display:block}
 .marks{position:absolute;inset:0;pointer-events:none}
 .cap{position:absolute;left:.5in;right:.5in;bottom:.06in;text-align:center;font-family:"IM Fell English SC";font-size:9pt;letter-spacing:1px;color:#6B5A44}
-.strips{position:absolute;left:.5in;top:7.3in;display:grid;grid-template-columns:repeat(2,4in);gap:.12in 0}
-.strips img{width:4in;height:.4in;display:block}
+.boards{position:absolute;left:1.5in;top:.75in;display:flex;flex-direction:column;gap:.55in}
+.boards img{width:5.5in;height:1in;display:block;outline:.01in solid #555}
+.boards-note{position:absolute;left:1.5in;right:1.5in;top:7.6in;font-size:10.5pt;line-height:1.45;color:#24180E}
+.boards-note b{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:1px;color:#A8452D;display:block;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -61,20 +63,20 @@ td.n{font-family:Rye}
       <p>You are rival paleontologists working the same badlands. Between every pair of neighboring camps lies a <b>dig site</b>, and a site belongs to whoever brought up the finest find there last. Over three field seasons, earn the most <b>prestige</b> from the sites you hold.</p>
       <h2>Components</h2>
       <ul>
-        <li><b>54 fossil cards:</b> six species (five dinosaurs and a pterosaur), each numbered 1 to 9. A species' nine cards lay out in three rows of three as one fossil slab. Species only sets the deck size; it never affects play.</li>
+        <li><b>54 fossil cards:</b> six species (five dinosaurs and a pterosaur), each numbered 1 to 9. A species' nine cards lay out in three rows of three as one fossil slab.</li>
         <li><b>4 field guides</b> (reference cards)</li>
-        <li><b>4 dig-site markers</b> (thin strips)</li>
+        <li><b>4 dig-site boards:</b> Como Bluff, Garden Park, Morrison and Smoky Hill</li>
       </ul>
       <h2>Setup</h2>
       <table><tr><th>Diggers</th><th>Species</th><th>Hand</th><th>Sites</th></tr>
         <tr><td class="n">2</td><td>any 4 (36 cards)</td><td>12</td><td>3, all between you</td></tr>
         <tr><td class="n">3</td><td>any 5 (45 cards)</td><td>11</td><td>1 between each pair of neighbors</td></tr>
         <tr><td class="n">4</td><td>all 6 (54 cards)</td><td>10</td><td>1 between each pair of neighbors</td></tr></table>
-      <p>Return any unused species to the box, place the markers, shuffle, and deal each digger a hand.</p>
+      <p>Return any unused species to the box, lay out the site boards, shuffle, and deal each digger a hand.</p>
       <div class="sites"><div><b>Two diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="10" r="6"/><circle cx="60" cy="60" r="6"/><rect x="18" y="33" width="22" height="4"/><rect x="49" y="33" width="22" height="4"/><rect x="80" y="33" width="22" height="4"/></svg></div>
         <div><b>Three diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="8" r="6"/><circle cx="20" cy="60" r="6"/><circle cx="100" cy="60" r="6"/><rect x="29" y="31" width="22" height="4" transform="rotate(-52 40 33)"/><rect x="69" y="31" width="22" height="4" transform="rotate(52 80 33)"/><rect x="49" y="58" width="22" height="4"/></svg></div>
         <div><b>Four diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="7" r="6"/><circle cx="60" cy="63" r="6"/><circle cx="18" cy="35" r="6"/><circle cx="102" cy="35" r="6"/><rect x="28" y="19" width="20" height="4" transform="rotate(-34 38 21)"/><rect x="72" y="19" width="20" height="4" transform="rotate(34 82 21)"/><rect x="28" y="47" width="20" height="4" transform="rotate(34 38 49)"/><rect x="72" y="47" width="20" height="4" transform="rotate(-34 82 49)"/></svg></div></div>
-      <p class="small">Circles are camps, bars are dig-site markers. With three or four diggers, you may only use the two sites beside your camp.</p>
+      <p class="small">Circles are camps, bars are dig-site boards. With three or four diggers, you may only use the two sites beside your camp.</p>
     </div>
     <div>
       <div class="box"><b>Your hand is locked.</b> Pick up your cards one at a time, each to the right of the last, and <b>never rearrange them</b>. Hold them so the numbers face you. The order only changes when cards leave your hand or when you insert a new one.</div>
@@ -85,11 +87,13 @@ td.n{font-family:Rye}
         <li><b>A lone bone:</b> any single card.</li>
         <li><b>A spine:</b> consecutive numbers in order, up or down, such as 3-4-5 or 7-6-5.</li>
         <li><b>A bone bed:</b> all the same number, such as 8-8-8.</li>
+        <li><b>An articulated spine:</b> a spine whose cards are all one species, such as a Stegosaurus 2-3-4.</li>
       </ul>
-      <div class="ex"><img src="/games/diggers/img/src/tex/face-3.jpg" alt=""><img src="/games/diggers/img/src/tex/face-14.jpg" alt=""><img src="/games/diggers/img/src/tex/face-25.jpg" alt=""><span>A spine 3-4-5. The species don't matter.</span></div>
+      <div class="ex"><img src="/games/diggers/img/src/tex/face-3.jpg" alt=""><img src="/games/diggers/img/src/tex/face-14.jpg" alt=""><img src="/games/diggers/img/src/tex/face-25.jpg" alt=""><span>A spine 3-4-5, from three different animals.</span></div>
       <p>A find may have <b>up to 4 cards</b>.</p>
-      <p><b>Which find is better:</b> more cards beats fewer. With the same count, a bone bed beats a spine. Still tied, the higher total wins. An exact tie does not beat.</p>
-      <div class="ex"><img src="/games/diggers/img/src/tex/face-7.jpg" alt=""><img src="/games/diggers/img/src/tex/face-17.jpg" alt=""><span>A bone bed of two 7s beats any two-card spine, but loses to any three-card find.</span></div>
+      <p><b>Which find is better:</b> more cards beats fewer. With the same count, an articulated spine beats a bone bed, and a bone bed beats a mixed spine. Still tied, the higher total wins. An exact tie does not beat.</p>
+      <div class="ex"><img src="/games/diggers/img/src/tex/face-7.jpg" alt=""><img src="/games/diggers/img/src/tex/face-17.jpg" alt=""><span>A bone bed of two 7s beats any mixed two-card spine, but loses to any three-card find.</span></div>
+      <div class="ex"><img src="/games/diggers/img/src/tex/face-22.jpg" alt=""><img src="/games/diggers/img/src/tex/face-23.jpg" alt=""><img src="/games/diggers/img/src/tex/face-24.jpg" alt=""><span>An articulated Stegosaurus 2-3-4 beats a bone bed of three 9s.</span></div>
     </div>
   </div>
   <div class="foot"><span>Designed by Darren Don · What's Good Board Games</span><span>1 of 2</span></div>
@@ -101,7 +105,7 @@ td.n{font-family:Rye}
       <h2 style="margin-top:0">Your turn</h2>
       <p>Do <b>one</b> of these:</p>
       <h3>Excavate</h3>
-      <p>Lay a find from your hand at a dig site <b>beside your camp</b> (with two diggers, any of the three). If the site is empty, any find will do. If a find is already there, yours or a rival's, yours must <b>beat</b> it; the old find is discarded. Slide your find to your side of the marker: you hold that site.</p>
+      <p>Lay a find from your hand at a dig site <b>beside your camp</b> (with two diggers, any of the three). If the site is empty, any find will do. If a find is already there, yours or a rival's, yours must <b>beat</b> it; the old find is discarded. Slide your find to your side of the board: you hold that site.</p>
       <h3>Poach</h3>
       <p>Take <b>one card from either end</b> of a find at a site beside your camp and insert it <b>anywhere</b> in your hand. If that empties the site, nobody holds it.</p>
       <p>Then <b>send a specimen:</b> give any one card from your hand, even the one you just took, to the digger across that site. They either insert it anywhere in their hand, or turn it away; a turned-away card is discarded for the season.</p>
@@ -153,9 +157,11 @@ SPECIES.forEach((sp, s) => {
 });
 html += `<div class="page sheet"><div class="grid">${Array(9).fill('<img src="/games/diggers/img/src/tex/back.jpg" alt="">').join('')}</div>${marks()}
   <div class="cap">Card backs (optional): print on the reverse of any sheet, or sleeve the cards over plain backs</div></div>`;
-html += `<div class="page sheet"><div class="grid">${Array(4).fill('<img src="/games/diggers/img/src/tex/ref.jpg" alt="">').join('')}</div>
-  <div class="strips">${Array(4).fill('<img src="/games/diggers/img/src/tex/marker.jpg" alt="">').join('')}</div>
-  <div class="cap">Four field guides and four dig-site markers. Mount the markers on card stock for weight.</div></div>`;
+html += `<div class="page sheet"><div class="grid">${Array(4).fill('<img src="/games/diggers/img/src/tex/ref.jpg" alt="">').join('')}</div>${marks()}
+  <div class="cap">Four field guides, one per digger</div></div>`;
+html += `<div class="page sheet"><div class="boards">${[0, 1, 2, 3].map(i => `<img src="/games/diggers/img/src/tex/marker-${i}.jpg" alt="">`).join('')}</div>
+  <div class="boards-note"><b>The dig sites</b>Each board is named for a quarry from the Bone Wars, the feud that sent Cope's and Marsh's crews racing each other across the West in the 1870s. Cut along the outlines and mount on card stock or thin wood. With two diggers, use any three.</div>
+  <div class="cap">Four dig-site boards, 5½ × 1 inches</div></div>`;
 document.getElementById('sheets').innerHTML = html;
 Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
 </script>

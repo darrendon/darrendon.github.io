@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
-/* Layout: a surveyor's field sheet — camps sit on the edges of a ruled grid, dig sites are staked between neighboring camps, the season ledger sits in the middle; your rock face runs along the bottom. */
+/* Layout: field sheets laid out on the floor of a quarry — camps sit on the edges, dig sites are staked between neighboring camps, the season ledger sits in the middle; your rock face runs along the bottom. */
 :root {
   --paper: #e9e0cb;
   --sheet: #f2ebdb;
@@ -51,9 +51,8 @@
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body {
-  background-color: var(--paper);
-  background-image: linear-gradient(var(--rule) 1px, transparent 1px), linear-gradient(90deg, var(--rule) 1px, transparent 1px);
-  background-size: 28px 28px;
+  /* the page lies on a quarried badlands floor, strung with an excavation grid (painted by paintDigSite below) */
+  background-color: #a27d57; background-size: 640px 640px;
   color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45;
 }
 .wrap { max-width: 820px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 32px; display: flex; flex-direction: column; gap: 14px; }
@@ -173,6 +172,47 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-dire
 .slab figcaption span { color: var(--muted); font-style: italic; }
 .slab ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px 6px; font-size: 11.5px; color: var(--muted); }
 .slab ol li b { color: var(--ink); font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---- on the quarry floor: panels are paper laid on rock, dig sites are pits cut into it ---- */
+:root { --rock: #a27d57; --pit-ink: #f3e8cf; --pit-muted: rgba(243, 232, 207, .72); --lift: 0 7px 18px -9px rgba(24, 12, 2, .7), 0 1px 0 rgba(24, 12, 2, .25); --glow: #f5c75a; }
+:root[data-theme="dark"] { --rock: #2c2117; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --rock: #2c2117; } }
+body { background-color: var(--rock); }
+.top { background: var(--sheet); border: 1px solid var(--line); border-radius: 2px; padding: 12px 14px; }
+.top, .status, .seat, .hand-wrap, .log, details.rules, .setup, .center, .coach { box-shadow: var(--lift); }
+.seat.turn { box-shadow: 0 0 0 2px var(--pc), var(--lift); }
+.center { background: var(--sheet); border: 1px solid var(--line); border-radius: 2px; }
+.lane { border: 1.5px dashed rgba(243, 232, 207, .5); color: var(--pit-ink);
+  background: radial-gradient(120% 90% at 50% 30%, rgba(30, 18, 8, .52), rgba(30, 18, 8, .74));
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), inset 0 -1px 0 rgba(255, 240, 210, .12), 0 1px 0 rgba(255, 240, 210, .18); }
+.lane::before, .lane::after { background: #e2cc9c; box-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.lane .lbl { color: var(--pit-ink); font-size: 14px; }
+.lane .lbl span { display: block; font-family: var(--font-body); font-size: 11.5px; letter-spacing: 0; color: var(--pit-muted); }
+.lane .empty-note, .lane .owner.none { color: var(--pit-muted); }
+.lane.owned { background: radial-gradient(120% 90% at 50% 30%, color-mix(in srgb, var(--oc) 28%, rgba(30, 18, 8, .55)), rgba(30, 18, 8, .76)); }
+.lane .owner:not(.none) { align-self: flex-start; background: var(--oc); color: var(--accent-ink); padding: 1px 7px; border-radius: 2px; font-size: 11.5px; line-height: 1.35; max-width: 100%; }
+.lane.target { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 3px var(--glow); }
+.lane .card.edge { outline-color: var(--glow); }
+
+/* ---- field lessons (the tutorial) ---- */
+.coach { background: var(--sheet); border: 1px solid var(--line); border-left: 4px solid #b8572f; border-radius: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.coach .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.coach .pips { display: flex; gap: 4px; }
+.coach .pips i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #b8572f; display: block; }
+.coach .pips i.on { background: #b8572f; }
+.coach h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 21px; line-height: 1.15; }
+.coach p { margin: 0; font-size: 14.5px; max-width: 70ch; }
+.coach .actions { margin-top: 4px; }
+.coach button.link { background: none; border: none; padding: 9px 4px; color: var(--muted); font-weight: 400; text-decoration: underline; }
+@keyframes tutpulse { 0%, 100% { outline-color: var(--glow); outline-offset: 1px; } 50% { outline-color: rgba(245, 199, 90, .35); outline-offset: 4px; } }
+.card.tut, .slot.tut { outline: 3px solid var(--glow); outline-offset: 1px; animation: tutpulse 1.3s ease-in-out infinite; }
+.slot.tut { background: rgba(245, 199, 90, .25); }
+.lane.tut { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 3px var(--glow); animation: lanepulse 1.3s ease-in-out infinite; }
+@keyframes lanepulse { 50% { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 6px rgba(245, 199, 90, .35); } }
+.hand-wrap.tut-focus, .table.tut-focus .lane { outline: 3px solid var(--glow); outline-offset: 3px; }
+.tut-note { border-left: 3px solid #b8572f; padding-left: 10px; }
+.setup .actions .tutbtn { background: #b8572f; border-color: #b8572f; color: #fbf3e2; }
+@media (prefers-reduced-motion: reduce) { .card.tut, .slot.tut, .lane.tut { animation: none; } }
 </style>
 
 </head>
@@ -670,7 +710,7 @@ const FossilArt = (() => {
   return { build, slab, cell, WW, WH };
 })();
 
-// A card is species * 10 + value. Only the value matters to the rules; species is the art.
+// A card is species * 10 + value. Value drives the rules; species only matters for articulated spines.
 const V = c => c % 10, SP = c => Math.floor(c / 10);
 function cardName(c) { return `${SPECIES[SP(c)].name} ${V(c)}`; }
 
@@ -685,6 +725,8 @@ const ROUND_CAPS = [4, 4, 4];
 let CAP = ROUND_CAPS[0];
 const TURN_CAP = 400;
 const NAMES = ["You", "Ashworth", "Penrose", "Hale"];
+// the four dig-site markers are named for real Bone Wars quarries
+const SITES = ["Como Bluff", "Garden Park", "Morrison", "Smoky Hill"];
 const TITLES = ["", "Prof.", "Dr.", "Mr."];
 
 function cmp(a, b) { for (let i = 0; i < 3; i++) { if (a[i] !== b[i]) return a[i] - b[i]; } return 0; }
@@ -696,7 +738,9 @@ function meldInfo(cards) {
   if (c.every(v => v === c[0])) return [n, 1, sum];
   let up = true, down = true;
   for (let i = 0; i < n - 1; i++) { if (c[i+1] - c[i] !== 1) up = false; if (c[i] - c[i+1] !== 1) down = false; }
-  return (up || down) ? [n, 0, sum] : null;
+  if (!(up || down)) return null;
+  // an articulated spine (every bone from one species) outranks a bone bed, which outranks a mixed spine
+  return [n, cards.every(x => SP(x) === SP(cards[0])) ? 2 : 0, sum];
 }
 function slices(h) {
   const out = [];
@@ -715,10 +759,11 @@ function describe(cards) {
   const inf = meldInfo(cards); if (!inf) return "not a proper find";
   const c = cards.map(V);
   if (inf[0] === 1) return `a lone ${c[0]}`;
-  if (inf[1]) {
+  if (inf[1] === 1) {
     const word = { 2: "two", 3: "three", 4: "four", 5: "five" }[inf[0]];
     return `a bone bed of ${word} ${c[0]}s`;
   }
+  if (inf[1] === 2) return `an articulated ${SPECIES[SP(cards[0])].name} spine ${c.join("-")}`;
   return `a spine ${c.join("-")}`;
 }
 function myLanes(G, p) { return G.lanes.map((l, i) => i).filter(i => G.lanes[i].a === p || G.lanes[i].b === p); }
@@ -759,10 +804,11 @@ function doPlay(G, p, lane, s, e) {
   const cards = h.splice(s, e - s);
   const L = G.lanes[lane];
   const took = L.owner !== null && L.owner !== p;
-  const verb = L.meld.length ? (took ? `took the site from ${obj(G, L.owner)}` : "improved their own site") : "staked an open site";
+  const site = laneName(G, lane);
+  const verb = L.meld.length ? (took ? `took ${site} from ${obj(G, L.owner)}` : `strengthened ${p === 0 ? "your" : "their"} hold on ${site}`) : `staked ${site}`;
   L.meld = cards; L.owner = p;
   G.last = { lane };
-  addLog(G, `<b>${G.players[p].name}</b> unearthed ${describe(cards)} and ${verb} (${laneName(G, lane)}).`);
+  addLog(G, `<b>${G.players[p].name}</b> unearthed ${describe(cards)} and ${verb}.`);
   if (h.length === 0) return endRound(G, p);
   nextTurn(G);
 }
@@ -778,7 +824,8 @@ function makeOffer(G, from, lane, takenCard, offered) {
   addLog(G, `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)} and sent the ${cardName(offered)} to ${obj(G, to)}.`);
   if (G.players[to].human) { G.phase = "offer"; G.offer = { from, to, card: offered }; return; }
   const h = G.players[to].hand;
-  if (botAccepts(h, offered)) { h.splice(bestInsert(h, offered), 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
+  if (tut) { h.splice(h.indexOf(TUT_KEEP_AFTER) + 1, 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
+  else if (botAccepts(h, offered)) { h.splice(bestInsert(h, offered), 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
   else addLog(G, `${G.players[to].name} turned it away; it is out of the dig this season.`);
   nextTurn(G);
 }
@@ -813,11 +860,7 @@ function standings(G) {
   const tiedOnPoints = order.filter(i => G.players[i].score === top.score).length > 1;
   return { order, winners, tiedOnPoints };
 }
-function laneName(G, i) {
-  const l = G.lanes[i];
-  if (G.n === 2) return `site ${["I", "II", "III"][i]}`;
-  return `the ${G.players[l.a].name}–${G.players[l.b].name} site`;
-}
+function laneName(G, i) { return SITES[i]; }
 
 // ===================== BOT =====================
 function botBestPlay(G, p) {
@@ -869,13 +912,141 @@ function botAccepts(h, card) {
   return bestMeld([...h.slice(0, pos), card, ...h.slice(pos)])[0] > bestMeld(h)[0];
 }
 function botTurn(G) {
-  const p = G.turn; const act = botChoose(G, p);
+  const p = G.turn;
+  if (tut && tut.bot < TUT_BOT.length) {
+    const m = TUT_BOT[tut.bot++]; const h = G.players[p].hand; const s = h.indexOf(m.play[0]);
+    return doPlay(G, p, m.lane, s, s + m.play.length);
+  }
+  const act = botChoose(G, p);
   if (!act) { addLog(G, `${G.players[p].name} could find nothing to dig.`); return nextTurn(G); }
   if (act.kind === "play") return doPlay(G, p, act.lane, act.s, act.e);
   const card = scoutTake(G, p, act.lane, act.left);
   const h = G.players[p].hand; h.splice(act.pos, 0, card);
   const offered = h.splice(act.oi, 1)[0];
   makeOffer(G, p, act.lane, card, offered);
+}
+
+// ===================== FIELD LESSON (tutorial) =====================
+// A stacked two-digger first season that walks through every rule, then hands over to a normal game.
+// Cards are species * 10 + value: 0 Tyrannosaurus, 1 Triceratops, 2 Stegosaurus, 3 Brontosaurus.
+const TUT_HANDS = [[9, 13, 34, 5, 31, 27, 18, 22, 23, 24, 39, 19], [12, 6, 16, 26, 15, 25, 35, 7, 38, 29, 1, 11]];
+const TUT_BOT = [{ play: [6, 16, 26], lane: 0 }, { play: [15, 25, 35], lane: 1 }, { play: [7, 38, 29], lane: 2 }, { play: [1, 11, 31], lane: 2 }];
+const TUT_KEEP_AFTER = 11; // Ashworth keeps the 1 you send him, next to his other 1s
+const TUT_STEPS = [
+  { next: true, focus: "hand", title: "Your rock face",
+    text: () => `Along the bottom are your twelve fossils, in the order they were dealt. They're <b>locked</b>: you can never rearrange them, so only fossils sitting side by side can come out together. Each one is a number from 1 to 9 from one of the species.` },
+  { next: true, focus: "sites", title: "Three dig sites",
+    text: () => `Between your camp and Prof. Ashworth's lie Como Bluff, Garden Park and Morrison. On your turn you either <b>excavate</b> a find at a site or <b>poach</b> from one. Whoever holds a site when the season closes earns its prestige: 1 now, 2 next season, 4 in the last.` },
+  { act: "play", cards: [13, 34, 5], lane: 0, title: "Excavate a spine",
+    text: () => `A <b>spine</b> is numbers in order. Tap your 3, 4 and 5, which sit side by side, then tap <b>Como Bluff</b>. An unclaimed site takes any find.` },
+  { act: "scout", lane: 0, place: 2, send: 31, title: "Poach it back",
+    text: () => ui.mode === "placeScout" ? `Now set the 6 into your rock face. Tap the glowing gap just before your 7 and 8: that lines up a 6-7-8 spine for later.`
+      : ui.mode === "chooseOffer" ? `Every poach costs a fossil: send one across to Ashworth. Your lone 1 fits nothing, so tap it. He can keep it or turn it away, and a turned-away fossil is out for the season.`
+      : `Ashworth laid a <b>bone bed</b> of three 6s over your spine and took Como Bluff. A bone bed is all one number, and at the same size it beats a spine. Instead of excavating, poach: tap an outlined 6 at either end of his find.` },
+  { act: "play", cards: [22, 23, 24], lane: 1, title: "An articulated spine",
+    text: () => `Ashworth kept your 1 and laid three 5s at Garden Park. Look at your 2, 3 and 4: all Stegosaurus, bones from one skeleton. That's an <b>articulated spine</b>, and it beats a bone bed of the same size. Tap them, then tap <b>Garden Park</b>.` },
+  { act: "play", cards: ["P", 27, 18], lane: 0, title: "More bones wins",
+    text: () => `Ashworth staked Morrison with 7-8-9, but Como Bluff now holds only his two leftover 6s. A find with more bones always wins, whatever its kind. Tap your 6-7-8 and take <b>Como Bluff</b> back.` },
+  { act: "play", cards: [9, 39, 19], lane: 2, title: "Close the season",
+    text: () => `The 1 you sent came back to bite: Ashworth made a bone bed of three 1s and laid it over his own spine at Morrison. When finds match in size and kind, the <b>higher total</b> wins. Your three 9s are your last fossils. Play them at <b>Morrison</b>: emptying your rock face closes the season on the spot.` },
+];
+let tut = null;
+function startTutorial() {
+  G = newGame(2, [0]);
+  G.players[0].hand = [...TUT_HANDS[0]]; G.players[1].hand = [...TUT_HANDS[1]];
+  G.log = []; addLog(G, "Season 1 opens. Each site is worth 1 prestige. This first season is a stacked deal for the lesson.");
+  tut = { step: 0, bot: 0, poached: null };
+}
+function tutStep() { return tut && G && G.phase !== "roundEnd" && G.phase !== "matchEnd" ? TUT_STEPS[tut.step] || null : null; }
+function tutCards(T) { return (T.cards || []).map(c => c === "P" ? tut.poached : c); }
+function tutWants(card) {
+  const T = tutStep(); if (!T || G.turn !== 0) return false;
+  if (T.act === "play") return tutCards(T).includes(card);
+  if (T.act === "scout" && ui.mode === "chooseOffer") return card === T.send;
+  return false;
+}
+function tutSelOk() {
+  const T = tutStep(); const want = tutCards(T); const got = ui.sel.map(k => G.players[0].hand[k]);
+  return got.length === want.length && want.every(c => got.includes(c));
+}
+function coachHtml() {
+  const T = tutStep(), n = TUT_STEPS.length;
+  const pips = TUT_STEPS.map((_, k) => `<i class="${k <= tut.step ? "on" : ""}"></i>`).join("");
+  return `<div class="coach" aria-live="polite"><div class="head"><span class="eyebrow">Field lesson ${tut.step + 1} of ${n}</span><span class="pips">${pips}</span></div>
+    <h3>${T.title}</h3><p>${T.text()}</p>
+    <div class="actions">${T.next ? `<button class="primary" data-act="tutnext">Next</button>` : ""}<button class="link" data-act="tutskip">Skip the lesson and play on</button></div></div>`;
+}
+
+// ===================== THE DIG SITE (page background) =====================
+// A tileable quarry floor: warped sandstone strata, grit, pebbles and cracks, with excavation strings and stakes.
+function paintDigSite(dark) {
+  const S = 640, c = document.createElement("canvas"); c.width = c.height = S;
+  const g = c.getContext("2d"), img = g.createImageData(S, S), d = img.data;
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const lattice = P => { const a = new Float32Array(P * P); for (let i = 0; i < a.length; i++) a[i] = rnd(); return a; };
+  const octs = [8, 16, 32, 64].map(P => ({ P, L: lattice(P) }));
+  const sm = t => t * t * (3 - 2 * t);
+  function noise(o, x, y) {
+    const f = o.P / S, X = x * f, Y = y * f, x0 = Math.floor(X), y0 = Math.floor(Y), tx = sm(X - x0), ty = sm(Y - y0);
+    const at = (i, j) => o.L[((j % o.P + o.P) % o.P) * o.P + ((i % o.P + o.P) % o.P)];
+    const a = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * tx, b = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * tx;
+    return a + (b - a) * ty;
+  }
+  const fbm = (x, y, k0 = 0) => { let v = 0, w = .5, t = 0; for (let k = k0; k < octs.length; k++) { v += noise(octs[k], x, y) * w; t += w; w *= .5; } return v / t; };
+  // strata: bands of uneven thickness, cycling through badlands sediments
+  const sed = [[178, 142, 102], [166, 126, 88], [188, 158, 118], [156, 116, 82], [170, 154, 134], [168, 118, 84], [182, 150, 108], [160, 132, 100], [174, 136, 96]];
+  const band = new Array(S); let y = 0, k = 0;
+  while (y < S) { const th = 10 + Math.floor(rnd() * 44); for (let i = 0; i < th && y < S; i++) band[y++] = sed[k % sed.length]; k++; }
+  const dim = dark ? .36 : 1;
+  for (let py = 0; py < S; py++) for (let px = 0; px < S; px++) {
+    const warp = (fbm(px, py) - .5) * 46;
+    const col = band[(((py + Math.round(warp)) % S) + S) % S];
+    const grain = (fbm(px, py, 2) - .5) * 34 + (rnd() - .5) * 14 + Math.sin((py + warp) * 1.3) * 3;
+    const i = (py * S + px) * 4;
+    d[i] = Math.max(0, Math.min(255, (col[0] + grain) * dim)); d[i + 1] = Math.max(0, Math.min(255, (col[1] + grain * .92) * dim)); d[i + 2] = Math.max(0, Math.min(255, (col[2] + grain * .85) * dim)); d[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const wrap = (fn) => { for (const ox of [-S, 0, S]) for (const oy of [-S, 0, S]) { g.save(); g.translate(ox, oy); fn(); g.restore(); } };
+  // cracks
+  for (let n = 0; n < 14; n++) {
+    let x = rnd() * S, y2 = rnd() * S, a = rnd() * 6.28; const pts = [[x, y2]];
+    for (let s2 = 0; s2 < 10 + rnd() * 18; s2++) { a += (rnd() - .5) * 1.1; x += Math.cos(a) * 7; y2 += Math.sin(a) * 7; pts.push([x, y2]); }
+    wrap(() => { g.strokeStyle = dark ? "rgba(0,0,0,.5)" : "rgba(60,36,18,.42)"; g.lineWidth = 1.2; g.beginPath(); pts.forEach(([u, v], j) => j ? g.lineTo(u, v) : g.moveTo(u, v)); g.stroke();
+      g.strokeStyle = dark ? "rgba(255,230,190,.06)" : "rgba(255,240,215,.22)"; g.lineWidth = 1; g.beginPath(); pts.forEach(([u, v], j) => j ? g.lineTo(u + .8, v + 1) : g.moveTo(u + .8, v + 1)); g.stroke(); });
+  }
+  // pebbles and cobbles
+  for (let n = 0; n < 170; n++) {
+    const x = rnd() * S, y2 = rnd() * S, r = rnd() < .88 ? 1.5 + rnd() * 3.5 : 5 + rnd() * 6, rr = r * (.5 + rnd() * .35), rot = rnd() * 3.14;
+    const tone = rnd(); const base = tone < .4 ? [120, 92, 66] : tone < .7 ? [205, 184, 150] : tone < .85 ? [150, 140, 126] : [140, 80, 52];
+    const rgb = base.map(v => Math.round(v * dim)).join(",");
+    wrap(() => {
+      g.save(); g.translate(x, y2); g.rotate(rot);
+      g.fillStyle = "rgba(20,10,4,.38)"; g.beginPath(); g.ellipse(1.5, 2, r, rr, 0, 0, 6.29); g.fill();
+      const gr = g.createRadialGradient(-r * .35, -rr * .4, 0, 0, 0, r); gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(.6, `rgba(${rgb},1)`); gr.addColorStop(1, "rgba(60,38,20,.85)");
+      g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0, r, rr, 0, 0, 6.29); g.fill();
+      g.fillStyle = dark ? "rgba(255,240,210,.05)" : "rgba(255,248,230,.18)"; g.beginPath(); g.ellipse(-r * .3, -rr * .35, r * .35, rr * .25, 0, 0, 6.29); g.fill();
+      g.restore(); });
+  }
+  // excavation grid: taut strings between corner stakes, one square per 160 px
+  const Q = 160;
+  g.lineWidth = 1.4;
+  for (let k2 = 0; k2 < S; k2 += Q) {
+    g.strokeStyle = "rgba(20,10,4,.35)"; g.beginPath(); g.moveTo(0, k2 + 2.5); g.lineTo(S, k2 + 2.5); g.moveTo(k2 + 2.5, 0); g.lineTo(k2 + 2.5, S); g.stroke();
+    g.strokeStyle = dark ? "rgba(236,222,190,.28)" : "rgba(250,244,228,.75)"; g.beginPath(); g.moveTo(0, k2 + .5); g.lineTo(S, k2 + .5); g.moveTo(k2 + .5, 0); g.lineTo(k2 + .5, S); g.stroke();
+  }
+  for (let a = 0; a < S; a += Q) for (let b = 0; b < S; b += Q) wrap(() => {
+    g.fillStyle = "rgba(20,10,4,.45)"; g.fillRect(a - 2, b - 1, 8, 8);
+    g.fillStyle = dark ? "#6a5238" : "#c99a5c"; g.fillRect(a - 4, b - 4, 8, 8);
+    g.fillStyle = dark ? "#8d4a32" : "#d0573a"; g.fillRect(a - 4, b - 4, 8, 3);
+  });
+  return c.toDataURL("image/jpeg", .86);
+}
+function applyDigSite() {
+  if (typeof document === "undefined") return;
+  const t = document.documentElement.dataset.theme;
+  const dark = t === "dark" || (t !== "light" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+  const key = dark ? "dark" : "light"; applyDigSite.cache = applyDigSite.cache || {};
+  try { const url = applyDigSite.cache[key] || (applyDigSite.cache[key] = paintDigSite(dark)); document.body.style.backgroundImage = `url(${url})`; } catch (e) { console.warn("dig site failed", e); }
 }
 
 // ===================== UI =====================
@@ -931,16 +1102,17 @@ function laneHtml(i) {
   const mine = L.a === 0 || L.b === 0;
   const selCards = ui.sel.map(k => G.players[0].hand[k]);
   const selInf = selCards.length ? meldInfo(selCards) : null;
-  const target = humanTurn() && mine && selInf && canPlayOn(G, i, selInf);
-  const canScout = humanTurn() && mine && ui.sel.length === 0 && L.meld.length > 0;
+  const T = tutStep();
+  const target = humanTurn() && mine && selInf && canPlayOn(G, i, selInf) && (!T || (T.act === "play" && T.lane === i && tutSelOk()));
+  const canScout = humanTurn() && mine && ui.sel.length === 0 && L.meld.length > 0 && (!T || (T.act === "scout" && T.lane === i));
   const oc = L.owner === null ? "var(--bone-edge)" : PCOL[L.owner];
   const cards = L.meld.map((v, k) => {
     const edge = canScout && (k === 0 || k === L.meld.length - 1);
-    return cardHtml(v, edge ? "edge" : "", edge ? `data-act="scout" data-lane="${i}" data-left="${k === 0 ? 1 : 0}" role="button" tabindex="0" aria-label="Poach the ${cardName(v)}"` : "");
+    return cardHtml(v, edge ? `edge ${T ? "tut" : ""}` : "", edge ? `data-act="scout" data-lane="${i}" data-left="${k === 0 ? 1 : 0}" role="button" tabindex="0" aria-label="Poach the ${cardName(v)}"` : "");
   }).join("");
-  const label = G.n === 2 ? `Site ${["I", "II", "III"][i]}` : `${G.players[L.a].name} · ${G.players[L.b].name}`;
+  const label = SITES[i] + (G.n === 2 ? "" : `<span>${G.players[L.a].name} · ${G.players[L.b].name}</span>`);
   const owner = L.owner === null ? `<span class="owner none">Unclaimed</span>` : `<span class="owner">${L.owner === 0 ? "Yours" : G.players[L.owner].name} · ${describe(L.meld)}</span>`;
-  return `<div class="cell lane ${L.owner !== null ? "owned" : ""} ${target ? "target" : ""}" style="--oc:${oc}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate here"` : ""}>
+  return `<div class="cell lane ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" style="--oc:${oc}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate here"` : ""}>
     <div class="lbl">${label}</div>
     <div class="meld">${cards || `<span class="empty-note">untouched ground</span>`}</div>
     ${owner}
@@ -960,12 +1132,13 @@ function centerHtml() {
 
 function tableHtml() {
   const blank = `<div class="cell"></div>`;
-  if (G.n === 2) return `<div class="table">${blank}${seatHtml(1)}${centerHtml()}${laneHtml(0)}${laneHtml(1)}${laneHtml(2)}${blank}${seatHtml(0)}${blank}</div>`;
+  if (G.n === 2) return `<div class="table ${tutStep() && tutStep().focus === "sites" ? "tut-focus" : ""}">${blank}${seatHtml(1)}${centerHtml()}${laneHtml(0)}${laneHtml(1)}${laneHtml(2)}${blank}${seatHtml(0)}${blank}</div>`;
   if (G.n === 3) return `<div class="table">${seatHtml(1)}${laneHtml(1)}${seatHtml(2)}${laneHtml(0)}${centerHtml()}${laneHtml(2)}${blank}${seatHtml(0)}${blank}</div>`;
   return `<div class="table">${laneHtml(1)}${seatHtml(2)}${laneHtml(2)}${seatHtml(1)}${centerHtml()}${seatHtml(3)}${laneHtml(0)}${seatHtml(0)}${laneHtml(3)}</div>`;
 }
 
 function statusHtml() {
+  if (tutStep() && G.turn === 0 && (G.phase === "play")) return coachHtml();
   let who = "", hint = "";
   const me = G.players[0];
   if (G.phase === "offer" && G.offer && G.offer.to === 0) {
@@ -1001,12 +1174,13 @@ function handHtml() {
   let inner = "";
   if (placing) {
     for (let k = 0; k <= me.hand.length; k++) {
-      inner += `<div class="slot" data-act="slot" data-pos="${k}" role="button" tabindex="0" aria-label="Place here"></div>`;
+      const T = tutStep(), ok = !T || ui.mode !== "placeScout" || T.place === k;
+      if (ok) inner += `<div class="slot ${T ? "tut" : ""}" data-act="slot" data-pos="${k}" role="button" tabindex="0" aria-label="Place here"></div>`;
       if (k < me.hand.length) inner += cardHtml(me.hand[k]);
     }
   } else {
     const clickable = humanTurn() || ui.mode === "chooseOffer";
-    inner = me.hand.map((v, k) => cardHtml(v, `${ui.sel.includes(k) ? "sel" : ""} ${ui.mode === "chooseOffer" && ui.scout && k === ui.scout.pos ? "fresh-in" : ""}`,
+    inner = me.hand.map((v, k) => cardHtml(v, `${ui.sel.includes(k) ? "sel" : ""} ${ui.mode === "chooseOffer" && ui.scout && k === ui.scout.pos ? "fresh-in" : ""} ${tutWants(v) && !ui.sel.includes(k) ? "tut" : ""}`,
       clickable ? `data-act="${ui.mode === "chooseOffer" ? "offer" : "pick"}" data-i="${k}" role="button" tabindex="0" aria-label="${cardName(v)}"` : "")).join("");
   }
   let actions = "";
@@ -1015,7 +1189,7 @@ function handHtml() {
   } else if (ui.sel.length) {
     actions = `<button data-act="clear">Clear selection</button>`;
   }
-  return `<div class="hand-wrap">
+  return `<div class="hand-wrap ${tutStep() && tutStep().focus === "hand" ? "tut-focus" : ""}">
     <div class="hand-head"><span class="eyebrow">Your rock face · locked strata · ${me.hand.length} fossils</span><div class="actions">${actions}</div></div>
     <div class="hand">${inner || `<span class="empty-note">The rock face is clear.</span>`}</div>
   </div>`;
@@ -1030,7 +1204,7 @@ function overlayHtml() {
   const shed = r.shedder === null ? "The season was called off." : (r.shedder === 0 ? "You finished your dig first." : `${fullName(r.shedder)} finished the dig first.`);
   if (G.phase === "roundEnd") {
     return `<div class="overlay"><div class="modal" role="dialog" aria-label="Season results">
-      <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}
+      <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}${tut ? `<p class="tut-note"><b>Field lesson complete.</b> You hold all three sites, so you bank 3 prestige. From here the deal is random and Ashworth plays for real, with sites worth 2 and then 4. Watch the sites beside you, and think twice about what you send him.</p>` : ""}
       <p>Every site is cleared and each camp gets a fresh rock face of ${G.cfg.hand}. Next season, sites are worth ${ROUND_VALUES[r.round + 1]} prestige.</p>
       <button class="primary" data-act="nextround">Open season ${r.round + 2}</button></div></div>`;
   }
@@ -1051,7 +1225,7 @@ function rulesHtml() {
   const c = G ? G.cfg : CONFIG[ui.setupN];
   return `<details class="rules" data-key="rules" ${ui.open.rules ? "open" : ""}><summary>Rules reference</summary><ul>
     <li><b>Your rock face is locked.</b> Fossils sit in the order they were dealt, and you can't rearrange them. It only changes when fossils come out or are set in.</li>
-    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>spine</i> (consecutive numbers in order, like 3-4-5) or a <i>bone bed</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more bones, then a bone bed over a spine, then the higher total. The old find is discarded and the site is yours.</li>
+    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>spine</i> (consecutive numbers in order, like 3-4-5) or a <i>bone bed</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more bones, then the better kind, then the higher total. A spine all from one species is <i>articulated</i> and beats a bone bed of the same size; a bone bed beats a mixed spine. The old find is discarded and the site is yours.</li>
     <li><b>Poach:</b> take an end bone from a find at a site beside your camp and set it anywhere in your rock face. Then send any fossil from your rock face to the rival across that site. They keep it or turn it away, and a turned-away fossil is out of the dig this season.</li>
     <li><b>Closing a season:</b> the moment a digger's rock face is empty. Each site you hold earns prestige: 1 in the first season, 2 in the second, 4 in the third.</li>
     <li><b>Between seasons:</b> every site and rock face is cleared, the deck is reshuffled, and each camp gets ${c.hand} fresh fossils.</li>
@@ -1067,7 +1241,7 @@ function catalogueHtml() {
       <figcaption><b style="--suit:${sp.suit}">${symSvg(s, "sym")}${sp.name}</b><span>${sp.rock}</span></figcaption>
     </figure>`).join("");
   return `<details class="rules catalogue" data-key="cat" ${ui.open.cat ? "open" : ""}><summary>The six skeletons</summary>
-    <p class="cat-note">Every number is a bone, and the copies of each number come from different animals, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species is only art; it never changes play, though two diggers use four species and three use five.</p>
+    <p class="cat-note">Every number is a bone, and the copies of each number come from different animals, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species matters once: a spine whose bones all come from one animal is articulated, and outranks a bone bed of the same size. Two diggers use four species and three use five.</p>
     <div class="slabs">${slabs}</div></details>`;
 }
 
@@ -1078,14 +1252,14 @@ function setupHtml() {
   <div class="setup">
     <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can run up to 4 bones.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
-    <div class="actions"><button class="primary" data-act="start">Open the first season</button></div>
+    <div class="actions"><button class="primary" data-act="start">Open the first season</button><button class="tutbtn" data-act="tutorial">New here? Take the 2-minute field lesson</button></div>
   </div>${rulesHtml()}${catalogueHtml()}`;
 }
 
 function render() {
   if (!root) return;
   if (!G) { root.innerHTML = setupHtml(); return; }
-  root.innerHTML = `<div class="top"><div><div class="eyebrow">${G.n} diggers · playtest</div><h1>Diggers</h1></div>
+  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : `${G.n} diggers · playtest`}</div><h1>Diggers</h1></div>
     <button data-act="setup">New expedition</button></div>
     ${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
 }
@@ -1093,13 +1267,17 @@ function render() {
 function onAct(t) {
   const act = t.dataset.act;
   if (act === "pickn") { ui.setupN = +t.dataset.n; return render(); }
-  if (act === "start" || act === "again") { G = newGame(act === "again" ? G.n : ui.setupN, [0]); resetUi(); render(); return scheduleBot(); }
-  if (act === "setup") { clearTimeout(botTimer); botTimer = null; G = null; resetUi(); return render(); }
-  if (act === "nextround") { nextRound(G); resetUi(); render(); return scheduleBot(); }
+  if (act === "start" || act === "again") { tut = null; G = newGame(act === "again" ? G.n : ui.setupN, [0]); resetUi(); render(); return scheduleBot(); }
+  if (act === "tutorial") { clearTimeout(botTimer); botTimer = null; startTutorial(); resetUi(); render(); return window.scrollTo(0, 0); }
+  if (act === "tutnext") { tut.step++; return render(); }
+  if (act === "tutskip") { tut = null; render(); return scheduleBot(); }
+  if (act === "setup") { clearTimeout(botTimer); botTimer = null; tut = null; G = null; resetUi(); return render(); }
+  if (act === "nextround") { tut = null; nextRound(G); resetUi(); render(); return scheduleBot(); }
   if (!G) return;
   const me = G.players[0];
   if (act === "pick" && humanTurn()) {
     const i = +t.dataset.i; let s = ui.sel;
+    if (tutStep() && !tutWants(me.hand[i]) && !s.includes(i)) return;
     if (s.includes(i)) s = (i === s[0] || i === s[s.length - 1]) ? s.filter(x => x !== i) : [i];
     else if (s.length && s.length < CAP && (i === s[0] - 1 || i === s[s.length - 1] + 1)) s = [...s, i].sort((a, b) => a - b);
     else s = [i];
@@ -1108,11 +1286,12 @@ function onAct(t) {
   if (act === "clear") { ui.sel = []; return render(); }
   if (act === "playlane" && humanTurn()) {
     const lane = +t.dataset.lane; const s = ui.sel[0], e = ui.sel[ui.sel.length - 1] + 1;
-    ui.sel = []; doPlay(G, 0, lane, s, e); render(); return scheduleBot();
+    ui.sel = []; doPlay(G, 0, lane, s, e); if (tut) tut.step++; render(); return scheduleBot();
   }
   if (act === "scout" && humanTurn()) {
     const lane = +t.dataset.lane; const left = t.dataset.left === "1";
     const card = scoutTake(G, 0, lane, left);
+    if (tut) tut.poached = card;
     ui.scout = { lane, card, to: neighbor(G, lane, 0) }; ui.mode = "placeScout"; return render();
   }
   if (act === "slot") {
@@ -1121,7 +1300,10 @@ function onAct(t) {
     if (ui.mode === "placeReceived") { ui.mode = null; resolveOffer(G, true, pos); render(); return scheduleBot(); }
   }
   if (act === "offer" && ui.mode === "chooseOffer") {
-    const i = +t.dataset.i; const offered = me.hand.splice(i, 1)[0];
+    const i = +t.dataset.i;
+    if (tutStep() && me.hand[i] !== tutStep().send) return;
+    if (tut) tut.step++;
+    const offered = me.hand.splice(i, 1)[0];
     const sc = ui.scout; resetUi();
     makeOffer(G, 0, sc.lane, sc.card, offered); render(); return scheduleBot();
   }
@@ -1138,6 +1320,9 @@ if (root) {
     render(); scheduleBot();
     // carve the fossil faces after first paint, then redraw with them
     setTimeout(() => { buildFaces(); render(); }, 30);
+    setTimeout(applyDigSite, 0);
+    if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", applyDigSite);
+    if (!G && /[?&#]tutorial/.test(location.search + location.hash)) { startTutorial(); render(); }
   };
   window.claude?.hot?.snapshot?.(() => ({ G, setupN: ui.setupN }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});

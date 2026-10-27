@@ -1,9 +1,66 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/css/fonts.css"><style>
 html,body{margin:0;background:#000}
-/* dig-site marker: a thin surveyor's strip, 4 x 0.4 in at 200 dpi */
-#m{width:800px;height:80px;position:relative;overflow:hidden;background:linear-gradient(#ead9b2,#dcc697);color:#24180e}
-#m .t{position:absolute;left:0;right:0;top:0;height:22px;background:repeating-linear-gradient(90deg,#24180e 0 2px,transparent 2px 20px)}
-#m .t2{position:absolute;left:0;right:0;top:0;height:36px;background:repeating-linear-gradient(90deg,#24180e 0 3px,transparent 3px 100px)}
-#m span{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-family:Rye;font-size:34px;letter-spacing:10px;line-height:1}
-#m::after{content:"";position:absolute;inset:0;border:3px solid #24180e}
-</style></head><body><div id="m"><div class="t"></div><div class="t2"></div><span>DIG SITE</span></div><script>document.fonts.ready.then(()=>window.__done=true)</script></body></html>
+/* dig-site board: a weathered quarry plank, 5.5 x 1 in at 200 dpi. ?i=0..3 picks the site */
+#m{width:1100px;height:200px;position:relative;overflow:hidden;color:#3b230f}
+#m canvas{position:absolute;inset:0}
+#m .bev{position:absolute;inset:0;box-shadow:inset 0 0 0 3px rgba(40,22,8,.85),inset 0 0 0 9px rgba(255,236,200,.10),inset 0 0 26px rgba(50,26,8,.55)}
+#m .rule{position:absolute;left:150px;right:150px;height:2px;background:rgba(59,35,15,.55)}
+#m .rule.a{top:34px}#m .rule.b{bottom:34px}
+#m .scale{position:absolute;left:150px;right:150px;top:22px;height:8px;display:flex}
+#m .scale i{flex:1;background:rgba(48,26,10,.78)}#m .scale i:nth-child(even){background:rgba(250,236,206,.5)}
+#m .name{position:absolute;left:0;right:0;top:44px;text-align:center;font-family:Rye;font-size:76px;letter-spacing:8px;line-height:1;
+  mix-blend-mode:multiply;text-shadow:0 0 1.5px rgba(70,34,10,.9),0 0 5px rgba(90,46,14,.35)}
+#m .sub{position:absolute;left:0;right:0;bottom:40px;text-align:center;font-family:"IM Fell English SC";font-size:25px;letter-spacing:5px;mix-blend-mode:multiply;color:#4a2c14}
+#m .end{position:absolute;top:0;bottom:0;width:150px;display:flex;align-items:center;justify-content:center}
+#m .end.l{left:0}#m .end.r{right:0}
+#m .end svg{width:92px;height:92px;mix-blend-mode:multiply}
+#m .nail{position:absolute;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d8d2c4,#7c746a 45%,#2c2620 80%);box-shadow:1px 2px 2px rgba(20,10,2,.7)}
+</style></head><body><div id="m"><canvas id="cv" width="1100" height="200"></canvas><div class="bev"></div>
+<div class="scale"></div><div class="rule a"></div><div class="rule b"></div>
+<div class="end l"></div><div class="end r"></div>
+<div class="name" id="name"></div><div class="sub" id="sub"></div></div>
+<script>
+const SITES = [
+  ['Como Bluff', 'Site I · Wyoming Territory · 1877'],
+  ['Garden Park', 'Site II · Colorado · 1877'],
+  ['Morrison', 'Site III · Colorado · 1877'],
+  ['Smoky Hill', 'Site IV · Kansas · 1870'],
+];
+const i = +(new URLSearchParams(location.search).get('i') || 0);
+document.getElementById('name').textContent = SITES[i][0].toUpperCase();
+document.getElementById('sub').textContent = SITES[i][1];
+document.querySelector('.scale').innerHTML = '<i></i>'.repeat(20);
+// crossed pick and brush, burned into the wood
+const tool = `<svg viewBox="0 0 100 100" fill="#3b230f" aria-hidden="true">
+  <g transform="rotate(-38 50 50)"><rect x="47" y="14" width="6" height="74" rx="2"/><path d="M14 22 Q50 2 86 22 L84 27 Q50 12 16 27Z"/></g>
+  <g transform="rotate(38 50 50)"><rect x="47.5" y="38" width="5" height="50" rx="2"/><path d="M41 38 L59 38 L60 22 L40 22Z"/><path d="M40 22 L39 6 M43 22 L42.5 5 M46 22 L46 4 M49 22 L49 4 M52 22 L52 4 M55 22 L55.5 5 M58 22 L59 5 M60 22 L61 6" stroke="#3b230f" stroke-width="2.2"/></g>
+</svg>`;
+document.querySelectorAll('.end').forEach(e => e.innerHTML = tool);
+for (const [x, y] of [[26, 26], [26, 159], [1059, 26], [1059, 159]]) { const n = document.createElement('div'); n.className = 'nail'; n.style.left = x + 'px'; n.style.top = y + 'px'; document.getElementById('m').appendChild(n); }
+
+// weathered pine: long grain, a knot, sun-bleached streaks
+const c = document.getElementById('cv'), g = c.getContext('2d');
+let s = 11 + i * 97; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+const base = g.createLinearGradient(0, 0, 0, 200); base.addColorStop(0, '#d2ab72'); base.addColorStop(.5, '#c79d63'); base.addColorStop(1, '#b88c55');
+g.fillStyle = base; g.fillRect(0, 0, 1100, 200);
+const kx = 300 + r() * 500, ky = 50 + r() * 100;
+for (let k = 0; k < 230; k++) {
+  const y0 = r() * 210 - 5, dark = r() < .55;
+  g.strokeStyle = dark ? `rgba(110,68,30,${.08 + r() * .2})` : `rgba(240,214,170,${.06 + r() * .14})`; g.lineWidth = .6 + r() * 2.2;
+  g.beginPath();
+  for (let x = -10; x <= 1110; x += 10) {
+    const dx = x - kx, dy = y0 - ky, d2 = dx * dx / 9 + dy * dy;
+    const bend = 900 / (d2 / 40 + 30) * Math.sign(dy || 1);
+    const y = y0 + Math.sin(x / 140 + y0) * 2 + bend;
+    x < 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+  }
+  g.stroke();
+}
+for (let k = 9; k > 0; k--) { g.strokeStyle = `rgba(90,50,20,${.18 + (9 - k) * .04})`; g.lineWidth = 1.4; g.beginPath(); g.ellipse(kx, ky, k * 5.5, k * 2.4, 0, 0, 6.29); g.stroke(); }
+g.fillStyle = 'rgba(70,36,12,.55)'; g.beginPath(); g.ellipse(kx, ky, 7, 3.4, 0, 0, 6.29); g.fill();
+for (let k = 0; k < 900; k++) { g.fillStyle = `rgba(${r() < .5 ? '80,46,18' : '250,230,195'},${r() * .12})`; g.fillRect(r() * 1100, r() * 200, 1 + r() * 3, 1); }
+const ends = g.createLinearGradient(0, 0, 1100, 0);
+ends.addColorStop(0, 'rgba(60,32,10,.35)'); ends.addColorStop(.06, 'rgba(60,32,10,0)'); ends.addColorStop(.94, 'rgba(60,32,10,0)'); ends.addColorStop(1, 'rgba(60,32,10,.35)');
+g.fillStyle = ends; g.fillRect(0, 0, 1100, 200);
+document.fonts.ready.then(() => window.__done = true);
+</script></body></html>

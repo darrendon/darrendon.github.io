@@ -80,12 +80,13 @@
   const GAP = 0.09, PX = CW + GAP, PZ = CH + GAP;
   async function slab(sp, cx, cz) { for (let v = 1; v <= 9; v++) await card(sp * 10 + v, cx + ((v - 1) % 3 - 1) * PX, cz + (Math.floor((v - 1) / 3) - 1) * PZ, 0); }
 
-  // ---- dig-site marker: a thin surveyor's strip, 4 x 0.4 in
-  async function marker(x, z, yaw = 0) {
-    const mTop = await tex('marker.jpg');
-    const side = new THREE.MeshStandardMaterial({ color: C('#CDB78A'), roughness: 0.7 });
-    const m = new THREE.Mesh(new THREE.BoxGeometry(4, 0.08, 0.4), [side, side, new THREE.MeshStandardMaterial({ map: mTop, roughness: 0.6 }), side, side, side]);
-    m.position.set(x, 0.04, z); m.rotation.y = yaw; m.castShadow = true; m.receiveShadow = true; scene.add(m); return m;
+  // ---- dig-site board: a named quarry plank, 5.5 x 1 in, 0.1 thick
+  const MW = 5.5, MD = 1.0, MT = 0.1;
+  async function marker(x, z, yaw = 0, i = 0) {
+    const mTop = await tex('marker-' + i + '.jpg');
+    const side = new THREE.MeshStandardMaterial({ color: C('#9C7444'), roughness: 0.8 });
+    const m = new THREE.Mesh(new THREE.BoxGeometry(MW, MT, MD), [side, side, new THREE.MeshStandardMaterial({ map: mTop, roughness: 0.72 }), side, side, side]);
+    m.position.set(x, MT / 2, z); m.rotation.y = yaw; m.castShadow = true; m.receiveShadow = true; scene.add(m); return m;
   }
 
   // ---- the box: 4.5 x 6 x 1.25, two-piece, lid on
@@ -122,21 +123,22 @@
     // the box beside a whole Stegosaurus slab; in front, one dig site with a find on it
     await box(-6.3, -1.6, 0.22);
     await slab(2, 2.6, -1.4);
-    await marker(-6.6, 4.25, 0);
-    await card(14, -7.95, 6.95); await card(25, -5.3, 6.95); await card(36, -2.65, 6.95);
-    frame([-9.3, 0, -6.8], [6.5, 1.25, 8.7], 50, 3, 0.99);
+    await marker(-6.6, 4.3, 0, 0);
+    // an articulated Brontosaurus 4-5-6 on the near side of Como Bluff
+    await card(34, -9.2, 7.0); await card(35, -6.6, 7.0); await card(36, -4.0, 7.0);
+    frame([-10.6, 0, -6.8], [6.5, 1.25, 8.8], 50, 3, 0.99);
   }
 
   if (SCENE === 'table') {
     // a two-digger game in season 2: three dig sites between the camps, each with a find
     const sites = [-7.2, 0, 7.2];
-    for (const x of sites) await marker(x, 0, 0);
-    // site I: a spine 3-4-5-6, held by the far camp
-    for (const [k, id] of [3, 14, 25, 46].entries()) await card(id, sites[0] - 3.9 + k * 2.6, -2.2);
-    // site II: a bone bed of three 7s, held by the near camp
-    for (const [k, id] of [7, 27, 57].entries()) await card(id, sites[1] - 2.6 + k * 2.6, 2.2);
-    // site III: a spine 1-2, held by the far camp
-    for (const [k, id] of [41, 2].entries()) await card(id, sites[2] - 1.3 + k * 2.6, -2.2);
+    for (const [k, x] of sites.entries()) await marker(x, 0, 0, k);
+    // Como Bluff: a spine 3-4-5-6, held by the far camp
+    for (const [k, id] of [3, 14, 25, 36].entries()) await card(id, sites[0] - 3.9 + k * 2.6, -2.5);
+    // Garden Park: an articulated Triceratops 6-7-8, held by the near camp
+    for (const [k, id] of [16, 17, 18].entries()) await card(id, sites[1] - 2.6 + k * 2.6, 2.5);
+    // Morrison: a bone bed of two 9s, held by the far camp
+    for (const [k, id] of [9, 39].entries()) await card(id, sites[2] - 1.3 + k * 2.6, -2.5);
     // each camp keeps a field guide; the deck and the box wait at the side
     await makeCard('ref.jpg', -11.6, 6.6, 0); await makeCard('ref.jpg', 11.6, -6.6, Math.PI);
     await deck(12.6, 2.4, 24, 0.04);
@@ -149,7 +151,7 @@
     for (let s = 0; s < 6; s++) await slab(s, -0.6 + (s % 3) * 8.5, -5.9 + Math.floor(s / 3) * 11.9);
     await box(-11.6, -8.2, 0);
     for (let i = 0; i < 4; i++) await makeCard('ref.jpg', -13.0 + (i % 2) * 2.8, -1.4 + Math.floor(i / 2) * 3.8, 0);
-    for (let i = 0; i < 4; i++) await marker(-11.6, 6.6 + i * 0.9, 0);
+    for (let i = 0; i < 4; i++) await marker(-11.6, 6.7 + i * 1.3, 0, i);
     frame([-14.6, 0, -11.6], [20.0, 1.25, 11.6], 64, 0, 0.97);
   }
 
