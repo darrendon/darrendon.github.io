@@ -6,7 +6,7 @@
 (function (root) {
   'use strict';
 
-  const SETUP = { // players: [top rank, hand, count]
+  const SETUP = { // players: [top rank, hand, stamina cards]
     2: [8, 15, 3], 3: [9, 15, 3], 4: [10, 12, 3], 5: [10, 9, 3]
   };
 
@@ -124,10 +124,10 @@
     }
     if (g.cur && g.owner === p && !g.touched) { g.phase = 'takeback'; return; }
     g.phase = g.cur ? 'answer' : 'open';
-    // no way out: can't beat it and no count left
+    // no way out: can't beat it and no stamina left
     if (g.phase === 'answer' && !g.counts[p].length && !legalPlays(g.hands[p], g.cur, g.top).length) {
       eliminate(g, p, 'pinned');
-      say(g, g.names[p] + ' can’t answer ' + describe(g.cur) + ' with no count left: 1, 2, 3, pinned!', 'out', p);
+      say(g, g.names[p] + ' can’t answer ' + describe(g.cur) + ' with no stamina left: 1, 2, 3, pinned!', 'out', p);
       advance(g, p);
     }
   }
@@ -195,7 +195,7 @@
   }
   function fromTable(g, p, r) { g.seen[r]--; g.known[p][r] = (g.known[p][r] || 0) + 1; }
   function V(g, p, third, second) { return g.names[p] + ' ' + (g.you === p ? second : third); }
-  function countText(k) { return k === 0 ? 'No count left!' : k + ' count left.'; }
+  function countText(k) { return k === 0 ? 'No stamina left!' : k + ' stamina left.'; }
 
   function eliminate(g, p, how) {
     g.status[p] = how; g.out.push(p);
@@ -260,7 +260,7 @@
         const big = safe.filter((m) => m.size >= 3);
         if (big.length && rnd() < 0.6) return { type: 'play', cards: cheapest(big, hand).cards };
       }
-      // don't burn a big combination on a small move while the count is healthy
+      // don't burn a big combination on a small move while stamina is healthy
       const escalation = best.size - g.cur.size;
       if (myCount >= 2 && escalation >= 2 && hand.length >= 6 && rnd() < 0.6) return strike(g, o, hand, nxCount);
       if (myCount >= 2 && best.top >= 9 && best.size === g.cur.size && g.cur.size >= 2 && rnd() < 0.35) return strike(g, o, hand, nxCount);
@@ -286,7 +286,7 @@
   // Before each decision it deals out the cards it can't see in many different ways, consistent with everything that has
   // happened in public (cards played, cards taken back into a hand, hand sizes, counts), plays the rest of the round out
   // with the quick heuristic bots for each candidate move, and picks the move that finishes highest on average.
-  // It never looks at hidden cards: other hands, every count pile (its own too), face-down discards and the set-aside cards.
+  // It never looks at hidden cards: other hands, every stamina pile (its own too), face-down discards and the set-aside cards.
   function hiddenPool(g, me) {
     const left = {};
     for (let r = 1; r <= g.top; r++) left[r] = 6;

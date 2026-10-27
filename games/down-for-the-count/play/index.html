@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
 /* Layout: a ring seen from the cheap seats. Opponents sit along the top, the move on the table sits on the canvas
-   inside the ropes, and your hand and count run along the bottom. Colours come from the cards and the box. */
+   inside the ropes, and your hand and stamina run along the bottom. Colours come from the cards and the box. */
 :root {
   --night: #101a3d; --night-2: #17234f; --star: rgba(255, 214, 48, .55);
   --ink: #1c1530; --paper: #fffcf4; --canvas: #f6f1e4; --muted: #b9c0dc;
@@ -174,7 +174,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
   'use strict';
   const E = window.DFTC;
   const IMG = '/games/down-for-the-count/img/play/';
-  const WORD = { 1: 'TAP!', 2: 'BIFF!', 3: 'BAM!', 4: 'POW!', 5: 'WHAP!', 6: 'THUD!', 7: 'WHAM!', 8: 'CRACK!', 9: 'SMASH!', 10: 'BOOM!' };
+  const WORD = { 1: 'CHOP!', 2: 'DROPKICK!', 3: 'CLOTHESLINE!', 4: 'SUPLEX!', 5: 'BODY SLAM!', 6: 'SPEAR!', 7: 'SUPERKICK!', 8: 'MOONSAULT!', 9: 'FLYING ELBOW!', 10: 'FROG SPLASH!' };
   const BOTS = ['Hacksaw Hal', 'The Duchess', 'Rocket Ruiz', 'Big Moe'];
   const COLORS = ['#ffd630', '#2f7bff', '#3cc75a', '#ff7a1a', '#8c4bff', '#13c2b0'];
   const app = document.getElementById('app'), ov = document.getElementById('ov'), ovBody = document.getElementById('ov-body'), live = document.getElementById('live');
@@ -183,14 +183,14 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const cardImg = (r, cls, attrs) => '<span class="card ' + (cls || '') + '" ' + (attrs || '') + '><img src="' + IMG + 'card-' + r + '.webp" alt="' + r + '" width="240" height="336"></span>';
-  const backs = (k, big) => k ? Array.from({ length: k }, () => '<img src="' + IMG + 'back.webp" alt="" width="240" height="336">').join('') : '<span class="none">No count left</span>';
+  const backs = (k, big) => k ? Array.from({ length: k }, () => '<img src="' + IMG + 'back.webp" alt="" width="240" height="336">').join('') : '<span class="none">No stamina left</span>';
 
   // ---------------------------------------------------------------- setup
   function setup() {
     clearTimeout(timer); g = null; ov.hidden = true;
     app.innerHTML =
       '<div class="hero"><div><h1>Down for<br>the Count</h1>' +
-      '<p class="tag">A wrestling climbing card game for 2–5. Beat the move on the table or take a count. Run out of cards and you tap out; run out of count and you’re pinned. Last one standing wins.</p></div>' +
+      '<p class="tag">A shedding game where you don’t want to shed, for 2–5. Beat the move on the table or spend stamina. Run out of cards and you tap out; run out of stamina and you’re pinned. Last one standing wins.</p></div>' +
       '<div class="fan"><img src="' + IMG + 'card-4.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-10.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-7.webp" alt="" width="240" height="336"></div></div>' +
       '<div class="startbox"><h2>How many wrestlers?</h2>' +
       '<div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5].map((n) => '<button type="button" data-n="' + n + '" aria-pressed="' + (n === chosenN) + '">' + n + '</button>').join('') + '</div>' +
@@ -202,7 +202,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
       rulesPanel(true);
     const note = () => {
       const [top, hand, count] = E.SETUP[chosenN];
-      document.getElementById('note').textContent = 'You and ' + (chosenN - 1) + ' bot' + (chosenN > 2 ? 's' : '') + '. ' + hand + ' cards each and ' + count + ' count cards' +
+      document.getElementById('note').textContent = 'You and ' + (chosenN - 1) + ' bot' + (chosenN > 2 ? 's' : '') + '. ' + hand + ' cards each and ' + count + ' stamina cards' +
         (top < 10 ? ', ranks 1–' + top : '') + (chosenN === 2 ? '. Heads-up has no kick out: if you can’t beat it, you reverse.' : '.') + ' Three rounds.';
     };
     app.querySelectorAll('[data-n]').forEach((b) => b.addEventListener('click', () => {
@@ -210,7 +210,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     }));
     const botnote = () => { document.getElementById('botnote').textContent = tough
       ? 'Tough bots think ahead: before each move they play out the rest of the round many ways, using only what they could see at the table.'
-      : 'Casual bots play the cheapest move that beats the table and save their big moves for a wrestler with no count left.'; };
+      : 'Casual bots play the cheapest move that beats the table and save their big moves for a wrestler with no stamina left.'; };
     app.querySelectorAll('[data-bots]').forEach((b) => b.addEventListener('click', () => {
       tough = b.dataset.bots === 'tough'; app.querySelectorAll('[data-bots]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       try { localStorage.setItem('dftc-bots', tough ? 'tough' : 'casual'); } catch (e) {} botnote();
@@ -270,7 +270,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     else if (mine) {
       if (g.phase === 'takeback') { status = 'Nobody touched your move. Take one card back.'; hint = 'Click a highlighted card on the table.'; }
       else if (g.phase === 'open') { status = 'Your turn. Open with any move.'; hint = 'Select 1–4 cards that make a set (same rank) or a run (in a row), then Play.'; }
-      else if (mode === 'reverse') { status = 'Reversal: take a card off the move.'; hint = 'Click a highlighted card. It goes to your hand and one of your count cards is discarded.'; }
+      else if (mode === 'reverse') { status = 'Reversal: take a card off the move.'; hint = 'Click a highlighted card. It goes to your hand and one of your stamina cards is discarded.'; }
       else { status = 'Your turn. Beat ' + E.describe(cur) + '?'; hint = E.beatHint(cur, g.top); }
     } else if (g.status[0] !== 'in') { status = 'You’re ' + (g.status[0] === 'pinned' ? 'pinned' : 'tapped out') + '. Watching the rest of the round…'; hint = cur ? E.beatHint(cur, g.top) : ''; }
     else { status = g.names[g.turn] + (g.phase === 'open' ? ' is opening…' : ' is thinking…'); hint = cur ? E.beatHint(cur, g.top) : ''; }
@@ -297,13 +297,13 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
         const label = !sel.length ? 'Play' : !m ? 'Not a set or run' : !legal ? 'Doesn’t beat it' : 'Play ' + E.describe(m) + (m.size === g.hands[0].length ? ' (taps you out)' : '');
         actions = '<button type="button" class="go" id="play"' + (legal ? '' : ' disabled') + '>' + esc(label) + '</button>';
         if (g.phase === 'answer') {
-          actions += '<button type="button" class="gold" id="rev"' + (o.reverse.length ? '' : ' disabled') + ' title="Take a card off the move; discard a count card">Reversal</button>';
-          if (g.n > 2) actions += '<button type="button" class="gold" id="kick"' + (o.kickOut ? '' : ' disabled') + ' title="Take a count card into your hand">Kick out</button>';
+          actions += '<button type="button" class="gold" id="rev"' + (o.reverse.length ? '' : ' disabled') + ' title="Take a card off the move; discard a stamina card">Reversal</button>';
+          if (g.n > 2) actions += '<button type="button" class="gold" id="kick"' + (o.kickOut ? '' : ' disabled') + ' title="Take a stamina card into your hand">Kick out</button>';
         }
         if (sel.length) actions += '<button type="button" class="ghost" id="clear">Clear</button>';
         const plays = o.plays.slice().sort((a, b) => a.size - b.size || (a.type === b.type ? 0 : a.type === 'run' ? -1 : 1) || a.top - b.top);
         if (g.phase === 'answer') chips = plays.length ? '<span class="lbl">Beats it:</span>' + plays.slice(0, 10).map((m, k) => '<button type="button" class="chip" data-chip="' + k + '">' + esc(E.describe(m)) + '</button>').join('') + (plays.length > 10 ? '<span class="lbl">+' + (plays.length - 10) + ' more</span>' : '')
-          : '<span class="lbl">' + (g.counts[0].length ? 'Nothing in your hand beats it. Reverse or kick out.' : 'Nothing beats it and no count left.') + '</span>';
+          : '<span class="lbl">' + (g.counts[0].length ? 'Nothing in your hand beats it. Reverse or kick out.' : 'Nothing beats it and no stamina left.') + '</span>';
         app._plays = plays;
       }
     }
@@ -322,7 +322,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
       '</div></div>' +
       '<div class="you' + (mine ? ' turn' : '') + '" style="--pc:' + COLORS[0] + '">' +
       '<div class="head"><div class="nm"><span class="dot" style="--pc:' + COLORS[0] + '"></span>You' + (youOut ? ' <span class="badge">' + (g.status[0] === 'pinned' ? 'Pinned' : 'Tapped out') + '</span>' : '') + '</div>' +
-      '<div class="meta"><span>Your count</span><div class="counts">' + backs(g.counts[0].length) + '</div><span>' + g.hands[0].length + ' cards</span><span>' + g.scores[0] + ' pts</span></div></div>' +
+      '<div class="meta"><span>Your stamina</span><div class="counts">' + backs(g.counts[0].length) + '</div><span>' + g.hands[0].length + ' cards</span><span>' + g.scores[0] + ' pts</span></div></div>' +
       '<div class="hand' + (handLocked ? ' locked' : '') + '">' + (hand || '<span class="lbl" style="align-self:center">No cards</span>') + '</div>' +
       (actions ? '<div class="actions">' + actions + '</div>' : '') + (chips ? '<div class="chips">' + chips + '</div>' : '') +
       '</div>' +
@@ -345,7 +345,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     return '<div class="' + cls.join(' ') + '" data-p="' + p + '" style="--pc:' + COLORS[p] + '">' +
       '<div class="nm"><span class="dot"></span><span>' + esc(g.names[p]) + '</span></div>' +
       '<div class="row"><span>' + g.hands[p].length + ' cards</span>' + (st !== 'in' ? '<span class="badge">' + (st === 'pinned' ? 'Pinned' : 'Tapped out') + '</span>' : '<span class="pts">' + g.scores[p] + '</span>') + '</div>' +
-      '<div class="lbl">Count</div><div class="counts">' + (st === 'in' ? backs(g.counts[p].length) : '') + '</div></div>';
+      '<div class="lbl">Stamina</div><div class="counts">' + (st === 'in' ? backs(g.counts[p].length) : '') + '</div></div>';
   }
   function logHtml() {
     return g.log.slice(-60).map((l) => '<li class="' + l.kind + '"' + (l.who != null ? ' style="--pc:' + COLORS[l.who] + '"' : '') + '>' + esc(l.text) + '</li>').reverse().join('');
@@ -355,8 +355,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     return '<div class="panel rules"><h3>The rules in brief</h3>' +
       '<p><b>Moves</b> are 1–4 cards: a <b>set</b> (same rank) or a <b>run</b> (2–4 in a row).</p>' +
       '<p><b>To beat a move</b>: more cards wins; at equal size a set beats a run; then the higher rank (runs by their top card).</p>' +
-      '<p><b>On your turn</b> beat the move, or take a count: <b>Reversal</b> takes a card off the move into your hand and discards a count card; <b>Kick out</b> takes a count card into your hand. No kick out with 2 players.</p>' +
-      '<p><b>Out of count</b> and you can’t beat it: <b>pinned</b>. Play your last card: <b>tapped out</b>. Either way you’re done for the round.</p>' +
+      '<p><b>On your turn</b> beat the move, or spend stamina: <b>Reversal</b> takes a card off the move into your hand and discards a stamina card; <b>Kick out</b> takes a stamina card into your hand. No kick out with 2 players.</p>' +
+      '<p><b>Out of stamina</b> and you can’t beat it: <b>pinned</b>. Play your last card: <b>tapped out</b>. Either way you’re done for the round.</p>' +
       '<p><b>Takeback</b>: if your move comes back untouched, take one card back for free and the next player answers what’s left.</p>' +
       '<p><b>Scoring</b>: last one standing scores the number of players, first out scores 1. Three rounds; the round winner opens the next.</p></div>';
   }
