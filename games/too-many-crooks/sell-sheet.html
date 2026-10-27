@@ -7,43 +7,42 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
-:root{--paper:#EEE9D8;--ink:#1B1915;--soft:#6E6A5C;--red:#A5321E;--line:#C2BBA2;--slot:#DFD9C2;--grid:rgba(58,72,78,.06);--fiber:rgba(92,90,72,.045)}
+:root{--paper:#F1F3F4;--ink:#1B2228;--soft:#56636B;--red:#C23A22;--hot:#E04B2E;--slate:#55646E;--slate-d:#36424A;--cream:#F2ECDA;--gold:#F5D27A;--line:#C4CDD2}
 *{box-sizing:border-box}
 html,body{margin:0;background:#8E9499}
 @page{size:11in 8.5in;margin:0}
-@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none!important;margin:0!important}}
 .sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;color:var(--ink);
   font-family:"Figtree",Arial,sans-serif;font-size:9.4pt;line-height:1.36;
-  background:
-    repeating-linear-gradient(0deg,var(--grid) 0 .5px,transparent .5px .1in),
-    repeating-linear-gradient(90deg,var(--grid) 0 .5px,transparent .5px .1in),
-    repeating-linear-gradient(94deg,var(--fiber) 0 2px,transparent 2px 5px),
-    var(--paper);
+  background:var(--paper);
   box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
-.sheet::before{content:"";position:absolute;inset:.22in;border:2px solid var(--ink);pointer-events:none}
-.sheet::after{content:"";position:absolute;inset:.27in;border:1px solid var(--soft);pointer-events:none}
+
 .osw{font-family:"Oswald",sans-serif;font-weight:700;text-transform:uppercase}
 .mono{font-family:"Courier Prime",monospace;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:.3in;padding:.42in .5in .14in;border-bottom:2px solid var(--ink);margin:0 .5in;padding-left:0;padding-right:0}
-.pill{display:inline-block;font-family:"Courier Prime",monospace;font-weight:700;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--red);border:1.5px solid var(--red);border-radius:3px;padding:2px 8px;margin-bottom:6px;transform:rotate(-2deg);transform-origin:left bottom}
-h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:50pt;line-height:.88;letter-spacing:.01em;text-transform:uppercase;margin:0}
-h1 em{font-style:normal;color:var(--red)}
+header{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:.3in;padding:.34in .5in .2in;color:var(--cream);
+  background:linear-gradient(var(--slate-d),var(--slate-d)) 0 100%/100% .09in no-repeat,
+    repeating-linear-gradient(180deg,transparent 0 .19in,rgba(242,236,218,.2) .19in .2in),var(--slate)}
+header .mugs{position:absolute;right:2.6in;bottom:.09in;width:2.3in;height:1.05in;overflow:visible}
+header > div{position:relative}
+.pill{display:inline-block;font-family:"Courier Prime",monospace;font-weight:700;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1.5px solid var(--gold);border-radius:3px;padding:2px 8px;margin-bottom:8px}
+h1{font-family:"Oswald",sans-serif;font-weight:700;font-size:50pt;line-height:.88;letter-spacing:.01em;text-transform:uppercase;margin:0;color:var(--cream);text-shadow:0 4px 0 #0A0C10}
+h1 em{font-style:normal;color:var(--hot)}
 .tag{margin:8px 0 0;font-family:"Oswald",sans-serif;font-weight:500;font-size:13pt;letter-spacing:.04em;text-transform:uppercase}
-.tag i{font-style:normal;color:var(--red)}
-.by{text-align:right;font-size:9pt;line-height:1.35;color:var(--soft)}
-.by b{display:block;font-family:"Oswald",sans-serif;font-weight:600;font-size:12pt;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
+.tag i{font-style:normal;color:var(--gold)}
+.by{text-align:right;font-size:9pt;line-height:1.35;color:#DCE2E5}
+.by b{display:block;font-family:"Oswald",sans-serif;font-weight:600;font-size:12pt;letter-spacing:.03em;text-transform:uppercase;color:var(--cream)}
 
-main{display:grid;grid-template-columns:1.16fr 1fr;gap:.28in;padding:.18in .5in .12in;min-height:0;flex:1}
+main{display:grid;grid-template-columns:1.16fr 1fr;gap:.28in;padding:.2in .5in .12in;min-height:0;flex:1}
 .art{display:flex;flex-direction:column;gap:.13in;min-height:0}
-.render{border:1.5px solid var(--ink);background:#15120E;overflow:hidden;flex:1;min-height:0}
+.render{border-radius:4px;background:#1E252A;overflow:hidden;flex:1;min-height:0}
 .render img{width:100%;height:100%;object-fit:cover;display:block}
 .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:.1in}
-.role{border:1.5px solid var(--ink);background:#fff;padding:.08in .1in;display:flex;align-items:center;gap:.1in}
-.role svg{width:.34in;height:.34in;fill:var(--ink);stroke:var(--ink);flex:none}
+.role{border-radius:4px;background:var(--slate);color:var(--cream);padding:.04in .1in .04in .04in;display:flex;align-items:center;gap:.06in}
+.role svg{width:.5in;height:.5in;flex:none;overflow:visible}
 .role b{display:block;font-family:"Oswald",sans-serif;font-weight:600;font-size:9pt;letter-spacing:.04em;text-transform:uppercase;line-height:1.1;white-space:nowrap}
-.role i{font-style:normal;font-family:"Courier Prime",monospace;font-weight:700;font-size:9pt;color:var(--red);letter-spacing:.14em}
+.role i{font-style:normal;font-family:"Courier Prime",monospace;font-weight:700;font-size:9pt;color:var(--gold);letter-spacing:.14em}
 .dice{display:flex;gap:.08in;justify-content:space-between}
 .d{width:.42in;height:.42in;border-radius:7px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:5px;border:1px solid rgba(0,0,0,.35);
   box-shadow:inset 0 -3px 0 rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.3),0 2px 3px rgba(0,0,0,.3)}
@@ -62,14 +61,14 @@ li{position:relative;padding-left:14px;margin:0 0 4px}
 li::before{content:"";position:absolute;left:0;top:.5em;width:7px;height:7px;border-radius:1.5px;background:var(--red)}
 li b{font-weight:700}
 .jobs{display:grid;grid-template-columns:repeat(3,1fr);gap:.07in}
-.job{border:1.5px solid var(--ink);background:#fff;padding:.06in .09in;font-size:8.5pt;line-height:1.3}
+.job{border:1.5px solid var(--line);border-radius:4px;background:#fff;padding:.06in .09in;font-size:8.5pt;line-height:1.3}
 .job b{display:block;font-family:"Courier Prime",monospace;font-weight:700;font-size:8pt;letter-spacing:.14em;color:var(--red);text-transform:uppercase;margin-bottom:2px}
-.job.last{background:var(--ink);color:#F2ECDA;border-color:var(--ink)}
-.job.last b{color:#E98A74}
+.job.last{background:var(--slate);color:var(--cream);border-color:var(--slate)}
+.job.last b{color:var(--gold)}
 dl{display:grid;grid-template-columns:auto 1fr;gap:2px .14in;margin:0;font-size:9pt}
 dt{font-family:"Courier Prime",monospace;font-weight:700;font-size:8pt;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);padding-top:2px}
 dd{margin:0}
-footer{margin:0 .5in;padding:.1in 0 .38in;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;font-size:9pt;color:var(--soft)}
+footer{margin:0 .5in;padding:.1in 0 .3in;border-top:2px solid var(--slate);display:flex;justify-content:space-between;align-items:center;font-size:9pt;color:var(--soft)}
 footer b{font-family:"Oswald",sans-serif;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);margin-right:8px}
 footer .u{font-family:"Courier Prime",monospace;font-weight:700;color:var(--red);letter-spacing:.04em}
 </style>
@@ -80,7 +79,7 @@ footer .u{font-family:"Courier Prime",monospace;font-weight:700;color:var(--red)
     <div>
       <span class="pill">Play it in your browser</span>
       <h1>Too Many <em>Crooks!</em></h1>
-      <p class="tag">A dice negotiation game for 3–6 players · <i>Crew up from your rivals' dice, then decide who gets paid.</i></p>
+      <p class="tag">A dice negotiation game for 3–6 players · <i>Score with your rivals' dice, then decide who gets paid.</i></p>
     </div>
     <div class="by"><b>Darren Don</b>What's Good Board Games<br>darren@whatsgoodboardgames.com</div>
   </header>
@@ -88,9 +87,9 @@ footer .u{font-family:"Courier Prime",monospace;font-weight:700;color:var(--red)
     <div class="art">
       <div class="render"><img src="/games/too-many-crooks/img/render-hero.webp" alt=""></div>
       <div class="roles" aria-hidden="true">
-        <div class="role"><svg viewBox="0 0 24 24"><path d="M9.9 1.4h4.2a.9.9 0 0 1 .9.9v1.5H9V2.3a.9.9 0 0 1 .9-.9z" stroke="none"/><path d="M4.6 4.5h14.8c.9 0 1.6.7 1.6 1.6v14.5c0 .9-.7 1.6-1.6 1.6H4.6c-.9 0-1.6-.7-1.6-1.6V6.1c0-.9.7-1.6 1.6-1.6zm7.4 3.3a2.7 2.7 0 1 0 0 5.4 2.7 2.7 0 0 0 0-5.4zM6.6 18.6h10.8c-.5-2.6-2.7-4-5.4-4s-4.9 1.4-5.4 4z" stroke="none"/></svg><span><b>Inside man</b><i>1 · 2</i></span></div>
-        <div class="role"><svg viewBox="0 0 24 24"><path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12S6.2 22.5 12 22.5 22.5 17.8 22.5 12 17.8 1.5 12 1.5zm0 2.4c4.1 0 7.5 3 8.2 6.9H3.8c.7-3.9 4.1-6.9 8.2-6.9zM4.1 13.2h6.7v6.8c-3.4-.5-6.1-3.3-6.7-6.8zm9.1 6.8v-6.8h6.7c-.6 3.5-3.3 6.3-6.7 6.8z" stroke="none"/><circle cx="12" cy="12" r="2.5" stroke="none"/></svg><span><b>Getaway driver</b><i>3 · 4</i></span></div>
-        <div class="role"><svg viewBox="0 0 24 24"><path d="M3.0 19.2 H13.2 L16.4 9.6" fill="none" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.4" cy="13.8" r="5.0" stroke="none"/><rect x="12.0" y="2.0" width="9.4" height="7.4" rx="3.1" stroke="none" transform="rotate(16 16.7 5.7)"/></svg><span><b>The muscle</b><i>5 · 6</i></span></div>
+        <div class="role"><svg class="bust" data-r="0" viewBox="-60 -60 120 120"><defs/></svg><span><b>Inside man</b><i>1 · 2</i></span></div>
+        <div class="role"><svg class="bust" data-r="1" viewBox="-60 -60 120 120"><defs/></svg><span><b>Getaway driver</b><i>3 · 4</i></span></div>
+        <div class="role"><svg class="bust" data-r="2" viewBox="-60 -60 120 120"><defs/></svg><span><b>The muscle</b><i>5 · 6</i></span></div>
       </div>
       <div class="dice" aria-hidden="true">
         <span class="cap">Six colours, eight each</span>
@@ -138,5 +137,13 @@ footer .u{font-family:"Courier Prime",monospace;font-weight:700;color:var(--red)
     <span>Darren Don · darren@whatsgoodboardgames.com</span>
   </footer>
 </div>
+<script src="/games/too-many-crooks/img/src/crooks.js"></script>
+<script>
+var R=[
+  {c:'#F2ECDA',v:1,h:360,w:142,hat:'homburg',hatColor:'#2B2B2B',band:'#C9A14F',coat:'turtleneck',arms:'pockets',tilt:-6,light:true},
+  {c:'#2F6DB5',v:3,h:360,w:150,hat:'flatcap',hatColor:'#F2ECDA',coat:'scarfcoat',arms:'pockets',tilt:4},
+  {c:'#C8372D',v:5,h:360,w:176,hat:'beanie',hatColor:'#2B2B2B',coat:'bomber',arms:'pockets',tilt:-3}];
+document.querySelectorAll('svg.bust').forEach(function(sv){Crooks.use(sv);Crooks.bust(sv,0,4,124,R[+sv.dataset.r]);});
+</script>
 </body>
 </html>

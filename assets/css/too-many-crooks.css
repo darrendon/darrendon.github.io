@@ -1,35 +1,41 @@
-/* Too Many Crooks! skin: a case file on manila paper. Colours taken from the crew sheets and the box. */
+/* Too Many Crooks! skin: the police-lineup wall from the box. Slate, cream lettering with a hard black drop,
+   lineup red and a gold for numbers. */
 .g-tmc{
-  --g-bg:#EEE9D8; --g-panel:#E3DDC8; --g-panel-hi:#F6F2E6; --g-face:#FFFFFF;
-  --g-red:#A5321E;            /* the page accent slot: stamp red */
-  --g-gold:#C9A14F; --g-jade:#1B1915; --g-ink:#1B1915; --g-muted:#6E6A5C; --g-line:#CFC7AE;
+  --g-bg:#E7EBED; --g-panel:#D9E0E3; --g-panel-hi:#F1F4F5; --g-face:#FFFFFF;
+  --g-red:#C23A22;            /* the page accent slot: the lineup red, darkened for text */
+  --g-gold:#C9A14F; --g-jade:#1B2228; --g-ink:#1B2228; --g-muted:#56636B; --g-line:#C4CDD2;
+  --tmc-slate:#55646E; --tmc-slate-d:#36424A; --tmc-cream:#F2ECDA; --tmc-hot:#E04B2E; --tmc-gold:#F5D27A;
   --tmc-display:"Oswald",sans-serif; --tmc-mono:"Courier Prime",monospace;
 }
 @media (prefers-color-scheme: dark){
-  .g-tmc{--g-bg:#17150F; --g-panel:#221F18; --g-panel-hi:#2C2820; --g-red:#E98A74; --g-jade:#2C2820;
-    --g-ink:#EEE9D8; --g-muted:#B3AD9A; --g-line:#3A3529}
+  .g-tmc{--g-bg:#2C363D; --g-panel:#36424A; --g-panel-hi:#435159; --g-red:#FF8A6B; --g-jade:#36424A;
+    --g-ink:#F2ECDA; --g-muted:#C1CAD0; --g-line:#46545D}
 }
-.g-tmc .g-hero h1{font-family:var(--tmc-display);font-weight:700;letter-spacing:.01em;text-transform:uppercase;color:var(--g-ink)}
-.g-tmc .g-hero h1 em{font-style:normal;color:var(--g-red)}
+.g-tmc .g-hero h1{font-family:var(--tmc-display);font-weight:700;letter-spacing:.01em;text-transform:uppercase;color:var(--g-ink);text-shadow:0 5px 0 #AEB9BF}
+.g-tmc .g-hero h1 em{font-style:normal;color:var(--tmc-hot)}
+@media (prefers-color-scheme: dark){.g-tmc .g-hero h1{text-shadow:0 6px 0 #0A0C10}}
+.g-tmc .pill{background:var(--tmc-slate);color:var(--tmc-cream);border-color:var(--tmc-slate)}
+.g-tmc .pill::before{background:var(--tmc-gold)}
 .g-tmc .pill{font-family:var(--tmc-mono);font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .g-tmc h2,.g-tmc h3{font-family:var(--tmc-display);font-weight:700;letter-spacing:.03em;text-transform:uppercase}
 .g-tmc .label{font-family:var(--tmc-mono);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--g-red)}
-@media (prefers-color-scheme: dark){.g-tmc.game .btn.red{color:#17150F}}
+@media (prefers-color-scheme: dark){.g-tmc.game .btn.red{color:#1B2228}}
 
 /* hero: a still render with view buttons */
-.g-tmc .viewer{background:#15120E}
+.g-tmc .viewer{background:#1E252A}
 .g-tmc .viewer .stage{aspect-ratio:16/10}
 .g-tmc .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
 .g-tmc .viewer .bar{background:var(--g-panel)}
 
 /* the three kinds of crook */
 .crooks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,24px);margin-top:clamp(28px,4vw,44px)}
-.crook{border:2px solid var(--g-ink);border-radius:10px;padding:18px 18px 16px;background:var(--g-face);display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
-.crook svg{width:44px;height:44px;fill:var(--g-ink);stroke:var(--g-ink)}
-.crook b{font-family:var(--tmc-display);font-weight:700;font-size:20px;letter-spacing:.04em;text-transform:uppercase}
-.crook i{font-style:normal;font-family:var(--tmc-mono);font-weight:700;font-size:15px;letter-spacing:.18em;color:var(--g-red)}
-.crook p{margin:0;font-size:15px;color:var(--g-muted)}
-@media (prefers-color-scheme: dark){.crook{background:var(--g-panel)}}
+.crook{border-radius:10px;padding:0 18px 18px;color:var(--tmc-cream);display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;
+  background:linear-gradient(var(--tmc-slate-d),var(--tmc-slate-d)) 0 144px/100% 4px no-repeat,
+    repeating-linear-gradient(180deg,transparent 0 27px,rgba(242,236,218,.18) 27px 28px) 0 0/100% 144px no-repeat,var(--tmc-slate)}
+.crook svg.bust{width:132px;height:132px;align-self:center;margin:12px 0 8px;overflow:visible}
+.crook b{font-family:var(--tmc-display);font-weight:700;font-size:22px;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 2px 0 #0A0C10}
+.crook i{font-style:normal;font-family:var(--tmc-mono);font-weight:700;font-size:15px;letter-spacing:.18em;color:var(--tmc-gold)}
+.crook p{margin:0;font-size:15px;color:#DCE2E5}
 @media (max-width:820px){.crooks{grid-template-columns:1fr}}
 
 /* the three jobs */
@@ -37,15 +43,14 @@
 .jobs div{border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:6px;background:var(--g-panel);border:1.5px solid var(--g-line)}
 .jobs b{font-family:var(--tmc-mono);font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--g-red)}
 .jobs span{font-size:15px}
-.jobs .last{background:var(--g-ink);color:var(--g-bg);border-color:var(--g-ink)}
-.jobs .last b{color:#E98A74}
-@media (prefers-color-scheme: dark){.jobs .last{background:#EEE9D8;color:#17150F}.jobs .last b{color:#A5321E}}
+.jobs .last{background:var(--tmc-slate);color:var(--tmc-cream);border-color:var(--tmc-slate)}
+.jobs .last b{color:var(--tmc-gold)}
 @media (max-width:820px){.jobs{grid-template-columns:1fr}}
 
 /* crew sheets and dice */
 .sheets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,24px);align-items:start}
 .sheets figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
-.sheets img{width:100%;aspect-ratio:7/5;border-radius:6px;border:1.5px solid var(--g-ink);box-shadow:0 18px 30px -18px rgba(27,25,21,.5);transition:transform .2s}
+.sheets img{width:100%;aspect-ratio:7/5;border-radius:6px;box-shadow:0 18px 30px -18px rgba(14,16,20,.6);transition:transform .2s}
 .sheets figure:hover img{transform:translateY(-4px) rotate(-.6deg)}
 .sheets figcaption{font-size:14.5px;color:var(--g-muted)}
 .sheets figcaption b{display:block;color:var(--g-ink);font-size:16px;font-family:var(--tmc-display);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
@@ -62,11 +67,11 @@
 
 .g-tmc .renders img{aspect-ratio:16/10}
 .g-tmc .play-frame iframe{height:min(88vh,940px)}
-.g-tmc .g-cta{background:#1B1915}
-.g-tmc .g-cta h2{font-family:var(--tmc-display);font-weight:700;letter-spacing:.03em;text-transform:uppercase}
-.g-tmc .g-cta .btn.light{color:#1B1915}
+.g-tmc .g-cta{background:var(--tmc-slate)}
+.g-tmc .g-cta h2{font-family:var(--tmc-display);font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--tmc-cream);text-shadow:0 3px 0 #0A0C10}
+.g-tmc .g-cta .btn.light{color:#1B2228}
 
 /* home page card */
 .feature.g-tmc h3{font-family:var(--tmc-display);font-weight:700;letter-spacing:.02em;text-transform:uppercase}
-.feature.g-tmc .feature-art{background:#15120E;padding:0}
+.feature.g-tmc .feature-art{background:#1E252A;padding:0}
 .feature.g-tmc .feature-art img{width:100%;height:100%;object-fit:cover}

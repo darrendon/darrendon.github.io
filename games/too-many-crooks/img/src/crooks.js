@@ -1,51 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<link rel="stylesheet" href="/assets/css/fonts.css">
-<style>
-html,body{margin:0;background:#000}
-#box{width:1400px;height:1000px;position:relative;overflow:hidden;background:#55646E;font-family:Oswald,sans-serif}
-#box svg{position:absolute;inset:0;width:100%;height:100%}
-.title{position:absolute;left:0;right:0;top:66px;text-align:center}
-.title h1{margin:0;font-size:156px;line-height:.86;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#F2ECDA;text-shadow:0 10px 0 #0A0C10}
-.title h1 em{font-style:normal;color:#E04B2E}
-.title .tag{margin-top:8px;font-family:'Courier Prime',monospace;font-weight:700;font-size:26px;letter-spacing:9px;color:#F5D27A;text-transform:uppercase;text-shadow:0 2px 0 #1B2228}
-.foot{position:absolute;left:70px;right:70px;bottom:34px;display:flex;justify-content:space-between;align-items:baseline}
-.foot .spec{font-family:'Courier Prime',monospace;font-weight:700;font-size:22px;letter-spacing:5px;color:#F2ECDA;opacity:.85}
-.foot .spec b{color:#E04B2E}
-.foot .by{text-align:right}
-.foot .by small{font-family:'Courier Prime',monospace;font-weight:700;font-size:18px;letter-spacing:6px;color:#F5D27A;margin-right:14px}
-.foot .by b{font-size:30px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#F2ECDA;vertical-align:-2px}
-</style>
-</head>
-<body>
-<div id="box">
-  <svg viewBox="0 0 1400 1000" id="art"></svg>
-  <div class="title">
-    <h1>Too Many<br><em>Crooks!</em></h1>
-  </div>
-  <div class="foot">
-    <div class="spec"><b>3–6</b> CROOKS &nbsp;·&nbsp; <b>25</b> MIN</div>
-    <div class="by"><small>A GAME BY</small><b>Darren Don</b></div>
-  </div>
-</div>
-<script>
+/* Too Many Crooks! — the lineup figures, shared by the box, sheets, sell sheet and page art. */
+(function(){
 const NS='http://www.w3.org/2000/svg';
-const svg=document.getElementById('art');
+let svg=null, defs=null;
 const el=(n,a,parent)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);(parent||svg).appendChild(e);return e};
 const INK='#0E1014', CREAM='#F2ECDA', GOLD='#C9A14F';
 const mix=(hex,t,to='#000000')=>{const h=x=>parseInt(x,16);const a=[h(hex.slice(1,3)),h(hex.slice(3,5)),h(hex.slice(5,7))],b=[h(to.slice(1,3)),h(to.slice(3,5)),h(to.slice(5,7))];return '#'+a.map((v,i)=>Math.round(v+(b[i]-v)*t).toString(16).padStart(2,'0')).join('')};
 let uid=0;
-
-// ---- backdrop: spotlight, floor, height chart
-const defs=el('defs',{});
-defs.innerHTML=`<radialGradient id="spot" cx="50%" cy="100%" r="70%"><stop offset="0" stop-color="#8797A0"/><stop offset="1" stop-color="#55646E" stop-opacity="0"/></radialGradient>
-<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#36424A"/><stop offset="1" stop-color="#252E34"/></linearGradient>`;
-el('rect',{x:0,y:400,width:1400,height:600,fill:'url(#spot)'});
-el('rect',{x:0,y:905,width:1400,height:95,fill:'url(#floor)'});
-for(let i=0;i<9;i++){const y=445+i*58;el('line',{x1:60,y1:y,x2:1340,y2:y,stroke:CREAM,opacity:i%2?0.18:0.38,'stroke-width':i%2?1:2});
-  if(i%2===0){const lab=["6'4\"","6'0\"","5'8\"","5'4\"","5'0\""][i/2];el('text',{x:66,y:y-8,fill:CREAM,opacity:.7,'font-family':'Courier Prime','font-weight':'700','font-size':20,'letter-spacing':2}).textContent=lab;}}
 
 const PIPS={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[2,0],[0,2],[2,2]],5:[[0,0],[2,0],[1,1],[0,2],[2,2]],6:[[0,0],[2,0],[0,1],[2,1],[0,2],[2,2]]};
 
@@ -57,15 +17,15 @@ function shaded(parent,fn,x0){
   el('rect',{x:x0,y:-900,width:600,height:1000},cp);
 }
 
-function crook(x,o){
+function crook(x,o,parent,floorY=905){
   const {c,v,h,w,hat,coat,arms,tilt,tie,light}=o;
-  const g=el('g',{transform:`translate(${x},905)`});
+  const g=el('g',{transform:`translate(${x},${floorY})`},parent);
   const dark=mix(c,.35), lite=mix(c,.18,'#ffffff');
   const pip=light?INK:'#fff';
   const sh=w*0.56, hem=w*0.47, top=-h+100;
   const shortCoat=(coat==='suit'||coat==='turtleneck'||coat==='bomber');
   const bodyTop= shortCoat ? -68 : -10;
-  el('ellipse',{cx:26,cy:-h*0.5,rx:w*0.66,ry:h*0.53,fill:'#000',opacity:.28},g);
+  if(!o.noShadow) el('ellipse',{cx:26,cy:-h*0.5,rx:w*0.66,ry:h*0.53,fill:'#000',opacity:.28},g);
   // shoes + trousers
   el('rect',{x:-w*0.34,y:-14,width:w*0.28,height:16,rx:7,fill:INK},g);
   el('rect',{x:w*0.06,y:-14,width:w*0.28,height:16,rx:7,fill:INK},g);
@@ -178,8 +138,8 @@ function crook(x,o){
   return g;
 }
 
-// six crooks, left to right
-const line=[
+
+const LINE=[
   {c:'#2B2B2B',v:1,h:366,w:150,hat:'bowler',hatColor:CREAM,band:'#2B2B2B',coat:'overcoat',arms:'pockets',tilt:-6},
   {c:'#2F6DB5',v:4,h:392,w:158,hat:'fedora',hatColor:CREAM,band:'#2F6DB5',coat:'suit',arms:'folded',tie:'#C8372D',tilt:5},
   {c:'#E0B21F',v:2,h:322,w:176,hat:'beanie',hatColor:'#2B2B2B',coat:'bomber',arms:'folded',tilt:-4,light:true},
@@ -187,8 +147,20 @@ const line=[
   {c:'#3E8E4F',v:5,h:372,w:166,hat:'flatcap',hatColor:CREAM,coat:'scarfcoat',arms:'folded',tilt:4},
   {c:'#F2ECDA',v:3,h:350,w:142,hat:'homburg',hatColor:'#2B2B2B',band:GOLD,coat:'turtleneck',arms:'pockets',tilt:-7,light:true},
 ];
-const xs=[200,395,595,800,1000,1195];
-line.forEach((p,i)=>crook(xs[i],p));
-</script>
-</body>
-</html>
+function use(root){ svg=root; defs=root.querySelector('defs')||el('defs',{},root); }
+// height-chart wall behind a lineup: lines every `step`, labels on the left
+function wall(o){ const {x0=60,x1=1340,y0=445,step=58,n=9,labels=true,font=20,op=1}=o;
+  const g=el('g',{});
+  for(let i=0;i<n;i++){const y=y0+i*step;el('line',{x1:x0,y1:y,x2:x1,y2:y,stroke:CREAM,opacity:(i%2?0.18:0.38)*op,'stroke-width':i%2?font/20:font/10},g);
+    if(labels&&i%2===0){const lab=["6'4\"","6'0\"","5'8\"","5'4\"","5'0\"","4'8\""][i/2];el('text',{x:x0+6,y:y-font*0.4,fill:CREAM,opacity:.7*op,'font-family':'Courier Prime','font-weight':'700','font-size':font,'letter-spacing':font/10},g).textContent=lab;}}
+  return g; }
+// head-and-shoulders of a crook, centred at (cx,cy), `size` px tall
+function bust(parent,cx,cy,size,o){
+  const k=size/315, h=o.h||360;
+  const g=el('g',{transform:`translate(${cx},${cy}) scale(${k}) translate(0,${h-15})`},parent);
+  const id='b'+(uid++); const cp=el('clipPath',{id},defs); el('rect',{x:-200,y:-h-145,width:400,height:315},cp);
+  const inner=el('g',{'clip-path':`url(#${id})`},g);
+  crook(0,{...o,h,noShadow:true},inner,0);
+  return g; }
+window.Crooks={use,crook,bust,wall,LINE,el,mix,INK,CREAM,GOLD};
+})();

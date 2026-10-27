@@ -7,30 +7,31 @@
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
 :root{
-  --paper:#EEE9D8;
-  --ink:#1B1915;
-  --soft:#6E6A5C;
-  --red:#A5321E;
-  --slot:#DFD9C2;
-  --fiber:rgba(92,90,72,.045);
-  --grid:rgba(58,72,78,.055);
+  --paper:#55646E;
+  --ink:#F2ECDA;
+  --soft:#BFC8CD;
+  --red:#FF8A6B;
+  --gold:#F5D27A;
+  --slot:#6F7E87;
+  --line:rgba(242,236,218,.16);
+  --line2:rgba(242,236,218,.07);
   --d:0.66in;
 }
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 html,body{margin:0;padding:0}
 body{background:#000;padding:0;font-family:Oswald,system-ui,sans-serif}
 .sheet{zoom:4;display:block;width:3.5in}
+body.all{background:#fff}
+body.all .sheet{zoom:1;width:7.0in;margin:0 auto;display:grid;grid-template-columns:repeat(2,3.5in);grid-auto-rows:2.5in;justify-content:center}
 
 /* ───────────── card: a planning sheet ───────────── */
 .board{
   position:relative;width:3.5in;height:2.5in;overflow:hidden;color:var(--ink);border-radius:0;
   background:
-    repeating-linear-gradient(0deg,  var(--grid)  0 .5px, transparent .5px .1in),
-    repeating-linear-gradient(90deg, var(--grid)  0 .5px, transparent .5px .1in),
-    repeating-linear-gradient(94deg, var(--fiber) 0 2px,  transparent 2px 5px),
-    repeating-linear-gradient(3deg,  var(--fiber) 0 3px,  transparent 3px 7px),
+    repeating-linear-gradient(180deg, transparent 0 .19in, var(--line) .19in .2in, transparent .2in .29in, var(--line2) .29in .3in, transparent .3in .4in),
+    radial-gradient(120% 90% at 50% 110%, #7A8A93 0, rgba(85,100,110,0) 70%),
     var(--paper);
-  border:1.5px solid var(--ink);
+  border:1.5px solid #252E34;
   padding:.07in .10in .05in;
   display:flex;flex-direction:column;
 }
@@ -42,17 +43,18 @@ body{background:#000;padding:0;font-family:Oswald,system-ui,sans-serif}
 
 /* ───────────── header ───────────── */
 .head{display:flex;align-items:baseline;gap:7px;padding:0 1px 2.5px;border-bottom:1.5px solid var(--ink)}
-.wordmark{font-size:11px;font-weight:700;letter-spacing:1.4px;line-height:1;white-space:nowrap}
+.wordmark{font-size:12px;font-weight:700;letter-spacing:1.2px;line-height:1;white-space:nowrap;text-shadow:0 1px 0 #0A0C10}
+.wordmark em{font-style:normal;color:#E8573A}
 .rule-dot{flex:1;height:1px;transform:translateY(-3px);
   background:repeating-linear-gradient(90deg,var(--soft) 0 2px,transparent 2px 5px)}
 .target{display:flex;align-items:center;gap:3.5px;
   font-family:'Courier Prime',monospace;font-size:7px;font-weight:700;
-  letter-spacing:1.1px;color:var(--red);line-height:1;white-space:nowrap}
-.tico svg{height:11px;width:11px;display:block;fill:var(--red);stroke:var(--red)}
+  letter-spacing:1.1px;color:var(--gold);line-height:1;white-space:nowrap}
+.tico svg{height:11px;width:11px;display:block;fill:var(--gold);stroke:var(--gold)}
 
 /* the score, ghosted into the paper */
 .mark{position:absolute;right:-.30in;bottom:-.30in;width:1.22in;height:1.22in;
-  opacity:.07;pointer-events:none;transform:rotate(-12deg)}
+  opacity:.08;pointer-events:none;transform:rotate(-12deg)}
 .mark svg{width:100%;height:100%;display:block;fill:var(--ink);stroke:var(--ink)}
 
 /* ───────────── grid ───────────── */
@@ -67,10 +69,10 @@ body{background:#000;padding:0;font-family:Oswald,system-ui,sans-serif}
 .r2{grid-row:2}.r3{grid-row:3}
 
 .role{grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1}
-.role svg{height:16px;width:16px;display:block;fill:var(--ink);stroke:var(--ink);margin-bottom:2.5px}
+.role svg{height:30px;width:30px;display:block;margin-bottom:1.5px;overflow:visible}
 .rname{font-size:7px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
   text-align:center;line-height:1.18;white-space:nowrap}
-.band{font-family:'Courier Prime',monospace;font-size:8px;font-weight:700;color:var(--red);
+.band{font-family:'Courier Prime',monospace;font-size:8px;font-weight:700;color:var(--gold);
   letter-spacing:.8px;line-height:1.45;margin-top:.5px}
 .band.jobs{font-size:6.5px;letter-spacing:.4px;text-transform:uppercase}
 
@@ -78,16 +80,16 @@ body{background:#000;padding:0;font-family:Oswald,system-ui,sans-serif}
   writing-mode:vertical-rl;transform:rotate(180deg);text-align:center}
 
 .slot{width:var(--d);height:var(--d);border-radius:4px;background:var(--slot);
-  border:1.5px solid var(--ink)}
-.slot.pay{background:transparent;border:1.5px dashed var(--soft)}
-.slot.own{border:1.5px solid var(--red);background:rgba(27,25,21,.06);
+  border:1.5px solid var(--ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.slot.pay{background:transparent;border:1.5px dashed var(--soft);box-shadow:none}
+.slot.own{border:1.5px solid var(--gold);background:rgba(14,16,20,.18);
   grid-column:6;grid-row:2 / 4;align-self:center}
 
 .div{grid-column:5;grid-row:1 / 5;width:1px;height:100%;
   background:repeating-linear-gradient(180deg,var(--soft) 0 2px,transparent 2px 5px)}
 .mine{grid-column:6;grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1}
-.mine svg{height:16px;width:16px;display:block;fill:var(--red);stroke:none;margin-bottom:2.5px}
-.mine .rname{color:var(--red)}
+.mine svg{height:16px;width:16px;display:block;fill:var(--gold);stroke:none;margin-bottom:2.5px}
+.mine .rname{color:var(--gold)}
 
 /* brace under the three cut slots — it applies to the group, not to one column */
 .cutnote{grid-column:2 / 5;grid-row:4;position:relative;align-self:start;
@@ -116,6 +118,7 @@ body{background:#000;padding:0;font-family:Oswald,system-ui,sans-serif}
 </head>
 <body>
 <div class="sheet" id="sheet"></div>
+<script src="crooks.js"></script>
 <script>
 const BADGE = `<svg viewBox="0 0 24 24" aria-hidden="true">
   <path d="M9.9 1.4h4.2a.9.9 0 0 1 .9.9v1.5H9V2.3a.9.9 0 0 1 .9-.9z" stroke="none"/>
@@ -135,10 +138,17 @@ const COIN = `<svg viewBox="0 0 24 24" aria-hidden="true">
   <path d="M12.9 5.9v1.3c1.2.2 2.1.8 2.6 1.7l-1.9 1.1c-.3-.6-.9-.9-1.7-.9-.8 0-1.2.3-1.2.8 0 .5.5.8 1.8 1.2 1.9.5 3.1 1.2 3.1 2.9 0 1.5-1.1 2.4-2.7 2.7v1.4h-1.8v-1.4c-1.4-.3-2.4-1-2.9-2.1l1.9-1.1c.3.8 1 1.2 2 1.2.9 0 1.4-.3 1.4-.8 0-.5-.5-.8-1.9-1.2-1.8-.5-3-1.3-3-2.9 0-1.4 1.1-2.4 2.5-2.6V5.9z"/>
 </svg>`;
 
+const BUST=(i)=>`<svg class="bust" data-r="${i}" viewBox="-60 -60 120 120" aria-hidden="true"><defs/></svg>`;
 const ROLES = [
-  {ico:BADGE, name:"Inside Man",     band:"1 · 2"},
-  {ico:WHEEL, name:"Getaway Driver", band:"3 · 4"},
-  {ico:ARM,   name:"The Muscle",     band:"5 · 6"},
+  {ico:BUST(0), name:"Inside Man",     band:"1 · 2"},
+  {ico:BUST(1), name:"Getaway Driver", band:"3 · 4"},
+  {ico:BUST(2), name:"The Muscle",     band:"5 · 6"},
+];
+// the three kinds of crook, drawn as cream mugshots: sly homburg, driving cap, knit beanie
+const ROLE_CROOKS=[
+  {c:'#F2ECDA',v:1,h:360,w:142,hat:'homburg',hatColor:'#2B2B2B',band:'#C9A14F',coat:'turtleneck',arms:'pockets',tilt:-6,light:true},
+  {c:'#F2ECDA',v:3,h:360,w:150,hat:'flatcap',hatColor:'#2B2B2B',coat:'scarfcoat',arms:'pockets',tilt:4,light:true},
+  {c:'#F2ECDA',v:5,h:360,w:176,hat:'beanie',hatColor:'#2B2B2B',coat:'bomber',arms:'pockets',tilt:-3,light:true},
 ];
 /* each sheet is a different score — flavour only, every board plays identically */
 const ANCHOR = `<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -195,7 +205,7 @@ const board = (t) => `
   <span class="mark">${t.ico}</span>
 
   <div class="head">
-    <span class="wordmark">TOO MANY CROOKS!</span>
+    <span class="wordmark">TOO MANY <em>CROOKS!</em></span>
     <span class="rule-dot"></span>
     <span class="target"><span class="tico">${t.ico}</span>${t.name}</span>
   </div>
@@ -237,7 +247,10 @@ const board = (t) => `
     <span class="hot">JOB 3 DOUBLES</span>
   </div>
 </div>`;
-const q=+(new URLSearchParams(location.search).get('t')||0);document.getElementById('sheet').innerHTML = board(TARGETS[q]);
+const qs=new URLSearchParams(location.search), sheetEl=document.getElementById('sheet');
+if(qs.get('all')){ document.body.classList.add('all'); sheetEl.innerHTML=TARGETS.map(board).join(''); }
+else sheetEl.innerHTML = board(TARGETS[+(qs.get('t')||0)]);
+document.querySelectorAll('svg.bust').forEach(sv=>{ Crooks.use(sv); Crooks.bust(sv,0,0,112,ROLE_CROOKS[+sv.dataset.r]); });
 </script>
 </body>
 </html>
