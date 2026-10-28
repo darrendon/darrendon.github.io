@@ -87,7 +87,7 @@ p{margin:0}
 .feature:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
 .feature-art{aspect-ratio:16/10;overflow:hidden;background:radial-gradient(120% 90% at 45% 40%,var(--g-panel-hi),var(--g-panel));display:flex;align-items:center;justify-content:center;padding:clamp(10px,2vw,22px);min-width:0}
 .feature-body{padding:clamp(18px,2.4vw,28px);display:flex;flex-direction:column;gap:12px;min-width:0;flex:1}
-.feature h3{font-family:"Bagel Fat One",var(--display);font-weight:400;font-stretch:100%;font-size:clamp(26px,2.6vw,34px);line-height:1;color:var(--g-red);letter-spacing:0}
+.feature h3{font-family:"Fraunces",Georgia,serif;font-weight:900;font-stretch:100%;font-size:clamp(26px,2.6vw,34px);line-height:1;color:var(--g-red);letter-spacing:0}
 .feature p{font-size:16px;line-height:1.5;color:var(--g-ink)}
 .feature .meta{list-style:none;margin:0;padding:10px 0 0;border-top:1px solid var(--g-line);display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--g-muted)}
 .feature .meta li:last-child{color:var(--g-ink);font-weight:500}

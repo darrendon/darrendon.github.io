@@ -1,0 +1,13 @@
+/* Shared look for the Dim Sum Rush box art (top, side, end). Render each page at its body size. */
+@font-face{font-family:"Fraunces";src:url("/assets/fonts/fraunces-900-soft.woff") format("woff");font-weight:100 900}
+@font-face{font-family:"Figtree";src:url("/assets/fonts/figtree.woff") format("woff");font-weight:300 900}
+html,body{margin:0;padding:0}
+body{position:relative;overflow:hidden;font-family:Figtree,sans-serif;
+  background:
+    repeating-linear-gradient(45deg,rgba(255,236,214,.07) 0 1.5px,transparent 1.5px 46px),
+    repeating-linear-gradient(-45deg,rgba(255,236,214,.07) 0 1.5px,transparent 1.5px 46px),
+    radial-gradient(ellipse 75% 70% at 50% 38%,#B9352A 0%,#A6291F 55%,#951F17 100%)}
+.title{font-family:Fraunces,serif;font-weight:900;color:#FCF1DE;letter-spacing:-.005em;
+  -webkit-text-stroke:0;paint-order:stroke fill;
+  text-shadow:0 0 0 #6E120D}
+.caps{font-weight:800;text-transform:uppercase;color:#F3C46B}

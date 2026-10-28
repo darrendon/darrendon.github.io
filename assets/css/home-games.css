@@ -1,7 +1,7 @@
 /* Home page game cards: only the per-game rules the cards use, pulled from each game stylesheet.
    Regenerate after changing a game skin. */
 /* from dim-sum-rush.css */
-.g-dsr { --g-bg: #FBF4E8; --g-panel: #F3E6CF; --g-panel-hi: #FAF0DD; --g-face: #FFFDF7; --g-red: #A3221B; --g-red-d: #6E120D; --g-gold: #F2C56B; --g-jade: #1F6B4F; --g-ink: #2A1A12; --g-muted: #6B4B32; --g-line: #E2CFAE; --b0: #B07A2A; --b1: #2F5D9E; --b2: #A8462A; --b3: #1F6B4F; --b0d: #8A5A16; --b1d: #234A80; --b2d: #7E3220; --b3d: #154D39; --dsr-title: "Bagel Fat One","Arial Rounded MT Bold",var(--display); }
+.g-dsr { --g-bg: #FBF4E8; --g-panel: #F3E6CF; --g-panel-hi: #FAF0DD; --g-face: #FFFDF7; --g-red: #A3221B; --g-red-d: #6E120D; --g-gold: #F2C56B; --g-jade: #1F6B4F; --g-ink: #2A1A12; --g-muted: #6B4B32; --g-line: #E2CFAE; --b0: #B07A2A; --b1: #2F5D9E; --b2: #A8462A; --b3: #1F6B4F; --b0d: #8A5A16; --b1d: #234A80; --b2d: #7E3220; --b3d: #154D39; --dsr-title:"Fraunces",Georgia,serif; }
 @media (prefers-color-scheme: dark){.g-dsr { --g-bg: #1E1611; --g-panel: #2A1F18; --g-panel-hi: #35281E; --g-red: #E5675A; --g-ink: #F4E9DA; --g-muted: #C9AE90; --g-line: #3D2E23; --g-jade: #2E8564; }}
 
 /* from boo-who.css */
