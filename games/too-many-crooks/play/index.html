@@ -140,7 +140,10 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .hand .hd h3{font-size:14px;flex:1}
 .dice{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;min-height:40px}
 .actions{position:fixed;left:0;right:300px;bottom:0;background:var(--paper);border-top:4px solid var(--slate);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:4}
-@media (max-width:980px){.actions{right:0}}
+@media (max-width:980px){.actions{right:0}
+  /* one column: table talk sits at the bottom of the page, so leave room for the fixed action bar below it */
+  #game{padding-bottom:var(--act-h,76px)}
+  .chatbox{scroll-margin-bottom:calc(var(--act-h,76px) + 8px)}}
 .actions .hint{flex:1;min-width:200px;font-size:14px}
 .actions .hint b{color:var(--red)}
 
@@ -177,6 +180,10 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .standings .r{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:1.5px solid var(--line);border-radius:4px;font-size:15px}
 .standings .r.win{border-color:var(--red);box-shadow:2px 2px 0 rgba(165,50,30,.25)}
 .standings .r .n{font-family:Oswald,sans-serif;font-weight:700;font-size:20px;margin-left:auto}
+.standings .r .wl{font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--red);margin-left:4px}
+.standings .r .j3{font-family:'Courier Prime',monospace;font-size:12px;font-weight:700;color:var(--soft);margin-left:auto}
+.standings .r .j3 + .n{margin-left:8px}
+.tienote{font-size:13px;color:var(--soft);margin:-6px 0 14px;line-height:1.4}
 .toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:4px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
 
@@ -307,6 +314,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       <p><b>Crew.</b> Every crew is one of each kind: an <em>inside man</em> (a 1 or 2), a <em>getaway driver</em> (3 or 4) and <em>the muscle</em> (5 or 6). Never two of a kind. You score the total of your crew.</p>
       <p><b>Cuts.</b> At the same time and in secret, hand out your kept dice to your crew: 3 of them on job 1, 2 on jobs 2 and 3. Stack several on one person if you like. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing.</p>
       <p><b>Your cut.</b> On jobs 1 and 2 one kept die is left over — score it, it's yours. On job 3 both go out, and your crew scores double.</p>
+      <p><b>Frozen out.</b> If nobody sends you anything, crew one of each kind from your own kept dice and score it (doubled on job 3); you pay no one, and on jobs 1 and 2 you still keep your best leftover die as your cut.</p>
       <p><b>Promises.</b> Say anything, agree anything. None of it binds you. There are two more jobs after this one, and everyone chooses who they send to next time.</p>
     </div>
   </div>
@@ -635,6 +643,22 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   $('f-log').onclick = () => { feedMode = 'log'; $('f-log').classList.add('on'); $('f-chat').classList.remove('on'); renderFeed(); };
   const say = (t) => { if (!session || !t.trim()) return; session.act({ type: 'chat', text: t.trim() }); $('chat-in').value = ''; };
   $('chat-go').onclick = () => say($('chat-in').value);
+  // phones: keep the chat input clear of the fixed action bar (its height changes as the hint wraps, and when the keyboard opens)
+  const actH = () => {
+    const g = $('game'), h = $('actions').offsetHeight, was = parseFloat(g.style.getPropertyValue('--act-h')) || 0;
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    g.style.setProperty('--act-h', h + 'px');
+    if (atBottom && was && h > was && matchMedia('(max-width:980px)').matches) window.scrollBy(0, h - was);   // bar grew: keep the chat input in view
+  };
+  if (window.ResizeObserver) new ResizeObserver(actH).observe($('actions'));
+  const chatClear = () => {
+    if (document.activeElement !== $('chat-in') || !matchMedia('(max-width:980px)').matches) return;
+    const a = $('actions'); if (!a.offsetHeight) return;
+    const over = $('chat-in').closest('.chatbox').getBoundingClientRect().bottom - a.getBoundingClientRect().top;
+    if (over > 0) window.scrollBy(0, over + 8);
+  };
+  $('chat-in').addEventListener('focus', () => setTimeout(chatClear, 350));
+  if (window.visualViewport) visualViewport.addEventListener('resize', () => setTimeout(chatClear, 50));
   $('chat-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') say($('chat-in').value); });
   const QUICK = ['Send me a 6 and my best cut is yours.', 'I need an inside man — who has a 1 or 2?', 'I pay whoever completes my crew.', 'You stiffed me last job. Nothing for you.', 'Deal.', 'No promises.'];
   $('quick').innerHTML = QUICK.map((q) => '<button>' + esc(q) + '</button>').join('');
@@ -845,8 +869,20 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     const m = $('modal'); m.classList.remove('hide');
     let h = '<div class="box"><h2>' + (v.phase === 'over' ? 'The split' : 'Job ' + s.job + ' — the split') + '</h2><div class="sub">' + (s.last ? 'LAST JOB — CREWS SCORED DOUBLE' : 'WHO PAID WHOM') + '</div>';
     if (v.phase === 'over') {
-      const ranked = v.players.map((p, i) => ({ i, s: v.scores[i] })).sort((a, b) => b.s - a.s);
-      h += '<div class="standings">' + ranked.map((r, k) => '<div class="r' + (k === 0 ? ' win' : '') + '"><span class="dot p' + r.i + '" style="width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)"></span><span>' + esc(nm(r.i)) + (r.i === v.me && nm(r.i) !== 'You' ? ' (you)' : '') + '</span><span class="n">' + r.s + '</span></div>').join('') + '</div>';
+      // rulebook tie-break: more points on job 3 wins; still tied, they share
+      const st = s.standings || T.standings(v.scores, s.gained || []);
+      h += '<div class="standings">' + st.map((r) => '<div class="r' + (r.win ? ' win' : '') + '"><span class="dot p' + r.seat + '" style="width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)"></span><span>' + esc(nm(r.seat)) + (r.seat === v.me && nm(r.seat) !== 'You' ? ' (you)' : '') + (r.win && r.tied ? ' <b class="wl">' + (r.shared ? 'shares the win' : 'wins') + '</b>' : '') + '</span>' + (r.tied ? '<span class="j3">job 3: ' + r.job3 + '</span>' : '') + '<span class="n">' + r.total + '</span></div>').join('') + '</div>';
+      const notes = [];
+      for (const total of [...new Set(st.filter((r) => r.tied).map((r) => r.total))]) {
+        const g = st.filter((r) => r.total === total), names = (rs) => { const a = rs.map((r) => esc(nm(r.seat))); return a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; };
+        let n = 'Tied on ' + total + ', so job 3 decides: ' + g.map((r) => esc(nm(r.seat)) + ' ' + r.job3).join(', ') + '.';
+        for (const j of [...new Set(g.filter((r) => r.shared).map((r) => r.job3))]) {
+          const sh = g.filter((r) => r.job3 === j);
+          n += ' ' + names(sh) + ' are still level, so they share ' + (sh[0].rank === 1 ? 'the win' : 'place ' + sh[0].rank) + '.';
+        }
+        notes.push(n);
+      }
+      if (notes.length) h += '<p class="tienote">' + notes.join(' ') + '</p>';
     }
     h += '<div class="sumgrid">';
     for (const hst of s.hosts) {

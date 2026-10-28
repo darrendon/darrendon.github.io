@@ -86,6 +86,23 @@
     return assign;
   }
 
+  // ----------------------------------------------------------------- winning
+  // Rulebook: highest total wins. If players are tied, the one who scored more on job 3 wins;
+  // if still tied, they share the win. The same tie-break orders every other place too.
+  // totals[i] = final score, job3[i] = points scored on job 3. Returns rows best first:
+  // { seat, total, job3, rank (1 = winner; shared ranks repeat), win, tied (total tied with someone), shared (still tied after job 3) }.
+  function standings(totals, job3) {
+    const rows = totals.map((total, seat) => ({ seat, total, job3: job3[seat] || 0 }));
+    rows.sort((a, b) => (b.total - a.total) || (b.job3 - a.job3) || (a.seat - b.seat));
+    for (const r of rows) {
+      r.rank = 1 + rows.filter((o) => o.total > r.total || (o.total === r.total && o.job3 > r.job3)).length;
+      r.win = r.rank === 1;
+      r.tied = rows.some((o) => o !== r && o.total === r.total);
+      r.shared = rows.some((o) => o !== r && o.total === r.total && o.job3 === r.job3);
+    }
+    return rows;
+  }
+
   // ----------------------------------------------------------------- game
   class Game {
     constructor(players, opts) {
@@ -252,6 +269,7 @@
     resolve() {
       const S = this.S, job = JOBS[S.job], last = S.job === JOBS.length - 1;
       const summary = [];
+      const before = S.scores.slice();
       const paidThis = Array.from({ length: S.N }, () => new Array(S.N).fill(0));
       for (let i = 0; i < S.N; i++) {
         const crew = S.crews[i], kept = S.kept[i], pays = S.pays[i];
@@ -282,7 +300,9 @@
           S.paidMe[d.owner][i] += got;
         }
       }
-      S.summary = { job: S.job + 1, last, hosts: summary, scores: S.scores.slice() };
+      const gained = S.scores.map((x, i) => x - before[i]);
+      S.summary = { job: S.job + 1, last, hosts: summary, scores: S.scores.slice(), gained };
+      if (last) S.summary.standings = standings(S.scores, gained);
       S.history.push(S.summary);
       S.phase = last ? 'over' : 'summary';
       this.log(last ? 'That was the last job.' : 'Job ' + (S.job + 1) + ' is done.');
@@ -337,7 +357,7 @@
     }
   }
 
-  const api = { Game, JOBS, BANDS, band, bestCrew, BOT_NAMES, PERSONAS };
+  const api = { Game, JOBS, BANDS, band, bestCrew, standings, BOT_NAMES, PERSONAS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TMC = api;
 })(typeof window !== 'undefined' ? window : globalThis);
