@@ -8,14 +8,13 @@
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
 /* Source for boo-who-sell-sheet.pdf: print at US Letter landscape, no margins, backgrounds on.
-   Left: the box's own violet and diamond lattice, with the box, the two roles and the card back.
+   Left: the box's own violet and diamond lattice, with the box and the game on the table (the stands are the hook).
    Right: cream paper, a three-panel strip showing one round. Nothing on the sheet overlaps anything else. */
 :root{--violet:#2B2856;--violet-hi:#3A3570;--gold:#D8B46A;--gold-d:#9C7A3C;--cream:#F4E7C6;--paper:#FBF7EE;--ink:#211E3D;--soft:#5F5A74;
   --living:#D9662B;--ghost:#5B5F97;--death:#3B3552}
 *{box-sizing:border-box}
 html,body{margin:0;background:#8E9499}
 @page{size:11in 8.5in;margin:0}
-@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
 .sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;display:grid;grid-template-columns:4.15in 1fr;
   color:var(--ink);background:var(--paper);font-family:Figtree,system-ui,sans-serif;font-size:10.5pt;line-height:1.38;
   box-shadow:0 10px 30px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -26,29 +25,33 @@ html,body{margin:0;background:#8E9499}
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38'><g fill='none' stroke='%23B89A5E' stroke-opacity='.45' stroke-width='.8'><path d='M19 7 L31 19 L19 31 L7 19 Z'/></g><circle cx='19' cy='19' r='1.1' fill='%23B89A5E' fill-opacity='.5'/></svg>");background-size:38px 38px}
 .side .frame{position:absolute;inset:.18in;border:2px solid var(--gold);border-radius:14px}
 .side .frame::after{content:"";position:absolute;inset:6px;border:1px solid rgba(216,180,106,.55);border-radius:10px}
-.box{position:absolute;left:.62in;top:.5in;width:2.9in;transform:rotate(-3deg);border-radius:10px;box-shadow:0 0 0 2px var(--gold-d),10px 12px 0 rgba(0,0,0,.35)}
-.cards{position:absolute;left:.42in;right:.42in;top:5.02in;display:flex;justify-content:space-between}
-.cards figure{margin:0;width:.98in;display:flex;flex-direction:column;align-items:center;gap:5px}
-.cards img{width:100%;display:block;border-radius:6px;box-shadow:0 0 0 1.5px var(--gold),4px 5px 0 rgba(0,0,0,.35)}
-.cards figure:nth-child(1){transform:rotate(-4deg)} .cards figure:nth-child(3){transform:rotate(4deg)}
-.cards figcaption{font:12pt/1 "IM Fell English SC";letter-spacing:.06em;color:var(--cream)}
-.toks{position:absolute;left:.5in;right:.5in;top:7.02in;display:flex;justify-content:space-between}
+.box{position:absolute;left:.82in;top:.42in;width:2.45in;transform:rotate(-3deg);border-radius:10px;box-shadow:0 0 0 2px var(--gold-d),10px 12px 0 rgba(0,0,0,.35)}
+.table{position:absolute;left:.36in;right:.36in;top:4.1in;margin:0}
+.table .ph{aspect-ratio:1.42/1;overflow:hidden;border-radius:8px;box-shadow:0 0 0 2px var(--gold),6px 7px 0 rgba(0,0,0,.35)}
+.table img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 45%}
+.table figcaption{margin-top:.12in;text-align:center;color:var(--cream);font:italic 12.5pt/1.3 "IM Fell English"}
+.table figcaption b{display:block;font:13pt/1.1 "IM Fell English SC";font-style:normal;letter-spacing:.06em;color:var(--gold);margin-bottom:2px}
+.toks{position:absolute;left:.5in;right:.5in;top:7.2in;display:flex;justify-content:space-between}
 .tok{width:.42in;height:.42in;border-radius:50%;display:grid;place-items:center;font:800 15pt/1 Archivo,sans-serif;background:#FBF5E8;color:var(--c);box-shadow:inset 0 0 0 3px var(--c),0 2px 0 rgba(0,0,0,.35)}
 .tok.down{background:var(--c);color:#fff;font-size:5.5pt;letter-spacing:.05em;align-content:center;gap:1px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6),0 2px 0 rgba(0,0,0,.35)}
 .tok.down svg{width:44%;height:auto}
-.toks-cap{position:absolute;left:0;right:0;top:7.56in;text-align:center;font:11pt/1 "IM Fell English SC";letter-spacing:.06em;color:var(--gold)}
+.toks-cap{position:absolute;left:0;right:0;top:7.74in;text-align:center;font:11pt/1 "IM Fell English SC";letter-spacing:.06em;color:var(--gold)}
 
 /* ---- right: the paper */
 .main{padding:.42in .5in .34in .44in;display:flex;flex-direction:column;min-width:0}
-.kicker{font:13pt/1 "IM Fell English SC";letter-spacing:.08em;color:var(--gold-d);margin:0 0 .12in}
-h1{margin:0;font:700 33pt/1.02 Spectral,Georgia,serif;letter-spacing:-.005em;color:var(--violet);text-shadow:0 3px 0 var(--gold)}
+.mast{display:flex;align-items:baseline;justify-content:space-between;gap:.2in;border-bottom:2px solid var(--violet);padding-bottom:.06in;margin-bottom:.14in}
+.mast .t{font:700 27pt/1 Spectral,serif;color:var(--violet)}
+.mast .k{font:13pt/1 "IM Fell English SC";letter-spacing:.08em;color:var(--gold-d)}
+h1{margin:0;font:700 28pt/1.04 Spectral,Georgia,serif;letter-spacing:-.005em;color:var(--violet);text-shadow:0 3px 0 var(--gold)}
 h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,.55)}
-.pitch{margin:.2in 0 0;font-size:11.5pt;line-height:1.42;max-width:5.7in}
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.24in}
+.pitch{margin:.14in 0 0;font-size:12pt;line-height:1.4}
+.fans{margin:.06in 0 0;font:italic 13pt/1.2 "IM Fell English";color:var(--soft)}
+.fans b{font:13pt "IM Fell English SC";font-style:normal;color:var(--ink)}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.2in}
 .panel{border:2px solid var(--violet);border-radius:8px;position:relative;display:flex;flex-direction:column;background:#fff;box-shadow:3px 3px 0 var(--gold)}
-.panel .art{height:2.2in;position:relative;overflow:hidden;border-bottom:2px solid var(--violet);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;gap:.12in}
+.panel .art{height:1.8in;position:relative;overflow:hidden;border-bottom:2px solid var(--violet);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;gap:.12in}
 .panel .cap{position:absolute;top:-2px;left:-2px;z-index:2;background:var(--violet);color:var(--gold);border-radius:8px 0 8px 0;padding:4px 10px 3px;font:12pt/1 "IM Fell English SC";letter-spacing:.06em}
-.panel p{margin:0;padding:.08in .1in .1in;font-size:9.3pt;line-height:1.34}
+.panel p{margin:0;padding:.08in .11in .1in;font-size:10.6pt;line-height:1.32}
 .p1 .art{background:#ECE6F7} .p2 .art{background:#F6E8D6} .p3 .art{background:#E8E3F2}
 .art img.c{width:.86in;border-radius:5px;box-shadow:0 0 0 1.5px var(--gold-d)}
 .col{display:flex;flex-direction:column;align-items:center;gap:.09in}
@@ -58,14 +61,20 @@ h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,
 .choice span{font:700 10.5pt/1 Spectral,serif;color:#fff;border-radius:99px;padding:6px 12px;text-align:center}
 .choice .run{background:var(--living)} .choice .stay{background:var(--ghost)}
 .badge{font:700 9.5pt/1 Spectral,serif;color:#fff;background:var(--death);border-radius:99px;padding:5px 10px}
-.facts{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:0 .34in;margin-top:auto;padding-top:.18in;border-top:2px solid var(--violet)}
+.foot{margin-top:auto;padding-top:.16in;border-top:2px solid var(--violet);display:grid;grid-template-columns:1fr auto;gap:.3in;align-items:end}
+.facts{display:flex;gap:.34in}
+.qr{display:flex;flex-direction:column;align-items:center;gap:.04in}
+.qr img{width:.98in;height:.98in;display:block;border:2px solid var(--violet);border-radius:4px}
+.qr span{font:12pt/1 "IM Fell English SC";letter-spacing:.06em;color:var(--living)}
 .facts b{display:block;font:700 22pt/1 Spectral,serif;color:var(--violet)}
-.facts span{font-size:9pt;color:var(--soft)}
-.ready{margin:.14in 0 0;font-size:9.6pt;color:var(--soft)}
+.facts span{font-size:10pt;color:var(--soft)}
+.ready{margin:.1in 0 0;font-size:10.5pt;color:var(--soft)}
 .ready b{color:var(--ink)}
 .ready u{text-decoration:none;color:var(--violet);font-weight:700}
-.contact{display:flex;justify-content:space-between;align-items:baseline;margin-top:.1in;font-size:9.6pt}
+.contact{margin:.06in 0 0;font-size:10.5pt}
 .contact b{font:700 12pt/1 Spectral,serif;color:var(--violet)}
+/* print overrides last, so they win over the on-screen margin and shadow */
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
 </style>
 </head>
 <body>
@@ -73,11 +82,8 @@ h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,
   <aside class="side">
     <div class="frame"></div>
     <img class="box" src="/games/boo-who/img/src/tex/box-top.jpg" alt="">
-    <div class="cards">
-      <figure><img src="/games/boo-who/img/card-ghost.webp" alt=""><figcaption>Ghost</figcaption></figure>
-      <figure><img src="/games/boo-who/img/card-back.webp" alt=""><figcaption>Card back</figcaption></figure>
-      <figure><img src="/games/boo-who/img/card-living.webp" alt=""><figcaption>Living</figcaption></figure>
-    </div>
+    <figure class="table"><div class="ph"><img src="/games/boo-who/img/render-table.webp" alt=""></div>
+      <figcaption><b>Everyone can see it but you</b>Your card faces the table on a stand.</figcaption></figure>
     <div class="toks">
       <span class="tok" style="--c:#2E5EAA">3</span><span class="tok" style="--c:#2E5EAA">2</span><span class="tok" style="--c:#2E5EAA">1</span>
       <span class="tok down" style="--c:#E0619E"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E0619E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E0619E"/></svg>BOO!</span>
@@ -88,9 +94,10 @@ h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,
   </aside>
 
   <main class="main">
-    <p class="kicker">A party game for 4–8 players</p>
+    <div class="mast"><span class="t">Boo Who?</span><span class="k">Party game · 4–8 players · 15 min</span></div>
     <h1>A hidden-role game where <em>everyone knows but you!</em></h1>
     <p class="pitch">Your role card stands facing the table, so you can read every card except your own. Each round, everyone puts Boos on each other, then everyone runs or stays at the same moment. A Boo is a point for you if you call it right, and a payout for whoever put it there if you call it wrong.</p>
+    <p class="fans">For fans of <b>Scape Goat</b> and <b>Dead Last</b></p>
 
     <div class="strip">
       <div class="panel p1">
@@ -101,7 +108,7 @@ h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,
             <div class="mini"><span class="tok" style="--c:#2E9E5B">3</span><span class="tok" style="--c:#E0619E">2</span><span class="tok" style="--c:#E8692E">1</span></div>
           </div>
         </div>
-        <p>Everyone puts a 3, a 2 and a 1 on three other players, all at once. Pile Boos on the Living, or bluff a Ghost into running.</p>
+        <p>Everyone puts a 3, a 2 and a 1 on three other players at once. Pile Boos on the Living, or bluff a Ghost into running.</p>
       </div>
       <div class="panel p2">
         <span class="cap">Run or stay?</span>
@@ -119,17 +126,22 @@ h1 em{font-style:italic;color:var(--living);text-shadow:0 3px 0 rgba(156,122,60,
             <span class="badge">Scared to death</span>
           </div>
         </div>
-        <p>Living, and you stayed? The 3, 2 and 1 on you pay 6 points to the players who put them there. Had you run, they'd be 3 points for you.</p>
+        <p>Living, but you stayed? The Boos on you pay 6 points to whoever put them there. Run, and they're 3 points for you.</p>
       </div>
     </div>
 
-    <div class="facts">
-      <div><b>4–8</b><span>players</span></div>
-      <div><b>15 min</b><span>three rounds</span></div>
-      <div><b>17</b><span>cards, 8 stands, in a tuck box</span></div>
+    <div class="foot">
+      <div>
+        <div class="facts">
+          <div><b>4–8</b><span>players</span></div>
+          <div><b>15 min</b><span>three rounds</span></div>
+          <div><b>17</b><span>cards, 8 stands, in a tuck box</span></div>
+        </div>
+        <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser demo with a tutorial.</p>
+        <p class="contact"><b>Darren Don</b> &nbsp;What's Good Board Games<br>darren@whatsgoodboardgames.com</p>
+      </div>
+      <div class="qr"><img src="/games/boo-who/img/qr.svg" alt="QR code linking to darrendon.github.io/games/boo-who"><span>Play it now</span></div>
     </div>
-    <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser version with a tutorial and bots at <u>darrendon.github.io/games/boo-who</u></p>
-    <div class="contact"><span><b>Darren Don</b> &nbsp;What's Good Board Games</span><span>darren@whatsgoodboardgames.com</span></div>
   </main>
 </div>
 <script>
