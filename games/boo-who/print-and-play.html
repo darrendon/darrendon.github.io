@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Boo Who? — print and play</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Source for boo-who-print-and-play.pdf (and boo-who-rules.pdf, its first three pages):
+   print at US Letter portrait, no margins, backgrounds on.
+   The look follows the deck box and the sell sheet: night violet, a gold frame, cream paper,
+   Spectral titles, IM Fell English small caps for labels, Atkinson Hyperlegible for reading.
+   Every printable piece keeps the size and position of the earlier kit, so it still assembles:
+   role and scoring cards 2.5 x 3.5 in on a 3 x 3 grid, Boos 83.76 pt across, stands 56 x 50 mm with a 52 x 15 mm fin.
+   Nothing on any page overlaps anything else. */
+@font-face{font-family:"Atkinson Hyperlegible";src:url("/assets/fonts/atkinson-hyperlegible-400.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("/assets/fonts/atkinson-hyperlegible-700.woff") format("woff");font-weight:700;font-style:normal;font-display:swap}
+@page{size:8.5in 11in;margin:0}
+:root{--violet:#2B2856;--violet-hi:#3A3570;--night:#1B1830;--gold:#D8B46A;--gold-d:#9C7A3C;--cream:#F4E7C6;--paper:#FBF7EE;--ink:#211E3D;--soft:#5F5A74;--line:#E2D6B8;
+  --living:#D9662B;--haunt:#5B5F97;--death:#3B3552;--spook:#B07C1E;--r1:#B8603D;--r2:#2A2856;--r3:#6A3590;
+  --title:Spectral,Georgia,serif;--caps:"IM Fell English SC",Georgia,serif;--body:"Atkinson Hyperlegible","Instrument Sans",system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:var(--paper);position:relative;overflow:hidden;color:var(--ink);
+  font-family:var(--body);font-size:9.7pt;line-height:1.42;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:always;break-after:page}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none}}
+b,strong{font-weight:700}
+p{margin:0 0 .075in}
+ul,ol{margin:0 0 .08in;padding-left:.2in}
+li{margin-bottom:.035in}
+li::marker{color:var(--gold-d)}
+ol li::marker{font-family:var(--title);font-weight:700;color:var(--violet)}
+
+/* lattice from the card back and box */
+.lattice{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38'><g fill='none' stroke='%23B89A5E' stroke-opacity='.4' stroke-width='.8'><path d='M19 7 L31 19 L19 31 L7 19 Z'/></g><circle cx='19' cy='19' r='1.1' fill='%23B89A5E' fill-opacity='.45'/></svg>");background-size:26px 26px}
+
+/* ---------- rules pages */
+.rules{padding:0;font-size:10.6pt;line-height:1.45}
+.rules p{margin-bottom:.09in}
+.rules li{margin-bottom:.05in}
+.rules .body{position:absolute;left:.6in;right:.6in;top:.86in;bottom:.78in}
+.rules.first .body{top:2.62in}
+.runhead{position:absolute;left:0;right:0;top:0;height:.5in;background:var(--violet);border-bottom:3px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 .6in}
+.runhead .t{font:700 15pt/1 var(--title);color:var(--cream)}
+.runhead .k{font:12pt/1 var(--caps);letter-spacing:.07em;color:var(--gold)}
+.foot{position:absolute;left:.6in;right:.6in;bottom:.4in;display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--violet);padding-top:5px;
+  font:10.5pt/1 var(--caps);letter-spacing:.05em;color:var(--soft)}
+.foot b{font-weight:400;color:var(--violet)}
+
+.hero{position:absolute;left:0;right:0;top:0;height:2.3in;background-color:var(--violet);border-bottom:4px solid var(--gold);overflow:hidden}
+.hero::after{content:"";position:absolute;inset:.16in;border:1.5px solid var(--gold);border-radius:10px;pointer-events:none}
+.hero .txt{position:absolute;left:.6in;top:.42in;width:4.2in}
+.hero .kick{white-space:nowrap;font:12pt/1 var(--caps);letter-spacing:.08em;color:var(--gold)}
+.hero h1{margin:.08in 0 0;font:700 52pt/.95 var(--title);letter-spacing:-.01em;color:var(--cream);text-shadow:0 4px 0 var(--gold-d)}
+.hero .tag{margin:.16in 0 0;font:italic 13.5pt/1.25 "IM Fell English",Georgia,serif;color:#E3DCF0}
+.hero .cards{position:absolute;right:.55in;top:.34in;display:flex;gap:.16in;align-items:flex-end}
+.hero .cards figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:.06in}
+.hero .cards img{width:.95in;height:1.33in;display:block;border-radius:.055in;box-shadow:0 0 0 1.5px var(--gold-d),4px 5px 0 rgba(0,0,0,.35)}
+.hero .cards .mid img{width:1.06in;height:1.484in}
+.hero .cards .l{transform:rotate(-4deg)} .hero .cards .r{transform:rotate(4deg)}
+.hero .cards figcaption{font:italic 12pt/1 "IM Fell English",Georgia,serif;color:var(--gold)}
+
+h2{font:700 18pt/1.1 var(--title);color:var(--violet);margin:.22in 0 .08in;padding-bottom:3px;border-bottom:1.5px solid var(--gold)}
+h2:first-child{margin-top:0}
+h3{font:14pt/1.1 var(--caps);letter-spacing:.04em;color:var(--gold-d);margin:.1in 0 .05in}
+.pagetitle{font:700 30pt/1 var(--title);color:var(--violet);margin:0;text-shadow:0 3px 0 var(--gold)}
+.sub{margin:.09in 0 .2in;color:var(--soft);font-size:10.8pt}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.32in}
+.small{font-size:9.6pt;color:var(--soft)}
+.note{border-left:3px solid var(--gold);padding:.04in 0 .04in .1in;font-size:9.8pt;color:var(--soft);margin:.04in 0 .08in}
+
+.faces{border:1.5px solid var(--violet);border-radius:8px;background:#fff;box-shadow:3px 3px 0 var(--gold);padding:.12in .14in .1in;margin-bottom:.14in}
+.faces h3{margin-top:0}
+.faces .pair{display:flex;justify-content:space-around;margin:.06in 0 .06in}
+.faces figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:.05in;font-size:8.8pt;color:var(--soft)}
+.stand{display:flex;flex-direction:column;align-items:center}
+.stand img{width:.8in;height:1.12in;display:block;border-radius:.04in;box-shadow:0 0 0 1px var(--gold-d)}
+.stand i{display:block;width:1.02in;height:.11in;background:var(--violet);border-radius:3px 3px 1px 1px;border-top:1.5px solid var(--gold)}
+.stand.mine i{height:.38in;width:.82in;border-radius:4px;display:grid;place-items:center;font:700 7pt/1 var(--title);font-style:normal;color:var(--cream);background:#2E5EAA;border:1.5px solid rgba(255,255,255,.7)}
+.faces .cap{text-align:center;font-weight:700;color:var(--ink);font-size:9.4pt;margin:0}
+
+table{border-collapse:collapse;width:100%}
+.deck{margin:.08in 0 .08in;font-size:10.4pt}
+.deck th,.deck td{padding:5px 6px;text-align:center}
+.deck th{font:700 11.5pt/1.1 var(--title);letter-spacing:.03em;color:var(--cream);background:var(--violet);font-weight:400}
+.deck th:first-child,.deck td:first-child{text-align:left}
+.deck td{border-bottom:1px solid var(--line)}
+.deck tr.lv td:first-child{color:var(--living);font-weight:700}
+.deck tr.gh td:first-child{color:var(--haunt);font-weight:700}
+.deck td{font-family:var(--title);font-weight:700;font-size:11pt}
+.deck td:first-child{font-family:var(--body);font-size:10.4pt}
+.deck th:first-child{font:13pt/1.1 var(--caps)}
+
+/* step panels, as on the sell sheet */
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.18in}
+.panel{border:2px solid var(--violet);border-radius:8px;position:relative;display:flex;flex-direction:column;background:#fff;box-shadow:3px 3px 0 var(--gold)}
+.panel .art{height:1.7in;position:relative;overflow:hidden;border-bottom:2px solid var(--violet);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;gap:.12in;padding-top:.16in}
+.panel .cap{position:absolute;top:-2px;left:-2px;z-index:2;background:var(--violet);color:var(--gold);border-radius:8px 0 8px 0;padding:4px 10px 3px;font:12.5pt/1 var(--caps);letter-spacing:.05em}
+.panel .cap b{font:700 11pt/1 var(--title);color:var(--cream);margin-right:6px}
+.panel p{margin:0;padding:.11in .13in .13in;font-size:10.3pt;line-height:1.4}
+.a1{background:#ECE6F7}.a2{background:#F6E8D6}.a3{background:#E8E3F2}
+.deal{display:flex;gap:.1in;align-items:flex-end}
+.deal img{width:.62in;height:.868in;border-radius:.03in;box-shadow:0 0 0 1px var(--gold-d),2px 2px 0 rgba(0,0,0,.2);display:block}
+.deal img:nth-child(1){transform:rotate(-7deg)} .deal img:nth-child(3){transform:rotate(7deg)}
+.col{display:flex;flex-direction:column;align-items:center;gap:.08in}
+.tk{width:.3in;height:.3in;border-radius:50%;display:grid;place-items:center;font:800 11pt/1 Archivo,sans-serif;background:#FBF5E8;color:var(--c);box-shadow:inset 0 0 0 2.2px var(--c)}
+.tk.down{background:var(--c);color:#fff;font-size:4.6pt;letter-spacing:.04em;align-content:center;gap:1px;box-shadow:inset 0 0 0 1.3px rgba(255,255,255,.65)}
+.tk.down svg{width:44%;height:auto}
+.tk.big{width:.58in;height:.58in;font-size:21pt;box-shadow:inset 0 0 0 3px var(--c)}
+.tk.big.down{font-size:7.5pt;box-shadow:inset 0 0 0 2px rgba(255,255,255,.65)}
+.minis{display:flex;gap:.06in}
+.bubble{font:700 12pt/1 var(--title);color:var(--violet);background:#fff;border:1.5px solid var(--violet);border-radius:14px;padding:6px 14px;position:relative}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:9px;height:9px;background:#fff;border-right:1.5px solid var(--violet);border-bottom:1.5px solid var(--violet);transform:translateX(-50%) rotate(45deg)}
+.choice{display:flex;gap:.08in;margin-top:.04in}
+.chip{display:inline-block;font:700 9.2pt/1 var(--title);color:#fff;border-radius:99px;padding:4px 10px 4px;text-align:center;white-space:nowrap}
+.c-esc{background:var(--living)}.c-haunt{background:var(--haunt)}.c-dead{background:var(--death)}.c-spook{background:var(--spook)}
+
+.score{margin:.06in 0 .16in;font-size:10.3pt}
+.score th{font:11.5pt/1.1 var(--caps);letter-spacing:.03em;color:var(--gold-d);text-align:left;font-weight:400;border-bottom:1.5px solid var(--violet);padding:3px 6px}
+.score td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.score tr:nth-child(even) td{background:#F5EFE1}
+.who{display:flex;align-items:center;gap:6px;font-weight:700}
+.who img{width:.2in;height:.28in;border-radius:2px;box-shadow:0 0 0 .7px var(--gold-d);display:block}
+.score .chip{width:1.2in;font-size:10pt;padding:5px 0}
+.callout{border:1.5px solid var(--violet);border-radius:8px;background:#fff;box-shadow:3px 3px 0 var(--gold);padding:.13in .16in .08in}
+.callout.cream{background:#F6EBD0;border-color:var(--gold-d);box-shadow:3px 3px 0 var(--violet)}
+.callout h3{margin-top:0}
+
+.n1 .art{background:linear-gradient(#F7DDBC,#F3E8D6)}
+.n2 .art{background:var(--violet)}
+.n3 .art{background:#E8E3F2}
+.n1 .cap{background:var(--r1);color:#fff}.n2 .cap{background:var(--r2)}.n3 .cap{background:var(--r3);color:#fff}
+.n1 .cap b,.n3 .cap b{color:#fff}
+.flip{display:flex;align-items:center;gap:.1in}
+.flip figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:.06in;font:10pt/1 var(--caps);color:var(--gold)}
+.flip .arrow{font:700 16pt/1 var(--title);color:var(--gold);margin-bottom:.16in}
+.ask{margin:0;padding-left:.22in}
+.ask li{margin-bottom:.05in}
+.play{display:grid;grid-template-columns:auto 1fr;gap:.16in;align-items:center;margin-top:.26in;padding:.12in .16in;background:var(--violet);border-radius:8px;color:var(--cream);box-shadow:3px 3px 0 var(--gold)}
+.play img{width:.82in;height:.82in;display:block;background:#fff;border-radius:4px;padding:3px}
+.play b{display:block;font:700 13pt/1.15 var(--title);color:var(--cream);margin-bottom:3px}
+.play span{font-size:10.2pt;color:#E3DCF0}
+.play u{text-decoration:none;color:var(--gold);font-weight:700}
+
+/* ---------- component sheets */
+.sheet{background:#fff}
+.sheet .head{position:absolute;left:.6in;right:.6in;top:.42in}
+.sheet .head h2{border:0;margin:0;padding:0;font-size:19pt}
+.sheet .head p{margin:.04in 0 0;color:var(--soft);font-size:9.4pt}
+.grid{position:absolute;left:36pt;top:18pt;display:grid;grid-template-columns:repeat(3,180pt);grid-template-rows:repeat(3,252pt)}
+.cell{width:180pt;height:252pt;position:relative}
+.cell img{width:100%;height:100%;display:block;border-radius:10pt}
+.cell.ghost{background:#272A55}.cell.living{background:#41222F}.cell.back{background:#2A2850}
+.marks{position:absolute;left:0;top:0;width:8.5in;height:11in;pointer-events:none}
+.capline{position:absolute;top:779pt;height:12pt;width:168pt;text-align:center;font:7.4pt/12pt var(--body);color:var(--soft);white-space:nowrap}
+.capline b{color:var(--violet)}
+
+/* scoring card, 2.5 x 3.5 in, cut edge = cell edge */
+.sc{position:absolute;inset:0;background-color:var(--violet);color:var(--ink);overflow:hidden}
+.sc::before{content:"";position:absolute;inset:9pt;border:1.4pt solid var(--gold);border-radius:6pt}
+.sc::after{content:"";position:absolute;inset:12.5pt;border:.6pt solid rgba(216,180,106,.55);border-radius:4pt}
+.sc .hd{position:absolute;left:0;right:0;top:18pt;text-align:center;font:700 19pt/1 var(--title);color:var(--cream);text-shadow:0 2px 0 var(--gold-d)}
+.sc .in{position:absolute;left:16pt;right:16pt;top:45pt;bottom:16pt;background:var(--paper);border-radius:4pt;padding:9pt 9pt 7pt;font-size:8pt;line-height:1.25;display:flex;flex-direction:column}
+.sc .lb{font:10.5pt/1 var(--caps);letter-spacing:.04em;color:var(--gold-d);margin:0 0 4pt}
+.sc .chips{display:grid;grid-template-columns:1fr 1fr;gap:4pt;margin-bottom:4pt}
+.sc .chip{font-size:7.6pt;padding:3.5pt 0 3pt;width:auto}
+.sc .rule{font-weight:700;margin:0 0 8pt;font-size:8.2pt}
+.sc .rounds{border-top:1px solid var(--line);padding-top:6pt;display:grid;grid-template-columns:auto auto 1fr;gap:4.5pt 4pt;align-items:center;font-size:7.6pt;white-space:nowrap}
+.sc .rounds i{width:11pt;height:11pt;border-radius:50%;display:grid;place-items:center;font:700 7pt/1 var(--title);font-style:normal;color:#fff}
+.sc .rounds b{font:700 8.4pt/1 var(--title);color:var(--violet)}
+.sc .rounds span{color:var(--soft);text-align:right}
+.sc .ft{margin-top:auto;text-align:center;font:7.4pt/1 var(--body);color:var(--soft);white-space:nowrap}
+
+/* Boos */
+.boos{position:absolute;left:0;top:0;width:612pt;height:792pt}
+.boo{position:absolute;width:83.76pt;height:83.76pt}
+.boo svg{position:absolute;left:-1pt;top:-1pt;width:85.76pt;height:85.76pt;overflow:visible}
+.cname{position:absolute;width:120pt;margin-left:-60pt;text-align:center;font:8.6pt/11pt var(--caps);letter-spacing:.08em;color:var(--soft)}
+.tip{position:absolute;left:.6in;right:.6in;top:6.95in;display:grid;grid-template-columns:repeat(3,1fr);gap:.18in}
+.tip div{border-top:2px solid var(--gold);padding-top:.07in;font-size:9.2pt;color:var(--soft)}
+.tip b{display:block;font:700 11pt/1.2 var(--title);color:var(--violet);margin-bottom:2px}
+
+/* stands */
+.stands{position:absolute;left:0;top:0;width:612pt;height:792pt}
+.stands svg{position:absolute;overflow:visible}
+.build{position:absolute;left:405.2pt;top:491.5pt;width:175.7pt;height:195.6pt;border:1.5px solid var(--violet);border-radius:8px;background:#F6EFE0;box-shadow:3px 3px 0 var(--gold);padding:7pt 10pt;font-size:8.1pt;line-height:1.3;overflow:hidden}
+.build h3{margin:0 0 2pt;font-size:12pt}
+.build svg{display:block;height:116pt;width:auto;margin:0 auto 3pt}
+
+/* scoresheet */
+.ss{position:absolute;left:.6in;right:.6in;top:.42in}
+.ss h2{border:0;margin:0;padding:0;font-size:19pt}
+.ss .sub{margin:.03in 0 .1in}
+.grid-t{font-size:9pt;table-layout:fixed}
+.grid-t th{font:10.5pt/1.05 var(--caps);letter-spacing:.02em;font-weight:400;color:var(--cream);background:var(--violet);border:1px solid #4A4680;padding:4px 5px;text-align:left;vertical-align:bottom}
+.grid-t th.g{text-align:center;font:700 10.5pt/1 var(--title);color:var(--gold);background:var(--night)}
+.grid-t td{border:1px solid #D5CBB2;height:.32in;padding:2px 5px}
+.grid-t td.tot{background:#F3EAD3}
+.grid-t td.rd{font:700 9.4pt/1 var(--title);color:var(--violet);background:#F7F2E6}
+.grid-t th small{display:block;font:8pt/1.1 var(--body);color:#CFC6E6;letter-spacing:0}
+</style>
+</head>
+<body>
+
+<!-- ===================== RULES 1 ===================== -->
+<div class="page rules first">
+  <div class="hero lattice">
+    <div class="txt">
+      <div class="kick">Bluffing party game · 4–8 players · about 15 minutes</div>
+      <h1>Boo Who?</h1>
+      <p class="tag">Everyone knows what you are but you.</p>
+    </div>
+    <div class="cards">
+      <figure class="l"><img src="/games/boo-who/img/card-ghost.webp" alt="A Ghost role card"></figure>
+      <figure class="mid"><img src="/games/boo-who/img/card-back.webp" alt="The back of a role card"><figcaption>…is it me?</figcaption></figure>
+      <figure class="r"><img src="/games/boo-who/img/card-living.webp" alt="A Living role card"></figure>
+    </div>
+  </div>
+  <div class="body">
+    <div class="cols">
+      <div>
+        <h2>How it works</h2>
+        <p>Everyone at the party is either a <b>Ghost</b> or a <b>Living</b> guest. The house belongs to the Ghosts.</p>
+        <p>Your role card faces outward, so <b>you can see everyone's card except your own.</b></p>
+        <p>Each round, players put <b>Boo</b> tokens on each other. Then everyone decides at the same moment: <b>run or stay?</b> The Living should run. Ghosts should stay.</p>
+        <p>Guess right and you score points. Guess wrong and the players who booed you score instead.</p>
+        <p>You play three rounds: <b>Dusk</b>, <b>Midnight</b> and the <b>Witching Hour</b>. Most points wins.</p>
+        <h2>What's in the box</h2>
+        <ul>
+          <li><b>17 role cards:</b> 9 Ghost and 8 Living</li>
+          <li><b>24 Boo tokens:</b> a 3, a 2 and a 1 in each of 8 colors</li>
+          <li><b>8 card stands,</b> each made of two cardboard pieces</li>
+          <li><b>8 scoring cards,</b> plus a scoresheet</li>
+        </ul>
+        <p class="note">For this print-and-play, glue the stand page onto thin card (a cereal box works) before cutting. Print the card backs twice and glue one behind each role card, so every card looks the same from behind.</p>
+      </div>
+      <div>
+        <div class="faces">
+          <h3>Your card faces out</h3>
+          <div class="pair">
+            <figure><div class="stand"><img src="/games/boo-who/img/card-back.webp" alt=""><i></i></div>What you see</figure>
+            <figure><div class="stand"><img src="/games/boo-who/img/card-ghost.webp" alt=""><i></i></div>What everyone else sees</figure>
+          </div>
+          <p class="cap">Never look at your own card until the end of the round.</p>
+        </div>
+        <h2>Setup</h2>
+        <ol>
+          <li>Everyone picks a color and takes that color's stand and three Boos (3, 2 and 1), plus a scoring card. <b>With 4 players, put your 1 back in the box.</b></li>
+          <li>Make the role deck using the table below: one Living card for each player, plus some Ghosts.</li>
+        </ol>
+        <table class="deck">
+          <tr><th>Players</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
+          <tr class="lv"><td>Living cards</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
+          <tr class="gh"><td>Ghost cards</td><td>6</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+        </table>
+        <p class="small">The deck always has one or two more Ghosts than Living, but any mix can turn up at the table, including no Living at all.</p>
+        <h2>Table talk</h2>
+        <p>Chat all you like, but never tell anyone what their card says, and don't plan out loud who to boo.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>Rules · 1 of 3</span></div>
+</div>
+
+<!-- ===================== RULES 2 ===================== -->
+<div class="page rules">
+  <div class="runhead"><span class="t">Boo Who?</span><span class="k">How to play</span></div>
+  <div class="body">
+    <h1 class="pagetitle">Playing a round</h1>
+    <p class="sub">Everyone acts at the same moment, so nobody waits for a turn.</p>
+    <div class="strip">
+      <div class="panel">
+        <span class="cap"><b>1</b>Deal</span>
+        <div class="art a1"><div class="deal"><img src="/games/boo-who/img/card-back.webp" alt=""><img src="/games/boo-who/img/card-back.webp" alt=""><img src="/games/boo-who/img/card-back.webp" alt=""></div></div>
+        <p>Shuffle the role cards and deal one face down to each player. Without looking at it, set yours on your stand facing out, so everyone else can see it. Set the extra cards aside unseen.</p>
+      </div>
+      <div class="panel">
+        <span class="cap"><b>2</b>Boo!</span>
+        <div class="art a2"><div class="col">
+          <div class="minis"><span class="tk big" style="--c:#2E5EAA">3</span><span class="tk big" style="--c:#2E5EAA">2</span><span class="tk big" style="--c:#2E5EAA">1</span></div>
+          <span class="bubble" style="font-size:10.5pt">3, 2, 1, boo!</span></div></div>
+        <p>Secretly pick one of your Boos. Count “3, 2, 1, boo!” and everyone places theirs in front of another player at once. Do this three times (twice at 4 players): a different player each time, never yourself.</p>
+      </div>
+      <div class="panel">
+        <span class="cap"><b>3</b>Run or stay?</span>
+        <div class="art a3"><div class="col"><span class="bubble">boo who?</span><div class="choice"><span class="chip c-esc">me = run</span><span class="chip c-haunt">table = stay</span></div></div></div>
+        <p>Everyone makes a fist. Count “3, 2, 1, boo who?” and everyone answers at once: point at yourself to <b>run</b>, or point at the table to <b>stay</b>.</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top:.26in">Flip your card and score</h2>
+    <p class="small" style="margin-bottom:.02in">Everyone looks at their own card to see what they really were.</p>
+    <table class="score">
+      <tr><th>You were</th><th>and you…</th><th></th><th>You score</th><th>Each player who booed you scores</th></tr>
+      <tr><td><span class="who"><img src="/games/boo-who/img/card-living.webp" alt="">Living</span></td><td>ran</td><td><span class="chip c-esc">Escaped</span></td><td><b>1 point per Boo on you</b></td><td>—</td></tr>
+      <tr><td><span class="who"><img src="/games/boo-who/img/card-ghost.webp" alt="">Ghost</span></td><td>stayed</td><td><span class="chip c-haunt">Haunting</span></td><td><b>1 point per Boo on you</b></td><td>—</td></tr>
+      <tr><td><span class="who"><img src="/games/boo-who/img/card-living.webp" alt="">Living</span></td><td>stayed</td><td><span class="chip c-dead">Scared to death</span></td><td>nothing</td><td><b>the number on their Boo</b></td></tr>
+      <tr><td><span class="who"><img src="/games/boo-who/img/card-ghost.webp" alt="">Ghost</span></td><td>ran</td><td><span class="chip c-spook">Spooked</span></td><td>nothing</td><td><b>the number on their Boo</b></td></tr>
+    </table>
+
+    <div class="cols">
+      <div>
+        <h3>In short</h3>
+        <p><b>Guess right:</b> score 1 point for each Boo in front of you, whatever the numbers.</p>
+        <p><b>Guess wrong:</b> you score nothing, and each player who booed you scores the number on their Boo.</p>
+        <p class="small">Then return every Boo to its owner and shuffle the role cards back together.</p>
+      </div>
+      <div class="callout">
+        <h3>Example</h3>
+        <p>Sam has three Boos in front of him: a 3, a 2 and a 1. He stays, flips his card… and he's Living. He's <b>scared to death</b>, so the three players who booed him score 3, 2 and 1.</p>
+        <p>If Sam had run, he would have <b>escaped</b> and scored 3 points himself: one for each Boo.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>Rules · 2 of 3</span></div>
+</div>
+
+<!-- ===================== RULES 3 ===================== -->
+<div class="page rules">
+  <div class="runhead"><span class="t">Boo Who?</span><span class="k">How to play</span></div>
+  <div class="body">
+    <h1 class="pagetitle">One long night</h1>
+    <p class="sub">A game is three rounds. Each one plays the same way, with one twist.</p>
+    <div class="strip">
+      <div class="panel n1">
+        <span class="cap"><b>1</b>Dusk</span>
+        <div class="art"><svg viewBox="0 0 160 90" width="176" height="99" aria-hidden="true">
+          <clipPath id="sky"><rect x="0" y="0" width="160" height="66"/></clipPath>
+          <g clip-path="url(#sky)"><circle cx="80" cy="66" r="30" fill="#E3A23A"/><circle cx="80" cy="66" r="22" fill="#EDB85A"/></g>
+          <g stroke="#E3A23A" stroke-width="1.4" stroke-linecap="round" opacity=".55"><line x1="44" y1="76" x2="116" y2="76"/><line x1="58" y1="83" x2="102" y2="83"/></g>
+          <line x1="14" y1="66" x2="146" y2="66" stroke="#B8603D" stroke-width="3" stroke-linecap="round"/>
+          <path d="M34 30 q5 -5 10 0 q5 -5 10 0" fill="none" stroke="#5F5A74" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M112 20 q4 -4 8 0 q4 -4 8 0" fill="none" stroke="#5F5A74" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+        <p>A normal round. Get a feel for the table and who likes to boo whom.</p>
+      </div>
+      <div class="panel n2">
+        <span class="cap"><b>2</b>Midnight</span>
+        <div class="art"><div class="flip">
+          <figure><span class="tk big down" style="--c:#2E9E5B"><svg viewBox="0 0 100 110"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#2E9E5B"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#2E9E5B"/></svg>BOO!</span>face down</figure>
+          <span class="arrow">→</span>
+          <figure><span class="tk big" style="--c:#2E9E5B">2</span>flip at the end</figure>
+        </div></div>
+        <p>Place your Boos <b>face down</b>. You can see who booed you, but not which number they used. Flip all Boos face up after everyone runs or stays, then score as normal.</p>
+      </div>
+      <div class="panel n3">
+        <span class="cap"><b>3</b>Witching Hour</span>
+        <div class="art"><svg viewBox="0 0 70 70" width="80" height="80" aria-hidden="true">
+            <circle cx="35" cy="35" r="31" fill="#fff" stroke="#6A3590" stroke-width="4"/>
+            <g stroke="#2B2856" stroke-width="2" stroke-linecap="round"><line x1="35" y1="8" x2="35" y2="13"/><line x1="62" y1="35" x2="57" y2="35"/><line x1="35" y1="62" x2="35" y2="57"/><line x1="8" y1="35" x2="13" y2="35"/></g>
+            <line x1="35" y1="35" x2="35" y2="14" stroke="#2B2856" stroke-width="3.2" stroke-linecap="round"/><line x1="35" y1="35" x2="35" y2="20" stroke="#6A3590" stroke-width="3.2" stroke-linecap="round"/>
+            <circle cx="35" cy="35" r="3" fill="#2B2856"/></svg>
+          <span class="chip" style="background:var(--r3);font-size:11.5pt;padding:6px 13px">double!</span></div>
+        <p>The last round. <b>Every point is doubled:</b> 2 points per Boo for guessing right, and Boo owners score double the number on their Boo.</p>
+      </div>
+    </div>
+
+    <div class="cols" style="margin-top:.26in">
+      <div>
+        <h2>Winning</h2>
+        <p>After the Witching Hour, add up your points. The highest total wins. If players tie, they share the win.</p>
+        <h2>Tips</h2>
+        <ul>
+          <li>The more Living cards you can see, the more likely it is that you're a Ghost.</li>
+          <li>A pile of Boos can mean “we think you're Living”… or “we hope you panic and run.”</li>
+          <li>Every Boo is a free point for that player if they guess right, so choose with care.</li>
+          <li>Your 3 is best spent on someone likely to guess wrong: a Living guest who can see lots of Living, or a Ghost who can see almost none.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout cream">
+          <h3>After you play</h3>
+          <ol class="ask">
+            <li>Did Midnight feel different from Dusk?</li>
+            <li>Did the Witching Hour feel like a big finish, or did it wipe out the first two rounds?</li>
+            <li>Did choosing between your 3, 2 and 1 feel like a real decision?</li>
+            <li>Did anyone feel they lost just because of the cards they were dealt?</li>
+            <li>Did your stand hold your card steady?</li>
+            <li>Would you play again right away?</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="play">
+      <img src="/games/boo-who/img/qr.svg" alt="QR code linking to darrendon.com/games/boo-who">
+      <div><b>Play it in your browser</b><span>A tutorial and a full night against bots, no download needed: <u>darrendon.com/games/boo-who</u><br>Questions or feedback: darren@darrendon.com</span></div>
+    </div>
+  </div>
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>Rules · 3 of 3</span></div>
+</div>
+
+<div id="sheets"></div>
+
+<script>
+// ---------- shared pieces
+const IMG = '/games/boo-who/img/src/render/';
+const GHOSTSVG = (c) => `<path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="${c}"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="${c}"/>`;
+const COLORS = [
+  ['Red', '#D7263D'], ['Orange', '#E8692E'], ['Yellow', '#D9A514'], ['Green', '#2E9E5B'],
+  ['Teal', '#178A8A'], ['Blue', '#2E5EAA'], ['Purple', '#6A4C93'], ['Pink', '#E0619E']];
+const dark = (hex, k = .84) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * k).toString(16).padStart(2, '0')).join('');
+
+// crop marks at every cut line of the 3 x 3 card grid (points; grid at 36,18, cells 180 x 252)
+const MARKS = (() => {
+  const xs = [36, 216, 396, 576], ys = [18, 270, 522, 774];
+  let d = '';
+  for (const x of xs) d += `M${x} 1V14M${x} 778V791`;
+  for (const y of ys) d += `M19 ${y}H32M580 ${y}H593`;
+  return `<svg class="marks" viewBox="0 0 612 792"><path d="${d}" stroke="#2B2856" stroke-width="0.5" fill="none"/></svg>`;
+})();
+// three caption pieces that sit between the bottom crop marks, never across them
+const caps = (a, b, c) => [a, b, c].map((t, i) => `<div class="capline" style="left:${42 + i * 180}pt">${t}</div>`).join('');
+
+const scoring = () => `<div class="sc"><div class="hd">Scoring</div><div class="in">
+  <div class="lb">Guess right</div>
+  <div class="chips"><span class="chip c-esc">Escaped</span><span class="chip c-haunt">Haunting</span></div>
+  <p class="rule">1 point per Boo on you</p>
+  <div class="lb">Guess wrong</div>
+  <div class="chips"><span class="chip c-dead">Scared to death</span><span class="chip c-spook">Spooked</span></div>
+  <p class="rule">Each Boo on you scores<br>its owner its number</p>
+  <div class="rounds">
+    <i style="background:var(--r1)">1</i><b>Dusk</b><span>normal</span>
+    <i style="background:var(--r2)">2</i><b>Midnight</b><span>Boos face down</span>
+    <i style="background:var(--r3)">3</i><b>Witching Hour</b><span>double points</span>
+  </div>
+  <div class="ft">Ties share the win · 4 players: no 1s</div></div></div>`;
+
+const cell = (kind) => kind === 'score' ? `<div class="cell">${scoring()}</div>`
+  : kind === '' ? '<div class="cell"></div>'
+  : `<div class="cell ${kind}"><img src="${IMG}${kind}.png" alt=""></div>`;
+const cardSheet = (kinds, captions) => `<div class="page sheet"><div class="grid">${kinds.map(cell).join('')}</div>${MARKS}${captions}</div>`;
+
+let html = '';
+html += cardSheet(Array(9).fill('ghost'), caps('<b>Role cards</b> · 9 Ghost', 'Cut on the crop marks.', 'Glue a card back behind each role card.'));
+html += cardSheet([...Array(8).fill('living'), 'score'], caps('<b>Role cards</b> · 8 Living, 1 scoring card', 'Cut on the crop marks.', 'Glue a card back behind each role card.'));
+html += cardSheet([...Array(7).fill('score'), '', ''], caps('<b>Scoring cards</b> · one per player', 'Cut on the crop marks.', 'Scoring cards need no back.'));
+for (let i = 1; i <= 2; i++)
+  html += cardSheet(Array(9).fill('back'), caps(`<b>Card backs</b> · sheet ${i} of 2`, 'Print this page twice.', 'Glue one behind each role card.'));
+
+// ---------- Boos: positions in points, same as the earlier kit; backs mirror the fronts for long-edge duplex
+const BX = [41.28, 126.816, 212.352, 315.888, 401.424, 486.96], BY = [94.2, 189.067, 283.934, 378.802], D = 83.76;
+const front = (n, c) => `<svg viewBox="-1 -1 85.76 85.76"><circle cx="41.88" cy="41.88" r="42.2" fill="${c}"/>
+  <circle cx="41.88" cy="41.88" r="34.2" fill="#FBF5E8"/><circle cx="41.88" cy="41.88" r="30.4" fill="none" stroke="${c}" stroke-width="1.3"/>
+  <text x="41.88" y="56.2" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="41" fill="${c}">${n}</text>
+  <circle cx="41.88" cy="41.88" r="41.88" fill="none" stroke="#211E3D" stroke-opacity=".55" stroke-width=".5"/></svg>`;
+const back = (c) => `<svg viewBox="-1 -1 85.76 85.76"><circle cx="41.88" cy="41.88" r="42.2" fill="${c}"/>
+  <circle cx="41.88" cy="41.88" r="34.2" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.6"/>
+  <g transform="translate(30.4 17) scale(.23)">${GHOSTSVG(c)}</g>
+  <text x="41.88" y="61" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="13.5" letter-spacing=".6" fill="#fff">BOO!</text>
+  <circle cx="41.88" cy="41.88" r="41.88" fill="none" stroke="#211E3D" stroke-opacity=".55" stroke-width=".5"/></svg>`;
+const booPage = (isBack) => {
+  let s = '<div class="boos">';
+  COLORS.forEach(([name, c], i) => {
+    const row = i >> 1; let grp = i & 1; if (isBack) grp = 1 - grp;
+    for (let k = 0; k < 3; k++) {
+      const col = grp * 3 + (isBack ? 2 - k : k);
+      s += `<div class="boo" style="left:${BX[col]}pt;top:${BY[row]}pt">${isBack ? back(c) : front(3 - k, c)}</div>`;
+    }
+    s += `<div class="cname" style="left:${grp ? 443.32 : 168.72}pt;top:${BY[row] + D + .4}pt">${name}</div>`;
+  });
+  return s + '</div>';
+};
+html += `<div class="page sheet"><div class="head"><h2>Boo tokens: fronts</h2><p>Each color has a 3, a 2 and a 1. The backs (next page) show only the color, for Midnight.</p></div>${booPage(false)}
+  <div class="tip"><div><b>Thin card hides the number</b>Glue both pages to thin card before cutting, so nobody can read a face-down Boo through the paper at Midnight.</div>
+  <div><b>Cut on the outline</b>Cut each Boo on its thin outer line. A small trim inside the line does no harm.</div>
+  <div><b>Keep a set together</b>Each player takes one color: a 3, a 2 and a 1. With 4 players, the 1s stay in the box.</div></div>
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>Boo tokens · fronts</span></div></div>`;
+html += `<div class="page sheet"><div class="head"><h2>Boo tokens: backs</h2><p>Print this page on the back of the fronts page (flip on the long edge), or cut out and glue back to back.</p></div>${booPage(true)}
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>Boo tokens · backs</span></div></div>`;
+
+// ---------- card stands, in millimetres: panel 56 x 50 with 6 mm corner notches and a 1 x 7.5 slot; fin 52 x 15
+const MM = 72 / 25.4;
+const PX = [39.5433, 226.6299, 413.7165], PY = [79.0866, 286.0157, 492.9449];
+const panelPath = 'M0 50H27.5V42.5H28.5V50H56V6A6 6 0 0 1 50 0H6A6 6 0 0 1 0 6Z';
+const finPath = 'M0 15H52V11L50 7H47V11H45L36 0H30.5V7.5H29.5V0H10L0 7Z';
+const stand = (name, c, x, y) => {
+  const id = 'lt' + name;
+  return `<svg style="left:${x}pt;top:${y}pt;width:${56 * MM}pt;height:${50 * MM}pt" viewBox="0 0 56 50">
+    <defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M3.5 1.2L5.8 3.5L3.5 5.8L1.2 3.5Z" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width=".22"/></pattern>
+    <clipPath id="c${id}"><path d="${panelPath}"/></clipPath></defs>
+    <path d="${panelPath}" fill="${c}"/>
+    <g clip-path="url(#c${id})"><rect width="56" height="50" fill="url(#${id})"/></g>
+    <rect x="6" y="5" width="44" height="34" rx="1.6" fill="${c}" stroke="#fff" stroke-width=".55"/>
+    <rect x="7.4" y="6.4" width="41.2" height="31.2" rx="1" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".22"/>
+    <g transform="translate(24.2 9.6) scale(.076)">${GHOSTSVG(c)}</g>
+    <text x="28" y="27.6" text-anchor="middle" font-family="Spectral" font-weight="700" font-size="6" fill="#fff">No peeking!</text>
+    <text x="28" y="34" text-anchor="middle" font-family="IM Fell English SC" font-size="3.3" letter-spacing=".25" fill="#fff" fill-opacity=".9">${name}</text>
+    <path d="${panelPath}" fill="none" stroke="#211E3D" stroke-width=".25"/></svg>
+  <svg style="left:${x + 2 * MM}pt;top:${y + 52.5 * MM}pt;width:${52 * MM}pt;height:${15 * MM}pt" viewBox="0 0 52 15">
+    <path d="${finPath}" fill="${dark(c)}" stroke="#211E3D" stroke-width=".25"/>
+    <text x="17" y="11.6" text-anchor="middle" font-family="IM Fell English SC" font-size="3" letter-spacing=".2" fill="#fff" fill-opacity=".85">${name}</text></svg>`;
+};
+let st = '<div class="stands">';
+COLORS.forEach(([name, c], i) => { st += stand(name, c, PX[i % 3], PY[Math.floor(i / 3)]); });
+st += '</div>';
+// side view to scale (1 unit = 1 mm): fin on the table, panel upright through the fin's slot at 30 mm,
+// card foot in the groove at 45-47 mm, leaning back on the panel's top edge
+const buildSvg = `<svg viewBox="-8 -4 76 98" aria-hidden="true">
+  <line x1="-6" y1="90" x2="66" y2="90" stroke="#5F5A74" stroke-width=".6"/>
+  <path transform="translate(0 75)" d="${finPath}" fill="#C0577F" stroke="#211E3D" stroke-width=".35"/>
+  <rect x="29.5" y="40" width="1" height="50" fill="#E0619E" stroke="#211E3D" stroke-width=".3"/>
+  <line x1="46" y1="86" x2="16.8" y2="2" stroke="#2B2856" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="-4" y="70" font-family="IM Fell English SC" font-size="5.6" fill="#5F5A74">you</text>
+  <text x="49" y="70" font-family="IM Fell English SC" font-size="5.6" fill="#5F5A74">table</text>
+  <text x="25" y="16" font-family="IM Fell English SC" font-size="5.2" fill="#2B2856">card</text>
+  <text x="27.5" y="58" text-anchor="end" font-family="IM Fell English SC" font-size="5.2" fill="#9C2F63">panel</text>
+  <text x="14" y="86.6" text-anchor="middle" font-family="IM Fell English SC" font-size="5.2" fill="#fff">fin</text></svg>`;
+html += `<div class="page sheet"><div class="head"><h2>Card stands</h2><p>Print at 100% (actual size). Glue onto thin card, then cut on the black lines, slots included.</p></div>${st}
+  <div class="build"><h3>Build</h3>${buildSvg}<p style="margin:0">Slide the fin's slot into the panel's slot so they cross. Set your card on the fin's front hook, leaning back on the panel's flat top. The owner sees “No peeking!”.</p></div>
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>Card stands · 8 colors</span></div></div>`;
+
+// ---------- scoresheet and game log
+const blank = (n) => Array(n).fill('<td></td>').join('');
+const gameCols = '<th>Dusk</th><th>Midnight</th><th>Witching<small>(double)</small></th><th>Total</th>';
+let ss = `<table class="grid-t"><colgroup><col style="width:17%">${Array(8).fill('<col>').join('')}</colgroup>
+  <tr><th rowspan="2">Player</th><th class="g" colspan="4">Game 1</th><th class="g" colspan="4">Game 2</th></tr><tr>${gameCols}${gameCols}</tr>`;
+for (let r = 0; r < 8; r++) ss += `<tr><td></td><td></td><td></td><td></td><td class="tot"></td><td></td><td></td><td></td><td class="tot"></td></tr>`;
+ss += '</table>';
+const rounds = ['G1 Dusk', 'G1 Midnight', 'G1 Witching', 'G2 Dusk', 'G2 Midnight', 'G2 Witching'];
+let log = `<table class="grid-t"><colgroup><col style="width:13%"><col style="width:8.5%"><col style="width:8%"><col style="width:18%"><col style="width:9%"><col style="width:11%"><col style="width:9%"><col></colgroup>
+  <tr><th>Round</th><th>Players</th><th>Living</th><th>Boos on each Living</th><th>Escaped</th><th>Scared to death</th><th>Spooked</th><th>Notes</th></tr>`;
+for (const r of rounds) log += `<tr><td class="rd">${r}</td>${blank(7)}</tr>`;
+log += '</table>';
+html += `<div class="page sheet"><div class="ss">
+  <h2>Scoresheet</h2><p class="sub">Points in the Witching Hour column are already doubled. Ties share the win.</p>${ss}
+  <h2 style="margin-top:.34in">Game log</h2><p class="sub">One row per round. Most useful: who was Living, did they get out in time, and did any Ghosts get spooked?</p>${log}
+  <p class="note" style="margin-top:.16in">After the game, ask: When did you feel most paranoid? Did anyone feel picked on? Would you play again right now?</p></div>
+  <div class="foot"><b>Boo Who? · by Darren Don</b><span>darrendon.com/games/boo-who</span></div></div>`;
+
+document.getElementById('sheets').innerHTML = html;
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>
