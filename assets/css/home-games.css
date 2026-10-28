@@ -1,0 +1,41 @@
+/* Home page game cards: only the per-game rules the cards use, pulled from each game stylesheet.
+   Regenerate after changing a game skin. */
+/* from dim-sum-rush.css */
+.g-dsr { --g-bg: #FBF4E8; --g-panel: #F3E6CF; --g-panel-hi: #FAF0DD; --g-face: #FFFDF7; --g-red: #A3221B; --g-red-d: #6E120D; --g-gold: #F2C56B; --g-jade: #1F6B4F; --g-ink: #2A1A12; --g-muted: #6B4B32; --g-line: #E2CFAE; --b0: #B07A2A; --b1: #2F5D9E; --b2: #A8462A; --b3: #1F6B4F; --b0d: #8A5A16; --b1d: #234A80; --b2d: #7E3220; --b3d: #154D39; --dsr-title: "Bagel Fat One","Arial Rounded MT Bold",var(--display); }
+@media (prefers-color-scheme: dark){.g-dsr { --g-bg: #1E1611; --g-panel: #2A1F18; --g-panel-hi: #35281E; --g-red: #E5675A; --g-ink: #F4E9DA; --g-muted: #C9AE90; --g-line: #3D2E23; --g-jade: #2E8564; }}
+
+/* from boo-who.css */
+.g-boo { --g-bg: #F7F2E6; --g-panel: #EFE6D0; --g-panel-hi: #FAF6EC; --g-face: #FFFFFF; --g-red: #2B2856; --g-gold: #D8B46A; --g-jade: #2B2856; --g-ink: #211E3D; --g-muted: #5F5A74; --g-line: #E2D6B8; --boo-violet: #2B2856; --boo-violet-hi: #3A3570; --boo-gold: #D8B46A; --boo-gold-d: #9C7A3C; --boo-cream: #F4E7C6; --boo-living: #D9662B; --boo-death: #3B3552; --boo-candle: #E3A23A; --boo-title: "Spectral",Georgia,serif; --boo-caps: "IM Fell English SC",Georgia,serif; }
+@media (prefers-color-scheme: dark){.g-boo { --g-bg: #17152C; --g-panel: #221F40; --g-panel-hi: #2B2856; --g-red: #E6C67E; --g-jade: #2B2856; --g-ink: #F4E7C6; --g-muted: #BDB4D2; --g-line: #38335E; }}
+.g-boo h2, .g-boo h3 { font-family: var(--boo-title); font-weight: 700; font-stretch: 100%; letter-spacing: -0.005em; }
+.feature.g-boo h3 { font-family: var(--boo-title); font-weight: 700; font-stretch: 100%; letter-spacing: -0.01em; color: var(--boo-violet); text-shadow: 0 4px 0 var(--boo-gold); }
+@media (prefers-color-scheme: dark){.feature.g-boo h3 { color: var(--boo-cream); text-shadow: 0 4px 0 var(--boo-gold-d); }}
+.feature.g-boo .feature-art { background: rgb(27, 24, 48); padding: 0px; }
+.feature.g-boo .feature-art img { width: 100%; height: 100%; object-fit: cover; }
+.feature.g-boo .go { color: var(--boo-violet); }
+@media (prefers-color-scheme: dark){.feature.g-boo .go { color: var(--boo-gold); }}
+
+/* from too-many-crooks.css */
+.g-tmc { --g-bg: #E7EBED; --g-panel: #D9E0E3; --g-panel-hi: #F1F4F5; --g-face: #FFFFFF; --g-red: #C23A22; --g-gold: #C9A14F; --g-jade: #1B2228; --g-ink: #1B2228; --g-muted: #56636B; --g-line: #C4CDD2; --tmc-slate: #55646E; --tmc-slate-d: #36424A; --tmc-cream: #F2ECDA; --tmc-hot: #E04B2E; --tmc-gold: #F5D27A; --tmc-display: "Oswald",sans-serif; --tmc-mono: "Courier Prime",monospace; }
+@media (prefers-color-scheme: dark){.g-tmc { --g-bg: #2C363D; --g-panel: #36424A; --g-panel-hi: #435159; --g-red: #FF8A6B; --g-jade: #36424A; --g-ink: #F2ECDA; --g-muted: #C1CAD0; --g-line: #46545D; }}
+.g-tmc h2, .g-tmc h3 { font-family: var(--tmc-display); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.feature.g-tmc h3 { font-family: var(--tmc-display); font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+.feature.g-tmc .feature-art { background: rgb(30, 37, 42); padding: 0px; }
+.feature.g-tmc .feature-art img { width: 100%; height: 100%; object-fit: cover; }
+
+/* from diggers.css */
+.g-dig { --g-bg: #F3EBD7; --g-panel: #E9DDC0; --g-panel-hi: #F8F2E2; --g-face: #FFFDF6; --g-red: #A8452D; --g-gold: #C9A14F; --g-jade: #24180E; --g-ink: #24180E; --g-muted: #6B5A44; --g-line: #D5C6A3; --dig-title: "Rye",Georgia,serif; --dig-head: "IM Fell English",Georgia,serif; --dig-caps: "IM Fell English SC",Georgia,serif; --dig-label: #FFFBEF; --dig-shadow: #24180E; }
+@media (prefers-color-scheme: dark){.g-dig { --g-bg: #17120D; --g-panel: #221A13; --g-panel-hi: #2C2219; --g-red: #E9917A; --g-jade: #2C2219; --g-ink: #F1E6CF; --g-muted: #BBA888; --g-line: #3A2E22; --dig-label: #231B14; --dig-shadow: #000; }}
+.g-dig h3 { font-family: var(--dig-head); font-weight: 400; font-stretch: 100%; letter-spacing: 0px; }
+.lede { font-size: clamp(19px, 2vw, 23px); line-height: 1.5; max-width: 58ch; margin: 0px; }
+.feature.g-dig h3 { font-family: var(--dig-title); font-weight: 400; letter-spacing: 0.03em; }
+.feature.g-dig .feature-art { background: rgb(23, 18, 13); padding: 0px; }
+.feature.g-dig .feature-art img { width: 100%; height: 100%; object-fit: cover; }
+
+/* from down-for-the-count.css */
+.g-dftc { --g-bg: #FFFCF4; --g-panel: #FFF0BF; --g-panel-hi: #FFF7DC; --g-face: #FFFFFF; --g-red: #245CE8; --g-gold: #FFCC28; --ft-red: #E8303F; --g-jade: #1C1530; --g-ink: #1C1530; --g-muted: #5A5170; --g-line: #E8DDC0; --ft-display: "Archivo","Arial Black",system-ui,sans-serif; --ft-navy: #101A3D; }
+@media (prefers-color-scheme: dark){.g-dftc { --g-bg: #101A3D; --g-panel: #17234F; --g-panel-hi: #1E2C60; --g-red: #7FA6FF; --g-jade: #0B1230; --g-ink: #FFFCF4; --g-muted: #B9C0DC; --g-line: #2A3870; }}
+.g-dftc h2, .g-dftc h3 { font-family: var(--ft-display); font-weight: 900; font-style: italic; font-stretch: 110%; letter-spacing: -0.01em; }
+.feature.g-dftc h3 { font-family: var(--ft-display); font-weight: 900; font-style: italic; font-stretch: 112%; letter-spacing: -0.01em; }
+.feature.g-dftc .feature-art { background: rgb(217, 222, 232); padding: 0px; }
+.feature.g-dftc .feature-art img { width: 100%; height: 100%; object-fit: cover; }

@@ -33,5 +33,12 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - `games/down-for-the-count/play/engine.js` — the rules engine and two bots: `botAction` (quick heuristic, the "Casual" setting) and `smartAction` (the "Tough" setting: samples the hidden cards consistent with public information, plays each candidate out with the heuristic bots and picks the best average finish). It also runs in node, so bot-only matches can be checked headless
 - Fonts are self-hosted Latin subsets (SIL Open Font License): Archivo, Instrument Sans, IBM Plex Mono, Bagel Fat One, Figtree, Oswald, Courier Prime, Rye, IM Fell English, Spectral
 
+- `assets/css/home-games.css` — the per-game rules the homepage cards use, pulled out of the five game stylesheets so the homepage doesn't load all of them. Regenerate it after changing a game skin (it is an exact extract: the homepage renders pixel-identical with the full stylesheets)
+- `games/<game>/<game>-rules.pdf` — the rules pages of each print-and-play kit as their own PDF (Boo Who? pages 1–3, Diggers 1–2, Down for the Count 1–2, Too Many Crooks! 1–3). Rebuild after changing a kit
+- `games/*/img/qr*.svg` — sell-sheet QR codes; each points at `https://darrendon.com/games/<game>/`
+- Homepage card images have `-640` and `-1200` versions served through `srcset`; regenerate them when a card image changes
+- `robots.txt`, `sitemap.xml` (update `lastmod` and add new game pages), canonical and Open Graph tags on every page use `https://darrendon.com`
+- Analytics: GoatCounter, off until `<meta name="goatcounter" content="">` on each page holds the account code. `assets/js/site.js` then loads the counter and records PDF downloads, email clicks and the first click into a playable build. Add `?ref=<publisher>` to links in pitch emails to see who opened them
+
 ## Adding a game
-Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, and add a card to the Games section of `index.html`.
+Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, add a card to the Games section of `index.html`, add the page to `sitemap.xml`, and regenerate `assets/css/home-games.css`.

@@ -7,10 +7,16 @@
 <meta name="description" content="Boo Who? is a bluffing party game for 4–8 players by Darren Don. Your role card faces out: everyone can read it but you. Read the Boos in front of you, then run or stay. 3D mockups, a playable build with a tutorial, a sell sheet and a print-and-play kit.">
 <meta property="og:title" content="Boo Who? · a bluffing party game for 4–8 players">
 <meta property="og:description" content="A bluffing party game where your role card faces the table. 3D mockups, a playable build with a tutorial, and a print-and-play kit. Designed by Darren Don.">
-<meta property="og:image" content="https://darrendon.github.io/games/boo-who/img/og.jpg">
+<meta property="og:image" content="https://darrendon.com/games/boo-who/img/og.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://darrendon.com/games/boo-who/">
+<meta property="og:url" content="https://darrendon.com/games/boo-who/">
+<meta property="og:site_name" content="Darren Don, Board Game Designer">
+<meta name="goatcounter" content="">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/spectral-700.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <link rel="stylesheet" href="/assets/css/site.css">
@@ -44,6 +50,7 @@
       <dl>
         <div class="spec"><dt>Players</dt><dd>4–8</dd></div>
         <div class="spec"><dt>Genre</dt><dd>Bluffing party game · everyone acts at once</dd></div>
+        <div class="spec"><dt>For fans of</dt><dd>Scape Goat · Skull</dd></div>
         <div class="spec"><dt>Length</dt><dd>About 15 minutes · 3 rounds</dd></div>
         <div class="spec"><dt>Components</dt><dd>17 cards · 8 card stands · 24 Boos · tuck box</dd></div>
         <div class="spec"><dt>Status</dt><dd>Print-and-play and browser build with a tutorial</dd></div>
@@ -51,6 +58,7 @@
       <div class="actions">
         <a class="btn red" href="#play">Play in your browser</a>
         <a class="btn" href="/games/boo-who/boo-who-sell-sheet.pdf" download>Sell sheet (PDF)</a>
+        <a class="btn" href="/games/boo-who/boo-who-rules.pdf" download>Rules (PDF)</a>
         <a class="btn" href="/games/boo-who/boo-who-print-and-play.pdf" download>Print and play (PDF)</a>
       </div>
     </div>
@@ -62,7 +70,7 @@
       <figcaption class="bar">
         <div class="views" role="group" aria-label="Choose a view">
           <button type="button" aria-pressed="true" data-src="/games/boo-who/img/render-box.webp" data-alt="Boo Who? mockup on a plum felt table: the violet tuck box, a Ghost card and a Living card standing in their cardboard stands, a candle, and one player's Boos in a row: 3, 2 and 1, plus two BOO! sides.">The box</button>
-          <button type="button" aria-pressed="false" data-src="/games/boo-who/img/render-kit.webp" data-alt="Everything in the box, laid out from above: the tuck box, the Ghost and Living piles, and eight player boards punched out flat, each a No peeking! panel, a stand fin and three Boos in that player's colour.">What's in the box</button>
+          <button type="button" aria-pressed="false" data-src="/games/boo-who/img/render-kit.webp" data-alt="Everything in the box, laid out from above: the tuck box, the Ghost and Living piles, and eight player boards punched out flat, each a No peeking! panel, a stand fin and three Boos in that player's color.">What's in the box</button>
           <button type="button" aria-pressed="false" data-src="/games/boo-who/img/render-table.webp" data-alt="A five-player round seen from above: five cards in their stands around a candle, three Ghosts and two Living, with each player's Boos in a short row in front of their stand.">At the table</button>
           <button type="button" aria-pressed="false" data-src="/games/boo-who/img/render-deluxe.webp" data-alt="A deluxe edition seen from above: five cards in gilt baroque frames around a candle, with Boos in front of each frame.">Deluxe frames</button>
         </div>
@@ -119,14 +127,14 @@
         <figure><img src="/games/boo-who/img/card-ghost.webp" width="500" height="700" loading="lazy" alt="Ghost card: a glowing bedsheet ghost with big dark eyes on a night-blue background, fading into wisps, with a gold GHOST plate."><figcaption><b>Ghost</b>The house is theirs. Ghosts should stay.</figcaption></figure>
         <figure><img src="/games/boo-who/img/card-living.webp" width="500" height="700" loading="lazy" alt="Living card: a kid in a bedsheet costume with hands up, nervous eyes in the eye holes, striped socks and sneakers, with an orange LIVING plate."><figcaption><b>Living</b>A kid in a sheet. The Living should run.</figcaption></figure>
         <figure class="tok-fig">
-          <div class="tokens" role="img" aria-label="Boo tokens: cream number sides showing 3, 2 and 1 in a player's colour, and coloured BOO! sides">
+          <div class="tokens" role="img" aria-label="Boo tokens: cream number sides showing 3, 2 and 1 in a player's color, and colored BOO! sides">
             <span class="tok" style="--c:#2E5EAA">3</span><span class="tok" style="--c:#2E5EAA">2</span><span class="tok" style="--c:#2E5EAA">1</span>
             <span class="tok down" style="--c:#2E5EAA"><svg viewBox="0 0 100 110" aria-hidden="true"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#2E5EAA"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#2E5EAA"/></svg>BOO!</span>
             <span class="tok down" style="--c:#E0619E"><svg viewBox="0 0 100 110" aria-hidden="true"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#E0619E"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#E0619E"/></svg>BOO!</span>
             <span class="tok down" style="--c:#2E9E5B"><svg viewBox="0 0 100 110" aria-hidden="true"><path fill="#fff" d="M10 100V45a40 40 0 0 1 80 0v55q-10-12-20 0t-20 0q-10-12-20 0t-20 0z"/><ellipse cx="36" cy="48" rx="7" ry="10" fill="#2E9E5B"/><ellipse cx="64" cy="48" rx="7" ry="10" fill="#2E9E5B"/></svg>BOO!</span>
             <p class="cap">Number side, and the BOO! side that hides it at Midnight</p>
           </div>
-          <figcaption><b>Boos</b>A 3, a 2 and a 1 in each of eight colours. At four players the 1s stay in the box.</figcaption>
+          <figcaption><b>Boos</b>A 3, a 2 and a 1 in each of eight colors. At four players the 1s stay in the box.</figcaption>
         </figure>
       </div>
 
@@ -136,7 +144,7 @@
           <p class="label" style="margin-bottom:14px">In the box</p>
           <ul>
             <li><b>17</b><span>Role cards, poker-sized: 9 Ghost and 8 Living, with one shared back</span></li>
-            <li><b>8</b><span>Player boards, each a card-sized punchboard: a two-piece stand that slots together, and a 3, 2 and 1 Boo in that player's colour</span></li>
+            <li><b>8</b><span>Player boards, each a card-sized punchboard: a two-piece stand that slots together, and a 3, 2 and 1 Boo in that player's color</span></li>
             <li><b>1</b><span>Rules sheet, folded</span></li>
           </ul>
           <p class="fine">Mockups show a proposed production version. Everything stacks to about 18 mm, so the game fits a standard tuck box. A deluxe edition could swap the cardboard stands for gilt frames with a slot along the top.</p>
@@ -207,7 +215,7 @@
       <div class="copy">
         <p class="label">Print and play</p>
         <h2 id="pp-h">Play it at your table tonight</h2>
-        <p>A 12-page kit: three pages of rules, all 17 role cards with matching backs, scoring cards, Boo tokens, card stands to glue onto cereal-box card, and a scoresheet with a playtest log.</p>
+        <p>A 12-page kit: three pages of rules, all 17 role cards with matching backs, scoring cards, Boo tokens, card stands to glue onto cereal-box card and a scoresheet.</p>
         <div class="actions">
           <a class="btn red" href="/games/boo-who/boo-who-print-and-play.pdf" download>Download PDF</a>
           <a class="btn" href="/games/boo-who/boo-who-print-and-play.pdf" target="_blank" rel="noopener">View</a>
@@ -219,7 +227,8 @@
   <section class="g-sec" id="rules" aria-labelledby="ru-h">
     <div class="wrap">
       <div class="head"><div><p class="label">Rules in brief</p><h2 id="ru-h">How it plays</h2></div>
-        <p>The full rules are in the print-and-play PDF.</p></div>
+        <p>The full rules, on their own or in the print-and-play kit.</p>
+        <div class="actions"><a class="btn red" href="/games/boo-who/boo-who-rules.pdf" download>Download the rules (PDF)</a><a class="btn" href="/games/boo-who/boo-who-rules.pdf" target="_blank" rel="noopener">View</a></div></div>
       <div class="night" aria-label="The three rounds">
         <div class="r1"><b>Dusk</b><span>A normal round.</span></div>
         <div class="r2"><b>Midnight</b><span>Boos go face down until the end of the round.</span></div>
