@@ -40,7 +40,7 @@
     <div>
       <span class="pill">Playable now</span>
       <h1 id="t">Diggers</h1>
-      <p class="tag">A contested-lane climbing card game for 2–4 players. Rival paleontologists claim the dig sites between their camps with finds played from a hand they can never sort. Dig it up before they do.</p>
+      <p class="tag"><b>Your hand is locked.<br>Their finds aren't.</b> A climbing card game for 2–4 rival paleontologists. Win the dig sites between your camps with runs and sets of cards that sit side by side in your hand, and take the bones you're missing off the end of a rival's find.</p>
       <dl>
         <div class="spec"><dt>Players</dt><dd>2–4</dd></div>
         <div class="spec"><dt>Genre</dt><dd>Climbing card game · area control</dd></div>
@@ -63,7 +63,7 @@
         <div class="views" role="group" aria-label="Choose a view">
           <button type="button" aria-pressed="true" data-src="/games/diggers/img/render-hero.webp" data-alt="Diggers mockup: the red game box with a Tyrannosaurus fossil slab on the lid, a whole Stegosaurus laid out as nine cards in three rows of three, and the Como Bluff dig-site board with a suited Brontosaurus run 4-5-6 in front of it.">The box</button>
           <button type="button" aria-pressed="false" data-src="/games/diggers/img/render-table.webp" data-alt="A two-player game in season two: the Como Bluff, Garden Park and Morrison boards in a row, a run 3-4-5-6 and a set of two 9s on the far side, a suited Triceratops run 6-7-8 on the near side, a field guide for each player, the deck and the box.">At the table</button>
-          <button type="button" aria-pressed="false" data-src="/games/diggers/img/render-kit.webp" data-alt="Everything in the box: all 45 cards laid out as five fossil slabs, one per dinosaur in red, orange, green, purple, blue and gold rock, with the box, four field guides and four dig-site markers.">What's in the box</button>
+          <button type="button" aria-pressed="false" data-src="/games/diggers/img/render-kit.webp" data-alt="Everything in the box: all 45 cards laid out as five fossil slabs in red, blue, green, purple and gold rock, with the box, four field guides and the four dig-site boards.">What's in the box</button>
         </div>
         <span class="hint">Rendered mockups</span>
       </figcaption>
@@ -83,20 +83,39 @@
 
   <section class="g-sec" id="overview" aria-labelledby="ov-h">
     <div class="wrap">
-      <div class="head"><div><p class="label">Overview</p><h2 id="ov-h">The pitch</h2></div></div>
-      <div class="pitch">
-        <p class="big">Between every pair of neighboring camps lies a dig site, and it belongs to whoever brought up the finer find there last. You play runs and matched sets from a hand <b>you are never allowed to sort</b>, take bones from the ends of your rivals' finds, and hand a specimen across in return. When anyone's hand runs out, the season closes and every site you hold scores. <b>Three seasons, each worth more than the last.</b></p>
-        <div class="sets">
-          <div class="set"><h3>A locked hand</h3><p>Only cards sitting side by side can be played together, so every turn is a small puzzle. Poaching lets you slot exactly the bone you need into the gap.</p></div>
-          <div class="set"><h3>Every site is shared</h3><p>A find is safe until a neighbor brings a bigger one, and its end bones are theirs to take. The card you send back can be a gift or dead weight.</p></div>
-          <div class="set"><h3>A built-in arc</h3><p>Sites are worth 1, 2, then 4 prestige, so the last season counts for more than the first two together. Season three can still turn the game: in simulated play it overturns the leader about a third of the time.</p></div>
-          <div class="set"><h3>One small deck</h3><p>Two players share three sites; three or four sit in a ring with a site between each pair. Same rules, same box.</p></div>
+      <div class="head"><div><p class="label">Overview</p><h2 id="ov-h">Dig it up before they do</h2></div></div>
+      <p class="lede">It's 1877 and the bone rush is on. Every pair of neighboring camps shares a dig site, and a site belongs to whoever laid the best find there last. You pick up your cards in the order they're dealt and <b>never rearrange them</b>, so the only finds you can play are the ones already sitting side by side. When the bone you need is on a rival's find, you take it. When anyone's hand runs out, the season ends and <b>every site you hold scores</b>.</p>
+      <div class="turn">
+        <div class="tag-card">
+          <span class="cap">Beat the find</span>
+          <div class="art ladder" role="img" aria-label="A run 3-4-5 is beaten by a set of three 6s, which is beaten by a suited Stegosaurus run 3-4-5.">
+            <div class="g"><div><img src="/games/diggers/img/src/tex/face-3.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-14.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-35.jpg" width="500" height="700" loading="lazy" alt=""></div><span>A run</span></div>
+            <div class="g"><div><img src="/games/diggers/img/src/tex/face-6.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-16.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-46.jpg" width="500" height="700" loading="lazy" alt=""></div><span>A set <i>beats it</i></span></div>
+            <div class="g"><div><img src="/games/diggers/img/src/tex/face-23.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-24.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-25.jpg" width="500" height="700" loading="lazy" alt=""></div><span>A suited run <i>beats that</i></span></div>
+          </div>
+          <p>More cards always wins. Same count? A suited run, every bone from one skeleton, beats a set, and a set beats a run. Then the higher total.</p>
         </div>
-      </div>
-      <div class="seasons" aria-label="The three field seasons">
-        <div><b>Season 1</b><span>Each site worth 1 prestige.</span></div>
-        <div><b>Season 2</b><span>Each site worth 2 prestige.</span></div>
-        <div class="last"><b>Season 3</b><span>Each site worth 4, more than the first two together.</span></div>
+        <div class="tag-card">
+          <span class="cap">Or poach</span>
+          <div class="art poach" role="img" aria-label="A rival's 7 and 8 sit on their side of the Garden Park board; the 9 from the end of their find drops to your side.">
+            <span class="lbl their">their side</span>
+            <img class="c c1" src="/games/diggers/img/src/tex/face-27.jpg" alt="" loading="lazy"><img class="c c2" src="/games/diggers/img/src/tex/face-38.jpg" alt="" loading="lazy">
+            <img class="board" src="/games/diggers/img/site-1.webp" width="880" height="160" alt="" loading="lazy">
+            <img class="c lift" src="/games/diggers/img/src/tex/face-9.jpg" alt="" loading="lazy">
+            <span class="lbl yours">your side</span>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M47 30 C 70 26, 86 40, 84 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/><path d="M80 60 L84 67 L89 61" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
+          </div>
+          <p>Take an end bone off a rival's find and slide it anywhere into your hand, then send them a card back. They keep it, or it's out for the season. A good gift can be poison.</p>
+        </div>
+        <div class="tag-card">
+          <span class="cap">Three seasons</span>
+          <div class="art seasons" role="img" aria-label="Sites score 1 prestige in season one, 2 in season two and 4 in season three.">
+            <div class="row"><b>1</b><img src="/games/diggers/img/site-0.webp" width="880" height="160" alt="" loading="lazy"></div>
+            <div class="row"><b>2</b><img src="/games/diggers/img/site-2.webp" width="880" height="160" alt="" loading="lazy"></div>
+            <div class="row last"><b>4</b><img src="/games/diggers/img/site-3.webp" width="880" height="160" alt="" loading="lazy"></div>
+          </div>
+          <p>Each site you hold scores 1 prestige in the first season, 2 in the second and 4 in the last, so the last season is worth more than the first two together.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -105,33 +124,49 @@
     <div class="wrap">
       <div class="head">
         <div><p class="label">Components</p><h2 id="co-h">Five skeletons, nine bones each</h2></div>
-        <p>Every number is a bone. The copies of each number come from four dinosaurs and a pterosaur, each set in its own rock and marked with its own symbol. Species matters once, and it matters a lot: a <em>suited run</em>, every card from one animal, beats a set of the same size. The species also set the deck: always one more species than diggers, so three for two, four for three and all five for four.</p>
+        <p>Every card is a bone from one of five animals, each set in its own rock with its own symbol. Lay a species' nine cards out <b>1 2 3 / 4 5 6 / 7 8 9</b> and the whole skeleton comes out of the slab. Each game uses one more species than there are players.</p>
       </div>
       <div class="species">
         <figure><img src="/games/diggers/img/card-1.webp" width="500" height="700" loading="lazy" alt="The Tyrannosaurus 1 card: red sandstone with the skull, a 1 and a red fang symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 2.2C13.5 3.2 18.6 8.6 18.4 15.2C18.3 18.4 17.2 20.6 15.6 22.2L14.2 20.2L12.6 21.6L11.6 19.4L9.8 20.4C10.6 14.6 10 8 6.5 2.2Z" fill="#d23a2a"/></svg><div>Tyrannosaurus<span>red sandstone · the skull</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-11.webp" width="500" height="700" loading="lazy" alt="The Triceratops 1 card: orange rock with the beak and horns, a 1 and an orange horned-frill symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 16.5C2.5 9.5 6.8 5 12 5C17.2 5 21.5 9.5 21.5 16.5L17.6 16.5L15 22L9 22L6.4 16.5ZM7.2 12.6L4.2 2.6L10 11ZM16.8 12.6L19.8 2.6L14 11ZM10.6 17.4L12 13.6L13.4 17.4Z" fill="#e8862a"/></svg><div>Triceratops<span>orange ironstone · the beak and horns</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-23.webp" width="500" height="700" loading="lazy" alt="The Stegosaurus 3 card: green rock with the four tail spikes, a 3 and a green plates symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" fill="#3fa155"/></svg><div>Stegosaurus<span>green mudstone · the tail spikes</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-32.webp" width="500" height="700" loading="lazy" alt="The Brontosaurus 2 card: purple rock with the small head at the top of the arched neck, a 2 and a purple long-neck symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" fill="#8a55c4"/></svg><div>Brontosaurus<span>purple shale · the head and neck</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-45.webp" width="500" height="700" loading="lazy" alt="The Pteranodon 5 card: golden rock with the long beak, swept-back crest and small body between the wings, a 5 and a yellow crested-head symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0.8 15.4L11.2 11.2L13.4 9.8L21.6 2.2C22.4 1.6 23.4 2.4 22.8 3.2L17.2 10.4C18.6 11.8 18.6 14.6 16.8 16C15.2 17.2 12.8 17.2 10.8 16.8L0.8 15.4ZM14.6 12.2A1.3 1.3 0 1 0 14.61 12.2Z" fill="#e0b52d"/></svg><div>Pteranodon<span>golden limestone · the skull and body</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-11.webp" width="500" height="700" loading="lazy" alt="The Triceratops 1 card: blue slate with the beak and horns, a 1 and a blue horned-frill symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 16.5C2.5 9.5 6.8 5 12 5C17.2 5 21.5 9.5 21.5 16.5L17.6 16.5L15 22L9 22L6.4 16.5ZM7.2 12.6L4.2 2.6L10 11ZM16.8 12.6L19.8 2.6L14 11ZM10.6 17.4L12 13.6L13.4 17.4Z" fill="#3a7fc4"/></svg><div>Triceratops<span>blue slate · the beak and horns</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-23.webp" width="500" height="700" loading="lazy" alt="The Stegosaurus 3 card: green mudstone with the four tail spikes, a 3 and a green plates symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" fill="#3fa155"/></svg><div>Stegosaurus<span>green mudstone · the tail spikes</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-32.webp" width="500" height="700" loading="lazy" alt="The Brontosaurus 2 card: purple shale with the small head at the top of the arched neck, a 2 and a purple long-neck symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" fill="#8a55c4"/></svg><div>Brontosaurus<span>purple shale · the head and neck</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-45.webp" width="500" height="700" loading="lazy" alt="The Pteranodon 5 card: golden limestone with the long beak, swept-back crest and small body between the wings, a 5 and a yellow crested-head symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0.8 15.4L11.2 11.2L13.4 9.8L21.6 2.2C22.4 1.6 23.4 2.4 22.8 3.2L17.2 10.4C18.6 11.8 18.6 14.6 16.8 16C15.2 17.2 12.8 17.2 10.8 16.8L0.8 15.4ZM14.6 12.2A1.3 1.3 0 1 0 14.61 12.2Z" fill="#e0b52d"/></svg><div>Pteranodon<span>golden limestone · the skull and body</span></div></figcaption></figure>
+      </div>
+      <figure class="slab-sheet"><img src="/games/diggers/img/five-skeletons.webp" width="1450" height="1500" loading="lazy" alt="All five slabs assembled, each from nine cards: Tyrannosaurus in red sandstone, Triceratops in blue slate, Stegosaurus in green mudstone, Brontosaurus in purple shale and Pteranodon, wings spread, in golden limestone."></figure>
+
+      <div class="quarries">
+        <div class="q-head">
+          <p class="label" style="margin-bottom:10px">The dig sites</p>
+          <h3>Four real quarries from the Bone Wars</h3>
+          <p>Each site is a wooden board laid between two camps. Your finds go on your side of it. The four boards are named for places where Cope's and Marsh's crews raced each other in the 1870s.</p>
+        </div>
+        <div class="q-grid">
+          <figure><img src="/games/diggers/img/site-0.webp" width="880" height="160" loading="lazy" alt="The Como Bluff dig-site board: a weathered wooden plank with COMO BLUFF burned into it, Wyoming Territory, 1877."><figcaption><b>Como Bluff</b> <span>Wyoming Territory, 1877</span>Railroad men spotted giant bones weathering out of this ridge and wrote to Marsh, who sent crews to dig for years.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-1.webp" width="880" height="160" loading="lazy" alt="The Garden Park dig-site board: a weathered wooden plank with GARDEN PARK burned into it, Colorado, 1877."><figcaption><b>Garden Park</b> <span>Colorado, 1877</span>Cope's and Marsh's crews both opened quarries in this one small valley.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-2.webp" width="880" height="160" loading="lazy" alt="The Morrison dig-site board: a weathered wooden plank with MORRISON burned into it, Colorado, 1877."><figcaption><b>Morrison</b> <span>Colorado, 1877</span>A schoolteacher, Arthur Lakes, found huge bones in the hills here and sent samples to both men.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-3.webp" width="880" height="160" loading="lazy" alt="The Smoky Hill dig-site board: a weathered wooden plank with SMOKY HILL burned into it, Kansas, 1870."><figcaption><b>Smoky Hill</b> <span>Kansas, 1870</span>Marsh's Yale party pulled the first American pterosaur bones out of this chalk.</figcaption></figure>
+        </div>
       </div>
 
-      <div class="slabs">
-        <div>
-          <p class="label" style="margin-bottom:12px">The slabs</p>
-          <p>Lay any species' cards out <b>1 2 3 / 4 5 6 / 7 8 9</b> and the whole skeleton comes out of the rock, curled the way fossils are usually found: head thrown back, tail arched over the hips.</p>
+      <div class="boxart">
+        <figure><img src="/games/diggers/img/box-front.webp" width="600" height="800" loading="lazy" alt="The box lid: a Tyrannosaurus skeleton curled in red sandstone above a cream title plate reading The great bone rush of 1877, Diggers, Rival excavations in three field seasons, a game by Darren Don."><figcaption><b>The box</b>The Tyrannosaurus slab, with the five species symbols across the top</figcaption></figure>
+        <figure><img src="/games/diggers/img/card-back.webp" width="500" height="700" loading="lazy" alt="The card back."><figcaption><b>The card back</b></figcaption></figure>
+        <div class="comp-list">
+          <p class="label" style="margin-bottom:14px">In the box</p>
+          <ul>
+            <li><b>45</b><span>Fossil cards, poker-sized: 1 to 9 in five species, number and symbol in all four corners</span></li>
+            <li><b>4</b><span>Dig-site boards, 5½ inches long</span></li>
+            <li><b>4</b><span>Field guides with the turn and the season values</span></li>
+          </ul>
+          <p class="fine">Mockups show a proposed production version in a small two-piece box.</p>
         </div>
-        <img src="/games/diggers/img/five-skeletons.webp" width="1450" height="1500" loading="lazy" alt="All five slabs assembled, each from nine cards: Tyrannosaurus in red sandstone, Triceratops in orange ironstone, Stegosaurus in green mudstone, Brontosaurus in purple shale and Pteranodon, wings spread, in golden limestone.">
       </div>
 
       <div class="comp">
         <div>
-          <p class="label" style="margin-bottom:14px">In the box</p>
-          <ul>
-            <li><b>45</b><span>Fossil cards, poker-sized: 1 to 9 in five species, with the number and species symbol in all four corners</span></li>
-            <li><b>4</b><span>Field guides: the turn, the three seasons and the tiebreak on one card</span></li>
-            <li><b>4</b><span>Dig-site boards, 5½ inches long, each named for a real Bone Wars quarry: Como Bluff, Garden Park, Morrison and Smoky Hill</span></li>
-          </ul>
-          <p class="fine">Mockups show a proposed production version. One deck of cards and four site boards in a small two-piece box, on the same shelf as Scout and Schotten Totten.</p>
+          <p class="label" style="margin-bottom:14px">Mockups</p>
+          <p class="fine" style="margin-top:0">Rendered from the card, board and box art.</p>
         </div>
         <div class="renders">
           <figure><img src="/games/diggers/img/render-hero.webp" width="1600" height="1000" loading="lazy" alt="The box, a Stegosaurus slab and a dig site with a find."><figcaption>The box</figcaption></figure>
@@ -145,7 +180,7 @@
   <section class="g-sec" id="play" aria-labelledby="pl-h">
     <div class="wrap">
       <div class="head">
-        <div><p class="label">Play</p><h2 id="pl-h">Try it right here</h2></div>
+        <div><p class="label">Play</p><h2 id="pl-h">Pick a camp</h2></div>
         <p>The game runs below. No download or account needed.</p>
       </div>
       <div class="modes">
@@ -175,7 +210,7 @@
       <div class="copy">
         <p class="label">Sell sheet</p>
         <h2 id="ss-h">One page for your review meeting</h2>
-        <p>The pitch, why it works, the three seasons, specs and the five species on a single landscape page, ready to print or forward.</p>
+        <p>The hook, a turn told in three panels, the box, specs and contact on a single landscape page, ready to print or forward.</p>
         <div class="actions">
           <a class="btn red" href="/games/diggers/diggers-sell-sheet.pdf" download>Download PDF</a>
           <a class="btn" href="/games/diggers/diggers-sell-sheet.pdf" target="_blank" rel="noopener">View</a>

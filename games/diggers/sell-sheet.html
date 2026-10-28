@@ -7,109 +7,152 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
-:root{--paper:#F6EFDC;--ink:#24180E;--soft:#6B5A44;--red:#A8452D;--line:#CDBE9C;--panel:#EFE4C8}
+/* Source for diggers-sell-sheet.pdf: print at US Letter landscape, no margins, backgrounds on.
+   Left: the box's own red sandstone, with the box, a dig-site board and one card of each species.
+   Right: cream paper, a turn told in three museum labels. */
+:root{--ink:#24180E;--soft:#5E4D38;--red:#A8452D;--paper:#F6EFDC;--label:#FFFBEF;--sand:#b2523a}
 *{box-sizing:border-box}
 html,body{margin:0;background:#8E9499}
 @page{size:11in 8.5in;margin:0}
 @media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
-.sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;color:var(--ink);
-  font-family:Spectral,Georgia,serif;font-size:9.3pt;line-height:1.33;background:var(--paper);
-  box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.sheet::before{content:"";position:absolute;inset:.22in;border:2px solid var(--ink);pointer-events:none}
-.sheet::after{content:"";position:absolute;inset:.27in;border:.75px solid var(--soft);pointer-events:none}
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:.3in;padding:.4in 0 .12in;border-bottom:2px solid var(--ink);margin:0 .5in}
-.pill{display:inline-block;font-family:"IM Fell English SC";font-size:10pt;letter-spacing:.14em;color:var(--red);border:1.5px solid var(--red);border-radius:3px;padding:1px 8px;margin-bottom:6px}
-h1{font-family:Rye;font-weight:400;font-size:54pt;line-height:.92;letter-spacing:.03em;margin:0}
-.tag{margin:6px 0 0;font-family:"IM Fell English";font-size:14pt}
-.tag i{color:var(--red)}
-.by{text-align:right;font-size:9pt;line-height:1.35;color:var(--soft)}
-.by b{display:block;font-family:"IM Fell English SC";font-weight:400;font-size:14pt;letter-spacing:.04em;color:var(--ink)}
-main{display:grid;grid-template-columns:1.18fr 1fr;gap:.28in;padding:.16in .5in .1in;min-height:0;flex:1}
-.art{display:flex;flex-direction:column;gap:.11in;min-height:0}
-.render{border:1.5px solid var(--ink);background:#17120D;overflow:hidden;flex:1;min-height:0}
-.render img{width:100%;height:100%;object-fit:cover;display:block}
-.species{display:grid;grid-template-columns:repeat(5,1fr);gap:.06in}
-.sp{border:1.5px solid var(--ink);background:#fff;display:flex;flex-direction:column;align-items:center;padding:.05in .02in .04in;gap:1px}
-.sp svg{width:.3in;height:.3in;stroke:var(--ink);stroke-width:1}
-.sp b{font-family:"IM Fell English";font-weight:400;font-size:8.3pt;line-height:1.1;text-align:center}
-.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:.06in}
-.cards img{width:100%;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.35);display:block}
-.copy{display:flex;flex-direction:column;gap:.09in;min-height:0}
-h2{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:.06em;margin:0 0 3px;color:var(--red)}
-p{margin:0}
-ul{list-style:none;margin:0;padding:0}
-li{position:relative;padding-left:14px;margin:0 0 4px}
-li::before{content:"";position:absolute;left:0;top:.5em;width:7px;height:7px;border-radius:1.5px;background:var(--red)}
-.seasons{display:grid;grid-template-columns:repeat(3,1fr);gap:.07in}
-.ss{border:1.5px solid var(--ink);background:#fff;padding:.05in .09in;font-size:8.8pt;line-height:1.3}
-.ss b{display:block;font-family:"IM Fell English SC";font-weight:400;font-size:10pt;letter-spacing:.08em;color:var(--red)}
-.ss.last{background:var(--ink);color:#F6EFDC;border-color:var(--ink)}
-.ss.last b{color:#E9A07F}
-dl{display:grid;grid-template-columns:auto 1fr;gap:2px .14in;margin:0;font-size:9.2pt}
-dt{font-family:"IM Fell English SC";font-size:10pt;letter-spacing:.05em;color:var(--soft)}
-dd{margin:0}
-footer{margin:0 .5in;padding:.09in 0 .38in;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;font-size:9pt;color:var(--soft)}
-footer b{font-family:"IM Fell English SC";font-weight:400;font-size:11pt;letter-spacing:.05em;color:var(--ink);margin-right:8px}
-footer .u{color:var(--red);font-weight:600}
+.sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;display:grid;grid-template-columns:4.15in 1fr;
+  color:var(--ink);background:var(--paper);font-family:Spectral,Georgia,serif;font-size:10.5pt;line-height:1.38;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ---- left: red sandstone, the box side */
+.side{position:relative;overflow:hidden;border-right:5px solid var(--ink);background:var(--sand)}
+.side canvas{position:absolute;inset:0;width:100%;height:100%}
+.box{position:absolute;left:.5in;top:.42in;width:3.05in;transform:rotate(-3.5deg);border:3.5px solid var(--ink);box-shadow:8px 8px 0 var(--ink)}
+.board{position:absolute;left:.32in;width:3.5in;top:4.95in;transform:rotate(2deg);border:2.5px solid var(--ink);box-shadow:5px 5px 0 rgba(36,24,14,.8)}
+.fan{position:absolute;left:0;right:0;bottom:.5in;height:1.9in}
+.fan img{position:absolute;bottom:0;width:1.02in;border-radius:6px;border:2.5px solid var(--ink);box-shadow:4px 4px 0 rgba(36,24,14,.6);transform-origin:50% 120%}
+
+/* ---- right: the paper */
+.main{padding:.44in .5in .34in .46in;display:flex;flex-direction:column;min-width:0}
+.kicker{font-family:"IM Fell English SC";font-size:12pt;letter-spacing:.14em;color:var(--red);margin:0 0 .08in}
+h1{margin:0;font-family:Rye;font-weight:400;font-size:33pt;line-height:1.02;letter-spacing:.02em;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--red);display:block}
+.pitch{margin:.16in 0 0;font-size:11.3pt;line-height:1.45;max-width:5.75in}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.24in}
+.panel{position:relative;display:flex;flex-direction:column;background:var(--label);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.panel::after{content:"";position:absolute;inset:4px;border:1px solid rgba(36,24,14,.45);pointer-events:none}
+.panel .art{height:1.85in;position:relative;overflow:hidden;border-bottom:2px solid var(--ink)}
+.panel .cap{position:absolute;top:-2.5px;left:-2.5px;z-index:2;background:var(--red);color:#FBF3E2;border:2.5px solid var(--ink);padding:3px 8px 2px;
+  font-family:"IM Fell English SC";font-size:11pt;letter-spacing:.06em;line-height:1}
+.panel p{margin:0;padding:.08in .11in .11in;font-size:9.5pt;line-height:1.36}
+.p1 .art{background:#E9DFC6} .p2 .art{background:#DCE3E2} .p3 .art{background:#EADBC9}
+.ladder{position:absolute;inset:.34in .12in .1in;display:flex;flex-direction:column;justify-content:space-between}
+.ladder .g{display:flex;align-items:center;gap:.1in}
+.ladder .g div{display:flex;flex:none}
+.ladder .g img{width:.33in;border-radius:3px;border:1.5px solid var(--ink);display:block}
+.ladder .g img+img{margin-left:-.13in}
+.ladder .g span{font-family:"IM Fell English SC";font-size:9pt;line-height:1.05;letter-spacing:.02em}
+.ladder .g span i{font-style:normal;color:var(--red)}
+.p2 .site{position:absolute;left:.1in;width:calc(100% - .2in);top:.98in;border:1.5px solid var(--ink)}
+.p2 img.c{position:absolute;width:.4in;border-radius:4px;border:1.5px solid var(--ink)}
+.p2 .lbl{position:absolute;font-family:"IM Fell English SC";font-size:8pt;color:var(--soft)}
+.p2 .lift{transform:rotate(14deg);box-shadow:3px 4px 0 rgba(36,24,14,.55)}
+.p2 svg{position:absolute;left:0;top:0;width:100%;height:100%}
+.p3 .seasons{position:absolute;inset:.36in .12in .12in;display:flex;flex-direction:column;justify-content:space-between}
+.p3 .row{display:flex;align-items:center;justify-content:center;gap:.12in}
+.p3 .row img{width:1.3in;border:1.5px solid var(--ink);display:block;flex:none}
+.p3 .row b{font-family:Rye;font-weight:400;font-size:19pt;line-height:1;min-width:.3in;text-align:right}
+.p3 .row span{font-family:"IM Fell English SC";font-size:8.5pt;line-height:1.05;color:var(--soft)}
+.p3 .row.last b{color:var(--red)}
+.facts{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0 .42in;margin-top:auto;padding-top:.16in;border-top:3px double var(--ink)}
+.facts b{display:block;font-family:Rye;font-weight:400;font-size:21pt;line-height:1.05}
+.facts span{font-size:9pt;color:var(--soft)}
+.ready{margin:.13in 0 0;font-size:9.6pt;color:var(--soft)}
+.ready b{color:var(--ink)}
+.ready u{text-decoration:none;color:var(--red);font-weight:700}
+.contact{display:flex;justify-content:space-between;align-items:baseline;margin-top:.08in;font-size:9.6pt}
+.contact b{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:.04em}
 </style>
 </head>
 <body>
 <div class="sheet">
-  <header>
-    <div>
-      <span class="pill">Play it in your browser</span>
-      <h1>DIGGERS</h1>
-      <p class="tag">A contested-lane climbing card game for 2–4 players · <i>Dig it up before they do.</i></p>
+  <aside class="side">
+    <canvas id="rock" width="830" height="1700"></canvas>
+    <img class="box" src="/games/diggers/img/src/tex/box-top.jpg" alt="">
+    <img class="board" src="/games/diggers/img/src/tex/marker-0.jpg" alt="">
+    <div class="fan" id="fan"></div>
+  </aside>
+
+  <main class="main">
+    <p class="kicker">Card game · 2–4 players · 15–20 minutes</p>
+    <h1>Your hand is locked. <em>Their finds aren't.</em></h1>
+    <p class="pitch">Rival paleontologists share a ring of dig sites, one between each pair of camps. You win a site by laying a better find there: a run or a set of cards that sit side by side in your hand, because you can never rearrange it. Missing a bone? Take it from a rival. When anyone's hand runs out, the season ends and every site you hold scores.</p>
+
+    <div class="strip">
+      <div class="panel p1">
+        <span class="cap">Beat the find</span>
+        <div class="art"><div class="ladder" aria-label="a run 3-4-5, beaten by a set of three 6s, beaten by a suited run 3-4-5">
+          <div class="g"><div><img src="/games/diggers/img/src/tex/face-3.jpg" alt=""><img src="/games/diggers/img/src/tex/face-14.jpg" alt=""><img src="/games/diggers/img/src/tex/face-35.jpg" alt=""></div><span>A run</span></div>
+          <div class="g"><div><img src="/games/diggers/img/src/tex/face-6.jpg" alt=""><img src="/games/diggers/img/src/tex/face-16.jpg" alt=""><img src="/games/diggers/img/src/tex/face-46.jpg" alt=""></div><span>A set <i>beats it</i></span></div>
+          <div class="g"><div><img src="/games/diggers/img/src/tex/face-23.jpg" alt=""><img src="/games/diggers/img/src/tex/face-24.jpg" alt=""><img src="/games/diggers/img/src/tex/face-25.jpg" alt=""></div><span>A suited run <i>beats that</i></span></div>
+        </div></div>
+        <p>More cards always wins. Same count? A suited run, all from one skeleton, beats a set, and a set beats a run.</p>
+      </div>
+      <div class="panel p2">
+        <span class="cap">Or poach</span>
+        <div class="art">
+          <span class="lbl" style="right:.1in;top:.36in">their side</span>
+          <img class="c" src="/games/diggers/img/src/tex/face-27.jpg" alt="" style="left:.22in;top:.36in">
+          <img class="c" src="/games/diggers/img/src/tex/face-38.jpg" alt="" style="left:.66in;top:.36in">
+          <img class="site" src="/games/diggers/img/src/tex/marker-1.jpg" alt="">
+          <img class="c lift" src="/games/diggers/img/src/tex/face-9.jpg" alt="" style="left:1.18in;top:1.24in">
+          <span class="lbl" style="left:.12in;bottom:.1in">your side</span>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M58 26 C 76 24, 80 44, 70 64" fill="none" stroke="#24180E" stroke-width="1.6" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/><path d="M66 60 L70 66 L75 61" fill="none" stroke="#24180E" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
+        </div>
+        <p>Take an end bone off a rival's find and slide it anywhere into your hand. Then send them a card back. They keep it, or it's out for the season.</p>
+      </div>
+      <div class="panel p3">
+        <span class="cap">Three seasons</span>
+        <div class="art"><div class="seasons">
+          <div class="row"><b>1</b><img src="/games/diggers/img/src/tex/marker-0.jpg" alt=""></div>
+          <div class="row"><b>2</b><img src="/games/diggers/img/src/tex/marker-2.jpg" alt=""></div>
+          <div class="row last"><b>4</b><img src="/games/diggers/img/src/tex/marker-3.jpg" alt=""></div>
+        </div></div>
+        <p>A season ends the moment any hand is empty. The last one is worth more than the first two together, so nobody is out of it.</p>
+      </div>
     </div>
-    <div class="by"><b>Darren Don</b>What's Good Board Games<br>darren@whatsgoodboardgames.com</div>
-  </header>
-  <main>
-    <div class="art">
-      <div class="render"><img src="/games/diggers/img/render-hero.webp" alt=""></div>
-      <div class="cards" id="cards"></div>
-      <div class="species" id="species"></div>
+
+    <div class="facts">
+      <div><b>2–4</b><span>players</span></div>
+      <div><b>15–20 min</b><span>three quick seasons</span></div>
+      <div><b>45 cards</b><span>and four site boards, small box</span></div>
     </div>
-    <div class="copy">
-      <div>
-        <h2>The game</h2>
-        <p>Rival paleontologists work the same badlands. Between every pair of neighboring camps is a dig site, and it belongs to whoever brought up the finer find there last. Play runs or sets from a hand you may never sort, poach bones from the sites beside you, and hand a specimen across in return. Three field seasons; most prestige wins.</p>
-      </div>
-      <div>
-        <h2>Why it works</h2>
-        <ul>
-          <li><b>A hand you can't sort.</b> Only cards that sit side by side can be played together, so every turn is a small puzzle. Poaching lets you slot exactly the bone you need into the gap.</li>
-          <li><b>Every site is shared.</b> Every find you lay is a target. The specimen you send back for a poached bone can be a gift or dead weight.</li>
-          <li><b>A built-in arc.</b> Sites are worth 1, then 2, then 4 prestige, so the last season outweighs the first two. In simulated games the final season overturns the leader about a third of the time.</li>
-          <li><b>Five skeletons.</b> Each species' nine cards assemble into a fossil slab, and a suited run, all from one skeleton, outranks any set its size.</li>
-        </ul>
-      </div>
-      <div class="seasons">
-        <div class="ss"><b>Season 1</b>Each site worth 1 prestige</div>
-        <div class="ss"><b>Season 2</b>Each site worth 2 prestige</div>
-        <div class="ss last"><b>Season 3</b>Each site worth 4 prestige</div>
-      </div>
-      <div>
-        <h2>At a glance</h2>
-        <dl>
-          <dt>Players</dt><dd>2–4 (scales by deck and sites, no rule changes)</dd>
-          <dt>Genre</dt><dd>Climbing card game, area control</dd>
-          <dt>Length</dt><dd>15–20 minutes, 3 seasons</dd>
-          <dt>Components</dt><dd>45 fossil cards, 4 field guides, 4 named dig-site boards</dd>
-          <dt>Ready</dt><dd>Rules, print-and-play, browser build with tutorial, simulations</dd>
-        </dl>
-      </div>
-    </div>
+    <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser version with bots and a tutorial at <u>darrendon.github.io/games/diggers</u></p>
+    <div class="contact"><span><b>Darren Don</b> &nbsp;What's Good Board Games</span><span>darren@whatsgoodboardgames.com</span></div>
   </main>
-  <footer>
-    <span><b>Play it now</b><span class="u">darrendon.github.io/games/diggers</span></span>
-    <span>Darren Don · darren@whatsgoodboardgames.com</span>
-  </footer>
 </div>
 <script src="/games/diggers/img/src/fossil-art.js"></script>
 <script>
-document.getElementById('species').innerHTML = SPECIES.map(sp => `<div class="sp"><svg viewBox="0 0 24 24"><path d="${sp.sym}" fill="${sp.suit}" fill-rule="evenodd"/></svg><b>${sp.name}</b></div>`).join('');
-document.getElementById('cards').innerHTML = [2, 14, 23, 35, 45].map(id => `<img src="/games/diggers/img/src/tex/face-${id}.jpg" alt="">`).join('');
-Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+// the side panel: the Tyrannosaurus slab's red sandstone, strata only (the box already shows the skeleton)
+(function () {
+  const c = document.getElementById('rock'), g = c.getContext('2d'), sp = SPECIES[0];
+  g.fillStyle = sp.base; g.fillRect(0, 0, c.width, c.height);
+  let s = 41; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  let y = 0, k = 0;
+  while (y < c.height) {
+    const th = 40 + r() * 110; g.fillStyle = sp.bands[k++ % sp.bands.length]; g.beginPath(); g.moveTo(0, y);
+    for (let x = 0; x <= c.width; x += 40) g.lineTo(x, y + Math.sin(x / 140 + k) * 10);
+    for (let x = c.width; x >= 0; x -= 40) g.lineTo(x, y + th + Math.sin(x / 150 + k * 1.7) * 12);
+    g.closePath(); g.fill(); y += th;
+  }
+  for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${r() < .5 ? '60,24,12' : '255,225,195'},${r() * .14})`; g.fillRect(r() * c.width, r() * c.height, 1 + r() * 3, 1 + r() * 2); }
+  const v = g.createRadialGradient(c.width / 2, c.height * .45, c.height * .2, c.width / 2, c.height * .45, c.height * .75);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(30,10,4,.35)'); g.fillStyle = v; g.fillRect(0, 0, c.width, c.height);
+})();
+// one card of each species, fanned along the bottom
+const fan = [1, 11, 23, 32, 45], fanEl = document.getElementById('fan');
+fan.forEach((n, i) => {
+  const img = new Image(); img.src = `/games/diggers/img/src/tex/face-${n}.jpg`; img.alt = '';
+  const a = (i - 2) * 6, x = 50 + (i - 2) * 11;
+  img.style.left = `calc(${x}% - .51in)`; img.style.transform = `rotate(${a}deg)`; img.style.zIndex = 10 - Math.abs(i - 2);
+  fanEl.appendChild(img);
+});
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((res) => i.onload = i.onerror = res))).then(() => document.fonts.ready).then(() => window.__done = true);
 </script>
 </body>
 </html>
