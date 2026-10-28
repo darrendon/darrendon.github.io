@@ -1,0 +1,76 @@
+/* Un, Deux, Trois, Cat! skin: painting paper and the box's plum, with the card art's gouache colours. */
+.g-udtc{
+  --g-bg:#FBF7F0; --g-panel:#F1E9DC; --g-panel-hi:#F8F2E8; --g-face:#FFFFFF;
+  --g-red:#3A2945;            /* the page accent slot: the box's plum */
+  --g-gold:#FFC94A; --g-jade:#3A2945; --g-ink:#2A1D31; --g-muted:#6A5C72; --g-line:#E2D7C6;
+  --udtc-title:"Bagel Fat One","Cooper Black",Georgia,serif; --udtc-plum:#3A2945; --udtc-plum-d:#2A1D31; --udtc-ochre:#B47622; --udtc-cream:#F4EBD8;
+  --udtc-good:#4CA055;
+}
+@media (prefers-color-scheme: dark){
+  .g-udtc{--g-bg:#1F1624; --g-panel:#2A1D31; --g-panel-hi:#3A2945; --g-red:#FFC94A; --g-jade:#2A1D31;
+    --g-ink:#F7EEF9; --g-muted:#C3B1CF; --g-line:#3F2E49; --udtc-ochre:#FFC94A}
+}
+.g-udtc .g-hero h1{font-family:var(--udtc-title);font-weight:400;letter-spacing:0;line-height:.94;color:var(--udtc-plum);margin-bottom:6px}
+.g-udtc .g-hero h1{font-size:clamp(52px,7vw,96px)}
+.g-udtc .g-hero h1 span{display:block;color:var(--udtc-ochre);font-size:1.12em}
+@media (prefers-color-scheme: dark){.g-udtc .g-hero h1{color:var(--udtc-cream)}}
+.g-udtc .pill{background:var(--udtc-plum);color:var(--g-gold);border:0}
+.g-udtc h2,.g-udtc h3{font-family:var(--udtc-title);font-weight:400;letter-spacing:0}
+.g-udtc .label{color:var(--udtc-ochre);letter-spacing:.12em}
+.g-udtc.game .btn{border-radius:999px}
+.g-udtc.game .btn.red{background:var(--udtc-plum);border-color:var(--udtc-plum);color:var(--g-gold)}
+@media (prefers-color-scheme: dark){.g-udtc.game .btn.red{background:var(--g-gold);border-color:var(--g-gold);color:var(--udtc-plum-d)}}
+
+/* hero: a still render with view buttons */
+.g-udtc .viewer{background:#E4DCD2;border:0;box-shadow:0 18px 40px -18px rgba(42,29,49,.45)}
+.g-udtc .viewer .stage{aspect-ratio:16/10}
+.g-udtc .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
+.g-udtc .viewer .bar{background:var(--g-panel)}
+
+/* the three possible grabs */
+.grabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:clamp(20px,3vw,32px)}
+.grabs div{border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px;background:var(--g-panel);color:var(--g-ink)}
+.grabs .row{display:flex;gap:6px}
+.grabs .row img{width:46px;height:auto;aspect-ratio:5/7;border-radius:5px;display:block;box-shadow:0 1px 4px rgba(42,29,49,.2)}
+.grabs .row img.hit{box-shadow:0 0 0 3px var(--udtc-good)}
+.grabs b{font-family:var(--udtc-title);font-weight:400;font-size:22px;line-height:1.05;color:var(--udtc-plum)}
+.grabs span{font-size:15px}
+.grabs .cat{background:var(--udtc-plum);color:var(--udtc-cream)}
+.grabs .cat b{color:var(--g-gold)}
+.grabs .cat img.toy{width:64px;height:64px;border-radius:50%;background:#F8F3EA;display:block}
+@media (prefers-color-scheme: dark){.grabs b{color:var(--g-gold)}.grabs .cat{background:#120C16}}
+@media (max-width:820px){.grabs{grid-template-columns:1fr}}
+
+/* the five toys, then one toy in all five colours */
+.ranks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1.4vw,18px);margin-top:clamp(28px,4vw,44px)}
+.ranks figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ranks img{width:100%;height:auto;aspect-ratio:5/7;border-radius:7%/5%;box-shadow:0 8px 18px -8px rgba(42,29,49,.45);transition:transform .2s;display:block}
+.ranks figure:hover img{transform:translateY(-6px) rotate(-2deg)}
+.ranks figure:nth-child(even):hover img{transform:translateY(-6px) rotate(2deg)}
+.ranks figcaption{font-size:14.5px;color:var(--g-muted)}
+.ranks figcaption b{display:block;color:var(--g-ink);font-size:16px}
+.decoys{display:flex;align-items:center;gap:clamp(16px,3vw,36px);margin-top:clamp(20px,3vw,32px);padding:18px 20px;border-radius:18px;background:var(--g-panel);flex-wrap:wrap}
+.decoys .row{display:flex;gap:8px}
+.decoys .row img{width:58px;height:auto;aspect-ratio:5/7;border-radius:6px;display:block;box-shadow:0 1px 4px rgba(42,29,49,.2)}
+.decoys .row img.hit{box-shadow:0 0 0 3px var(--udtc-good)}
+.decoys p{margin:0;font-size:16.5px;max-width:48ch;color:var(--g-ink)}
+
+.boxart{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.62fr) minmax(0,1.2fr);gap:clamp(18px,3vw,40px);align-items:center;margin-top:clamp(40px,6vw,72px)}
+.boxart figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.boxart img{width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 14px 30px -14px rgba(42,29,49,.55)}
+.boxart figcaption{font-size:14.5px;color:var(--g-muted)}
+.boxart figcaption b{display:block;color:var(--g-ink);font-size:16px}
+@media (max-width:900px){.boxart{grid-template-columns:1fr 1fr}.boxart > div{grid-column:1/-1}}
+
+.g-udtc .renders img{aspect-ratio:16/10;border-radius:14px}
+.g-udtc .play-frame{background:var(--udtc-plum-d);border:0;box-shadow:0 18px 40px -18px rgba(42,29,49,.55)}
+.g-udtc .play-frame iframe{height:min(92vh,1000px)}
+.g-udtc .set{border-top-color:var(--udtc-ochre)}
+.g-udtc .g-cta{background:var(--udtc-plum)}
+.g-udtc .g-cta .btn.light{color:var(--udtc-plum)}
+
+/* home page card */
+.feature.g-udtc h3{font-family:var(--udtc-title);font-weight:400;letter-spacing:0;color:var(--udtc-plum)}
+@media (prefers-color-scheme: dark){.feature.g-udtc h3{color:var(--udtc-cream)}}
+.feature.g-udtc .feature-art{background:#E4DCD2;padding:0}
+.feature.g-udtc .feature-art img{width:100%;height:100%;object-fit:cover}

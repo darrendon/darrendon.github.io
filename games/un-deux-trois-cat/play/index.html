@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un, Deux, Trois, Cat! — play in your browser</title>
+<meta name="description" content="Un, Deux, Trois, Cat! — a simultaneous-flip grabbing game. Play 2 to 6 players against bots in your browser.">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Layout: one felt table. Seats on top, the flipped cards in the middle, the toys you grab underneath.
+   The toy art is the same painted art as the printed cards (img/src/toy-art.js). */
+:root{
+  --felt:#2a1d31;        /* aubergine table felt */
+  --felt-2:#3a2945;      /* raised panels on the felt */
+  --felt-3:#4b3758;      /* borders, hover */
+  --ink:#f7eef9;         /* primary text */
+  --muted:#c3b1cf;       /* secondary text */
+  --paper:#f8f3ea;       /* card faces and coasters: painting paper */
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --gold:#ffc94a;        /* the chant, your seat, the winning grab */
+  --good:#79e2a8;        /* legal grabs */
+  --bad:#ff7a7a;         /* misgrabs */
+  --display:"Bagel Fat One","Cooper Black",Georgia,serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--felt);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1000px;margin:0 auto;padding-block:16px 32px;display:flex;flex-direction:column;gap:16px}
+h1,h2{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:10px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-size:22px;color:var(--gold)}
+.meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--felt-2);color:var(--muted);font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--felt-3);background:var(--felt-2);padding:7px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{background:var(--felt-3)}
+.btn.primary{background:var(--gold);color:#2a1d31;border-color:var(--gold);font-weight:800;font-size:17px;padding:12px 26px}
+.btn.primary:hover{filter:brightness(1.06)}
+
+/* seats */
+.seats{display:flex;flex-wrap:wrap;gap:8px}
+.seat{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:12px;background:var(--felt-2);border:2px solid transparent;font-variant-numeric:tabular-nums}
+.seat.you{border-color:var(--gold)}
+.seat .nm{font-weight:800}
+.seat .vp{color:var(--gold);font-weight:800}
+.seat .left{color:var(--muted);font-size:12px}
+.seat .flag{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--bad)}
+.seat.dim{opacity:.45}
+
+/* table */
+.table{position:relative;min-height:220px;border-radius:22px;padding:20px 14px;
+  background:radial-gradient(ellipse at 50% 40%,var(--felt-3) 0%,var(--felt-2) 55%,var(--felt) 100%);
+  display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:16px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.slot .cards{display:flex;gap:8px}
+.slot .who{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+.slot.you .who{color:var(--gold)}
+.card{width:clamp(66px,17vw,94px);aspect-ratio:5/7;max-width:100%;border-radius:9px;background:var(--grain),var(--paper);
+  display:grid;place-items:center;box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.card svg{width:98%;height:auto}
+.card.back{background:
+  radial-gradient(circle at 50% 50%,var(--gold) 0 2px,transparent 2.5px) 0 0/14px 14px,
+  linear-gradient(var(--felt-3),var(--felt-3));
+  border:3px solid var(--paper)}
+.card.flip{animation:flip .22s ease-out}
+@keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
+.chant{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+  font-family:var(--display);font-size:clamp(40px,11vw,84px);color:var(--gold);text-shadow:0 4px 0 #1a1020}
+.chant span{animation:pop .38s ease-out}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.caption{width:100%;text-align:center;color:var(--muted);font-size:13px}
+
+/* toys you grab */
+.grab{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.grab{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.toy{background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.toy:disabled{cursor:default}
+.coaster{width:100%;max-width:104px;aspect-ratio:1;border-radius:50%;background:var(--grain),var(--paper);display:grid;place-items:center;
+  border:4px solid var(--felt-3);transition:transform .08s ease,border-color .15s ease;box-shadow:0 6px 0 #1a1020}
+.coaster svg{width:82%;height:auto}
+.toy:not(:disabled):hover .coaster{transform:translateY(-3px);border-color:var(--muted)}
+.toy:not(:disabled):active .coaster{transform:translateY(3px);box-shadow:0 2px 0 #1a1020}
+.toy.cat .coaster{border-color:var(--gold)}
+.toy .lbl{font-size:13px;font-weight:600}
+.toy .key{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media (pointer:coarse){.toy .key{display:none}}
+.toy.legal .coaster{border-color:var(--good)}
+.toy.won .coaster{border-color:var(--gold);transform:scale(1.07)}
+.toy.miss .coaster{border-color:var(--bad);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.tags{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;min-height:20px}
+.tag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--gold);color:#2a1d31}
+.tag.bad{background:var(--bad)}
+
+/* banner */
+.banner{min-height:3.4em;text-align:center;font-size:16px;display:grid;place-items:center}
+.banner b{color:var(--gold)}
+.banner .sub{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+
+/* panels */
+.panel{background:var(--felt-2);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.hero h1{font-size:clamp(34px,8vw,58px);color:var(--gold);line-height:1.05}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:700px){.cols{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:8px}
+.field .lab{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:2px solid var(--felt-3);background:var(--felt);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-variant-numeric:tabular-nums}
+.seg button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.hint{font-size:13px;color:var(--muted)}
+.rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;max-width:62ch}
+.rules b{color:var(--ink)}
+.go{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.standings{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-variant-numeric:tabular-nums}
+.standings li{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;border-radius:10px;background:var(--felt)}
+.standings li.first{outline:2px solid var(--gold)}
+.standings .n{font-weight:800}
+.stats{display:flex;flex-wrap:wrap;gap:22px;font-variant-numeric:tabular-nums}
+.stats div{display:flex;flex-direction:column}
+.stats .v{font-size:22px;font-weight:800;color:var(--gold)}
+.stats .k{font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <filter id="paint" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="warp"/>
+    <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="3" seed="9" result="blot"/>
+    <feColorMatrix in="blot" type="saturate" values="0" result="gray"/>
+    <feComponentTransfer in="gray" result="mottle">
+      <feFuncR type="linear" slope="0.4" intercept="0.7"/><feFuncG type="linear" slope="0.4" intercept="0.7"/>
+      <feFuncB type="linear" slope="0.4" intercept="0.7"/><feFuncA type="linear" slope="0" intercept="1"/>
+    </feComponentTransfer>
+    <feBlend in="d" in2="mottle" mode="multiply" result="m"/>
+    <feComposite in="m" in2="d" operator="in"/>
+  </filter>
+</defs></svg>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Un, Deux, Trois, Cat!</div>
+    <div class="meta" id="meta" hidden>
+      <span class="pill" id="roundPill">Round 1 / 15</span>
+      <span class="pill" id="modePill">Easy bots</span>
+      <button class="btn" id="pauseBtn" type="button">Pause</button>
+      <button class="btn" id="quitBtn" type="button">Quit</button>
+    </div>
+  </div>
+
+  <!-- setup -->
+  <section class="panel" id="setup">
+    <div class="hero">
+      <h1>Un, Deux, Trois, Cat!</h1>
+      <p>Everyone flips at once. Find a toy shown in its own color and grab it before the cats beside you do.</p>
+    </div>
+    <div class="cols">
+      <div class="field">
+        <span class="lab">Opponents</span>
+        <div class="seg" id="oppSeg">
+          <button type="button" id="opp1" data-v="1">1</button>
+          <button type="button" id="opp2" data-v="2">2</button>
+          <button type="button" id="opp3" data-v="3">3</button>
+          <button type="button" id="opp4" data-v="4">4</button>
+          <button type="button" id="opp5" data-v="5">5</button>
+        </div>
+        <span class="hint" id="oppHint"></span>
+      </div>
+      <div class="field">
+        <span class="lab">Bots</span>
+        <div class="seg" id="diffSeg">
+          <button type="button" id="diffEasy" data-v="easy">Easy</button>
+          <button type="button" id="diffHard" data-v="hard">Hard</button>
+        </div>
+        <span class="hint" id="diffHint"></span>
+      </div>
+    </div>
+    <ol class="rules">
+      <li>Any card shows a toy in <b>its own color</b>: grab that toy. If several different toys show their own color, each one can be grabbed, and everyone who grabs one scores.</li>
+      <li>No card shows a toy in its own color: <b>grab the cat</b>.</li>
+      <li>Grab a correct toy and keep your flipped card. Grab the wrong thing and you're out for the round, and you discard one of your scored cards.</li>
+      <li>When the decks run out, most cards wins. Ties go to a sudden death flip.</li>
+    </ol>
+    <div class="go">
+      <button class="btn primary" id="startBtn" type="button">Start game</button>
+      <span class="hint">Click a toy, or press 1–5 for the toys and 6 for the cat.</span>
+    </div>
+  </section>
+
+  <!-- end -->
+  <section class="panel" id="end" hidden>
+    <h2 id="endTitle" style="font-size:clamp(30px,7vw,46px);color:var(--gold)">You win!</h2>
+    <ol class="standings" id="standings"></ol>
+    <div class="stats" id="stats"></div>
+    <div class="go">
+      <button class="btn primary" id="againBtn" type="button">Play again</button>
+      <button class="btn" id="settingsBtn" type="button">Change settings</button>
+    </div>
+  </section>
+
+  <div class="seats" id="seats" hidden></div>
+  <div class="table" id="table"></div>
+  <div class="grab" id="grab"></div>
+  <div class="banner" id="banner"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const OBJ = ["bird","fish","ball","mouse","fly"];
+/* gouache-style tones: base, dark (texture and shading), light (highlights) */
+const PAL = {
+  blue:  {b:"#3a72b8", d:"#22497e", l:"#86b1e0"},
+  pink:  {b:"#e57fa5", d:"#b04f75", l:"#f7bfd3"},
+  orange:{b:"#e9802e", d:"#a95314", l:"#f7b273"},
+  yellow:{b:"#e9bb2f", d:"#a3790f", l:"#f8de82"},
+  green: {b:"#4ca055", d:"#2c6a35", l:"#94d08f"}
+};
+const COLORS = Object.keys(PAL);
+const CREAM = "#f4ebd8", INK = "#2a2421", BROWN = "#6e4a2e";
+const CORRECT = {bird:"yellow",fish:"green",ball:"blue",mouse:"pink",fly:"orange"};
+const EXTRA   = {ball:"pink",mouse:"orange",fly:"yellow",bird:"green",fish:"blue"};
+const NAME = {bird:"Bird",fish:"Fish",ball:"Ball",mouse:"Mouse",fly:"Butterfly",cat:"Cat"};
+const OWNER = Object.fromEntries(Object.entries(CORRECT).map(([o,c]) => [c,o]));
+const BOTS = ["Minou","Pompon","Biscotte","Chaussette","Moustache"];
+const DIFF = {
+  easy:{mean:1.95,sd:.45,perCard:.10,catExtra:.50,miss:.14,label:"Easy bots"},
+  hard:{mean:.92,sd:.18,perCard:.05,catExtra:.25,miss:.05,label:"Hard bots"}
+};
+
+/* ---------- drawings (hand-painted look via the #paint filter) ---------- */
+let uid = 0;
+function seeded(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const f1 = n => n.toFixed(1);
+function draw(obj, color){
+  const id = "k" + (uid++);
+  const rng = seeded(OBJ.indexOf(obj) * 97 + 13);
+  const P = obj === "cat" ? {b:"#5d5652", d:"#3a3431", l:"#8a827c"} : PAL[color];
+  let defs = "", g = "";
+  const clip = d => { defs += `<clipPath id="${id}"><path d="${d}"/></clipPath>`; return `clip-path="url(#${id})"`; };
+  const eye = (x,y,r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${CREAM}"/><circle cx="${x+r*.25}" cy="${y}" r="${r*.5}" fill="${INK}"/><circle cx="${x+r*.05}" cy="${y-r*.3}" r="${r*.18}" fill="#fff"/>`;
+
+  if (obj === "bird"){
+    const body = "M-40 -18 C-44 10 -22 40 12 38 C34 37 50 24 48 8 C34 14 14 12 2 -2 C-2 -26 -8 -46 -24 -46 C-36 -46 -40 -32 -40 -18 Z";
+    let marks = "";
+    for (let i=0;i<70;i++){ const x=-44+rng()*92, y=-48+rng()*88;
+      marks += `<path d="M${f1(x-3)} ${f1(y-2)} L${f1(x)} ${f1(y+1.5)} L${f1(x+3)} ${f1(y-2)}"/>`; }
+    g = `<path d="M44 8 L58 -6 L62 3 L49 16 Z" fill="${CREAM}"/>
+      <path d="${body}" fill="${P.b}"/>
+      <g ${clip(body)} stroke="${P.d}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".8">${marks}</g>
+      <path d="M-8 6 C6 -2 24 4 32 15 C18 24 0 22 -8 6 Z" fill="${P.d}"/>
+      <path d="M-40 -30 L-57 -24 L-40 -19 Z" fill="${BROWN}"/>
+      ${eye(-24,-30,6.5)}`;
+  } else if (obj === "fish"){
+    const body = "M-38 0 C-26 -32 22 -40 46 -6 C50 0 50 4 46 8 C22 40 -26 32 -38 0 Z";
+    let dots = "";
+    for (let y=-34;y<=34;y+=7) for (let x=-40;x<=48;x+=7){
+      const xo = x + ((y/7)%2 ? 3.5 : 0) + (rng()-.5)*2;
+      dots += `<rect x="${f1(xo)}" y="${f1(y+(rng()-.5)*2)}" width="2.6" height="2.6" transform="rotate(${Math.round(rng()*60)} ${f1(xo)} ${y})"/>`; }
+    let tuft = "";
+    for (let i=0;i<9;i++){ const a = Math.PI + (i-4)*0.17, L = 18 + rng()*6;
+      tuft += `<line x1="-36" y1="0" x2="${f1(-36+L*Math.cos(a))}" y2="${f1(L*Math.sin(a))}"/>`; }
+    g = `<g stroke="${P.d}" stroke-width="3.4" stroke-linecap="round">${tuft}</g>
+      <path d="${body}" fill="${P.b}"/>
+      <g ${clip(body)} fill="${P.d}" opacity=".75">${dots}</g>
+      <path d="M-2 -12 C4 -24 16 -24 18 -12 C12 -6 4 -6 -2 -12 Z" fill="${P.d}"/>
+      <path d="M-4 14 C2 26 14 26 16 14 C10 9 2 9 -4 14 Z" fill="${P.d}"/>
+      ${eye(30,-9,7)}`;
+  } else if (obj === "ball"){
+    defs += `<radialGradient id="${id}g" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="${P.l}"/><stop offset=".45" stop-color="${P.b}"/><stop offset="1" stop-color="${P.d}"/></radialGradient>`;
+    const disc = "M-40 2 A40 40 0 1 0 40 2 A40 40 0 1 0 -40 2 Z";
+    g = `<path d="${disc}" fill="url(#${id}g)"/>
+      <g ${clip(disc)}><path d="M-44 -6 C-20 12 20 12 44 -6 L44 6 C20 24 -20 24 -44 6 Z" fill="${CREAM}"/>
+      <path d="M-44 -6 C-20 12 20 12 44 -6" stroke="${P.d}" stroke-width="1.5" fill="none" opacity=".5"/></g>
+      <ellipse cx="-15" cy="-20" rx="8" ry="5" fill="#fff" opacity=".55" transform="rotate(-30 -15 -20)"/>`;
+  } else if (obj === "mouse"){
+    const body = "M44 8 C34 -20 -6 -30 -32 -12 C-44 -2 -40 18 -22 24 C0 30 30 24 44 8 Z";
+    let dots = "";
+    for (let i=0;i<16;i++){ dots += `<circle cx="${f1(-36+rng()*76)}" cy="${f1(-24+rng()*48)}" r="${f1(2.2+rng()*1.6)}"/>`; }
+    g = `<path d="M-36 8 C-50 4 -55 -14 -45 -24 C-37 -32 -41 -44 -53 -47" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="${body}" fill="${P.b}"/>
+      <g ${clip(body)} fill="${P.d}" opacity=".85">${dots}</g>
+      <circle cx="16" cy="-17" r="9.5" fill="${P.b}"/><circle cx="16" cy="-17" r="5.5" fill="${P.d}"/>
+      <circle cx="30" cy="-2" r="3" fill="${INK}"/><circle cx="45" cy="8" r="2.6" fill="${INK}"/>`;
+  } else if (obj === "fly"){
+    const half = "M-3 -4 C-18 -42 -58 -48 -57 -18 C-56 0 -32 6 -3 1 Z M-3 5 C-28 8 -48 22 -40 40 C-32 55 -10 42 -3 15 Z";
+    const mirror = d => d.replace(/(-?\d+(\.\d+)?) (-?\d+(\.\d+)?)/g, (m, x, _a, y) => `${-parseFloat(x)} ${y}`);
+    const wings = half + " " + mirror(half);
+    let veins = "";
+    for (const sx of [-1, 1]) for (let i=0;i<6;i++){
+      const a = (-150 + i*28) * Math.PI/180, L = 40 + rng()*14;
+      veins += `<line x1="0" y1="2" x2="${f1(sx*Math.abs(L*Math.cos(a)))}" y2="${f1(2 + L*Math.sin(a))}"/>`; }
+    let spots = "";
+    for (const [x,y,r] of [[-44,-24,4.5],[-34,-34,3.5],[-30,34,4],[-44,-8,3]]) {
+      spots += `<circle cx="${x}" cy="${y}" r="${r}"/><circle cx="${-x}" cy="${y}" r="${r}"/>`; }
+    g = `<path d="${wings}" fill="${P.b}"/>
+      <g ${clip(wings)}><g stroke="${P.d}" stroke-width="1.6" opacity=".75">${veins}</g>
+      <path d="${wings}" fill="none" stroke="${P.d}" stroke-width="7" opacity=".9"/>
+      <g fill="${CREAM}">${spots}</g></g>
+      <ellipse cx="0" cy="6" rx="5" ry="30" fill="${BROWN}"/>
+      <circle cx="0" cy="-26" r="6" fill="${BROWN}"/>
+      <g stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round">
+        <path d="M-2 -30 C-6 -42 -12 -50 -19 -54"/><path d="M2 -30 C6 -42 12 -50 19 -54"/></g>
+      <circle cx="-19" cy="-54" r="2.6" fill="${INK}"/><circle cx="19" cy="-54" r="2.6" fill="${INK}"/>`;
+  } else if (obj === "cat"){
+    let fur = "";
+    for (let i=0;i<26;i++){ const x=-26+rng()*52, y=-6+rng()*50; fur += `<path d="M${f1(x)} ${f1(y)} q2 3 0 6"/>`; }
+    const body = "M-30 22 C-30 -6 -16 -10 0 -10 C16 -10 30 -6 30 22 C30 46 18 54 0 54 C-18 54 -30 46 -30 22 Z";
+    g = `<path d="M26 46 C50 42 56 14 44 2" stroke="${P.b}" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="${body}" fill="${P.b}"/>
+      <g ${clip(body)} stroke="${P.d}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".8">${fur}</g>
+      <ellipse cx="0" cy="34" rx="12" ry="16" fill="${P.l}" opacity=".7"/>
+      <circle cx="0" cy="-24" r="21" fill="${P.b}"/>
+      <path d="M-20 -30 L-16 -56 L-3 -42 Z M20 -30 L16 -56 L3 -42 Z" fill="${P.b}"/>
+      <path d="M-15 -36 L-14 -49 L-7 -41 Z M15 -36 L14 -49 L7 -41 Z" fill="${P.d}"/>
+      <ellipse cx="-8" cy="-25" rx="4" ry="5" fill="${CREAM}"/><ellipse cx="8" cy="-25" rx="4" ry="5" fill="${CREAM}"/>
+      <ellipse cx="-8" cy="-24.5" rx="1.6" ry="3.6" fill="${INK}"/><ellipse cx="8" cy="-24.5" rx="1.6" ry="3.6" fill="${INK}"/>
+      <path d="M-3 -16 L3 -16 L0 -13 Z" fill="${P.d}"/>`;
+  }
+  return `<svg viewBox="-66 -64 132 128" aria-hidden="true"><defs>${defs}</defs><g filter="url(#paint)">${g}</g></svg>`;
+}
+
+/* ---------- storage (convenience only) ---------- */
+function load(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
+function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+
+/* ---------- state ---------- */
+const S = {
+  opp: load("udtc-opp", 3), diff: load("udtc-diff", "easy"),
+  players: [], discard: [], round: 0, rounds: 0, flips: 1,
+  legal: new Set(), t0: 0, timers: [], resolved: true, out: new Set(), misgrabs: [],
+  eligible: [], sudden: false, taken: new Map(), done: new Set(), scorers: [], paused: false, waiting: false, live: false,
+  stats: {times: [], miss: 0}
+};
+const $ = id => document.getElementById(id);
+const rand = (a,b) => a + Math.random()*(b-a);
+function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function later(fn, ms){ const t = setTimeout(fn, ms); S.timers.push(t); return t; }
+function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
+
+function buildDeck(){
+  const d = [];
+  for (const o of OBJ) for (const c of COLORS){
+    const n = (c === CORRECT[o] || c === EXTRA[o]) ? 3 : 2;
+    for (let i=0;i<n;i++) d.push({obj:o, color:c});
+  }
+  return shuffle(d); // 60 cards, 15 correctly colored
+}
+const isCorrect = card => CORRECT[card.obj] === card.color;
+
+/* ---------- setup controls ---------- */
+function syncSetup(){
+  document.querySelectorAll("#oppSeg button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.v === S.opp)));
+  document.querySelectorAll("#diffSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.diff)));
+  const P = S.opp + 1, f = P <= 3 ? 2 : 1, per = 60 / P;
+  $("oppHint").textContent = `${P} players · ${per} cards each · ${per/f} rounds${f===2 ? " · everyone flips 2 cards" : ""}`;
+  $("diffHint").textContent = S.diff === "easy" ? "Bots take around two seconds and misgrab often." : "Bots grab in about a second and rarely slip.";
+}
+$("oppSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.opp = +b.dataset.v; save("udtc-opp", S.opp); syncSetup(); });
+$("diffSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.diff = b.dataset.v; save("udtc-diff", S.diff); syncSetup(); });
+
+/* ---------- rendering ---------- */
+function renderToys(){
+  $("grab").innerHTML = [...OBJ, "cat"].map((o,i) => `
+    <button class="toy${o==="cat"?" cat":""}" type="button" id="toy-${o}" data-t="${o}" aria-label="Grab the ${NAME[o].toLowerCase()}">
+      <span class="coaster">${draw(o, CORRECT[o])}</span>
+      <span class="lbl">${NAME[o]}</span>
+      <span class="key">${i+1}</span>
+      <span class="tags"></span>
+    </button>`).join("");
+}
+function resetToys(enabled){
+  document.querySelectorAll(".toy").forEach(t => { t.classList.remove("legal","won","miss"); t.querySelector(".tags").innerHTML = ""; t.disabled = !enabled; });
+}
+function setToysEnabled(on){ document.querySelectorAll(".toy").forEach(t => t.disabled = !on); }
+function tagToy(o, text, bad){
+  const t = $("toy-"+o); if (!t) return;
+  t.querySelector(".tags").insertAdjacentHTML("beforeend", `<span class="tag${bad?" bad":""}">${text}</span>`);
+}
+function renderSeats(){
+  $("seats").innerHTML = S.players.map(p => {
+    const dim = S.sudden && !S.eligible.includes(p);
+    const flag = !S.resolved && S.out.has(p) ? `<span class="flag">Out</span>` : "";
+    return `<div class="seat${p.human?" you":""}${dim?" dim":""}">
+      <span class="nm">${p.name}</span><span class="vp">★ ${p.vp.length}</span>
+      <span class="left">${p.deck.length} left</span>${flag}</div>`;
+  }).join("");
+}
+function renderTable(mode){
+  const slots = S.players.map(p => {
+    let cards = "";
+    if (mode === "backs") cards = Array.from({length: S.sudden ? 1 : S.flips}, () => `<div class="card back"></div>`).join("");
+    else cards = p.flipped.map(c => `<div class="card flip" role="img" aria-label="${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
+    return `<div class="slot${p.human?" you":""}"><div class="cards">${cards}</div><div class="who">${p.name}</div></div>`;
+  }).join("");
+  $("table").innerHTML = slots + `<div class="chant" id="chant"></div>`;
+}
+function banner(html){ $("banner").innerHTML = html; }
+function updatePill(){
+  $("roundPill").textContent = S.sudden ? "Sudden death" : `Round ${S.round} / ${S.rounds}`;
+  $("modePill").textContent = DIFF[S.diff].label;
+}
+
+/* ---------- example table on the setup screen ---------- */
+function showExample(){
+  const ex = [{obj:"bird",color:"pink"},{obj:"fish",color:"green"},{obj:"fly",color:"blue"},{obj:"mouse",color:"yellow"}];
+  $("table").innerHTML = ex.map(c => `<div class="slot"><div class="cards"><div class="card" role="img" aria-label="${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj,c.color)}</div></div></div>`).join("")
+    + `<div class="caption">Example: only the fish is shown in its own color (green), so grab the fish.</div>`;
+  resetToys(false);
+  $("toy-fish").classList.add("legal");
+  banner("");
+}
+
+/* ---------- game flow ---------- */
+function startGame(){
+  clearTimers();
+  const P = S.opp + 1;
+  S.flips = P <= 3 ? 2 : 1;
+  const deck = buildDeck(), per = 60 / P;
+  const names = shuffle([...BOTS]).slice(0, S.opp);
+  S.players = [{name:"You", human:true}, ...names.map(n => ({name:n, human:false}))]
+    .map((p,i) => Object.assign(p, {deck: deck.slice(i*per, (i+1)*per), vp: [], flipped: []}));
+  S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players;
+  S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
+  $("pauseBtn").textContent = "Pause";
+  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false; $("seats").hidden = false;
+  resetToys(false); renderSeats(); renderTable("backs"); updatePill();
+  banner("Get ready…");
+  later(nextRound, 700);
+}
+function nextRound(){
+  if (!S.live) return;
+  if (S.players[0].deck.length === 0) return endGame();
+  S.round++;
+  startRound(S.players, false);
+}
+function startRound(eligible, sudden){
+  S.sudden = sudden; S.eligible = eligible; S.resolved = true; S.out = new Set(); S.misgrabs = [];
+  S.taken = new Map(); S.done = new Set(); S.scorers = [];
+  updatePill(); resetToys(false); renderSeats(); renderTable("backs"); banner("&nbsp;");
+  const words = ["Un","Deux","Trois","Cat!"];
+  words.forEach((w,i) => later(() => {
+    const el = $("chant"); if (el) el.innerHTML = `<span>${w}</span>`;
+    if (i === words.length - 1) later(flip, 260);
+  }, i*430));
+}
+function flip(){
+  if (!S.sudden) S.players.forEach(p => { p.flipped = p.deck.splice(0, S.flips); });
+  renderTable("faces"); renderSeats();
+  const all = S.players.flatMap(p => p.flipped);
+  S.legal = new Set(all.filter(isCorrect).map(c => c.obj));
+  if (S.legal.size === 0) S.legal.add("cat");
+  S.resolved = false; S.t0 = performance.now();
+  refreshToys();
+  S.eligible.filter(p => !p.human).forEach(b => planBot(b, all));
+  banner(S.sudden ? "Sudden death: only tied players may grab." : "&nbsp;");
+}
+function planBot(bot, cards){
+  const d = DIFF[S.diff], isCat = S.legal.has("cat");
+  let t = d.mean + d.sd*gauss() + d.perCard*cards.length + (isCat ? d.catExtra : 0);
+  t = Math.max(.5, t);
+  if (Math.random() < d.miss){
+    // tempted by a distractor: a wrong-colored card wearing another toy's color
+    let tempt = cards.filter(c => !isCorrect(c)).map(c => OWNER[c.color]).filter(o => !S.legal.has(o));
+    if (!isCat) tempt.push("cat");
+    if (!tempt.length) tempt = OBJ.filter(o => !S.legal.has(o));
+    const target = tempt[Math.floor(Math.random()*tempt.length)];
+    later(() => grab(bot, target), t*0.75*1000);
+  } else {
+    // reach for any correct toy nobody is holding yet
+    later(() => {
+      const open = [...S.legal].filter(o => !S.taken.has(o));
+      if (open.length) grab(bot, open[Math.floor(Math.random()*open.length)]);
+    }, t*1000);
+  }
+}
+const CLOSE_MS = 2500; // once someone scores, the other correct toys stay open this long
+function refreshToys(){
+  const me = S.players[0];
+  const canAct = !S.resolved && S.eligible.includes(me) && !S.out.has(me) && !S.done.has(me);
+  document.querySelectorAll(".toy").forEach(el => { el.disabled = !canAct || S.taken.has(el.dataset.t); });
+}
+function grab(p, target){
+  if (S.resolved || S.out.has(p) || S.done.has(p) || !S.eligible.includes(p)) return;
+  if (S.taken.has(target)) return; // someone is already holding it
+  const t = (performance.now() - S.t0) / 1000;
+  if (S.legal.has(target)){
+    S.taken.set(target, p); S.done.add(p); S.scorers.push({p, target, t});
+    $("toy-"+target).classList.add("won");
+    tagToy(target, `${p.name} · ${t.toFixed(2)}s`, false);
+    if (S.sudden) return resolve();
+    const open = [...S.legal].filter(o => !S.taken.has(o));
+    if (!open.length || S.eligible.every(q => S.out.has(q) || S.done.has(q))) return resolve();
+    if (S.scorers.length === 1) later(resolve, CLOSE_MS);
+    banner(`${p.human ? "<b>You</b> have" : `<b>${p.name}</b> has`} the ${NAME[target].toLowerCase()}. Still up for grabs: ${open.map(o => NAME[o].toLowerCase()).join(", ")}.`);
+    refreshToys(); renderSeats();
+    return;
+  }
+  S.out.add(p); S.misgrabs.push({p, target});
+  const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss");
+  tagToy(target, p.name, true);
+  if (p.human){ S.stats.miss++; banner(`Wrong grab. That's not the ${NAME[target].toLowerCase()}. You're out this round.`); }
+  refreshToys(); renderSeats();
+  if (S.eligible.every(q => S.out.has(q) || S.done.has(q))) resolve();
+}
+function resolve(){
+  if (S.resolved) return;
+  S.resolved = true; clearTimers(); setToysEnabled(false);
+  S.legal.forEach(o => $("toy-"+o).classList.add("legal"));
+  const scorers = S.scorers, first = scorers[0] ? scorers[0].p : null;
+  const me = scorers.find(s => s.p.human);
+  if (me && !S.sudden) S.stats.times.push(me.t);
+
+  const notes = [];
+  if (!S.sudden){
+    const scored = new Set(scorers.map(s => s.p));
+    S.players.forEach(p => { (scored.has(p) ? p.vp : S.discard).push(...p.flipped); p.flipped = []; });
+    for (const m of S.misgrabs){
+      if (m.p.vp.length){ S.discard.push(m.p.vp.pop()); notes.push(`${m.p.human ? "You" : m.p.name} lost a card`); }
+    }
+  }
+  const ansText = S.legal.has("cat") ? "No toy was in its own color, so it was the cat." : "";
+  const who = s => `<b>${s.p.human ? "You" : s.p.name}</b> (${NAME[s.target].toLowerCase()}, ${s.t.toFixed(2)}s)`;
+  let head;
+  if (!scorers.length) head = "Nobody grabbed a correct toy. Nobody scores this round.";
+  else if (scorers.length === 1) head = `${who(scorers[0])} scored.`;
+  else head = `${scorers.map(who).join(" and ")} all scored.`;
+  const sub = [ansText, notes.join(" · ")].filter(Boolean).join(" ");
+  banner(`<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`);
+  renderSeats();
+
+  if (S.sudden){
+    if (first) later(() => finish(first), 1800);
+    else later(() => suddenDeath(S.eligible), 1800);
+    return;
+  }
+  S.waiting = true;
+  if (!S.paused) later(advance, 2300);
+}
+function advance(){ if (!S.waiting) return; S.waiting = false; nextRound(); }
+function endGame(){
+  const top = Math.max(...S.players.map(p => p.vp.length));
+  const tied = S.players.filter(p => p.vp.length === top);
+  if (tied.length === 1) return finish(tied[0]);
+  banner(`Tie at ${top} between ${tied.map(p => p.name).join(" and ")}. Sudden death next.`);
+  later(() => suddenDeath(tied), 1800);
+}
+function suddenDeath(tied){
+  let pool = shuffle(S.discard.splice(0));
+  if (pool.length < S.players.length) pool = pool.concat(buildDeck());
+  S.players.forEach(p => { p.flipped = [pool.pop()]; });
+  S.discard = pool;
+  startRound(tied, true);
+}
+function finish(winner){
+  S.live = false; clearTimers();
+  const order = [...S.players].sort((a,b) => (b === winner) - (a === winner) || b.vp.length - a.vp.length);
+  $("endTitle").textContent = winner.human ? "You win!" : `${winner.name} wins.`;
+  $("standings").innerHTML = order.map((p,i) => `<li class="${i===0?"first":""}"><span class="n">${p.name}</span><span>★ ${p.vp.length} ${p.vp.length === 1 ? "card" : "cards"}</span></li>`).join("");
+  const ts = S.stats.times;
+  const best = ts.length ? Math.min(...ts) : null;
+  let rec = load("udtc-best", null);
+  if (best !== null && (rec === null || best < rec)){ rec = best; save("udtc-best", rec); }
+  const avg = ts.length ? ts.reduce((a,b)=>a+b,0)/ts.length : null;
+  $("stats").innerHTML = [
+    ["Rounds you scored", ts.length],
+    ["Your fastest grab", best !== null ? best.toFixed(2)+"s" : "–"],
+    ["Your average grab", avg !== null ? avg.toFixed(2)+"s" : "–"],
+    ["Wrong grabs", S.stats.miss],
+    ["Best ever", rec !== null ? rec.toFixed(2)+"s" : "–"]
+  ].map(([k,v]) => `<div><span class="v">${v}</span><span class="k">${k}</span></div>`).join("");
+  $("end").hidden = false; $("meta").hidden = true;
+  banner("");
+}
+function toSetup(){
+  S.live = false; clearTimers(); S.resolved = true;
+  $("end").hidden = true; $("setup").hidden = false; $("meta").hidden = true; $("seats").hidden = true;
+  showExample();
+}
+
+/* ---------- input ---------- */
+$("grab").addEventListener("click", e => {
+  const b = e.target.closest(".toy"); if (!b || b.disabled) return;
+  grab(S.players[0], b.dataset.t);
+});
+document.addEventListener("keydown", e => {
+  if (!S.live || S.resolved || e.repeat) return;
+  const map = {"1":"bird","2":"fish","3":"ball","4":"mouse","5":"fly","6":"cat","c":"cat","C":"cat"};
+  const t = map[e.key]; if (!t) return;
+  e.preventDefault(); grab(S.players[0], t);
+});
+$("startBtn").addEventListener("click", startGame);
+$("againBtn").addEventListener("click", startGame);
+$("settingsBtn").addEventListener("click", toSetup);
+$("quitBtn").addEventListener("click", toSetup);
+$("pauseBtn").addEventListener("click", () => {
+  S.paused = !S.paused;
+  $("pauseBtn").textContent = S.paused ? "Resume" : "Pause";
+  if (!S.paused && S.waiting) advance();
+});
+
+/* ---------- boot ---------- */
+if (![1,2,3,4,5].includes(S.opp)) S.opp = 3;
+if (!DIFF[S.diff]) S.diff = "easy";
+renderToys(); syncSetup(); showExample();
+})();
+</script>
+</body>
+</html>

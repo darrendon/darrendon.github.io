@@ -144,7 +144,7 @@
 }
 
 /* More games (end of every game page) */
-.more-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.8vw,20px)}
+.more-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(12px,1.8vw,20px)}
 .more-card{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--g-ink);min-width:0}
 .more-card .more-art{display:block;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:var(--g-panel);border:1px solid var(--g-line);margin-bottom:6px;transition:transform .2s}
 .more-card img{width:100%;height:100%;object-fit:cover;display:block}

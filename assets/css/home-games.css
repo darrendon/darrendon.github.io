@@ -39,3 +39,12 @@
 .feature.g-dftc h3 { font-family: var(--ft-display); font-weight: 900; font-style: italic; font-stretch: 112%; letter-spacing: -0.01em; }
 .feature.g-dftc .feature-art { background: rgb(217, 222, 232); padding: 0px; }
 .feature.g-dftc .feature-art img { width: 100%; height: 100%; object-fit: cover; }
+
+/* from un-deux-trois-cat.css */
+.g-udtc { --g-bg: #FBF7F0; --g-panel: #F1E9DC; --g-panel-hi: #F8F2E8; --g-face: #FFFFFF; --g-red: #3A2945; --g-gold: #FFC94A; --g-jade: #3A2945; --g-ink: #2A1D31; --g-muted: #6A5C72; --g-line: #E2D7C6; --udtc-title: "Bagel Fat One","Cooper Black",Georgia,serif; --udtc-plum: #3A2945; --udtc-plum-d: #2A1D31; --udtc-ochre: #B47622; --udtc-cream: #F4EBD8; --udtc-good: #4CA055; }
+@media (prefers-color-scheme: dark){.g-udtc { --g-bg: #1F1624; --g-panel: #2A1D31; --g-panel-hi: #3A2945; --g-red: #FFC94A; --g-jade: #2A1D31; --g-ink: #F7EEF9; --g-muted: #C3B1CF; --g-line: #3F2E49; --udtc-ochre: #FFC94A; }}
+.g-udtc h2, .g-udtc h3 { font-family: var(--udtc-title); font-weight: 400; letter-spacing: 0px; }
+.feature.g-udtc h3 { font-family: var(--udtc-title); font-weight: 400; letter-spacing: 0px; color: var(--udtc-plum); }
+@media (prefers-color-scheme: dark){.feature.g-udtc h3 { color: var(--udtc-cream); }}
+.feature.g-udtc .feature-art { background: rgb(228, 220, 210); padding: 0px; }
+.feature.g-udtc .feature-art img { width: 100%; height: 100%; object-fit: cover; }

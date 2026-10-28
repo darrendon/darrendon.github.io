@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un, Deux, Trois, Cat! — sell sheet</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Source for un-deux-trois-cat-sell-sheet.pdf: print at US Letter landscape, no margins, backgrounds on.
+   Left: the box's own plum with its paw prints, the box and the QR. Right: painting paper, a three-panel strip showing a round. */
+:root{--plum:#3a2945;--plum-d:#2a1d31;--ink:#2a1d31;--gold:#ffc94a;--ochre:#c0832a;--paper:#fbf7f0;--wash:#f1e9dc;--soft:#5d5068}
+*{box-sizing:border-box}
+html,body{margin:0;background:#8E9499}
+@page{size:11in 8.5in;margin:0}
+.sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;display:grid;grid-template-columns:4.15in 1fr;
+  color:var(--ink);background:var(--paper);font-family:Figtree,system-ui,sans-serif;font-size:10.5pt;line-height:1.38;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ---- left: the box side */
+.side{position:relative;overflow:hidden;background:var(--plum)}
+.side .pat{position:absolute;inset:0;width:100%;height:100%}
+.box{position:absolute;left:.5in;top:.48in;width:3.15in;transform:rotate(-3deg);border-radius:6px;box-shadow:0 14px 26px rgba(0,0,0,.42)}
+.hook{position:absolute;left:.5in;right:.45in;top:4.02in;color:#f4ebd8}
+.hook b{display:block;font:400 21pt/1.05 "Bagel Fat One",Figtree,sans-serif;color:var(--gold)}
+.hook span{display:block;margin-top:.08in;font-size:10.5pt;line-height:1.38}
+.qr{position:absolute;left:.5in;right:.45in;bottom:.5in;display:flex;align-items:center;gap:.2in;color:#f4ebd8}
+.qr img{width:1.08in;height:1.08in;display:block;border-radius:8px;flex:none;box-shadow:0 0 0 4px var(--gold)}
+.qr b{display:block;font:400 18pt/1 "Bagel Fat One",Figtree,sans-serif;color:var(--gold)}
+.qr span{display:block;margin-top:.06in;font-size:10pt;line-height:1.3;font-weight:600}
+
+/* ---- right: the paper */
+.main{padding:.42in .5in .34in .44in;display:flex;flex-direction:column;min-width:0}
+.mast{display:flex;align-items:baseline;justify-content:space-between;gap:.2in;border-bottom:2.5px solid var(--ink);padding-bottom:.07in;margin-bottom:.15in}
+.mast .t{white-space:nowrap;font:400 18pt/1 "Bagel Fat One",Figtree,sans-serif}
+.mast .k{white-space:nowrap;font:800 8.4pt/1 Figtree;letter-spacing:.12em;text-transform:uppercase;color:var(--ochre)}
+h1{margin:0;font:400 27pt/1.02 "Bagel Fat One",Figtree,sans-serif;letter-spacing:-.005em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--ochre)}
+.pitch{margin:.13in 0 0;font-size:11.6pt;line-height:1.42}
+.fans{margin:.07in 0 0;font-size:11.2pt;color:var(--soft)}
+.fans b{color:var(--ink);font-weight:800}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.2in}
+.panel{border-radius:10px;position:relative;display:flex;flex-direction:column;background:#fff;border:1.5px solid #dcd0bf;overflow:hidden}
+.panel .art{height:1.62in;position:relative;overflow:hidden;background:var(--wash)}
+.panel .cap{position:absolute;top:.08in;left:.08in;z-index:2;background:var(--plum);color:var(--gold);border-radius:999px;padding:4px 10px 3px;
+  font:400 10.5pt/1 "Bagel Fat One",Figtree,sans-serif;letter-spacing:.01em}
+.panel p{margin:0;padding:.09in .11in .11in;font-size:10.2pt;line-height:1.33}
+.panel p b{font-weight:800}
+.cards{position:absolute;left:0;right:0;bottom:.16in;display:flex;justify-content:center;gap:.04in}
+.cards img{width:.42in;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,.18);display:block}
+.cards img.hit{box-shadow:0 0 0 3px #4ca055,0 2px 5px rgba(0,0,0,.18)}
+.art img.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.art img.cat{position:absolute;left:50%;bottom:.04in;width:1.5in;transform:translateX(-50%)}
+.facts{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:0 .34in;margin-top:auto;padding-top:.16in;border-top:2.5px solid var(--ink)}
+.facts b{display:block;font:400 20pt/1 "Bagel Fat One",Figtree,sans-serif}
+.facts span{font-size:9.8pt;color:var(--soft)}
+.ready{margin:.12in 0 0;font-size:10.4pt;color:var(--soft)}
+.ready b{color:var(--ink)}
+.ready u{text-decoration:none;color:var(--plum);font-weight:800}
+.contact{display:flex;justify-content:space-between;align-items:baseline;margin-top:.08in;font-size:10.4pt}
+.contact b{font:400 12pt/1 "Bagel Fat One",Figtree,sans-serif}
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <aside class="side">
+    <svg class="pat" id="pat" viewBox="0 0 400 816" preserveAspectRatio="xMidYMid slice"></svg>
+    <img class="box" src="/games/un-deux-trois-cat/img/box-front.webp" alt="">
+    <div class="hook"><b>Real cat toys.<br>Grab them like a cat would.</b><span>Five felt toys and a felt cat sit in the middle of the table. The cards are painted to match them exactly.</span></div>
+    <div class="qr"><img src="/games/un-deux-trois-cat/img/qr.svg" alt="QR code linking to darrendon.com/games/un-deux-trois-cat"><div><b>Play it now</b><span>Free in your browser, against bots</span></div></div>
+  </aside>
+
+  <main class="main">
+    <div class="mast"><span class="t">Un, Deux, Trois, Cat!</span><span class="k">Grabbing game · 2–6 players · 10 min</span></div>
+    <h1>Everyone flips at once. <em>Nobody knows the answer</em> until the cards land.</h1>
+    <p class="pitch">Chant “un, deux, trois, cat!” and flip your top card together. Every card shows one of the five toys, almost always in the wrong color. Spot a toy shown in its own color and grab it from the middle of the table. If nothing is in its own color, grab the cat. Every round’s puzzle is built by the whole table’s flips, so it’s different every time.</p>
+    <p class="fans">For fans of <b>Ghost Blitz</b> and <b>Taco Cat Goat Cheese Pizza</b></p>
+
+    <div class="strip">
+      <div class="panel">
+        <span class="cap">Un, deux, trois…</span>
+        <div class="art"><div class="cards">
+          <img src="/games/un-deux-trois-cat/img/card-bird-pink.webp" alt=""><img src="/games/un-deux-trois-cat/img/card-ball-orange.webp" alt=""><img src="/games/un-deux-trois-cat/img/card-fly-blue.webp" alt=""><img src="/games/un-deux-trois-cat/img/card-mouse-yellow.webp" alt="">
+        </div></div>
+        <p>Everyone flips their top card at the same moment. Pink bird, orange ball, blue butterfly, yellow mouse: <b>nothing is in its own color.</b></p>
+      </div>
+      <div class="panel">
+        <span class="cap">…Cat!</span>
+        <div class="art"><img class="cat" src="/games/un-deux-trois-cat/img/cat-hero.webp" alt=""></div>
+        <p>So everyone lunges for the felt cat. First hand on it keeps their flipped card as a point.</p>
+      </div>
+      <div class="panel">
+        <span class="cap">Next round</span>
+        <div class="art"><div class="cards">
+          <img src="/games/un-deux-trois-cat/img/card-bird-pink.webp" alt=""><img class="hit" src="/games/un-deux-trois-cat/img/card-fish-green.webp" alt=""><img src="/games/un-deux-trois-cat/img/card-fly-blue.webp" alt=""><img src="/games/un-deux-trois-cat/img/card-mouse-yellow.webp" alt="">
+        </div></div>
+        <p>A <b>green fish</b> is a fish in its own color: grab the fish. Two toys in their own colors? Two players can score.</p>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div><b>2–6</b><span>players</span></div>
+      <div><b>10 min</b><span>deal out, flip till it’s gone</span></div>
+      <div><b>60</b><span>painted cards</span></div>
+      <div><b>6</b><span>felt toys in an 8 × 8 in box</span></div>
+    </div>
+    <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser demo with bots at <u>darrendon.com/games/un-deux-trois-cat</u></p>
+    <div class="contact"><span><b>Darren Don</b> &nbsp;Kansas City, MO</span><span>darren@darrendon.com</span></div>
+  </main>
+</div>
+<script>
+// paw prints scattered over the plum side, as on the box
+(function () {
+  let s = 5; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; let g = '<g fill="rgba(255,201,74,.11)">';
+  for (let y = 20, row = 0; y < 840; y += 54, row++) for (let x = row % 2 ? 27 : 0; x < 430; x += 54) {
+    const a = -30 + r() * 60, xx = x + (r() - .5) * 14, yy = y + (r() - .5) * 14;
+    g += `<g transform="translate(${xx.toFixed(1)} ${yy.toFixed(1)}) rotate(${a.toFixed(0)}) scale(.8) translate(-10 -10)"><ellipse cx="10" cy="13.4" rx="5.2" ry="4.4"/><ellipse cx="4" cy="7.6" rx="2" ry="2.6"/><ellipse cx="8" cy="4.2" rx="2" ry="2.7"/><ellipse cx="12.2" cy="4.2" rx="2" ry="2.7"/><ellipse cx="16" cy="7.6" rx="2" ry="2.6"/></g>`;
+  }
+  document.getElementById('pat').innerHTML = g + '</g>';
+})();
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>

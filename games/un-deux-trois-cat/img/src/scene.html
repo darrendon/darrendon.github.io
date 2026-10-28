@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script src="/assets/vendor/three.r128.min.js"></script>
+<script src="/games/un-deux-trois-cat/img/src/toy-art.js"></script>
+</head><body>
+<script>
+/* Un, Deux, Trois, Cat! — still renders. Units are inches. ?scene=hero|table|kit|home|og  &w=1600&h=1000  &check=1
+   The toys are felt plush in one dominant colour each, made to match the card art. Nothing in any scene touches
+   anything else: with &check=1 each object is drawn alone and any overlap, near miss (< 3 px) or frame cut is reported. */
+(async function () {
+try {
+  const q = new URLSearchParams(location.search);
+  const SCENE = q.get('scene') || 'hero', W = +q.get('w') || 1600, H = +q.get('h') || 1000, CHECK = q.get('check') === '1';
+  const TEXP = '/games/un-deux-trois-cat/img/src/tex/';
+  const T = window.ToyArt;
+  const C = (h) => new THREE.Color(h).convertSRGBToLinear();
+  const loader = new THREE.TextureLoader();
+  const cache = {};
+  const tex = (n) => cache[n] || (cache[n] = new Promise((res, rej) => loader.load(TEXP + n, (t) => { t.anisotropy = 16; t.encoding = THREE.sRGBEncoding; res(t); }, undefined, rej)));
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(W, H);
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const BG = '#E4DCD2';
+  scene.background = C(BG); scene.fog = new THREE.Fog(C(BG), 46, 90);
+  const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 300);
+  scene.add(new THREE.HemisphereLight(0xfff4e6, 0x8a7458, 0.52));
+  const key = new THREE.DirectionalLight(0xfff1dc, 0.86); key.position.set(9, 16, 10); key.castShadow = true;
+  key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 80 });
+  key.shadow.radius = 6; key.shadow.bias = -0.0004; scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffd9a8, 0.34); rim.position.set(-11, 8, -10); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xe6ecff, 0.18); fill.position.set(-7, 6, 11); scene.add(fill);
+
+  // the table: a warm linen cloth
+  function linen() {
+    const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
+    g.fillStyle = '#EFE7DC'; g.fillRect(0, 0, 1024, 1024);
+    let s = 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    for (let i = 0; i < 1024; i += 3) { g.fillStyle = 'rgba(255,255,255,' + (0.03 + r() * 0.04) + ')'; g.fillRect(0, i, 1024, 1); g.fillStyle = 'rgba(80,50,20,' + (0.02 + r() * 0.035) + ')'; g.fillRect(i, 0, 1, 1024); }
+    for (let i = 0; i < 1400; i++) { g.fillStyle = 'rgba(' + (r() < .5 ? '255,255,255' : '90,60,30') + ',' + (0.02 + r() * 0.05) + ')'; g.fillRect(r() * 1024, r() * 1024, 2 + r() * 12, 1 + r() * 1.5); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(7, 7); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+  }
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), new THREE.MeshStandardMaterial({ map: linen(), roughness: 0.96, color: C('#D9CFC3') }));
+  table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
+
+  // every top-level object goes through add() so the checker can draw it alone
+  const objects = [];
+  function add(name, o) { o.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); scene.add(o); objects.push([name, o]); return o; }
+
+  // ---- felt: a canvas painted in the toy's colours with a fibre overlay
+  let fs = 3; const fr = () => (fs = (fs * 9301 + 49297) % 233280) / 233280;
+  function fibres(g, w, h, n) {
+    for (let i = 0; i < n; i++) {
+      const x = fr() * w, y = fr() * h, a = fr() * Math.PI, L = 3 + fr() * 9;
+      g.strokeStyle = fr() < .5 ? 'rgba(255,255,255,' + (0.05 + fr() * 0.09) + ')' : 'rgba(0,0,0,' + (0.05 + fr() * 0.08) + ')';
+      g.lineWidth = 0.8 + fr(); g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke();
+    }
+  }
+  function canvasTex(w, h, paint) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+    paint(g, w, h); fibres(g, w, h, Math.round(w * h / 90));
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; t.wrapS = THREE.RepeatWrapping; return t;
+  }
+  const felt = (hex) => new THREE.MeshStandardMaterial({ map: canvasTex(256, 128, (g, w, h) => { g.fillStyle = hex; g.fillRect(0, 0, w, h); }), roughness: 1 });
+  const bead = (hex, rough = 0.35) => new THREE.MeshStandardMaterial({ color: C(hex), roughness: rough });
+  const P = T.PAL, CREAM = T.CREAM, INK = T.INK, BROWN = T.BROWN;
+
+  // a lathe body lying along +x: profile r(t) for t in 0..1 from tail (−x) to nose (+x)
+  function lathe(len, rfn, n = 40) {
+    const pts = []; for (let i = 0; i <= n; i++) { const t = i / n; pts.push(new THREE.Vector2(Math.max(0.0001, rfn(t)), (t - 0.5) * len)); }
+    const g = new THREE.LatheGeometry(pts, 48); g.rotateZ(-Math.PI / 2); return g;
+  }
+  const sph = (r, mat, sx = 1, sy = 1, sz = 1) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 28), mat); m.scale.set(sx, sy, sz); return m; };
+  function eye(r, x, y, z) { const g = new THREE.Group(); const w = sph(r, bead(CREAM, .5)); g.add(w); const p = sph(r * .55, bead(INK, .2)); p.position.set(0, 0, r * .62); g.add(p); g.position.set(x, y, z); return g; }
+
+  // ---- the toys. Each faces +z (toward a camera in front) unless rotated.
+  function ball() {
+    const t = canvasTex(512, 256, (g, w, h) => { g.fillStyle = P.blue.b; g.fillRect(0, 0, w, h); g.fillStyle = CREAM; g.fillRect(0, h * .44, w, h * .12); g.fillStyle = 'rgba(34,73,126,.35)'; g.fillRect(0, h * .435, w, h * .01); g.fillRect(0, h * .555, w, h * .01); });
+    const g = new THREE.Group(); const b = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 32), new THREE.MeshStandardMaterial({ map: t, roughness: .95 }));
+    b.rotation.z = 0.32; b.rotation.x = 0.2; b.position.y = 1; g.add(b); return g;
+  }
+  function mouse() {
+    const t = canvasTex(512, 256, (g, w, h) => { g.fillStyle = P.pink.b; g.fillRect(0, 0, w, h); g.fillStyle = P.pink.d;
+      let s = 5; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; for (let i = 0; i < 46; i++) { g.beginPath(); g.ellipse(r() * w, h * .12 + r() * h * .76, 6 + r() * 5, 9 + r() * 6, 0, 0, Math.PI * 2); g.fill(); } });
+    const len = 3.0, rmax = 0.82;
+    const body = new THREE.Mesh(lathe(len, (t) => rmax * Math.pow(Math.sin(Math.PI * Math.min(1, t * 0.92 + 0.02)), 0.62) * (1.08 - 0.42 * t)), new THREE.MeshStandardMaterial({ map: t, roughness: 1 }));
+    body.scale.set(1, .86, 1); body.position.y = rmax * .8; const g = new THREE.Group(); g.add(body);
+    const pm = felt(P.pink.b), pd = felt(P.pink.d);
+    for (const z of [-.42, .42]) { const e = sph(.36, pm, 1, 1, .32); e.position.set(.62, 1.32, z); e.rotation.y = z > 0 ? -.5 : .5; g.add(e); const ei = sph(.22, pd, 1, 1, .3); ei.position.set(.66, 1.32, z + (z > 0 ? .07 : -.07)); ei.rotation.y = e.rotation.y; g.add(ei); }
+    for (const z of [-.26, .26]) { const e = sph(.075, bead(INK, .2)); e.position.set(1.05, .9, z); g.add(e); }
+    const nose = sph(.07, bead(INK, .3)); nose.position.set(1.5, .6, 0); g.add(nose);
+    const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(-1.45, .55, 0), new THREE.Vector3(-1.9, .12, -.15), new THREE.Vector3(-2.35, .06, -.75), new THREE.Vector3(-2.2, .06, -1.35), new THREE.Vector3(-1.7, .06, -1.6)]);
+    const tail = new THREE.Mesh(new THREE.TubeGeometry(curve, 60, .038, 10, false), bead(INK, .6)); g.add(tail);
+    return g;
+  }
+  function fish() {
+    const t = canvasTex(512, 256, (g, w, h) => { g.fillStyle = P.green.b; g.fillRect(0, 0, w, h); g.fillStyle = P.green.d;
+      for (let y = 10; y < h; y += 15) for (let x = (y / 15) % 2 ? 8 : 0; x < w; x += 16) { g.save(); g.translate(x, y); g.rotate(.6); g.fillRect(-3, -3, 6, 6); g.restore(); } });
+    const len = 3.2, rmax = 1.05;
+    const body = new THREE.Mesh(lathe(len, (t) => rmax * Math.pow(Math.sin(Math.PI * (0.08 + 0.9 * t)), 0.75) * (0.55 + 0.5 * t) * (t < .97 ? 1 : 1)), new THREE.MeshStandardMaterial({ map: t, roughness: 1 }));
+    body.scale.set(1, .42, 1); body.position.y = rmax * .42; const g = new THREE.Group(); g.add(body);
+    const dm = felt(P.green.d);
+    for (let i = 0; i < 9; i++) { // a tassel tuft: thin felt strips fanning out of the tail
+      const a = (i - 4) * 0.2, L = 1.0 + ((i * 37) % 5) * .07, lift = ((i * 53) % 7 - 3) * 0.07;
+      const x0 = -len / 2 + .1, end = new THREE.Vector3(x0 - Math.cos(a) * L, .34 + lift, Math.sin(a) * L);
+      const mid = new THREE.Vector3(x0 - Math.cos(a) * L * .5, .4 + lift * .6, Math.sin(a) * L * .5);
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(x0, .36, 0), mid, end]), 20, .045, 8, false), dm)); }
+    for (const z of [-.95, .95]) { const f = sph(.42, dm, 1, .22, .55); f.position.set(.05, .3, z * .98); f.rotation.y = z > 0 ? .5 : -.5; g.add(f); }
+    const top = sph(.42, dm, 1.1, .24, .5); top.position.set(-.1, .78, 0); g.add(top);
+    const e = eye(.2, .95, .66, .34); e.rotation.x = -1.1; g.add(e);
+    return g;
+  }
+  function bird() {
+    const t = canvasTex(512, 256, (g, w, h) => { g.fillStyle = P.yellow.b; g.fillRect(0, 0, w, h); g.strokeStyle = P.yellow.d; g.lineWidth = 2.6; g.lineCap = 'round';
+      let s = 9; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; for (let i = 0; i < 150; i++) { const x = r() * w, y = r() * h; g.beginPath(); g.moveTo(x - 6, y - 4); g.lineTo(x, y + 3); g.lineTo(x + 6, y - 4); g.stroke(); } });
+    const ym = new THREE.MeshStandardMaterial({ map: t, roughness: 1 });
+    const g = new THREE.Group();
+    const body = sph(1, ym, 1.3, .92, .95); body.position.set(.2, .95, 0); g.add(body);
+    const head = sph(.66, ym); head.position.set(-.85, 1.78, 0); g.add(head);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(.2, .55, 20), felt(BROWN)); beak.rotation.z = Math.PI / 2; beak.position.set(-1.68, 1.76, 0); g.add(beak);
+    for (const z of [-.86, .86]) { const wgt = sph(.62, felt(P.yellow.d), 1.15, .62, .2); wgt.position.set(.4, 1.0, z * .97); wgt.rotation.z = -.25; g.add(wgt); }
+    const tailG = new THREE.Mesh(new THREE.BoxGeometry(.9, .1, .62), felt(CREAM)); tailG.position.set(1.7, 1.25, 0); tailG.rotation.z = .65; g.add(tailG);
+    for (const z of [-.5, .5]) { const e = eye(.13, -.98, 1.92, z); e.rotation.y = z > 0 ? -.35 : .35 + Math.PI; g.add(e); }
+    return g;
+  }
+  // butterfly: felt wings cut from the card art's own outline, lying flat
+  function parsePath(d, sx = 1) {
+    const shapes = []; let sh = null; const tok = d.match(/[MCLZ]|-?\d+(\.\d+)?/g); let i = 0; const n = () => parseFloat(tok[i++]);
+    while (i < tok.length) { const c = tok[i++];
+      if (c === 'M') { sh = new THREE.Shape(); shapes.push(sh); sh.moveTo(sx * n(), -n()); }
+      else if (c === 'C') { const a = [sx * n(), -n(), sx * n(), -n(), sx * n(), -n()]; sh.bezierCurveTo(...a); }
+      else if (c === 'L') sh.lineTo(sx * n(), -n());
+    }
+    return shapes;
+  }
+  function butterfly() {
+    const half = "M-3 -4 C-18 -42 -58 -48 -57 -18 C-56 0 -32 6 -3 1 Z M-3 5 C-28 8 -48 22 -40 40 C-32 55 -10 42 -3 15 Z";
+    const S = 0.032; // inches per art unit: a 3.6 in wingspan
+    const cv = document.createElement('canvas'); cv.width = cv.height = 512; const g = cv.getContext('2d');
+    g.setTransform(512 / 120, 0, 0, 512 / 120, 256, 256);
+    const mirror = (d) => d.replace(/(-?\d+(\.\d+)?) (-?\d+(\.\d+)?)/g, (m, x, _a, y) => `${-parseFloat(x)} ${y}`);
+    const wings = new Path2D(half + ' ' + mirror(half));
+    g.fillStyle = P.orange.b; g.fill(wings); g.save(); g.clip(wings);
+    g.strokeStyle = P.orange.d; g.lineWidth = 1.6; g.globalAlpha = .75;
+    for (const sx of [-1, 1]) for (let k = 0; k < 6; k++) { const a = (-150 + k * 28) * Math.PI / 180, L = 46; g.beginPath(); g.moveTo(0, 2); g.lineTo(sx * Math.abs(L * Math.cos(a)), 2 + L * Math.sin(a)); g.stroke(); }
+    g.globalAlpha = 1; g.lineWidth = 7; g.stroke(wings); g.fillStyle = CREAM;
+    for (const [x, y, r] of [[-44, -24, 4.5], [-34, -34, 3.5], [-30, 34, 4], [-44, -8, 3]]) for (const sx of [-1, 1]) { g.beginPath(); g.arc(sx * x, y, r, 0, Math.PI * 2); g.fill(); }
+    g.restore(); g.setTransform(1, 0, 0, 1, 0, 0); fibres(g, 512, 512, 2600);
+    const wt = new THREE.CanvasTexture(cv); wt.encoding = THREE.sRGBEncoding; wt.anisotropy = 8;
+    const wm = new THREE.MeshStandardMaterial({ map: wt, roughness: 1 }), edge = felt(P.orange.d);
+    const grp = new THREE.Group();
+    for (const sx of [-1, 1]) {
+      const geo = new THREE.ExtrudeGeometry(parsePath(half, sx), { depth: 4, bevelEnabled: true, bevelThickness: 1, bevelSize: .8, bevelSegments: 2, curveSegments: 24 });
+      const p = geo.attributes.position, uv = geo.attributes.uv;
+      for (let k = 0; k < p.count; k++) uv.setXY(k, (p.getX(k) + 60) / 120, (p.getY(k) + 60) / 120);
+      const m = new THREE.Mesh(geo, [wm, edge]); m.scale.set(S, S, S); m.rotation.x = -Math.PI / 2;
+      const hinge = new THREE.Group(); hinge.add(m); hinge.rotation.z = sx * 0.14; hinge.position.y = .1; grp.add(hinge);
+    }
+    const bm = felt(BROWN);
+    const bodyM = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, 1.5, 20), bm); bodyM.rotation.x = Math.PI / 2; bodyM.position.set(0, .3, .1); grp.add(bodyM);
+    for (const z of [-.65, .85]) { const c = sph(.16, bm); c.position.set(0, .3, z); grp.add(c); }
+    const head = sph(.22, bm); head.position.set(0, .34, -.86); grp.add(head);
+    for (const sx of [-1, 1]) {
+      const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(sx * .06, .45, -.95), new THREE.Vector3(sx * .2, .75, -1.3), new THREE.Vector3(sx * .52, .9, -1.62)]);
+      grp.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 30, .025, 8, false), bead(INK, .5)));
+      const tip = sph(.065, bead(INK, .3)); tip.position.set(sx * .52, .9, -1.62); grp.add(tip);
+    }
+    return grp;
+  }
+  function cat() {
+    const t = canvasTex(512, 256, (g, w, h) => { g.fillStyle = '#5d5652'; g.fillRect(0, 0, w, h); g.strokeStyle = '#3a3431'; g.lineWidth = 2.4; g.lineCap = 'round';
+      let s = 4; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; for (let i = 0; i < 160; i++) { const x = r() * w, y = r() * h; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 4, y + 5, x, y + 10); g.stroke(); } });
+    const gm = new THREE.MeshStandardMaterial({ map: t, roughness: 1 }), dark = felt('#3a3431'), light = felt('#8a827c');
+    const g = new THREE.Group();
+    const body = sph(1, gm, 1.08, 1.3, .98); body.position.y = 1.28; g.add(body);
+    const belly = sph(.6, light, .95, 1.25, .4); belly.position.set(0, 1.08, .78); g.add(belly);
+    for (const x of [-.42, .42]) { const pw = sph(.3, gm, 1, .7, 1.2); pw.position.set(x, .2, .72); g.add(pw); }
+    const head = sph(.86, gm, 1.05, .95, .95); head.position.y = 2.95; g.add(head);
+    for (const x of [-.5, .5]) {
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(.32, .66, 24), gm); ear.position.set(x, 3.75, 0); ear.rotation.z = -x * .45; g.add(ear);
+      const ein = new THREE.Mesh(new THREE.ConeGeometry(.17, .38, 20), dark); ein.position.set(x * .98, 3.7, .17); ein.rotation.z = -x * .45; g.add(ein);
+      const e = sph(.17, bead(CREAM, .4), 1, 1.2, .5); e.position.set(x * .66, 3.05, .78); g.add(e);
+      const p = sph(.075, bead(INK, .2), 1, 2, .6); p.position.set(x * .66, 3.05, .86); g.add(p);
+    }
+    const nose = sph(.08, dark, 1.3, .8, .7); nose.position.set(0, 2.78, .9); g.add(nose);
+    const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(.7, .4, -.6), new THREE.Vector3(1.35, .25, -.1), new THREE.Vector3(1.3, .2, .65), new THREE.Vector3(.85, .2, 1.05)]);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 50, .2, 14, false), gm));
+    return g;
+  }
+  const TOY = { ball, mouse, fish, bird, fly: butterfly, cat };
+  function toy(name, x, z, yaw = 0) { const o = TOY[name](); o.position.set(x, 0, z); o.rotation.y = yaw; return add(name + '@' + x + ',' + z, o); }
+
+  // ---- cards: poker size with rounded corners
+  const CW = 2.5, CH = 3.5, CT = 0.014, CR = 0.13;
+  function rr(w, h, r) {
+    const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
+    s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+  }
+  function capGeo(w, h, r) { const g = new THREE.ShapeGeometry(rr(w, h, r), 8); const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getY(i) + h / 2) / h); return g; }
+  const cardCap = capGeo(CW, CH, CR);
+  const edgeMat = new THREE.MeshStandardMaterial({ color: C('#F1EADF'), roughness: 0.8 });
+  const matCache = {};
+  async function faceMat(name) { if (!matCache[name]) matCache[name] = new THREE.MeshStandardMaterial({ map: await tex(name), roughness: 0.74, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); return matCache[name]; }
+  async function stack(texName, x, z, n, yaw = 0, label) {
+    const g = new THREE.Group(); const h = Math.max(1, n) * CT;
+    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(CW, CH, CR), { depth: h, bevelEnabled: false, curveSegments: 8 }), n > 1 ? new THREE.MeshStandardMaterial({ color: C('#EAE2D6'), roughness: 0.85 }) : edgeMat);
+    body.rotation.x = -Math.PI / 2; g.add(body);
+    const f = new THREE.Mesh(cardCap, await faceMat(texName)); f.rotation.x = -Math.PI / 2; f.position.y = h + 0.002; g.add(f);
+    g.position.set(x, 0, z); g.rotation.y = yaw; return add(label || texName + '@' + x + ',' + z, g);
+  }
+  const face = (o, c, x, z, yaw, n = 1) => stack('face-' + o + '-' + c + '.jpg', x, z, n, yaw);
+  const backs = (x, z, n, yaw) => stack('back.jpg', x, z, n, yaw);
+
+  // ---- the box: 8 x 8 x 3, two-piece, lid on
+  const BW = 8, BH = 3, BD = 8;
+  async function box(x, z, yaw = 0) {
+    const tTop = await tex('box-top.jpg'), tSide = await tex('box-side.jpg'), tEnd = await tex('box-end.jpg');
+    const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 });
+    const mats = [M(tEnd), M(tEnd), M(tTop), new THREE.MeshStandardMaterial({ color: C('#2a1d31'), roughness: 0.8 }), M(tSide), M(tSide)];
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.position.y = BH / 2; g.add(body);
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.014, 0.03, BD + 0.014), new THREE.MeshStandardMaterial({ color: C('#1c1322'), roughness: 0.9 })); seam.position.y = BH * 0.6; g.add(seam);
+    g.position.set(x, 0, z); g.rotation.y = yaw; return add('box', g);
+  }
+
+  function frame(min, max, elevDeg, azimDeg, margin) {
+    const c = new THREE.Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
+    const el = elevDeg * Math.PI / 180, az = azimDeg * Math.PI / 180;
+    const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    const corners = []; for (const x of [min[0], max[0]]) for (const y of [min[1], max[1]]) for (const z of [min[2], max[2]]) corners.push(new THREE.Vector3(x, y, z));
+    let dist = 5;
+    for (let it = 0; it < 120; it++) {
+      camera.position.copy(c).addScaledVector(dir, dist); camera.lookAt(c); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+      let ok = true; for (const p of corners) { const v = p.clone().project(camera); if (Math.abs(v.x) > margin || Math.abs(v.y) > margin) { ok = false; break; } }
+      if (ok) break; dist *= 1.04;
+    }
+  }
+
+  // ================================================================ scenes
+  const PS = CW + 0.45;
+  if (SCENE === 'hero' || SCENE === 'og') {
+    // the box, the five toys and the cat on the cloth, and one round's flipped cards in front:
+    // only the fish is in its own colour, so the fish is the grab
+    await box(-8.2, -2.6, 0.22);
+    toy('cat', 7.4, -5.2, -0.35);
+    toy('bird', -0.6, -5.0, -0.5);
+    toy('fly', 3.9, -5.3, 0.15);
+    toy('ball', -1.5, -0.6);
+    toy('fish', 2.4, -0.4, 0.25);
+    toy('mouse', 7.0, -0.6, 0.35);
+    const round = [['bird', 'pink'], ['fish', 'green'], ['fly', 'blue'], ['mouse', 'yellow']];
+    for (let k = 0; k < 4; k++) await face(round[k][0], round[k][1], -1.4 + k * PS, 4.4, 0);
+    frame([-12.6, 0, -7.0], [10.2, 3, 6.4], 40, 4, SCENE === 'og' ? 0.97 : 0.98);
+  }
+
+  if (SCENE === 'home') {
+    // the homepage card crops the middle of the frame: box, toys and cat close together
+    await box(-6.0, -1.2, 0.22);
+    toy('cat', 5.6, -3.6, -0.35);
+    toy('bird', 1.2, -3.9, -0.5);
+    toy('ball', 0.2, 0.9);
+    toy('fish', 3.9, 1.1, 0.25);
+    toy('fly', 8.6, 0.6, 0.15);
+    toy('mouse', 10.2, -3.2, 2.9);
+    frame([-10.0, 0, -6.4], [12.4, 3, 3.6], 44, 4, 0.8);
+  }
+
+  if (SCENE === 'table') {
+    // four players mid-round: the toys and the cat in the middle, each player's deck, the card they just flipped
+    // and the cards they've won. The pink mouse is the only toy in its own colour, so the mouse is the grab.
+    const ring = ['ball', 'bird', 'fish', 'fly', 'mouse'];
+    ring.forEach((n, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / 5 + 0.3; toy(n, Math.cos(a) * 6.2, Math.sin(a) * 3.9 + 0.2, -a - Math.PI / 2 + 0.2); });
+    toy('cat', 0, -0.2, 0);
+    const flips = [['mouse', 'pink'], ['fish', 'blue'], ['ball', 'orange'], ['bird', 'green']];
+    const seats = [[0, 9.6, 0], [-16.0, 0, -Math.PI / 2], [0, -9.6, Math.PI], [16.0, 0, Math.PI / 2]];
+    for (let s = 0; s < 4; s++) {
+      const [cx, cz, yaw] = seats[s];
+      const tx = Math.cos(yaw), tz = -Math.sin(yaw); // along the seat's row
+      await backs(cx - tx * 3.1, cz - tz * 3.1, 9 - s, yaw);
+      await face(flips[s][0], flips[s][1], cx, cz, yaw);
+      if (s !== 3) await backs(cx + tx * 3.1, cz + tz * 3.1, 2 + s, yaw);
+    }
+    frame([-18.2, 0, -11.6], [18.2, 1.5, 11.6], 64, 0, 0.99);
+  }
+
+  if (SCENE === 'kit') {
+    // everything in the box: the box, five felt toys and the cat, and sixty cards as five piles of twelve, one per toy
+    await box(-9.4, -1.2, 0);
+    const back = [['bird', -0.6, -0.4], ['cat', 4.4, 0], ['fly', 9.0, 0.15]], front = [['ball', -1.0, 0], ['fish', 3.8, 0.2], ['mouse', 8.8, 0.5]];
+    back.forEach(([n, x, y]) => toy(n, x, -4.4, y)); front.forEach(([n, x, y]) => toy(n, x, 0.2, y));
+    for (let i = 0; i < 5; i++) await face(T.OBJ[i], T.CORRECT[T.OBJ[i]], -11.6 + i * 4.3, 5.9, 0, 12);
+    frame([-13.6, 0, -6.4], [11.2, 3, 7.8], 52, 0, 0.97);
+  }
+
+  renderer.render(scene, camera);
+  await new Promise((r) => setTimeout(r, 80)); renderer.render(scene, camera);
+
+  if (CHECK) {
+    // draw each object alone in white on black; compare masks
+    const gl = renderer.getContext(); const wM = W, hM = H;
+    const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const keepBg = scene.background, keepFog = scene.fog; scene.background = new THREE.Color(0); scene.fog = null; table.visible = false;
+    scene.overrideMaterial = white;
+    const masks = [];
+    for (const [name, o] of objects) {
+      for (const [, x] of objects) x.visible = (x === o);
+      renderer.render(scene, camera);
+      const buf = new Uint8Array(wM * hM * 4); gl.readPixels(0, 0, wM, hM, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      const m = new Uint8Array(wM * hM); for (let i = 0; i < wM * hM; i++) m[i] = buf[i * 4] > 40 ? 1 : 0;
+      masks.push([name, m]);
+    }
+    const dil = (m, r) => { const out = new Uint8Array(m.length); for (let y = 0; y < hM; y++) for (let x = 0; x < wM; x++) if (m[y * wM + x]) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < wM && yy < hM) out[yy * wM + xx] = 1; } return out; };
+    const res = { objects: masks.length, overlap: [], near: [], cut: [] };
+    const dms = masks.map(([n, m]) => dil(m, 3));
+    for (let a = 0; a < masks.length; a++) {
+      const ma = masks[a][1]; let edge = 0;
+      for (let x = 0; x < wM; x++) edge += ma[x] + ma[(hM - 1) * wM + x]; for (let y = 0; y < hM; y++) edge += ma[y * wM] + ma[y * wM + wM - 1];
+      if (edge) res.cut.push(masks[a][0]);
+      for (let b = a + 1; b < masks.length; b++) {
+        const mb = masks[b][1]; let ov = 0, nr = 0;
+        for (let i = 0; i < ma.length; i++) { if (ma[i] && mb[i]) ov++; else if (dms[a][i] && mb[i]) nr++; }
+        if (ov) res.overlap.push([masks[a][0], masks[b][0], ov]); else if (nr) res.near.push([masks[a][0], masks[b][0], nr]);
+      }
+    }
+    window.__check = res;
+  }
+  window.__done = true;
+} catch (e) { window.__err = String(e && e.stack || e); }
+})();
+</script>
+</body></html>

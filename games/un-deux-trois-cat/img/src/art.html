@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Un, Deux, Trois, Cat! — card and box art</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<script src="/games/un-deux-trois-cat/img/src/toy-art.js"></script>
+<style>
+/* Source for every flat piece of Un, Deux, Trois, Cat! art. shoot.py screenshots each element by id:
+   card faces (#face-<toy>-<colour>), the card back (#back), the box lid, side and end, and the hero cat. */
+:root{--plum:#3a2945;--plum-d:#2a1d31;--plum-l:#5a4366;--paper:#f8f3ea;--cream:#f4ebd8;--gold:#ffc94a;--line:#ddd2c1}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:#777;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;font-family:Figtree,system-ui,sans-serif}
+.grain{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .35 0 0 0 0 .28 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* card face: 2.5 x 3.5 in, drawn at 100 px per inch, shot at 3x for 300 dpi */
+.face{width:250px;height:350px;background-color:var(--paper);position:relative;display:grid;place-items:center;overflow:hidden}
+.face::before{content:"";position:absolute;inset:13px;border:1.6px solid var(--line);border-radius:12px}
+.face svg{width:224px;height:auto;position:relative}
+.face .paw{position:absolute;width:15px;height:15px;opacity:.5}
+.face .paw.a{left:22px;top:22px}.face .paw.b{right:22px;bottom:22px;transform:rotate(180deg)}
+
+/* card back */
+.back{width:250px;height:350px;background:var(--plum);position:relative;overflow:hidden;display:grid;place-items:center}
+.back .pat{position:absolute;inset:0}
+.back .badge{position:relative;width:186px;height:262px;border-radius:93px;background-color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  box-shadow:0 0 0 5px var(--plum),0 0 0 7px var(--gold)}
+.back .badge svg{width:104px;height:auto;margin-bottom:-4px}
+.back .t{font:400 25px/1 "Bagel Fat One",Figtree,sans-serif;color:var(--plum);text-align:center}
+.back .t b{display:block;font-weight:400;font-size:48px;color:#c0832a;margin-top:2px}
+
+/* box: 8 x 8 x 3 in, drawn at 100 px per inch, shot at 2x */
+.lid{width:800px;height:800px;background:var(--plum);position:relative;overflow:hidden;color:var(--cream)}
+.lid .pat,.side .pat{position:absolute;inset:0}
+.lid .title{position:absolute;left:0;right:0;top:58px;text-align:center;font:400 64px/1 "Bagel Fat One",Figtree,sans-serif;letter-spacing:.01em}
+.lid .title b{display:block;font-weight:400;font-size:178px;line-height:.92;color:var(--gold);text-shadow:0 7px 0 var(--plum-d)}
+.lid .by{position:absolute;left:0;right:0;top:300px;text-align:center;font:700 19px/1 Figtree,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--cream)}
+.lid .rug{position:absolute;left:52px;right:52px;top:346px;height:380px;border-radius:190px;background-color:var(--paper)}
+.lid .scene{position:absolute;left:52px;top:346px;width:696px;height:380px}
+.lid .foot{position:absolute;left:0;right:0;bottom:30px;text-align:center;font:700 17px/1 Figtree,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--cream);opacity:.92}
+.side{width:800px;height:300px;background:var(--plum);position:relative;overflow:hidden;color:var(--cream);display:flex;align-items:center;gap:24px;padding:0 36px}
+.side .name{font:400 38px/1 "Bagel Fat One",Figtree,sans-serif;position:relative;flex:none}
+.side .name b{display:block;font-weight:400;font-size:84px;line-height:.95;color:var(--gold)}
+.side .name span{display:block;font:700 13px/1 Figtree,sans-serif;letter-spacing:.22em;text-transform:uppercase;margin-top:12px}
+.side .toys{display:flex;gap:9px;position:relative;margin-left:auto}
+.side .coin{width:72px;height:72px;border-radius:50%;background-color:var(--paper);display:grid;place-items:center}
+.side .coin svg{width:66px;height:auto}
+.end{justify-content:center;text-align:center}
+.end .name{font-size:44px}
+.end .name b{font-size:84px}
+.end .meta{position:relative;font:700 15px/1.6 Figtree,sans-serif;letter-spacing:.2em;text-transform:uppercase}
+.cat-hero{width:600px;height:600px;background:transparent}
+</style>
+</head>
+<body>
+<script>
+const T = window.ToyArt;
+document.body.insertAdjacentHTML("afterbegin", T.FILTER);
+
+/* a paw print in a given colour, drawn on a 20 x 20 box */
+const paw = (fill) => `<svg viewBox="0 0 20 20"><g fill="${fill}"><ellipse cx="10" cy="13.4" rx="5.2" ry="4.4"/><ellipse cx="4" cy="7.6" rx="2" ry="2.6"/><ellipse cx="8" cy="4.2" rx="2" ry="2.7"/><ellipse cx="12.2" cy="4.2" rx="2" ry="2.7"/><ellipse cx="16" cy="7.6" rx="2" ry="2.6"/></g></svg>`;
+/* a scattered paw-print pattern across a w x h panel */
+function pawField(w, h, fill, step, size, seed){
+  let s = seed || 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  let out = `<svg class="pat" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><g fill="${fill}">`;
+  for (let y = step / 2, row = 0; y < h + step; y += step, row++) for (let x = (row % 2 ? step / 2 : 0); x < w + step; x += step){
+    const a = -30 + r() * 60, xx = x + (r() - .5) * step * .3, yy = y + (r() - .5) * step * .3;
+    out += `<g transform="translate(${xx.toFixed(1)} ${yy.toFixed(1)}) rotate(${a.toFixed(0)}) scale(${(size / 20).toFixed(3)}) translate(-10 -10)"><ellipse cx="10" cy="13.4" rx="5.2" ry="4.4"/><ellipse cx="4" cy="7.6" rx="2" ry="2.6"/><ellipse cx="8" cy="4.2" rx="2" ry="2.7"/><ellipse cx="12.2" cy="4.2" rx="2" ry="2.7"/><ellipse cx="16" cy="7.6" rx="2" ry="2.6"/></g>`;
+  }
+  return out + `</g></svg>`;
+}
+
+/* ---- the hero cat: the grey cat from the toy art, sitting, with one paw reaching out to the right */
+function heroCat(){
+  const C = {b:"#5d5652", d:"#3a3431", l:"#8a827c"}, CREAM = T.CREAM, INK = T.INK;
+  let fur = ""; let s = 11; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0; i < 60; i++){ const x = -40 + r() * 80, y = -4 + r() * 92; fur += `<path d="M${x.toFixed(1)} ${y.toFixed(1)} q3 4 0 8"/>`; }
+  const body = "M-46 46 C-48 6 -26 -6 0 -6 C26 -6 48 6 46 46 C44 84 26 96 0 96 C-26 96 -48 84 -46 46 Z";
+  return `<defs><clipPath id="hcb"><path d="${body}"/></clipPath></defs><g filter="url(#paint)">
+    <path d="M40 88 C82 84 92 40 72 18" stroke="${C.b}" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <path d="${body}" fill="${C.b}"/>
+    <g clip-path="url(#hcb)" stroke="${C.d}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8">${fur}</g>
+    <ellipse cx="0" cy="62" rx="20" ry="28" fill="${C.l}" opacity=".7"/>
+    <path d="M26 20 C46 10 62 -4 74 -20" stroke="${C.b}" stroke-width="17" fill="none" stroke-linecap="round"/>
+    <circle cx="77" cy="-24" r="11.5" fill="${C.b}"/>
+    <g fill="${C.l}"><ellipse cx="79" cy="-22" rx="4.6" ry="3.8"/><circle cx="72.5" cy="-29" r="2"/><circle cx="78" cy="-32" r="2"/><circle cx="83.5" cy="-29.5" r="2"/></g>
+    <circle cx="0" cy="-34" r="34" fill="${C.b}"/>
+    <path d="M-32 -44 L-26 -86 L-6 -62 Z M32 -44 L26 -86 L6 -62 Z" fill="${C.b}"/>
+    <path d="M-24 -54 L-22 -76 L-11 -63 Z M24 -54 L22 -76 L11 -63 Z" fill="${C.d}"/>
+    <ellipse cx="-13" cy="-36" rx="6.5" ry="8" fill="${CREAM}"/><ellipse cx="13" cy="-36" rx="6.5" ry="8" fill="${CREAM}"/>
+    <ellipse cx="-11" cy="-35" rx="2.6" ry="6" fill="${INK}"/><ellipse cx="15" cy="-35" rx="2.6" ry="6" fill="${INK}"/>
+    <path d="M-5 -21 L5 -21 L0 -16 Z" fill="${C.d}"/>
+    <g stroke="${C.l}" stroke-width="1.4" stroke-linecap="round" opacity=".9"><path d="M-12 -18 L-40 -24 M-12 -15 L-40 -12 M12 -18 L40 -24 M12 -15 L40 -12"/></g>
+  </g>`;
+}
+
+let html = "";
+/* faces: all 25 designs */
+for (const o of T.OBJ) for (const c of T.COLORS){
+  html += `<div class="face grain" id="face-${o}-${c}">${paw("#e4d9c8").replace("<svg", '<svg class="paw a"')}${paw("#e4d9c8").replace("<svg", '<svg class="paw b"')}${T.svg(o, c)}</div>`;
+}
+/* back */
+html += `<div class="back" id="back">${pawField(250, 350, "rgba(255,201,74,.16)", 44, 15, 3)}
+  <div class="badge grain"><svg viewBox="-60 -70 120 140">${T.place("cat", null, 0, 0, 1, 0)}</svg>
+  <div class="t">Un, Deux,<br>Trois,<b>Cat!</b></div></div></div>`;
+/* lid */
+const toyAt = [["bird", 330, 104, 1.05, -8], ["fly", 470, 92, 0.95, 6], ["ball", 604, 128, 0.95, 0], ["fish", 420, 250, 1.05, 4], ["mouse", 580, 272, 1.0, -6]];
+let scene = `<svg class="scene" viewBox="0 0 696 380" width="696" height="380"><g transform="translate(150 196) scale(1.62)">${heroCat()}</g>`;
+for (const [o, x, y, s, r] of toyAt) scene += T.place(o, T.CORRECT[o], x, y, s, r);
+scene += `</svg>`;
+html += `<div class="lid" id="box-top">${pawField(800, 800, "rgba(255,201,74,.10)", 64, 20, 5)}
+  <div class="title">Un, Deux, Trois,<b>Cat!</b></div><div class="by">by Darren Don</div>
+  <div class="rug grain"></div>${scene}
+  <div class="foot">2–6 players · 10 minutes</div></div>`;
+/* sides: 8 x 3 in */
+const coins = T.OBJ.map(o => `<div class="coin grain">${T.svg(o, T.CORRECT[o])}</div>`).join("");
+html += `<div class="side" id="box-side">${pawField(800, 300, "rgba(255,201,74,.10)", 60, 18, 9)}
+  <div class="name">Un, Deux, Trois,<b>Cat!</b><span>by Darren Don</span></div><div class="toys">${coins}</div></div>`;
+html += `<div class="side end" id="box-end">${pawField(800, 300, "rgba(255,201,74,.10)", 60, 18, 13)}
+  <div><div class="name">Un, Deux, Trois,<b>Cat!</b></div><div class="meta">2–6 players · 10 minutes · by Darren Don</div></div></div>`;
+/* hero cat alone (sell sheet, page art) */
+html += `<svg class="cat-hero" id="cat-hero" viewBox="-110 -100 220 210">${heroCat()}</svg>`;
+document.body.insertAdjacentHTML("beforeend", html);
+document.fonts.ready.then(() => { window.__done = true; });
+</script>
+</body>
+</html>
