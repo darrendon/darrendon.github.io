@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Too Many Crooks! — rulebook</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+:root{
+  --paper:#F3F4F2; --ink:#1B2228; --soft:#56636B; --line:#C9D1D5;
+  --slate:#55646E; --slate-d:#36424A; --cream:#F2ECDA;
+  --red:#C23A22; --hot:#E04B2E; --gold:#F5D27A; --gold-d:#A9822A;
+}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{margin:0;background:#8E9499}
+@page{size:8.5in 11in;margin:0}
+@media print{html,body{background:#fff}.page{margin:0!important;box-shadow:none!important}}
+.page{width:8.5in;height:11in;margin:24px auto;position:relative;overflow:hidden;background:var(--paper);color:var(--ink);
+  font-family:Figtree,system-ui,sans-serif;font-size:9.3pt;line-height:1.42;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  padding:.5in .55in .62in;page-break-after:always;break-after:page}
+.page:last-child{page-break-after:auto;break-after:auto}
+.folio{position:absolute;left:.55in;right:.55in;bottom:.3in;display:flex;justify-content:space-between;
+  font-family:"Courier Prime",monospace;font-weight:700;font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);
+  border-top:1.5px solid var(--slate);padding-top:.06in}
+.folio b{color:var(--hot)}
+
+h2{font-family:Oswald,sans-serif;font-weight:700;font-size:15pt;letter-spacing:.04em;text-transform:uppercase;line-height:1;
+  margin:0 0 .08in;display:flex;align-items:center;gap:.09in}
+h2::before{content:"";width:.11in;height:.26in;background:var(--hot);border-radius:2px;flex:none}
+h3{font-family:Oswald,sans-serif;font-weight:700;font-size:11pt;letter-spacing:.04em;text-transform:uppercase;margin:.1in 0 .03in;line-height:1.1}
+h3 .n{display:inline-grid;place-items:center;width:.22in;height:.22in;border-radius:50%;background:var(--slate);color:var(--cream);
+  font-size:8.5pt;margin-right:.06in;vertical-align:1px}
+p{margin:0 0 .07in}
+b{font-weight:700}
+.sec{margin-bottom:.2in}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.32in;align-items:start}
+.mono{font-family:"Courier Prime",monospace;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+ul.tight{margin:0 0 .07in;padding-left:.18in}ul.tight li{margin-bottom:.03in}
+.callout{background:var(--slate);color:var(--cream);border-radius:6px;padding:.1in .14in;margin:.06in 0 .12in}
+.callout b{color:var(--gold)}
+.callout.red{background:#F6E1DA;color:var(--ink);border-left:5px solid var(--hot)}
+.callout.red b{color:var(--red)}
+.tag{display:inline-block;font-family:Oswald,sans-serif;font-weight:700;font-size:8pt;letter-spacing:.06em;text-transform:uppercase;
+  padding:0 .05in;border-radius:2px;line-height:1.45;vertical-align:1px}
+.tag.score{background:var(--gold);color:var(--ink)}
+.tag.pay{background:var(--hot);color:#fff}
+.small{font-size:8.4pt;color:var(--soft)}
+
+/* dice */
+.d{--s:.3in;width:var(--s);height:var(--s);border-radius:calc(var(--s)*.18);display:inline-grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:calc(var(--s)*.13);vertical-align:middle;border:1px solid rgba(0,0,0,.35);
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.3),0 1px 2px rgba(0,0,0,.25);flex:none}
+.d i{width:calc(var(--s)*.17);height:calc(var(--s)*.17);border-radius:50%;background:currentColor;place-self:center;visibility:hidden}
+.d[data-v="1"] i:nth-child(5),.d[data-v="2"] i:nth-child(3),.d[data-v="2"] i:nth-child(7),.d[data-v="3"] i:nth-child(3),.d[data-v="3"] i:nth-child(5),.d[data-v="3"] i:nth-child(7),
+.d[data-v="4"] i:nth-child(1),.d[data-v="4"] i:nth-child(3),.d[data-v="4"] i:nth-child(7),.d[data-v="4"] i:nth-child(9),
+.d[data-v="5"] i:nth-child(1),.d[data-v="5"] i:nth-child(3),.d[data-v="5"] i:nth-child(5),.d[data-v="5"] i:nth-child(7),.d[data-v="5"] i:nth-child(9),
+.d[data-v="6"] i:nth-child(1),.d[data-v="6"] i:nth-child(3),.d[data-v="6"] i:nth-child(4),.d[data-v="6"] i:nth-child(6),.d[data-v="6"] i:nth-child(7),.d[data-v="6"] i:nth-child(9){visibility:visible}
+.d.R{background:#C8372D;color:#fff}.d.B{background:#2F6DB5;color:#fff}.d.Y{background:#E0B21F;color:#1B1915}
+.d.G{background:#3E8E4F;color:#fff}.d.W{background:#F2ECDA;color:#1B1915}.d.K{background:#2B2B2B;color:#fff}
+.d.ghost{opacity:.32}
+.d.sm{--s:.22in}.d.lg{--s:.38in}
+.dice{display:flex;gap:.05in;align-items:center;flex-wrap:wrap}
+
+/* page 1 banner */
+.banner{position:relative;margin:-.5in -.55in .22in;height:3.05in;background:var(--slate);color:var(--cream);overflow:hidden}
+.banner svg{position:absolute;inset:0;width:100%;height:100%}
+.banner .t{position:absolute;left:.55in;top:.42in}
+.banner h1{margin:0;font-family:Oswald,sans-serif;font-weight:700;font-size:56pt;line-height:.86;letter-spacing:.02em;text-transform:uppercase;text-shadow:0 5px 0 #0A0C10}
+.banner h1 em{font-style:normal;color:var(--hot)}
+.banner .sub{margin-top:.14in;font-family:"Courier Prime",monospace;font-weight:700;font-size:9pt;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.banner .by{margin-top:.04in;font-family:Oswald,sans-serif;font-weight:500;font-size:10pt;letter-spacing:.08em;text-transform:uppercase;color:#DCE2E5}
+.lede{font-size:11pt;line-height:1.45}
+.goal{display:flex;gap:.12in;align-items:center}
+.goal svg{width:.42in;height:.42in;flex:none;fill:var(--gold)}
+
+.box{border:1.5px solid var(--line);border-radius:6px;background:#fff;padding:.1in .12in}
+.comp{display:grid;grid-template-columns:auto 1fr;gap:.06in .12in;align-items:center}
+.comp .q{font-family:Oswald,sans-serif;font-weight:700;font-size:16pt;color:var(--hot);text-align:right;line-height:1}
+.minisheet{width:.62in;height:.44in;border-radius:3px;background:var(--slate);position:relative;display:inline-block;vertical-align:middle;margin-right:.03in;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.minisheet::before{content:"";position:absolute;left:12%;top:28%;width:58%;height:28%;border:1.2px solid var(--gold);border-radius:2px}
+.minisheet::after{content:"";position:absolute;left:12%;top:62%;width:58%;height:26%;border:1.2px dashed var(--hot);border-radius:2px}
+
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:.1in;margin:.06in 0 .08in}
+.role{background:var(--slate);color:var(--cream);border-radius:6px;padding:.1in .08in .09in;text-align:center}
+.role svg{width:.34in;height:.34in;fill:var(--cream);stroke:var(--cream);display:block;margin:0 auto .04in}
+.role b{display:block;font-family:Oswald,sans-serif;font-size:10pt;letter-spacing:.05em;text-transform:uppercase}
+.role .dice{justify-content:center;margin-top:.05in}
+
+/* crew sheet diagram */
+.sheetfig{position:relative;margin:.06in 0 .1in}
+.sheetfig img{width:100%;display:block;border-radius:6px;box-shadow:0 6px 14px -6px rgba(0,0,0,.45)}
+.pin{position:absolute;width:.26in;height:.26in;border-radius:50%;background:var(--ink);color:#fff;font-family:Oswald,sans-serif;font-weight:700;font-size:10pt;
+  display:grid;place-items:center;transform:translate(-50%,-50%);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.keys{display:grid;gap:.06in}
+.key{display:grid;grid-template-columns:.26in 1fr;gap:.08in;align-items:start}
+.key .pin{position:static;transform:none}
+.onsheet{position:absolute;transform:translate(-50%,-50%)}
+
+table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06in}
+.sched th,.sched td{padding:.035in .06in;text-align:center;border-bottom:1px solid var(--line)}
+.sched th{font-family:Oswald,sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:9pt}
+.sched td:first-child,.sched th:first-child{text-align:left}
+.sched tr.score td{background:#FBF1D2}.sched tr.pay td{background:#F8E2DA}
+.sched th.last,.sched td.last{background:var(--slate);color:var(--cream)}
+.sched tr.score td.last{background:#6E6A4E}.sched tr.pay td.last{background:#7A5650}
+.sched .lbl{font-weight:600}
+
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:.06in;margin:.06in 0 .14in}
+.flow div{background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:.07in .06in;text-align:center;position:relative}
+.flow div:not(:last-child)::after{content:"";position:absolute;right:-.075in;top:50%;width:0;height:0;border:.045in solid transparent;border-left:.06in solid var(--slate);transform:translateY(-50%)}
+.flow b{display:block;font-family:Oswald,sans-serif;font-size:10pt;text-transform:uppercase;letter-spacing:.04em}
+.flow span{font-size:7.6pt;color:var(--soft);line-height:1.25;display:block;margin-top:.02in}
+.flow .num{font-family:"Courier Prime",monospace;font-weight:700;color:var(--hot);font-size:8pt}
+
+.fig{background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:.09in .11in;margin:.05in 0 .1in}
+.fig .row{display:flex;align-items:center;gap:.08in;margin:.03in 0}
+.fig .lab{font-family:"Courier Prime",monospace;font-weight:700;font-size:7.4pt;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);width:.9in;flex:none;line-height:1.2}
+.fig .arrow{font-family:Oswald,sans-serif;color:var(--soft);font-size:12pt;line-height:1}
+.fig .note{font-size:8pt;color:var(--soft);margin:.03in 0 0}
+.bracket{border:1.5px solid var(--gold-d);border-radius:4px;padding:.03in .05in;display:flex;gap:.05in;align-items:center;background:#FBF1D2}
+.bracket.out{border-color:var(--hot);background:#F8E2DA;border-style:dashed}
+.bracket .cap{font-family:Oswald,sans-serif;font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase}
+
+.tips li{margin-bottom:.05in}
+.credits{margin-top:.12in;font-size:8.4pt;color:var(--soft)}
+.credits b{color:var(--ink);font-family:Oswald,sans-serif;font-size:10pt;letter-spacing:.05em;text-transform:uppercase}
+.ex-head{display:flex;gap:.12in;align-items:center;flex-wrap:wrap;margin:.04in 0 .06in}
+.who{display:inline-flex;align-items:center;gap:.04in;font-weight:700}
+.sw{width:.12in;height:.12in;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.3)}
+.score-tally{display:grid;grid-template-columns:1fr auto;gap:.02in .1in;font-size:9pt;margin:.04in 0 0}
+.score-tally div:nth-child(even){text-align:right;font-family:Oswald,sans-serif;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ================================================================ PAGE 1 -->
+<div class="page">
+  <div class="banner">
+    <svg viewBox="0 0 816 293" id="banner-art" preserveAspectRatio="xMidYMid slice"><defs/></svg>
+    <div class="t">
+      <h1>Too Many<br><em>Crooks!</em></h1>
+      <div class="sub">3–6 players · 20–30 minutes</div>
+      <div class="by">A game by Darren Don</div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <div class="sec">
+        <p class="lede">Every job needs an <b>inside man</b>, a <b>getaway driver</b> and <b>the muscle</b> — but you can't use your own people. They're known. So you crew up from the contacts your rivals send over, and they crew up from yours.</p>
+        <p>Whoever runs a job picks who goes on it and decides what each of them walks away with. Promises are made out loud. <b>None of them are binding.</b> But there are two more jobs after this one, and everybody chooses who they send to next time.</p>
+      </div>
+      <div class="callout goal">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.6C6.3 1.6 1.7 6.3 1.7 12S6.3 22.4 12 22.4 22.3 17.7 22.3 12 17.7 1.6 12 1.6zm0 2.4c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8 3.6-8 8-8z"/><path d="M12.9 5.9v1.3c1.2.2 2.1.8 2.6 1.7l-1.9 1.1c-.3-.6-.9-.9-1.7-.9-.8 0-1.2.3-1.2.8 0 .5.5.8 1.8 1.2 1.9.5 3.1 1.2 3.1 2.9 0 1.5-1.1 2.4-2.7 2.7v1.4h-1.8v-1.4c-1.4-.3-2.4-1-2.9-2.1l1.9-1.1c.3.8 1 1.2 2 1.2.9 0 1.4-.3 1.4-.8 0-.5-.5-.8-1.9-1.2-1.8-.5-3-1.3-3-2.9 0-1.4 1.1-2.4 2.5-2.6V5.9z"/></svg>
+        <div><b>The goal.</b> After three jobs, have the most points — from the crews you run, the cuts other players pay you, and the cut you keep for yourself.</div>
+      </div>
+
+      <div class="sec">
+        <h2>In the box</h2>
+        <div class="box comp">
+          <div class="q">48</div>
+          <div><div class="dice" style="margin-bottom:.03in"><span class="d sm R" data-v="6"></span><span class="d sm B" data-v="4"></span><span class="d sm Y" data-v="2"></span><span class="d sm G" data-v="5"></span><span class="d sm W" data-v="3"></span><span class="d sm K" data-v="1"></span></div>
+            Dice, eight in each of six colors. A die is a <b>contact</b>; its number is how good they are.</div>
+          <div class="q">6</div>
+          <div><img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="" style="width:.7in;vertical-align:middle;border-radius:2px;margin-right:.04in;box-shadow:0 1px 2px rgba(0,0,0,.3)"> Crew sheets, one per player. Each is named for a different score; they all play the same.</div>
+          <div class="q">1</div>
+          <div>Scorepad and this rulebook.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">
+        <h2>Setup</h2>
+        <ul class="tight">
+          <li>Each player takes a <b>crew sheet</b> and the <b>eight dice</b> of one color. These dice are your contacts.</li>
+          <li>Put the sheet in front of you. Its top row is where <i>other</i> players' dice land when they work your job.</li>
+          <li>Give someone the scorepad, with a column per player.</li>
+          <li>Choose a <b>first player</b>. That role passes one seat to the left before every job.</li>
+        </ul>
+      </div>
+
+      <div class="sec">
+        <h2>The three kinds of crook</h2>
+        <p>A die's number decides what kind of crook it is. Every crew needs exactly <b>one of each</b>.</p>
+        <div class="roles">
+          <div class="role"><svg viewBox="0 0 24 24"><path d="M9.9 1.4h4.2a.9.9 0 0 1 .9.9v1.5H9V2.3a.9.9 0 0 1 .9-.9z" stroke="none"/><path d="M4.6 4.5h14.8c.9 0 1.6.7 1.6 1.6v14.5c0 .9-.7 1.6-1.6 1.6H4.6c-.9 0-1.6-.7-1.6-1.6V6.1c0-.9.7-1.6 1.6-1.6zm7.4 3.3a2.7 2.7 0 1 0 0 5.4 2.7 2.7 0 0 0 0-5.4zM6.6 18.6h10.8c-.5-2.6-2.7-4-5.4-4s-4.9 1.4-5.4 4z" stroke="none"/></svg><b>Inside man</b><div class="dice"><span class="d sm W" data-v="1"></span><span class="d sm W" data-v="2"></span></div></div>
+          <div class="role"><svg viewBox="0 0 24 24"><path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12S6.2 22.5 12 22.5 22.5 17.8 22.5 12 17.8 1.5 12 1.5zm0 2.4c4.1 0 7.5 3 8.2 6.9H3.8c.7-3.9 4.1-6.9 8.2-6.9zM4.1 13.2h6.7v6.8c-3.4-.5-6.1-3.3-6.7-6.8zm9.1 6.8v-6.8h6.7c-.6 3.5-3.3 6.3-6.7 6.8z" stroke="none"/><circle cx="12" cy="12" r="2.5" stroke="none"/></svg><b>Getaway driver</b><div class="dice"><span class="d sm W" data-v="3"></span><span class="d sm W" data-v="4"></span></div></div>
+          <div class="role"><svg viewBox="0 0 24 24"><path d="M3.0 19.2 H13.2 L16.4 9.6" fill="none" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.4" cy="13.8" r="5.0" stroke="none"/><rect x="12.0" y="2.0" width="9.4" height="7.4" rx="3.1" stroke="none" transform="rotate(16 16.7 5.7)"/></svg><b>The muscle</b><div class="dice"><span class="d sm W" data-v="5"></span><span class="d sm W" data-v="6"></span></div></div>
+        </div>
+        <p>So a 1 isn't a bad die. It's the only kind of die that can be an inside man — and a second 6 is no use to a job that already has its muscle.</p>
+      </div>
+
+      <div class="callout red">
+        <b>Your dice do three jobs at once.</b> The dice you send out are your rivals' workers. The dice you keep back are the only thing you can <b>pay</b> anyone with. And whatever lands in your pocket is your <b>score</b>.
+      </div>
+    </div>
+  </div>
+  <div class="folio"><span>Too Many <b>Crooks!</b> · Rules</span><span>1 of 4</span></div>
+</div>
+
+<!-- ================================================================ PAGE 2 -->
+<div class="page">
+  <div class="cols" style="grid-template-columns:1.12fr 1fr">
+    <div>
+      <div class="sec">
+        <h2>Your crew sheet</h2>
+        <p>Colors on the sheet tell you whose points a die is. <span class="tag score">Gold</span> is yours. <span class="tag pay">Red</span> is paid out to someone else.</p>
+        <div class="sheetfig">
+          <img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="A crew sheet: a gold You Score row of three crew slots, a red You Pay row of cut slots beneath, and a gold You Keep slot on the right.">
+          <span class="pin" style="left:-2.6%;top:44.5%">1</span>
+          <span class="pin" style="left:-2.6%;top:71.8%">2</span>
+          <span class="pin" style="left:97%;top:58.2%">3</span>
+        </div>
+        <div class="keys">
+          <div class="key"><span class="pin">1</span><div><b>You score — your crew.</b> One rival die in each slot: inside man, driver, muscle. You score their total.</div></div>
+          <div class="key"><span class="pin">2</span><div><b>You pay — their cuts.</b> Your own kept dice go here, under the crook you're paying. That crook's owner scores them.</div></div>
+          <div class="key"><span class="pin">3</span><div><b>You keep — your cut.</b> On jobs 1 and 2, one kept die is left over. It's yours to score.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">
+        <h2>Three jobs</h2>
+        <p>The game is three jobs. You roll one fewer die each job, because the contact you keep as your cut takes the money and leaves.</p>
+        <table class="sched">
+          <tr><th></th><th>Job 1</th><th>Job 2</th><th class="last">Job 3</th></tr>
+          <tr><td class="lbl">Roll</td><td>8</td><td>7</td><td class="last">6</td></tr>
+          <tr><td class="lbl">Send out</td><td>4</td><td>4</td><td class="last">4</td></tr>
+          <tr><td class="lbl">Keep</td><td>4</td><td>3</td><td class="last">2</td></tr>
+          <tr class="score"><td class="lbl">Crew you score</td><td>3</td><td>3</td><td class="last">3 · <b>double</b></td></tr>
+          <tr class="pay"><td class="lbl">Cuts you pay</td><td>3</td><td>2</td><td class="last">2</td></tr>
+          <tr class="score"><td class="lbl">Cut you keep</td><td>1</td><td>1</td><td class="last">—</td></tr>
+        </table>
+        <p class="small">You always send four and always crew three. Your kept dice pay your crew, as far as they go, and anything left over is your own cut. The crew sheet's bottom line carries this whole table.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>How a job runs</h2>
+    <div class="flow">
+      <div><span class="num">1</span><b>Roll</b><span>Everyone, at once, in the open</span></div>
+      <div><span class="num">2</span><b>Send</b><span>In turn, 4 dice each to rivals' jobs</span></div>
+      <div><span class="num">3</span><b>Crew</b><span>Take one of each kind from what you were sent</span></div>
+      <div><span class="num">4</span><b>Pay</b><span>In secret, hand your kept dice to your crew</span></div>
+      <div><span class="num">5</span><b>Score</b><span>Write it down; your cut walks</span></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h3><span class="n">1</span>Roll</h3>
+      <p>Everyone rolls all their dice at once and leaves them face up in front of them. Dice stay visible all job: everyone can see exactly what everyone else has to offer — and to pay with.</p>
+      <h3><span class="n">2</span>Send your people out</h3>
+      <p>Starting with the first player and going clockwise, each player sends <b>exactly four</b> of their dice to rivals' jobs, placing each one in the top row of that player's sheet. Send all four to one rival, spread them around, or send a rival nothing. You can never send a die to your own job.</p>
+      <p>Talk the whole time. Ask for what you need, promise what you like. Keep each turn to about ninety seconds.</p>
+    </div>
+    <div>
+      <div class="fig" style="margin-top:.1in">
+        <div class="row"><span class="lab">You rolled</span><div class="dice"><span class="d sm B" data-v="6"></span><span class="d sm B" data-v="5"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="3"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="1"></span></div></div>
+        <div class="row"><span class="lab">Sent out</span><div class="bracket out"><span class="d sm B" data-v="6"></span><span class="d sm B" data-v="5"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="1"></span><span class="cap" style="color:var(--red)">→ rivals</span></div></div>
+        <div class="row"><span class="lab">Kept back</span><div class="bracket"><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="3"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="2"></span><span class="cap" style="color:#7A5C14">your payroll</span></div></div>
+        <p class="note">Send your best people and your rivals score well with them — but you've nothing good left to pay anyone with.</p>
+      </div>
+    </div>
+  </div>
+  <div class="folio"><span>Too Many <b>Crooks!</b> · Rules</span><span>2 of 4</span></div>
+</div>
+
+<!-- ================================================================ PAGE 3 -->
+<div class="page">
+  <div class="cols">
+    <div>
+      <h3 style="margin-top:0"><span class="n">3</span>Pick your crew</h3>
+      <p>Look at the dice sent to your job. Choose <b>one inside man, one driver and one muscle</b> — never two of a kind — and line them up in the gold row. The rest go straight back to their owners and earn nothing.</p>
+      <div class="fig">
+        <div class="row"><span class="lab">Sent to you</span><div class="dice"><span class="d R" data-v="6"></span><span class="d Y" data-v="5"></span><span class="d Y" data-v="2"></span><span class="d G" data-v="4"></span></div></div>
+        <div class="row"><span class="lab">Your crew</span><div class="bracket"><span class="d Y" data-v="2"></span><span class="d G" data-v="4"></span><span class="d R" data-v="6"></span><span class="cap" style="color:#7A5C14">scores 12</span></div></div>
+        <div class="row"><span class="lab">Sent home</span><div class="dice"><span class="d Y ghost" data-v="5"></span></div><span class="small">The yellow 5 is a second muscle. It goes back and scores nothing.</span></div>
+      </div>
+      <p>If any die of a kind was sent to you, you must fill that slot. If nobody sent you a kind, that slot stays empty and you run the job short.</p>
+      <h3 style="margin-top:0"><span class="n">4</span>Hand out the cuts</h3>
+      <p>Everyone does this <b>at the same time, in secret</b>. Take your kept dice behind your hands, decide who gets what, then everyone places their cuts in the red row at once.</p>
+      <ul class="tight">
+        <li>On <b>job 1</b>, pay all three of your crew.</li>
+        <li>On <b>jobs 2 and 3</b>, pay any two. One of your crew gets nothing — you choose who.</li>
+        <li>You may <b>stack</b> several kept dice under one crook instead of spreading them out.</li>
+        <li>Cuts only go to crew on your job. Running short? Hand out the same number of dice anyway, stacked on the crew you have.</li>
+      </ul>
+      <p>Each cut goes to the <b>owner of the crook above it</b>, who scores the total of the dice they were handed. The cut dice themselves come back to you.</p>
+      <div class="fig">
+        <div class="row"><span class="lab">Kept back</span><div class="dice"><span class="d B" data-v="4"></span><span class="d B" data-v="3"></span><span class="d B" data-v="2"></span><span class="d B" data-v="2"></span></div></div>
+        <div class="row" style="align-items:flex-start"><span class="lab">Crew &amp; cuts</span>
+          <div style="display:grid;grid-template-columns:repeat(3,auto) .15in auto;gap:.05in .1in;align-items:center">
+            <span class="d Y" data-v="2"></span><span class="d G" data-v="4"></span><span class="d R" data-v="6"></span><span></span><span class="small" style="color:#7A5C14"><b>gold:</b> you score 12</span>
+            <span class="d B" data-v="2"></span><span class="d B" data-v="3"></span><span class="d B" data-v="4"></span><span></span><span class="small" style="color:var(--red)"><b>red:</b> yellow +2, green +3, red +4</span>
+          </div>
+        </div>
+        <div class="row"><span class="lab">Your cut</span><div class="bracket"><span class="d B" data-v="2"></span><span class="cap" style="color:#7A5C14">you keep 2</span></div></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-top:0"><span class="n">5</span>Score and clean up</h3>
+      <p>Write down each player's points for the job:</p>
+      <ul class="tight">
+        <li><span class="tag score">Crew</span> the total of the crew on your job.</li>
+        <li><span class="tag score">Cuts</span> every die other players handed you.</li>
+        <li><span class="tag score">Your cut</span> on jobs 1 and 2, the one kept die you didn't hand out. Score its number, then <b>put that die back in the box</b> — that contact has taken the money and gone. It's why you roll one fewer next job.</li>
+      </ul>
+      <p>Every other die goes back to its owner. Pass the first-player role one seat to the left and start the next job.</p>
+      <div class="sec" style="margin-top:.16in">
+        <h2>Promises</h2>
+        <p>Talk at any time, to anyone, about anything: which die you'll send where, who you'll crew, what cut you'll hand over. Make deals, threaten, beg.</p>
+        <div class="callout red"><b>Nothing is binding.</b> The player who promised you their 6 can hand you their 1 and keep the 6 for themselves.</div>
+        <p>But every die is face up all job, so the whole table can see exactly what a player <i>could</i> have paid — and, at the reveal, what they did. There are three jobs, and everyone remembers who they sent to last time.</p>
+      </div>
+
+      <div class="sec">
+        <h2>Nobody shows up</h2>
+        <p>If nobody sends you anything at all, take one of your own kept dice as your whole crew and score it. You pay no one.</p>
+        <p class="small">Sending one die to an empty job breaks this up — but then that job is crewed, and the die you sent may be cut in.</p>
+      </div>
+
+      <div class="sec">
+        <h2>The last job</h2>
+        <p>On job 3 your <b>crew scores double</b>. You keep two dice and pay two crew, so there's nothing left over for yourself — both kept dice go out, to two of your crew or stacked on one.</p>
+        <p>Nobody can punish what you do on the last job. Everyone at the table knows that.</p>
+      </div>
+      <div class="sec">
+        <h2>Three players</h2>
+        <p>Play exactly as written. With only two rivals, every die you send goes to one of two jobs — so every snub is felt.</p>
+      </div>
+
+
+    </div>
+  </div>
+  <div class="folio"><span>Too Many <b>Crooks!</b> · Rules</span><span>3 of 4</span></div>
+</div>
+
+<!-- ================================================================ PAGE 4 -->
+<div class="page">
+  <h2>A job, start to finish</h2>
+  <div class="ex-head">
+    <span class="who"><span class="sw" style="background:#2F6DB5"></span>Owen</span>
+    <span class="who"><span class="sw" style="background:#C8372D"></span>Priya</span>
+    <span class="who"><span class="sw" style="background:#E0B21F"></span>Sam</span>
+    <span class="who"><span class="sw" style="background:#3E8E4F"></span>Nel</span>
+    <span class="small">Four players, job 1.</span>
+  </div>
+  <div class="cols" style="grid-template-columns:1fr 1.05fr">
+    <div>
+      <p><b>The deal.</b> Priya rolled 6, 5, 4, 4, 3, 2, 2, 1. Owen needs muscle, and promises Priya his best cut if she sends him her 6. She does — and sends her 5, 4 and 4 to other jobs. That leaves her 3, 2, 2 and 1 to pay her own crew with.</p>
+      <p><b>The crew.</b> Owen is sent Priya's 6, a 5 and a 2 from Sam, and a 4 from Nel. He takes Sam's 2 as inside man, Nel's 4 to drive and Priya's 6 for muscle: <b>12 points</b>. Sam's 5 goes home — Priya's 6 already has that place.</p>
+      <p><b>The cuts.</b> Owen kept a 6, 4, 3 and 1, and must pay all three crew on job 1. In secret he puts the 4 under Sam's 2, the 3 under Nel's 4 — and the 1 under Priya's 6. He keeps the 6 as his own cut.</p>
+      <div class="score-tally box">
+        <div>Owen: crew 12 + his cut 6</div><div>18</div>
+        <div>Sam: Owen's cut</div><div>4</div>
+        <div>Nel: Owen's cut</div><div>3</div>
+        <div>Priya: Owen's cut</div><div>1</div>
+      </div>
+      <p style="margin-top:.08in">Had Owen kept his word — the 6 to Priya, the 1 for himself — he'd have scored 13. The lie was worth five points, and the whole table watched him tell it. There are two jobs left, and Priya decides where her best contacts go in both.</p>
+      <p class="small">(Everyone else's job runs at the same time; only Owen's is shown.)</p>
+    </div>
+    <div>
+      <div class="sheetfig" id="owen">
+        <img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="Owen's crew sheet at the reveal: Sam's yellow 2, Nel's green 4 and Priya's red 6 in the crew row; Owen's blue 4, 3 and 1 beneath them as cuts; Owen's blue 6 in his own cut slot.">
+      </div>
+      <p class="small" style="text-align:center;margin-top:-.04in">Owen's sheet at the reveal. Gold row: his crew, worth 12 to him. Red row: his blue dice, scored by the owner of the crook above. Right: the 6 he kept.</p>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top:.14in">
+    <div>
+      <div class="sec">
+        <h2>Winning</h2>
+        <p>After job 3, total each player's points. <b>The highest total wins.</b> If players are tied, the one who scored more on job 3 wins; if still tied, they share the win.</p>
+        <p class="small">Scoring openly keeps everyone honest about who's ahead. For a tenser game, score in secret and reveal at the end.</p>
+      </div>
+      <h2>Good to know</h2>
+      <ul class="tight tips">
+        <li><b>Your payroll is what you didn't send.</b> Send out your best and you'll have nothing worth paying with.</li>
+        <li><b>Whoever holds the missing kind holds the job.</b> If a job has no inside man, the player with a 1 or 2 to spare can name their price.</li>
+        <li><b>You can freeze someone out.</b> Nothing obliges you to send a rival anything. A job nobody supplies is worth almost nothing — and whoever breaks ranks to supply it gets to set the terms.</li>
+        <li><b>Only the crew doubles on job 3.</b> Cuts score their face value, every job.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Quick reference</h2>
+      <div class="box" style="font-size:8.8pt">
+        <p><b>Roll</b> 8 / 7 / 6 · <b>send</b> 4 each, in turn, never to yourself.</p>
+        <p><b>Crew</b> one each: inside man 1–2, driver 3–4, muscle 5–6. <span class="tag score">You score</span> their total (double on job 3).</p>
+        <p><b>Pay</b> in secret: 3 cuts on job 1, then 2. Stacking allowed. <span class="tag pay">They score</span> what you hand them.</p>
+        <p style="margin:0"><b>Your cut</b> jobs 1–2: score the leftover kept die, then it leaves the game.</p>
+      </div>
+      <div class="credits"><b>Too Many Crooks!</b><br>A game by Darren Don · darren@whatsgoodboardgames.com<br>Play it online at darrendon.github.io/games/too-many-crooks</div>
+    </div>
+  </div>
+  <div class="folio"><span>Too Many <b>Crooks!</b> · Rules</span><span>4 of 4</span></div>
+</div>
+
+<script src="/games/too-many-crooks/img/src/crooks.js"></script>
+<script>
+// pips for every die
+document.querySelectorAll('.d').forEach(function (d) { d.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>'; });
+
+// banner: the lineup wall with four crooks on the right, spaced so none touch
+(function () {
+  var svg = document.getElementById('banner-art'); Crooks.use(svg);
+  svg.appendChild(Crooks.wall({ x0: 0, x1: 816, y0: 26, step: 30, n: 9, labels: false, font: 10, op: .8 }));
+  var floor = Crooks.el('rect', { x: 0, y: 283, width: 816, height: 10, fill: '#36424A' }, svg);
+  var k = .42, g = Crooks.el('g', { transform: 'scale(' + k + ')' }, svg);
+  [440, 545, 650, 755].forEach(function (x, i) { Crooks.crook(x / k, Crooks.LINE[[1, 2, 3, 4][i]], g, 283 / k); });
+})();
+
+// Owen's sheet at the reveal: dice dropped into the measured slot centres (percent of the sheet)
+(function () {
+  var fig = document.getElementById('owen');
+  var X = [19.44, 39.59, 59.73], CREW = 44.51, PAY = 71.79, OWN = [82.01, 58.15];
+  function put(cls, v, x, y) { var s = document.createElement('span'); s.className = 'd lg onsheet ' + cls; s.dataset.v = v; s.style.left = x + '%'; s.style.top = y + '%';
+    s.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>'; fig.appendChild(s); }
+  put('Y', 2, X[0], CREW); put('G', 4, X[1], CREW); put('R', 6, X[2], CREW);
+  put('B', 4, X[0], PAY); put('B', 3, X[1], PAY); put('B', 1, X[2], PAY);
+  put('B', 6, OWN[0], OWN[1]);
+})();
+</script>
+</body>
+</html>
