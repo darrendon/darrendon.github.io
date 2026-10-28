@@ -46,9 +46,10 @@ td.n{font-family:Rye}
 .grid img{width:2.5in;height:3.5in;display:block}
 .marks{position:absolute;inset:0;pointer-events:none}
 .cap{position:absolute;left:.5in;right:.5in;bottom:.06in;text-align:center;font-family:"IM Fell English SC";font-size:9pt;letter-spacing:1px;color:#6B5A44}
-.boards{position:absolute;left:1.5in;top:.75in;display:flex;flex-direction:column;gap:.55in}
-.boards img{width:5.5in;height:1in;display:block;outline:.01in solid #555}
-.boards-note{position:absolute;left:1.5in;right:1.5in;top:7.6in;font-size:10.5pt;line-height:1.45;color:#24180E}
+/* dig-site boards: four 63 x 22 mm strips butted into one card-sized block (63 x 88 mm), crop marks at every cut */
+.boards{position:absolute;left:calc(4.25in - 31.5mm);top:2.4in;width:63mm;display:flex;flex-direction:column}
+.boards img{width:63mm;height:22mm;display:block}
+.boards-note{position:absolute;left:1.5in;right:1.5in;top:6.6in;font-size:10.5pt;line-height:1.45;color:#24180E}
 .boards-note b{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:1px;color:#A8452D;display:block;margin-bottom:4px}
 </style>
 </head>
@@ -159,9 +160,18 @@ html += `<div class="page sheet"><div class="grid">${Array(9).fill('<img src="/g
   <div class="cap">Card backs (optional): print on the reverse of any sheet, or sleeve the cards over plain backs</div></div>`;
 html += `<div class="page sheet"><div class="grid">${Array(4).fill('<img src="/games/diggers/img/src/tex/ref.jpg" alt="">').join('')}</div>${marks()}
   <div class="cap">Four field guides, one per digger</div></div>`;
-html += `<div class="page sheet"><div class="boards">${[0, 1, 2, 3].map(i => `<img src="/games/diggers/img/src/tex/marker-${i}.jpg" alt="">`).join('')}</div>
-  <div class="boards-note"><b>The dig sites</b>Each board is named for a quarry from the Bone Wars, the feud that sent Cope's and Marsh's crews racing each other across the West in the 1870s. Cut along the outlines and mount on card stock or thin wood. With two diggers, use any three.</div>
-  <div class="cap">Four dig-site boards, 5½ × 1 inches</div></div>`;
+// crop marks for the board block: 63 mm wide, a cut every 22 mm, marks start 0.06 in off the art and run 0.35 in
+const boardMarks = () => {
+  const mm = 1 / 25.4, W = 63 * mm, L = 4.25 - W / 2, T = 2.4, ys = [0, 1, 2, 3, 4].map(k => T + k * 22 * mm), g = .06, n = .35;
+  const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#555" stroke-width=".01"/>`;
+  let s = '<svg class="marks" viewBox="0 0 8.5 11" preserveAspectRatio="none" width="100%" height="100%">';
+  for (const y of ys) s += ln(L - g - n, y, L - g, y) + ln(L + W + g, y, L + W + g + n, y);
+  for (const x of [L, L + W]) s += ln(x, ys[0] - g - n, x, ys[0] - g) + ln(x, ys[4] + g, x, ys[4] + g + n);
+  return s + '</svg>';
+};
+html += `<div class="page sheet"><div class="boards">${[0, 1, 2, 3].map(i => `<img src="/games/diggers/img/src/tex/marker-${i}.jpg" alt="">`).join('')}</div>${boardMarks()}
+  <div class="boards-note"><b>The dig sites</b>Each board is named for a quarry from the Bone Wars, the feud that sent Cope's and Marsh's crews racing each other across the West in the 1870s. Glue this sheet to thin cardboard (a cereal box works), then cut along the crop marks. Each strip is the width of a card, so all four fit in a tuck box with the deck. With two diggers, use any three.</div>
+  <div class="cap">Four dig-site boards, 63 × 22 mm (about 2½ × ⅞ inches), each the width of a card</div></div>`;
 document.getElementById('sheets').innerHTML = html;
 Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
 </script>

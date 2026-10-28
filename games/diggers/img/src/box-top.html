@@ -3,9 +3,9 @@
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
 html,body{margin:0;background:#000}
-/* 4.5 x 6 in lid at 200 dpi */
-#box{width:900px;height:1200px;position:relative;overflow:hidden;color:#24180e}
-#box canvas{position:absolute;left:0;top:-30px}
+/* tuck-box front, 66 x 92 mm, at 900 x 1254 (about 346 dpi) */
+#box{width:900px;height:1254px;position:relative;overflow:hidden;color:#24180e}
+#box canvas{position:absolute;left:0;top:-32px}
 .vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,rgba(0,0,0,0) 55%,rgba(20,8,2,.45))}
 .frame{position:absolute;inset:26px;border:4px solid #f8f1de;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 .frame::after{content:"";position:absolute;inset:9px;border:1.5px solid rgba(248,241,222,.7)}
@@ -32,7 +32,7 @@ h1{margin:6px 0 2px;font-family:Rye;font-weight:400;font-size:132px;line-height:
 <script src="fossil-art.js"></script>
 <script>
 document.fonts.ready.then(() => {
-  const s = 1230 / 420, cv = FossilArt.slab(0, s, 6);
+  const s = 1286 / 420, cv = FossilArt.slab(0, s, 6);
   cv.style.left = ((900 - cv.width) / 2) + 'px';
   document.getElementById('box').prepend(cv);
   document.getElementById('syms').innerHTML = SPECIES.map(sp => `<svg viewBox="0 0 24 24"><path d="${sp.sym}" fill="${sp.suit}" fill-rule="evenodd"/></svg>`).join('');

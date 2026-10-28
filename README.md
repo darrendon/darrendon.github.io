@@ -27,6 +27,7 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - `assets/css/diggers.css` — Diggers skin on top of the shared game-page layout
 - `games/diggers/sell-sheet.html` and `games/diggers/print-and-play.html` — sources for the two Diggers PDFs (sell sheet: US Letter landscape; print-and-play: US Letter portrait; no margins, backgrounds on)
 - `games/diggers/img/src/` — sources for the Diggers mockups: `scene.html` (three.js stills, `?scene=hero|table|kit`), the box, field-guide and marker art, `fossil-art.js` (draws the six skeleton slabs every card face is cut from) and `card-print.js` (composes print-ready faces with bleed); rendered textures in `tex/`
+- Diggers production spec the art is drawn to: dig-site boards are 63 × 22 mm punchboard strips (four make one card-sized layer) and the box is a 66 × 92 × 32 mm poker-card tuck box. `img/og.jpg` is `render-hero` scaled to 1200 wide and cropped to rows 60–690
 - `games/diggers/play/index.html` — the playable build; its script also runs in node (`module.exports`), so bot-only games can be checked headless
 - `assets/css/down-for-the-count.css` — Down for the Count skin on top of the shared game-page layout
 - `games/down-for-the-count/sell-sheet.html` and `games/down-for-the-count/print-and-play.html` — sources for the two Down for the Count PDFs (sell sheet: US Letter landscape; print-and-play: US Letter portrait; no margins, backgrounds on)
@@ -42,4 +43,6 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - Analytics: GoatCounter, off until `<meta name="goatcounter" content="">` on each page holds the account code. `assets/js/site.js` then loads the counter and records PDF downloads, email clicks and the first click into a playable build. Add `?ref=<publisher>` to links in pitch emails to see who opened them
 
 ## Adding a game
-Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, add a card to the Games section of `index.html`, add the page to `sitemap.xml`, and regenerate `assets/css/home-games.css`.
+Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, add a card to the Games section of `index.html`, add the page to `sitemap.xml`, add it to every game page's "More games" row, give its build a `?tutorial` deep link, and regenerate `assets/css/home-games.css`.
+
+Game-page images over ~2x their display size have `-240/-480/-800/-1200` copies served through `srcset`; regenerate those copies whenever the full-size image changes.
