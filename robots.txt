@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+# Build sources for the renders and sell sheets: published with the site, kept out of search
+Disallow: /games/*/img/src/
+Disallow: /assets/img/src/
+Disallow: /README.md
 
 Sitemap: https://darrendon.com/sitemap.xml
