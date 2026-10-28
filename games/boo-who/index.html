@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="stylesheet" href="/assets/css/dim-sum-rush.css">
 <link rel="stylesheet" href="/assets/css/boo-who.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Game", "name": "Boo Who?", "url": "https://darrendon.com/games/boo-who/", "image": "https://darrendon.com/games/boo-who/img/og.jpg", "description": "A bluffing party game for 4–8 players where everyone knows your role but you.", "genre": "Bluffing party game", "numberOfPlayers": {"@type": "QuantitativeValue", "minValue": 4, "maxValue": 8}, "timeRequired": "15 min", "author": {"@type": "Person", "name": "Darren Don", "url": "https://darrendon.com/"}}</script>
 </head>
 <body class="g-boo game">
 <a class="skip" href="#main">Skip to content</a>
@@ -52,11 +53,13 @@
         <div class="spec"><dt>Genre</dt><dd>Bluffing party game · everyone acts at once</dd></div>
         <div class="spec"><dt>For fans of</dt><dd>Scape Goat · Skull</dd></div>
         <div class="spec"><dt>Length</dt><dd>About 15 minutes · 3 rounds</dd></div>
-        <div class="spec"><dt>Components</dt><dd>17 cards · 8 card stands · 24 Boos · tuck box</dd></div>
-        <div class="spec"><dt>Status</dt><dd>Print-and-play and browser build with a tutorial</dd></div>
+        <div class="spec"><dt>Components</dt><dd>17 role cards · 8 scoring cards · 8 card stands · 24 Boos · scorepad</dd></div>
+        <div class="spec"><dt>Box</dt><dd>Tuck box</dd></div>
+        <div class="spec"><dt>Status</dt><dd>Rules, print-and-play kit and a browser build with a tutorial</dd></div>
       </dl>
       <div class="actions">
-        <a class="btn red" href="#play">Play in your browser</a>
+        <a class="btn red" href="#play" data-tutorial>Learn to play</a>
+        <a class="btn" href="#play">Play in your browser</a>
         <a class="btn" href="/games/boo-who/boo-who-sell-sheet.pdf" download>Sell sheet (PDF)</a>
         <a class="btn" href="/games/boo-who/boo-who-rules.pdf" download>Rules (PDF)</a>
         <a class="btn" href="/games/boo-who/boo-who-print-and-play.pdf" download>Print and play (PDF)</a>
@@ -65,7 +68,7 @@
 
     <figure class="viewer" style="margin:0" aria-label="Component mockups">
       <div class="stage">
-        <img class="poster" id="hero-img" src="/games/boo-who/img/render-box.webp" width="1600" height="1000" alt="Boo Who? mockup on a plum felt table: the violet tuck box, a Ghost card and a Living card standing in their cardboard stands, a candle, and one player's Boos in a row: 3, 2 and 1, plus two BOO! sides.">
+        <img class="poster" id="hero-img" src="/games/boo-who/img/render-box.webp" srcset="/games/boo-who/img/render-box-240.webp 240w, /games/boo-who/img/render-box-480.webp 480w, /games/boo-who/img/render-box-800.webp 800w, /games/boo-who/img/render-box.webp 1600w" sizes="(max-width: 600px) 348px, (max-width: 960px) 382px, 332px" width="1600" height="1000" alt="Boo Who? mockup on a plum felt table: the violet tuck box, a Ghost card and a Living card standing in their cardboard stands, a candle, and one player's Boos in a row: 3, 2 and 1, plus two BOO! sides.">
       </div>
       <figcaption class="bar">
         <div class="views" role="group" aria-label="Choose a view">
@@ -139,13 +142,14 @@
       </div>
 
       <div class="boxart">
-        <figure><img src="/games/boo-who/img/box-front.webp" width="600" height="840" loading="lazy" alt="The box front: Boo Who? by Darren Don, a ghost in a gold arched window over a violet diamond pattern, and A game by Darren Don below."><figcaption><b>The box</b>A tuck box the size of a deck of cards</figcaption></figure>
+        <figure><img src="/games/boo-who/img/box-front.webp" srcset="/games/boo-who/img/box-front-240.webp 240w, /games/boo-who/img/box-front-480.webp 480w, /games/boo-who/img/box-front.webp 600w" sizes="(max-width: 600px) 320px, (max-width: 960px) 320px, 343px" width="600" height="840" loading="lazy" alt="The box front: Boo Who? by Darren Don, a ghost in a gold arched window over a violet diamond pattern, and A game by Darren Don below."><figcaption><b>The box</b>A tuck box the size of a deck of cards</figcaption></figure>
         <div class="comp" style="margin:0;display:block">
           <p class="label" style="margin-bottom:14px">In the box</p>
           <ul>
             <li><b>17</b><span>Role cards, poker-sized: 9 Ghost and 8 Living, with one shared back</span></li>
             <li><b>8</b><span>Player boards, each a card-sized punchboard: a two-piece stand that slots together, and a 3, 2 and 1 Boo in that player's color</span></li>
-            <li><b>1</b><span>Rules sheet, folded</span></li>
+            <li><b>8</b><span>Scoring cards, one per player: how a right and a wrong call score, and the three rounds of the night</span></li>
+            <li><b>1</b><span>Scorepad and a rules sheet, folded</span></li>
           </ul>
           <p class="fine">Mockups show a proposed production version. Everything stacks to about 18 mm, so the game fits a standard tuck box. A deluxe edition could swap the cardboard stands for gilt frames with a slot along the top.</p>
         </div>
@@ -157,10 +161,10 @@
           <p class="fine" style="margin-top:0">Rendered from the card, box and stand art.</p>
         </div>
         <div class="renders">
-          <figure><img src="/games/boo-who/img/render-box.webp" width="1600" height="1000" loading="lazy" alt="The box, a Ghost and a Living card in their stands, and one player's Boos."><figcaption>The box</figcaption></figure>
-          <figure><img src="/games/boo-who/img/render-kit.webp" width="1600" height="1000" loading="lazy" alt="Everything in the box laid out flat."><figcaption>What's in the box</figcaption></figure>
-          <figure><img src="/games/boo-who/img/render-table.webp" width="1600" height="1000" loading="lazy" alt="A five-player round seen from above."><figcaption>A five-player round</figcaption></figure>
-          <figure><img src="/games/boo-who/img/render-deluxe.webp" width="1600" height="1000" loading="lazy" alt="The same round with the cards in gilt frames."><figcaption>Deluxe frames</figcaption></figure>
+          <figure><img src="/games/boo-who/img/render-box.webp" srcset="/games/boo-who/img/render-box-240.webp 240w, /games/boo-who/img/render-box-480.webp 480w, /games/boo-who/img/render-box-800.webp 800w, /games/boo-who/img/render-box.webp 1600w" sizes="(max-width: 600px) 348px, (max-width: 960px) 382px, 332px" width="1600" height="1000" loading="lazy" alt="The box, a Ghost and a Living card in their stands, and one player's Boos."><figcaption>The box</figcaption></figure>
+          <figure><img src="/games/boo-who/img/render-kit.webp" srcset="/games/boo-who/img/render-kit-240.webp 240w, /games/boo-who/img/render-kit-480.webp 480w, /games/boo-who/img/render-kit-800.webp 800w, /games/boo-who/img/render-kit.webp 1600w" sizes="(max-width: 600px) 348px, (max-width: 960px) 382px, 332px" width="1600" height="1000" loading="lazy" alt="Everything in the box laid out flat."><figcaption>What's in the box</figcaption></figure>
+          <figure><img src="/games/boo-who/img/render-table.webp" srcset="/games/boo-who/img/render-table-240.webp 240w, /games/boo-who/img/render-table-480.webp 480w, /games/boo-who/img/render-table-800.webp 800w, /games/boo-who/img/render-table.webp 1600w" sizes="(max-width: 600px) 348px, (max-width: 960px) 382px, 332px" width="1600" height="1000" loading="lazy" alt="A five-player round seen from above."><figcaption>A five-player round</figcaption></figure>
+          <figure><img src="/games/boo-who/img/render-deluxe.webp" srcset="/games/boo-who/img/render-deluxe-240.webp 240w, /games/boo-who/img/render-deluxe-480.webp 480w, /games/boo-who/img/render-deluxe-800.webp 800w, /games/boo-who/img/render-deluxe.webp 1600w" sizes="(max-width: 600px) 348px, (max-width: 960px) 382px, 332px" width="1600" height="1000" loading="lazy" alt="The same round with the cards in gilt frames."><figcaption>Deluxe frames</figcaption></figure>
         </div>
       </div>
     </div>
@@ -193,7 +197,7 @@
   <section class="g-sec" id="sell-sheet" aria-labelledby="ss-h">
     <div class="wrap sheet">
       <a class="preview" href="/games/boo-who/boo-who-sell-sheet.pdf" aria-label="Open the Boo Who? sell sheet PDF">
-        <img src="/games/boo-who/img/sell-sheet.webp" width="1584" height="1224" loading="lazy" alt="Preview of the one-page Boo Who? sell sheet.">
+        <img src="/games/boo-who/img/sell-sheet.webp" srcset="/games/boo-who/img/sell-sheet-240.webp 240w, /games/boo-who/img/sell-sheet-480.webp 480w, /games/boo-who/img/sell-sheet-800.webp 800w, /games/boo-who/img/sell-sheet-1200.webp 1200w, /games/boo-who/img/sell-sheet.webp 1584w" sizes="(max-width: 600px) 346px, (max-width: 960px) 776px, 658px" width="1584" height="1224" loading="lazy" alt="Preview of the one-page Boo Who? sell sheet.">
       </a>
       <div class="copy">
         <p class="label">Sell sheet</p>
@@ -210,7 +214,7 @@
   <section class="g-sec" id="print" aria-labelledby="pp-h">
     <div class="wrap sheet">
       <a class="preview" href="/games/boo-who/boo-who-print-and-play.pdf" aria-label="Open the Boo Who? print-and-play PDF">
-        <img src="/games/boo-who/img/pnp-preview.webp" width="1929" height="842" loading="lazy" alt="Three pages of the print-and-play kit: the first rules page, a sheet of Ghost cards, and the card stands page.">
+        <img src="/games/boo-who/img/pnp-preview.webp" srcset="/games/boo-who/img/pnp-preview-240.webp 240w, /games/boo-who/img/pnp-preview-480.webp 480w, /games/boo-who/img/pnp-preview-800.webp 800w, /games/boo-who/img/pnp-preview-1200.webp 1200w, /games/boo-who/img/pnp-preview.webp 1929w" sizes="(max-width: 600px) 346px, (max-width: 960px) 776px, 658px" width="1929" height="842" loading="lazy" alt="Three pages of the print-and-play kit: the first rules page, a sheet of Ghost cards, and the card stands page.">
       </a>
       <div class="copy">
         <p class="label">Print and play</p>
@@ -259,6 +263,12 @@
       </div>
     </div>
   </section>
+  <section class="g-sec more-games" aria-labelledby="more-h">
+    <div class="wrap">
+      <div class="head"><div><p class="label">More from Darren</p><h2 id="more-h">More games</h2></div></div>
+      <div class="more-grid"><a class="more-card" href="/games/dim-sum-rush/"><span class="more-art"><img src="/games/dim-sum-rush/img/render-hero-trim-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Dim Sum Rush</b><span>Partnership climbing game · 2–6 players</span></a><a class="more-card" href="/games/too-many-crooks/"><span class="more-art"><img src="/games/too-many-crooks/img/render-hero-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Too Many Crooks!</b><span>Dice negotiation game · 3–6 players</span></a><a class="more-card" href="/games/diggers/"><span class="more-art"><img src="/games/diggers/img/render-hero-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Diggers</b><span>Shedding lane battler · 2–4 players</span></a><a class="more-card" href="/games/down-for-the-count/"><span class="more-art"><img src="/games/down-for-the-count/img/render-home-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Down for the Count</b><span>Shedding card game · 2–5 players</span></a></div>
+    </div>
+  </section>
 </main>
 
 <footer class="site-foot" style="border-color:var(--g-line);color:var(--g-muted);margin-top:0">
@@ -276,7 +286,7 @@ window.addEventListener('DOMContentLoaded', function () {
   buttons.forEach(function (b) {
     b.addEventListener('click', function () {
       buttons.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-      img.src = b.getAttribute('data-src'); img.alt = b.getAttribute('data-alt');
+      img.removeAttribute('srcset'); img.src = b.getAttribute('data-src'); img.alt = b.getAttribute('data-alt');
     });
   });
   var fs = document.getElementById('fs'), frame = document.getElementById('frame');

@@ -622,8 +622,9 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     if (!g || g.turn !== 0 || g.roundOver || !ov.hidden) return;
     if (e.key === 'Escape' && (mode || sel.length)) { mode = null; sel = []; render(); }
   });
-  window.__dftcState = () => g; // for automated playtests
+  window.__dftcState = () => g; // for automated checks
   setup();
+  if (/[?&#]tutorial\b/.test(location.search + location.hash)) startTutorial();
 })();
 </script>
 </body>

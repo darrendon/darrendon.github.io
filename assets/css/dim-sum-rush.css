@@ -129,3 +129,30 @@
 
 /* Fraunces runs wider than the old title face: keep "Dim Sum / Rush" on two lines */
 .g-dsr .g-hero h1{font-size:clamp(54px,7.2vw,100px);letter-spacing:-.01em}
+
+/* Phone: show the game right under its title, then the buttons, then the specs */
+@media (max-width:900px){
+  .g-hero{gap:0}
+  .g-hero>div:first-child{display:contents}
+  .g-hero>div:first-child>*{min-width:0}
+  .g-hero .pill{order:1;justify-self:start}
+  .g-hero h1{order:2}
+  .g-hero .tag{order:3}
+  .g-hero .viewer{order:4;margin:22px 0 0!important}
+  .g-hero .actions{order:5;margin-top:20px}
+  .g-hero dl{order:6;margin:26px 0 0}
+}
+
+/* More games (end of every game page) */
+.more-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.8vw,20px)}
+.more-card{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--g-ink);min-width:0}
+.more-card .more-art{display:block;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:var(--g-panel);border:1px solid var(--g-line);margin-bottom:6px;transition:transform .2s}
+.more-card img{width:100%;height:100%;object-fit:cover;display:block}
+.more-card b{font-family:var(--display);font-weight:800;font-stretch:108%;font-size:18px;line-height:1.2}
+.more-card>span:last-child{font-size:14.5px;color:var(--g-muted)}
+.more-card:hover .more-art{transform:translateY(-3px)}
+@media (max-width:820px){.more-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rules .rule:last-child:nth-child(odd){grid-column:1/-1}
+
+.g-dsr .renders{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:520px){.g-dsr .renders{grid-template-columns:1fr}}

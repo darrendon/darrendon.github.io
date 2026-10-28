@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="stylesheet" href="/assets/css/dim-sum-rush.css">
 <link rel="stylesheet" href="/assets/css/diggers.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Game", "name": "Diggers", "url": "https://darrendon.com/games/diggers/", "image": "https://darrendon.com/games/diggers/img/og.jpg", "description": "A shedding lane battler for 2–4 rival paleontologists, played from a hand you can never sort.", "genre": "Shedding lane battler", "numberOfPlayers": {"@type": "QuantitativeValue", "minValue": 2, "maxValue": 4}, "timeRequired": "15–20 min", "author": {"@type": "Person", "name": "Darren Don", "url": "https://darrendon.com/"}}</script>
 </head>
 <body class="g-dig game">
 <a class="skip" href="#main">Skip to content</a>
@@ -46,17 +47,19 @@
     <div>
       <span class="pill">Playable now</span>
       <h1 id="t">Diggers</h1>
-      <p class="tag"><b>Outdig the camp next door.<br>Poach the bones you need.</b> A shedding lane battler for 2–4 rival paleontologists. Race to empty your hand, but only the dig sites you hold when someone does will score. Each site between two camps is a lane, won with runs and sets of cards sitting side by side in a hand you can never sort.</p>
+      <p class="tag"><b>Outdig the camp next door.<br>Poach the bones you need.</b> A shedding lane battler for 2–4 rival paleontologists, played from a hand you can never sort. Race to empty it, but only the dig sites you hold when someone does will score.</p>
       <dl>
         <div class="spec"><dt>Players</dt><dd>2–4</dd></div>
         <div class="spec"><dt>Genre</dt><dd>Shedding lane battler</dd></div>
         <div class="spec"><dt>For fans of</dt><dd>Scout · Schotten Totten</dd></div>
         <div class="spec"><dt>Length</dt><dd>15–20 minutes · 3 field seasons</dd></div>
-        <div class="spec"><dt>Components</dt><dd>45 fossil cards, 4 field guides, 4 dig-site boards · small box</dd></div>
-        <div class="spec"><dt>Status</dt><dd>Print-and-play and browser build ready</dd></div>
+        <div class="spec"><dt>Components</dt><dd>45 fossil cards, 4 field guides, 4 dig-site boards</dd></div>
+        <div class="spec"><dt>Box</dt><dd>Tuck box</dd></div>
+        <div class="spec"><dt>Status</dt><dd>Rules, print-and-play kit and a browser build with a tutorial</dd></div>
       </dl>
       <div class="actions">
-        <a class="btn red" href="#play">Play in your browser</a>
+        <a class="btn red" href="#play" data-tutorial>Learn to play</a>
+        <a class="btn" href="#play">Play in your browser</a>
         <a class="btn" href="/games/diggers/diggers-sell-sheet.pdf" download>Sell sheet (PDF)</a>
         <a class="btn" href="/games/diggers/diggers-rules.pdf" download>Rules (PDF)</a>
         <a class="btn" href="/games/diggers/diggers-print-and-play.pdf" download>Print and play (PDF)</a>
@@ -65,7 +68,7 @@
 
     <figure class="viewer" style="margin:0" aria-label="Component mockups">
       <div class="stage">
-        <img class="poster" id="hero-img" src="/games/diggers/img/render-hero.webp" width="1600" height="1000" alt="Diggers mockup: the red game box with a Tyrannosaurus fossil slab on the lid, a whole Stegosaurus laid out as nine cards in three rows of three, and the Como Bluff dig-site board with a suited Brontosaurus run 4-5-6 in front of it.">
+        <img class="poster" id="hero-img" src="/games/diggers/img/render-hero.webp" srcset="/games/diggers/img/render-hero-240.webp 240w, /games/diggers/img/render-hero-480.webp 480w, /games/diggers/img/render-hero-800.webp 800w, /games/diggers/img/render-hero.webp 1600w" sizes="(max-width: 600px) 346px, (max-width: 960px) 248px, 214px" width="1600" height="1000" alt="Diggers mockup: the red game box with a Tyrannosaurus fossil slab on the lid, a whole Stegosaurus laid out as nine cards in three rows of three, and the Como Bluff dig-site board with a suited Brontosaurus run 4-5-6 in front of it.">
       </div>
       <figcaption class="bar">
         <div class="views" role="group" aria-label="Choose a view">
@@ -97,9 +100,9 @@
         <div class="tag-card">
           <span class="cap">Beat the find</span>
           <div class="art ladder" role="img" aria-label="A run 3-4-5 is beaten by a set of three 6s, which is beaten by a suited Stegosaurus run 3-4-5.">
-            <div class="g"><div><img src="/games/diggers/img/src/tex/face-3.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-14.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-35.jpg" width="500" height="700" loading="lazy" alt=""></div><span>A run</span></div>
-            <div class="g"><div><img src="/games/diggers/img/src/tex/face-6.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-16.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-46.jpg" width="500" height="700" loading="lazy" alt=""></div><span>A set <i>beats it</i></span></div>
-            <div class="g"><div><img src="/games/diggers/img/src/tex/face-23.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-24.jpg" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/src/tex/face-25.jpg" width="500" height="700" loading="lazy" alt=""></div><span>A suited run <i>beats that</i></span></div>
+            <div class="g"><div><img src="/games/diggers/img/thumbs/face-3.webp" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/thumbs/face-14.webp" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/thumbs/face-35.webp" width="500" height="700" loading="lazy" alt=""></div><span>A run</span></div>
+            <div class="g"><div><img src="/games/diggers/img/thumbs/face-6.webp" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/thumbs/face-16.webp" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/thumbs/face-46.webp" width="500" height="700" loading="lazy" alt=""></div><span>A set <i>beats it</i></span></div>
+            <div class="g"><div><img src="/games/diggers/img/thumbs/face-23.webp" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/thumbs/face-24.webp" width="500" height="700" loading="lazy" alt=""><img src="/games/diggers/img/thumbs/face-25.webp" width="500" height="700" loading="lazy" alt=""></div><span>A suited run <i>beats that</i></span></div>
           </div>
           <p>More cards always wins. Same count? A suited run, every bone from one skeleton, beats a set, and a set beats a run. Then the higher total.</p>
         </div>
@@ -107,9 +110,9 @@
           <span class="cap">Or poach</span>
           <div class="art poach" role="img" aria-label="A rival's 7 and 8 sit on their side of the Garden Park board; the 9 from the end of their find drops to your side.">
             <span class="lbl their">their side</span>
-            <img class="c c1" src="/games/diggers/img/src/tex/face-27.jpg" alt="" loading="lazy"><img class="c c2" src="/games/diggers/img/src/tex/face-38.jpg" alt="" loading="lazy">
-            <img class="board" src="/games/diggers/img/site-1.webp" width="880" height="160" alt="" loading="lazy">
-            <img class="c lift" src="/games/diggers/img/src/tex/face-9.jpg" alt="" loading="lazy">
+            <img class="c c1" src="/games/diggers/img/thumbs/face-27.webp" alt="" loading="lazy"><img class="c c2" src="/games/diggers/img/thumbs/face-38.webp" alt="" loading="lazy">
+            <img class="board" src="/games/diggers/img/site-1.webp" srcset="/games/diggers/img/site-1-240.webp 240w, /games/diggers/img/site-1-480.webp 480w, /games/diggers/img/site-1.webp 880w" sizes="(max-width: 600px) 308px, (max-width: 960px) 407px, 326px" width="880" height="160" alt="" loading="lazy">
+            <img class="c lift" src="/games/diggers/img/thumbs/face-9.webp" alt="" loading="lazy">
             <span class="lbl yours">your side</span>
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M47 30 C 70 26, 86 40, 84 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/><path d="M80 60 L84 67 L89 61" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
           </div>
@@ -118,9 +121,9 @@
         <div class="tag-card">
           <span class="cap">Go out</span>
           <div class="art seasons" role="img" aria-label="Sites score 1 prestige in season one, 2 in season two and 4 in season three.">
-            <div class="row"><b>1</b><img src="/games/diggers/img/site-0.webp" width="880" height="160" alt="" loading="lazy"></div>
-            <div class="row"><b>2</b><img src="/games/diggers/img/site-2.webp" width="880" height="160" alt="" loading="lazy"></div>
-            <div class="row last"><b>4</b><img src="/games/diggers/img/site-3.webp" width="880" height="160" alt="" loading="lazy"></div>
+            <div class="row"><b>1</b><img src="/games/diggers/img/site-0.webp" srcset="/games/diggers/img/site-0-240.webp 240w, /games/diggers/img/site-0-480.webp 480w, /games/diggers/img/site-0.webp 880w" sizes="(max-width: 600px) 226px, (max-width: 960px) 228px, 228px" width="880" height="160" alt="" loading="lazy"></div>
+            <div class="row"><b>2</b><img src="/games/diggers/img/site-2.webp" srcset="/games/diggers/img/site-2-240.webp 240w, /games/diggers/img/site-2-480.webp 480w, /games/diggers/img/site-2.webp 880w" sizes="(max-width: 600px) 226px, (max-width: 960px) 228px, 228px" width="880" height="160" alt="" loading="lazy"></div>
+            <div class="row last"><b>4</b><img src="/games/diggers/img/site-3.webp" srcset="/games/diggers/img/site-3-240.webp 240w, /games/diggers/img/site-3-480.webp 480w, /games/diggers/img/site-3.webp 880w" sizes="(max-width: 600px) 226px, (max-width: 960px) 228px, 228px" width="880" height="160" alt="" loading="lazy"></div>
           </div>
           <p>Play your last card and the season ends on the spot. Every site you hold scores: 1 prestige in the first season, 2 in the second and 4 in the last.</p>
         </div>
@@ -135,13 +138,13 @@
         <p>Every card is a bone from one of five animals, each set in its own rock with its own symbol. Lay a species' nine cards out <b>1 2 3 / 4 5 6 / 7 8 9</b> and the whole skeleton comes out of the slab. Each game uses one more species than there are players.</p>
       </div>
       <div class="species">
-        <figure><img src="/games/diggers/img/card-1.webp" width="500" height="700" loading="lazy" alt="The Tyrannosaurus 1 card: red sandstone with the skull, a 1 and a red fang symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 2.2C13.5 3.2 18.6 8.6 18.4 15.2C18.3 18.4 17.2 20.6 15.6 22.2L14.2 20.2L12.6 21.6L11.6 19.4L9.8 20.4C10.6 14.6 10 8 6.5 2.2Z" fill="#d23a2a"/></svg><div>Tyrannosaurus<span>red sandstone · the skull</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-11.webp" width="500" height="700" loading="lazy" alt="The Triceratops 1 card: blue slate with the beak and horns, a 1 and a blue horned-frill symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 16.5C2.5 9.5 6.8 5 12 5C17.2 5 21.5 9.5 21.5 16.5L17.6 16.5L15 22L9 22L6.4 16.5ZM7.2 12.6L4.2 2.6L10 11ZM16.8 12.6L19.8 2.6L14 11ZM10.6 17.4L12 13.6L13.4 17.4Z" fill="#3a7fc4"/></svg><div>Triceratops<span>blue slate · the beak and horns</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-23.webp" width="500" height="700" loading="lazy" alt="The Stegosaurus 3 card: green mudstone with the four tail spikes, a 3 and a green plates symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" fill="#3fa155"/></svg><div>Stegosaurus<span>green mudstone · the tail spikes</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-32.webp" width="500" height="700" loading="lazy" alt="The Brontosaurus 2 card: purple shale with the small head at the top of the arched neck, a 2 and a purple long-neck symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" fill="#8a55c4"/></svg><div>Brontosaurus<span>purple shale · the head and neck</span></div></figcaption></figure>
-        <figure><img src="/games/diggers/img/card-45.webp" width="500" height="700" loading="lazy" alt="The Pteranodon 5 card: golden limestone with the long beak, swept-back crest and small body between the wings, a 5 and a yellow crested-head symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0.8 15.4L11.2 11.2L13.4 9.8L21.6 2.2C22.4 1.6 23.4 2.4 22.8 3.2L17.2 10.4C18.6 11.8 18.6 14.6 16.8 16C15.2 17.2 12.8 17.2 10.8 16.8L0.8 15.4ZM14.6 12.2A1.3 1.3 0 1 0 14.61 12.2Z" fill="#e0b52d"/></svg><div>Pteranodon<span>golden limestone · the skull and body</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-1.webp" srcset="/games/diggers/img/card-1-240.webp 240w, /games/diggers/img/card-1.webp 500w" sizes="(max-width: 600px) 106px, (max-width: 960px) 247px, 214px" width="500" height="700" loading="lazy" alt="The Tyrannosaurus 1 card: red sandstone with the skull, a 1 and a red fang symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 2.2C13.5 3.2 18.6 8.6 18.4 15.2C18.3 18.4 17.2 20.6 15.6 22.2L14.2 20.2L12.6 21.6L11.6 19.4L9.8 20.4C10.6 14.6 10 8 6.5 2.2Z" fill="#d23a2a"/></svg><div>Tyrannosaurus<span>red sandstone · the skull</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-11.webp" srcset="/games/diggers/img/card-11-240.webp 240w, /games/diggers/img/card-11.webp 500w" sizes="(max-width: 600px) 106px, (max-width: 960px) 247px, 214px" width="500" height="700" loading="lazy" alt="The Triceratops 1 card: blue slate with the beak and horns, a 1 and a blue horned-frill symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 16.5C2.5 9.5 6.8 5 12 5C17.2 5 21.5 9.5 21.5 16.5L17.6 16.5L15 22L9 22L6.4 16.5ZM7.2 12.6L4.2 2.6L10 11ZM16.8 12.6L19.8 2.6L14 11ZM10.6 17.4L12 13.6L13.4 17.4Z" fill="#3a7fc4"/></svg><div>Triceratops<span>blue slate · the beak and horns</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-23.webp" srcset="/games/diggers/img/card-23-240.webp 240w, /games/diggers/img/card-23.webp 500w" sizes="(max-width: 600px) 106px, (max-width: 960px) 247px, 214px" width="500" height="700" loading="lazy" alt="The Stegosaurus 3 card: green mudstone with the four tail spikes, a 3 and a green plates symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" fill="#3fa155"/></svg><div>Stegosaurus<span>green mudstone · the tail spikes</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-32.webp" srcset="/games/diggers/img/card-32-240.webp 240w, /games/diggers/img/card-32.webp 500w" sizes="(max-width: 600px) 106px, (max-width: 960px) 247px, 214px" width="500" height="700" loading="lazy" alt="The Brontosaurus 2 card: purple shale with the small head at the top of the arched neck, a 2 and a purple long-neck symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" fill="#8a55c4"/></svg><div>Brontosaurus<span>purple shale · the head and neck</span></div></figcaption></figure>
+        <figure><img src="/games/diggers/img/card-45.webp" srcset="/games/diggers/img/card-45-240.webp 240w, /games/diggers/img/card-45.webp 500w" sizes="(max-width: 600px) 106px, (max-width: 960px) 247px, 214px" width="500" height="700" loading="lazy" alt="The Pteranodon 5 card: golden limestone with the long beak, swept-back crest and small body between the wings, a 5 and a yellow crested-head symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0.8 15.4L11.2 11.2L13.4 9.8L21.6 2.2C22.4 1.6 23.4 2.4 22.8 3.2L17.2 10.4C18.6 11.8 18.6 14.6 16.8 16C15.2 17.2 12.8 17.2 10.8 16.8L0.8 15.4ZM14.6 12.2A1.3 1.3 0 1 0 14.61 12.2Z" fill="#e0b52d"/></svg><div>Pteranodon<span>golden limestone · the skull and body</span></div></figcaption></figure>
       </div>
-      <figure class="slab-sheet"><img src="/games/diggers/img/five-skeletons.webp" width="1450" height="1500" loading="lazy" alt="All five slabs assembled, each from nine cards: Tyrannosaurus in red sandstone, Triceratops in blue slate, Stegosaurus in green mudstone, Brontosaurus in purple shale and Pteranodon, wings spread, in golden limestone."></figure>
+      <figure class="slab-sheet"><img src="/games/diggers/img/five-skeletons.webp" srcset="/games/diggers/img/five-skeletons-240.webp 240w, /games/diggers/img/five-skeletons-480.webp 480w, /games/diggers/img/five-skeletons-800.webp 800w, /games/diggers/img/five-skeletons-1200.webp 1200w, /games/diggers/img/five-skeletons.webp 1450w" sizes="(max-width: 600px) 344px, (max-width: 960px) 774px, 874px" width="1450" height="1500" loading="lazy" alt="All five slabs assembled, each from nine cards: Tyrannosaurus in red sandstone, Triceratops in blue slate, Stegosaurus in green mudstone, Brontosaurus in purple shale and Pteranodon, wings spread, in golden limestone."></figure>
 
       <div class="quarries">
         <div class="q-head">
@@ -150,15 +153,15 @@
           <p>Each site is a wooden board laid between two camps. Your finds go on your side of it. The four boards are named for places where Cope's and Marsh's crews raced each other in the 1870s.</p>
         </div>
         <div class="q-grid">
-          <figure><img src="/games/diggers/img/site-0.webp" width="880" height="160" loading="lazy" alt="The Como Bluff dig-site board: a weathered wooden plank with COMO BLUFF burned into it, Wyoming Territory, 1877."><figcaption><b>Como Bluff</b> <span>Wyoming Territory, 1877</span>Railroad men spotted giant bones weathering out of this ridge and wrote to Marsh, who sent crews to dig for years.</figcaption></figure>
-          <figure><img src="/games/diggers/img/site-1.webp" width="880" height="160" loading="lazy" alt="The Garden Park dig-site board: a weathered wooden plank with GARDEN PARK burned into it, Colorado, 1877."><figcaption><b>Garden Park</b> <span>Colorado, 1877</span>Cope's and Marsh's crews both opened quarries in this one small valley.</figcaption></figure>
-          <figure><img src="/games/diggers/img/site-2.webp" width="880" height="160" loading="lazy" alt="The Morrison dig-site board: a weathered wooden plank with MORRISON burned into it, Colorado, 1877."><figcaption><b>Morrison</b> <span>Colorado, 1877</span>A schoolteacher, Arthur Lakes, found huge bones in the hills here and sent samples to both men.</figcaption></figure>
-          <figure><img src="/games/diggers/img/site-3.webp" width="880" height="160" loading="lazy" alt="The Smoky Hill dig-site board: a weathered wooden plank with SMOKY HILL burned into it, Kansas, 1870."><figcaption><b>Smoky Hill</b> <span>Kansas, 1870</span>Marsh's Yale party pulled the first American pterosaur bones out of this chalk.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-0.webp" srcset="/games/diggers/img/site-0-240.webp 240w, /games/diggers/img/site-0-480.webp 480w, /games/diggers/img/site-0.webp 880w" sizes="(max-width: 600px) 346px, (max-width: 960px) 373px, 351px" width="880" height="160" loading="lazy" alt="The Como Bluff dig-site board: a weathered wooden plank with COMO BLUFF burned into it, Wyoming Territory, 1877."><figcaption><b>Como Bluff</b> <span>Wyoming Territory, 1877</span>Railroad men spotted giant bones weathering out of this ridge and wrote to Marsh, who sent crews to dig for years.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-1.webp" srcset="/games/diggers/img/site-1-240.webp 240w, /games/diggers/img/site-1-480.webp 480w, /games/diggers/img/site-1.webp 880w" sizes="(max-width: 600px) 346px, (max-width: 960px) 373px, 351px" width="880" height="160" loading="lazy" alt="The Garden Park dig-site board: a weathered wooden plank with GARDEN PARK burned into it, Colorado, 1877."><figcaption><b>Garden Park</b> <span>Colorado, 1877</span>Cope's and Marsh's crews both opened quarries in this one small valley.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-2.webp" srcset="/games/diggers/img/site-2-240.webp 240w, /games/diggers/img/site-2-480.webp 480w, /games/diggers/img/site-2.webp 880w" sizes="(max-width: 600px) 346px, (max-width: 960px) 373px, 351px" width="880" height="160" loading="lazy" alt="The Morrison dig-site board: a weathered wooden plank with MORRISON burned into it, Colorado, 1877."><figcaption><b>Morrison</b> <span>Colorado, 1877</span>A schoolteacher, Arthur Lakes, found huge bones in the hills here and sent samples to both men.</figcaption></figure>
+          <figure><img src="/games/diggers/img/site-3.webp" srcset="/games/diggers/img/site-3-240.webp 240w, /games/diggers/img/site-3-480.webp 480w, /games/diggers/img/site-3.webp 880w" sizes="(max-width: 600px) 346px, (max-width: 960px) 373px, 351px" width="880" height="160" loading="lazy" alt="The Smoky Hill dig-site board: a weathered wooden plank with SMOKY HILL burned into it, Kansas, 1870."><figcaption><b>Smoky Hill</b> <span>Kansas, 1870</span>Marsh's Yale party pulled the first American pterosaur bones out of this chalk.</figcaption></figure>
         </div>
       </div>
 
       <div class="boxart">
-        <figure><img src="/games/diggers/img/box-front.webp" width="600" height="800" loading="lazy" alt="The box lid: a Tyrannosaurus skeleton curled in red sandstone above a cream title plate reading The great bone rush of 1877, Diggers, Rival excavations in three field seasons, a game by Darren Don."><figcaption><b>The box</b>The Tyrannosaurus slab, with the five species symbols across the top</figcaption></figure>
+        <figure><img src="/games/diggers/img/box-front.webp" srcset="/games/diggers/img/box-front-240.webp 240w, /games/diggers/img/box-front-480.webp 480w, /games/diggers/img/box-front.webp 600w" sizes="(max-width: 600px) 160px, (max-width: 960px) 372px, 358px" width="600" height="800" loading="lazy" alt="The box lid: a Tyrannosaurus skeleton curled in red sandstone above a cream title plate reading The great bone rush of 1877, Diggers, Rival excavations in three field seasons, a game by Darren Don."><figcaption><b>The box</b>The Tyrannosaurus slab, with the five species symbols across the top</figcaption></figure>
         <figure><img src="/games/diggers/img/card-back.webp" width="500" height="700" loading="lazy" alt="The card back."><figcaption><b>The card back</b></figcaption></figure>
         <div class="comp-list">
           <p class="label" style="margin-bottom:14px">In the box</p>
@@ -177,9 +180,9 @@
           <p class="fine" style="margin-top:0">Rendered from the card, board and box art.</p>
         </div>
         <div class="renders">
-          <figure><img src="/games/diggers/img/render-hero.webp" width="1600" height="1000" loading="lazy" alt="The box, a Stegosaurus slab and a dig site with a find."><figcaption>The box</figcaption></figure>
-          <figure><img src="/games/diggers/img/render-table.webp" width="1600" height="1000" loading="lazy" alt="A two-player game with three dig sites."><figcaption>A two-player table</figcaption></figure>
-          <figure><img src="/games/diggers/img/render-kit.webp" width="1600" height="1000" loading="lazy" alt="All 45 cards as five slabs, with the four field guides, the four named dig-site boards and the box."><figcaption>What's in the box</figcaption></figure>
+          <figure><img src="/games/diggers/img/render-hero.webp" srcset="/games/diggers/img/render-hero-240.webp 240w, /games/diggers/img/render-hero-480.webp 480w, /games/diggers/img/render-hero-800.webp 800w, /games/diggers/img/render-hero.webp 1600w" sizes="(max-width: 600px) 346px, (max-width: 960px) 248px, 214px" width="1600" height="1000" loading="lazy" alt="The box, a Stegosaurus slab and a dig site with a find."><figcaption>The box</figcaption></figure>
+          <figure><img src="/games/diggers/img/render-table.webp" srcset="/games/diggers/img/render-table-240.webp 240w, /games/diggers/img/render-table-480.webp 480w, /games/diggers/img/render-table-800.webp 800w, /games/diggers/img/render-table.webp 1600w" sizes="(max-width: 600px) 346px, (max-width: 960px) 248px, 214px" width="1600" height="1000" loading="lazy" alt="A two-player game with three dig sites."><figcaption>A two-player table</figcaption></figure>
+          <figure><img src="/games/diggers/img/render-kit.webp" srcset="/games/diggers/img/render-kit-240.webp 240w, /games/diggers/img/render-kit-480.webp 480w, /games/diggers/img/render-kit-800.webp 800w, /games/diggers/img/render-kit.webp 1600w" sizes="(max-width: 600px) 346px, (max-width: 960px) 248px, 214px" width="1600" height="1000" loading="lazy" alt="All 45 cards as five slabs, with the four field guides, the four named dig-site boards and the box."><figcaption>What's in the box</figcaption></figure>
         </div>
       </div>
     </div>
@@ -192,8 +195,8 @@
         <p>The game runs below. No download or account needed.</p>
       </div>
       <div class="modes">
-        <div class="mode"><b>You against the bots</b><span>Two, three or four diggers. You take the bottom camp; Prof. Ashworth, Dr. Penrose and Mr. Hale take the rest.</span></div>
         <div class="mode"><b>A field lesson</b><span>New to it? A stacked two-minute first season walks you through every rule, then hands you a real game against Prof. Ashworth.</span></div>
+        <div class="mode"><b>You against the bots</b><span>Two, three or four diggers. You take the bottom camp; Prof. Ashworth, Dr. Penrose and Mr. Hale take the rest.</span></div>
         <div class="mode"><b>The five skeletons</b><span>Open the panel under the table to see every species assembled from its nine cards.</span></div>
       </div>
       <div class="play-frame" id="frame">
@@ -213,7 +216,7 @@
   <section class="g-sec" id="sell-sheet" aria-labelledby="ss-h">
     <div class="wrap sheet">
       <a class="preview" href="/games/diggers/diggers-sell-sheet.pdf" aria-label="Open the Diggers sell sheet PDF">
-        <img src="/games/diggers/img/sell-sheet.webp" width="1584" height="1224" loading="lazy" alt="Preview of the one-page Diggers sell sheet.">
+        <img src="/games/diggers/img/sell-sheet.webp" srcset="/games/diggers/img/sell-sheet-240.webp 240w, /games/diggers/img/sell-sheet-480.webp 480w, /games/diggers/img/sell-sheet-800.webp 800w, /games/diggers/img/sell-sheet-1200.webp 1200w, /games/diggers/img/sell-sheet.webp 1584w" sizes="(max-width: 600px) 344px, (max-width: 960px) 774px, 656px" width="1584" height="1224" loading="lazy" alt="Preview of the one-page Diggers sell sheet.">
       </a>
       <div class="copy">
         <p class="label">Sell sheet</p>
@@ -230,7 +233,7 @@
   <section class="g-sec" id="print" aria-labelledby="pp-h">
     <div class="wrap sheet">
       <a class="preview" href="/games/diggers/diggers-print-and-play.pdf" aria-label="Open the Diggers print-and-play PDF">
-        <img src="/games/diggers/img/pnp-preview.webp" width="2072" height="880" loading="lazy" alt="Three pages of the print-and-play kit: the two rules pages and the Tyrannosaurus card sheet.">
+        <img src="/games/diggers/img/pnp-preview.webp" srcset="/games/diggers/img/pnp-preview-240.webp 240w, /games/diggers/img/pnp-preview-480.webp 480w, /games/diggers/img/pnp-preview-800.webp 800w, /games/diggers/img/pnp-preview-1200.webp 1200w, /games/diggers/img/pnp-preview.webp 2072w" sizes="(max-width: 600px) 344px, (max-width: 960px) 774px, 656px" width="2072" height="880" loading="lazy" alt="Three pages of the print-and-play kit: the two rules pages and the Tyrannosaurus card sheet.">
       </a>
       <div class="copy">
         <p class="label">Print and play</p>
@@ -274,6 +277,12 @@
       </div>
     </div>
   </section>
+  <section class="g-sec more-games" aria-labelledby="more-h">
+    <div class="wrap">
+      <div class="head"><div><p class="label">More from Darren</p><h2 id="more-h">More games</h2></div></div>
+      <div class="more-grid"><a class="more-card" href="/games/dim-sum-rush/"><span class="more-art"><img src="/games/dim-sum-rush/img/render-hero-trim-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Dim Sum Rush</b><span>Partnership climbing game · 2–6 players</span></a><a class="more-card" href="/games/boo-who/"><span class="more-art"><img src="/games/boo-who/img/render-box-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Boo Who?</b><span>Bluffing party game · 4–8 players</span></a><a class="more-card" href="/games/too-many-crooks/"><span class="more-art"><img src="/games/too-many-crooks/img/render-hero-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Too Many Crooks!</b><span>Dice negotiation game · 3–6 players</span></a><a class="more-card" href="/games/down-for-the-count/"><span class="more-art"><img src="/games/down-for-the-count/img/render-home-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Down for the Count</b><span>Shedding card game · 2–5 players</span></a></div>
+    </div>
+  </section>
 </main>
 
 <footer class="site-foot" style="border-color:var(--g-line);color:var(--g-muted);margin-top:0">
@@ -291,7 +300,7 @@ window.addEventListener('DOMContentLoaded', function () {
   buttons.forEach(function (b) {
     b.addEventListener('click', function () {
       buttons.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-      img.src = b.getAttribute('data-src'); img.alt = b.getAttribute('data-alt');
+      img.removeAttribute('srcset'); img.src = b.getAttribute('data-src'); img.alt = b.getAttribute('data-alt');
     });
   });
   var fs = document.getElementById('fs'), frame = document.getElementById('frame');

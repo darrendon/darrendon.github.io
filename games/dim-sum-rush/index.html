@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="stylesheet" href="/assets/css/dim-sum-rush.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Game", "name": "Dim Sum Rush", "url": "https://darrendon.com/games/dim-sum-rush/", "image": "https://darrendon.com/games/dim-sum-rush/img/og.jpg", "description": "A partnership climbing game for 2–6 players, made for tiles or cards.", "genre": "Partnership climbing game", "numberOfPlayers": {"@type": "QuantitativeValue", "minValue": 2, "maxValue": 6}, "timeRequired": "30–45 min", "author": {"@type": "Person", "name": "Darren Don", "url": "https://darrendon.com/"}}</script>
 </head>
 <body class="g-dsr game">
 <a class="skip" href="#main">Skip to content</a>
@@ -53,10 +54,12 @@
         <div class="spec"><dt>Length</dt><dd>30–45 minutes · 3 rounds</dd></div>
         <div class="spec"><dt>Format</dt><dd>Tiles or cards · same rules either way</dd></div>
         <div class="spec"><dt>Components</dt><dd>84 tiles with a cloth bag, or 84 cards · rulebook</dd></div>
-        <div class="spec"><dt>Status</dt><dd>Rulebook, print-and-play and browser build ready</dd></div>
+        <div class="spec"><dt>Box</dt><dd>Tile version about 19 × 14 × 6 cm · card version in a Tichu-size box</dd></div>
+        <div class="spec"><dt>Status</dt><dd>Rules, print-and-play kit and a browser build with a tutorial</dd></div>
       </dl>
       <div class="actions">
-        <a class="btn red" href="#play">Play in your browser</a>
+        <a class="btn red" href="#play" data-tutorial>Learn to play</a>
+        <a class="btn" href="#play">Play in your browser</a>
         <a class="btn" href="/games/dim-sum-rush/dim-sum-rush-sell-sheet.pdf" download>Sell sheet (PDF)</a>
         <a class="btn" href="/games/dim-sum-rush/dim-sum-rush-rules.pdf" download>Rules (PDF)</a>
         <a class="btn" href="/games/dim-sum-rush/dim-sum-rush-print-and-play.pdf" download>Print and play (PDF)</a>
@@ -65,7 +68,7 @@
 
     <figure class="viewer" style="margin:0" aria-label="3D component mockup">
       <div class="stage" id="stage">
-        <img class="poster" src="/games/dim-sum-rush/img/render-hero.webp" width="3200" height="2000" alt="Dim Sum Rush mockup: the game box, a cloth tile bag and domino-thin dish tiles.">
+        <img class="poster" src="/games/dim-sum-rush/img/render-hero-1200.webp" srcset="/games/dim-sum-rush/img/render-hero-800.webp 800w, /games/dim-sum-rush/img/render-hero-1200.webp 1200w, /games/dim-sum-rush/img/render-hero-1600.webp 1600w, /games/dim-sum-rush/img/render-hero.webp 3200w" sizes="(max-width: 900px) calc(100vw - 40px), 640px" fetchpriority="high" width="3200" height="2000" alt="Dim Sum Rush mockup: the game box, a cloth tile bag and domino-thin dish tiles.">
       </div>
       <figcaption class="bar">
         <div class="views" role="group" aria-label="Choose a view">
@@ -73,6 +76,7 @@
           <button type="button" data-view="box" aria-pressed="false">Box</button>
           <button type="button" data-view="tiles" aria-pressed="false">Tiles</button>
           <button type="button" data-view="bag" aria-pressed="false">Bag</button>
+          <button type="button" data-view="cards" aria-pressed="false">Cards</button>
         </div>
         <span class="hint" id="hint">Drag to turn</span>
       </figcaption>
@@ -94,7 +98,7 @@
     <div class="wrap">
       <div class="head"><div><p class="label">Overview</p><h2 id="ov-h">The pitch</h2></div></div>
       <div class="pitch">
-        <p class="big">Every server holds a <b>cart</b> of tiles in a fixed order and puts one tile face up on the <b>trolley</b>. Your team can use its trolley tiles in any combination; the other team can't touch them. So every tile you put out is an offer only your partner can take, and you're always reading what the other team is setting up.</p>
+        <p class="big">Each team shares face-up tiles the other team can’t touch, so every tile you put out is a play only your partner can make. Your hand is your <b>cart</b>, in a fixed order you can never rearrange. The tile you put face up on your team’s <b>trolley</b> is how you help your partner out of a bad cart, and you’re always reading what the other team is setting up.</p>
         <div class="sets">
           <div class="set"><h3>Teamwork without bidding</h3><p>Partners coordinate through the tiles they share, not calls or bets. Scoring is one number: the losing team takes points for its fullest cart.</p></div>
           <div class="set"><h3>Passing is a real move</h3><p>When you pass, you can fill an empty trolley spot or swap a tile. Passing is how you reshape your cart and set up your partner.</p></div>
@@ -126,10 +130,10 @@
         <figure class="tile b3" style="margin:0"><div class="face" style="--face-img:url(/assets/img/tex/face-12.webp)" role="img" aria-label="Tile 12, Mango Pudding"></div><figcaption class="nm">Mango Pudding</figcaption></figure>
       </div>
       <div class="bands">
-        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-0.webp)" aria-hidden="true"></span><div><b>Bamboo steamer</b><span>Tiles 1–3</span></div></div>
-        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-1.webp)" aria-hidden="true"></span><div><b>Porcelain plate</b><span>Tiles 4–6</span></div></div>
-        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-2.webp)" aria-hidden="true"></span><div><b>Clay bowl</b><span>Tiles 7–9</span></div></div>
-        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-3.webp)" aria-hidden="true"></span><div><b>Dessert tray</b><span>Tiles 10–12</span></div></div>
+        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-0.webp)" aria-hidden="true"></span><div><b>Bamboo steamer</b><span>Numbers 1–3</span></div></div>
+        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-1.webp)" aria-hidden="true"></span><div><b>Porcelain plate</b><span>Numbers 4–6</span></div></div>
+        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-2.webp)" aria-hidden="true"></span><div><b>Clay bowl</b><span>Numbers 7–9</span></div></div>
+        <div class="band-key"><span class="bk" style="--bk:url(/assets/img/tex/back-3.webp)" aria-hidden="true"></span><div><b>Dessert tray</b><span>Numbers 10–12</span></div></div>
       </div>
 
       <div class="comp">
@@ -143,9 +147,10 @@
           <p class="fine">The mockups show the tile version and the print-and-play kit uses cards; the game plays the same either way. Tiles or cards, final components, box size and finishes are open to discussion with a publisher.</p>
         </div>
         <div class="renders">
-          <figure><img src="/games/dim-sum-rush/img/render-box.webp" width="2400" height="1600" loading="lazy" alt="Close-up of the Dim Sum Rush box lid, with four dish medallions under the title."><figcaption>Box</figcaption></figure>
-          <figure><img src="/games/dim-sum-rush/img/render-tiles.webp" width="2400" height="1600" loading="lazy" alt="A cart of six standing tiles and a Chef's Special of four Mango Pudding 12s."><figcaption>Tiles &amp; a Chef's Special</figcaption></figure>
-          <figure><img src="/games/dim-sum-rush/img/render-bag.webp" width="2400" height="1600" loading="lazy" alt="The red cloth tile bag with a gold drawstring, with four tiles laid out in front of it."><figcaption>Tile bag</figcaption></figure>
+          <figure><img src="/games/dim-sum-rush/img/render-box.webp" srcset="/games/dim-sum-rush/img/render-box-240.webp 240w, /games/dim-sum-rush/img/render-box-480.webp 480w, /games/dim-sum-rush/img/render-box-800.webp 800w, /games/dim-sum-rush/img/render-box.webp 2400w" sizes="(max-width: 600px) 348px, (max-width: 960px) 250px, 216px" width="2400" height="1600" loading="lazy" alt="Close-up of the Dim Sum Rush box lid, with four dish medallions under the title."><figcaption>Box</figcaption></figure>
+          <figure><img src="/games/dim-sum-rush/img/render-tiles.webp" srcset="/games/dim-sum-rush/img/render-tiles-240.webp 240w, /games/dim-sum-rush/img/render-tiles-480.webp 480w, /games/dim-sum-rush/img/render-tiles-800.webp 800w, /games/dim-sum-rush/img/render-tiles.webp 2400w" sizes="(max-width: 600px) 348px, (max-width: 960px) 250px, 216px" width="2400" height="1600" loading="lazy" alt="A cart of six standing tiles and a Chef's Special of four Mango Pudding 12s."><figcaption>Tiles &amp; a Chef's Special</figcaption></figure>
+          <figure><img src="/games/dim-sum-rush/img/render-bag.webp" srcset="/games/dim-sum-rush/img/render-bag-240.webp 240w, /games/dim-sum-rush/img/render-bag-480.webp 480w, /games/dim-sum-rush/img/render-bag-800.webp 800w, /games/dim-sum-rush/img/render-bag.webp 2400w" sizes="(max-width: 600px) 348px, (max-width: 960px) 250px, 216px" width="2400" height="1600" loading="lazy" alt="The red cloth tile bag with a gold drawstring, with four tiles laid out in front of it."><figcaption>Tile bag</figcaption></figure>
+          <figure><img src="/games/dim-sum-rush/img/render-cards-480.webp" srcset="/games/dim-sum-rush/img/render-cards-240.webp 240w, /games/dim-sum-rush/img/render-cards-480.webp 480w, /games/dim-sum-rush/img/render-cards-800.webp 800w, /games/dim-sum-rush/img/render-cards.webp 2400w" sizes="(max-width: 520px) calc(100vw - 40px), (max-width: 900px) 33vw, 220px" width="2400" height="1600" loading="lazy" alt="The card version: a Tichu-size card box, three face-down cards showing their serving-vessel backs, a played run of 4 5 6 and a cart of five cards."><figcaption>Card version</figcaption></figure>
         </div>
       </div>
     </div>
@@ -178,7 +183,7 @@
   <section class="g-sec" id="sell-sheet" aria-labelledby="ss-h">
     <div class="wrap sheet">
       <a class="preview" href="/games/dim-sum-rush/dim-sum-rush-sell-sheet.pdf" aria-label="Open the Dim Sum Rush sell sheet PDF">
-        <img src="/games/dim-sum-rush/img/sell-sheet.webp" width="1650" height="1275" alt="Preview of the one-page Dim Sum Rush sell sheet.">
+        <img src="/games/dim-sum-rush/img/sell-sheet.webp" srcset="/games/dim-sum-rush/img/sell-sheet-240.webp 240w, /games/dim-sum-rush/img/sell-sheet-480.webp 480w, /games/dim-sum-rush/img/sell-sheet-800.webp 800w, /games/dim-sum-rush/img/sell-sheet-1200.webp 1200w, /games/dim-sum-rush/img/sell-sheet.webp 1584w" sizes="(max-width: 600px) 350px, (max-width: 960px) 780px, 662px" width="1650" height="1275" alt="Preview of the one-page Dim Sum Rush sell sheet.">
       </a>
       <div class="copy">
         <p class="label">Sell sheet</p>
@@ -195,7 +200,7 @@
   <section class="g-sec" id="print" aria-labelledby="pp-h">
     <div class="wrap sheet">
       <a class="preview" href="/games/dim-sum-rush/dim-sum-rush-print-and-play.pdf" aria-label="Open the Dim Sum Rush print-and-play PDF">
-        <img src="/games/dim-sum-rush/img/pnp-preview.webp" width="2072" height="880" loading="lazy" alt="Three pages of the print-and-play kit: two rules pages and a sheet of nine cards.">
+        <img src="/games/dim-sum-rush/img/pnp-preview.webp" srcset="/games/dim-sum-rush/img/pnp-preview-240.webp 240w, /games/dim-sum-rush/img/pnp-preview-480.webp 480w, /games/dim-sum-rush/img/pnp-preview-800.webp 800w, /games/dim-sum-rush/img/pnp-preview-1200.webp 1200w, /games/dim-sum-rush/img/pnp-preview.webp 2072w" sizes="(max-width: 600px) 350px, (max-width: 960px) 780px, 662px" width="2072" height="880" loading="lazy" alt="Three pages of the print-and-play kit: two rules pages and a sheet of nine cards.">
       </a>
       <div class="copy">
         <p class="label">Print and play</p>
@@ -239,6 +244,12 @@
       </div>
     </div>
   </section>
+  <section class="g-sec more-games" aria-labelledby="more-h">
+    <div class="wrap">
+      <div class="head"><div><p class="label">More from Darren</p><h2 id="more-h">More games</h2></div></div>
+      <div class="more-grid"><a class="more-card" href="/games/boo-who/"><span class="more-art"><img src="/games/boo-who/img/render-box-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Boo Who?</b><span>Bluffing party game · 4–8 players</span></a><a class="more-card" href="/games/too-many-crooks/"><span class="more-art"><img src="/games/too-many-crooks/img/render-hero-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Too Many Crooks!</b><span>Dice negotiation game · 3–6 players</span></a><a class="more-card" href="/games/diggers/"><span class="more-art"><img src="/games/diggers/img/render-hero-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Diggers</b><span>Shedding lane battler · 2–4 players</span></a><a class="more-card" href="/games/down-for-the-count/"><span class="more-art"><img src="/games/down-for-the-count/img/render-home-640.webp" alt="" loading="lazy" width="640" height="400"></span><b>Down for the Count</b><span>Shedding card game · 2–5 players</span></a></div>
+    </div>
+  </section>
 </main>
 
 <footer class="site-foot" style="border-color:var(--g-line);color:var(--g-muted);margin-top:0">
@@ -249,22 +260,37 @@
 </footer>
 
 <script src="/assets/js/site.js"></script>
-<script src="/assets/vendor/three.r128.min.js" defer></script>
-<script src="/assets/js/dsr-scene.js" defer></script>
 <script>
 window.addEventListener('DOMContentLoaded', function () {
-  var stage = document.getElementById('stage'), ctl = null;
-  var buttons = document.querySelectorAll('.views button');
-  function start() {
-    if (!window.THREE || !window.DSRScene) return;
-    ctl = DSRScene.mount(stage, { view: 'all' });
-    if (!ctl) { document.querySelector('.views').hidden = true; document.getElementById('hint').textContent = 'Rendered mockup'; }
+  /* The 3D viewer (three.js, ~600 KB) loads only when it's wanted: on a wide screen once the page is idle,
+     on a phone when someone touches the mockup or picks a view. Until then the poster image shows. */
+  var stage = document.getElementById('stage'), ctl = null, loading = null, want = 'all';
+  var buttons = document.querySelectorAll('.views button'), hint = document.getElementById('hint');
+  function addScript(src) { return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+  function load3D() {
+    if (loading) return loading;
+    hint.textContent = 'Loading 3D…';
+    loading = addScript('/assets/vendor/three.r128.min.js').then(function () { return addScript('/assets/js/dsr-scene.js'); }).then(function () {
+      ctl = window.DSRScene ? DSRScene.mount(stage, { view: want }) : null;
+      hint.textContent = ctl ? 'Drag to turn' : 'Rendered mockup';
+      if (!ctl) document.querySelector('.views').hidden = true;
+    }).catch(function () { hint.textContent = 'Rendered mockup'; });
+    return loading;
   }
-  start();
+  var wide = window.matchMedia('(min-width: 901px)').matches;
+  var saveData = navigator.connection && navigator.connection.saveData;
+  if (wide && !saveData) {
+    var idle = window.requestIdleCallback || function (f) { setTimeout(f, 1200); };
+    window.addEventListener('load', function () { idle(load3D); });
+  } else {
+    hint.textContent = 'Tap to turn in 3D';
+  }
+  ['pointerdown', 'focusin'].forEach(function (ev) { stage.addEventListener(ev, load3D, { once: true }); });
   buttons.forEach(function (b) {
     b.addEventListener('click', function () {
       buttons.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-      if (ctl) ctl.setView(b.getAttribute('data-view'));
+      want = b.getAttribute('data-view');
+      if (ctl) ctl.setView(want); else load3D();
     });
   });
   var fs = document.getElementById('fs'), frame = document.getElementById('frame');

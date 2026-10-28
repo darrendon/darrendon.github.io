@@ -14,7 +14,18 @@
     box:   { t: [-2.4, 0.6, -1.8], d: 9.8, th: -0.12, ph: 0.8 },
     tiles: { t: [-1.6, 0.3, 3.5],  d: 6.9,  th: 0.0,  ph: 0.5 },
     bag:   { t: [5.3, 0.9, 0.3],   d: 7.9,  th: -0.18, ph: 1.0 },
+    // the card edition: its own little table (card box, a cart, a played combination, backs)
+    cards: { t: [0.0, 0.0, 0.0], d: 12.7, th: 0.0,  ph: 0.68 },
   };
+  const CARD_TEX = '/games/dim-sum-rush/img/src/tex/';
+
+  // Card edition table: x right, z toward the camera; card(rank, x, z, faceUp, yaw)
+  function cardLayout(card, box) {
+    box.position.set(-3.0, 0, -2.5); box.rotation.y = -0.16;                // the card box
+    [1, 8, 10].forEach((r, i) => card(r, -0.15 + i * 1.7, -2.6, false, [-0.03, 0.02, -0.025][i])); // face down: steamer, bowl, dessert-tray backs
+    [4, 5, 6].forEach((r, i) => card(r, -1.6 + i * 1.6, -0.25, true, 0));    // a played combination: the run 4 5 6
+    [2, 9, 7, 11, 3].forEach((r, i) => card(r, -3.2 + i * 1.6, 2.1, true, 0)); // a cart, in dealt order
+  }
 
   function roundedRect(w, h, r) {
     const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
@@ -159,10 +170,70 @@
     faceDown(1, 3.65, 1.35, 0.12); faceDown(9, 4.7, 1.4, -0.1); faceDown(5, 5.75, 1.35, 0.12);
     faceUp(6, 6.8, 1.45, -0.12);
 
+    // Card edition (view 'cards'): built on first use in its own group, shown instead of the tile set.
+    // Poker-size cards (63.5 × 88.9 mm) at the tiles' scale; faces and backs follow the print-and-play kit:
+    // the dish face or the serving back inset on a band-coloured card.
+    let cards = null, active = stage;
+    function showSet(g) { if (g === active) return; active.visible = false; g.visible = true; active = g; dirty = true; }
+    function cardSet() {
+      if (cards) return cards;
+      cards = new THREE.Group(); cards.visible = false; scene.add(cards);
+      const CW = 1.48, CH = 2.07, CR = 0.075, CT = 0.014, LIFT = 0.003;
+      const cardGeo = new THREE.ExtrudeGeometry(roundedRect(CW, CH, CR), { depth: CT, bevelEnabled: false, curveSegments: 6 });
+      cardGeo.rotateX(-Math.PI / 2);
+      const cardPlane = new THREE.PlaneGeometry(CW, CH);
+      const stock = new THREE.MeshStandardMaterial({ color: C('#F3EEE2'), roughness: 0.6 });
+      const imgLoader = new THREE.ImageLoader(manager), mats = {};
+      function cardMat(kind, n) { // kind 'face' (n = rank) or 'back' (n = band)
+        const key = kind + n; if (mats[key]) return mats[key];
+        const W = 600, H = 840, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+        const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; t.anisotropy = Math.min(8, maxAniso);
+        const b = kind === 'face' ? bandOf(n) : n, iw = kind === 'face' ? 2.28 / 2.5 : 2.3 / 2.5, ih = kind === 'face' ? 3.22 / 3.5 : 3.25 / 3.5;
+        imgLoader.load(TEX + kind + '-' + n + '.webp', (img) => {
+          const g = cv.getContext('2d'), r = W * CR / CW;
+          g.beginPath(); g.moveTo(r, 0); g.arcTo(W, 0, W, H, r); g.arcTo(W, H, 0, H, r); g.arcTo(0, H, 0, 0, r); g.arcTo(0, 0, W, 0, r); g.closePath(); g.clip();
+          g.fillStyle = BAND[b]; g.fillRect(0, 0, W, H);
+          g.drawImage(img, W * (1 - iw) / 2, H * (1 - ih) / 2, W * iw, H * ih);
+          t.needsUpdate = true; dirty = true;
+        });
+        return (mats[key] = new THREE.MeshStandardMaterial({ map: t, color: C('#D9D4CA'), alphaTest: 0.5, roughness: 0.55 }));
+      }
+      // a card lying flat: up = face up; yaw turns it on the table
+      function card(r, x, z, up, yaw) {
+        const g = new THREE.Group(); g.name = 'card ' + r + (up ? ' up' : ' down') + ' @' + x.toFixed(2) + ',' + z.toFixed(2);
+        const body = new THREE.Mesh(cardGeo, stock); body.castShadow = true; g.add(body);
+        const top = new THREE.Mesh(cardPlane, cardMat('face', r)); top.rotation.x = -Math.PI / 2; top.position.y = CT + 0.002; top.receiveShadow = true; g.add(top);
+        const bot = new THREE.Mesh(cardPlane, cardMat('back', bandOf(r))); bot.rotation.x = Math.PI / 2; bot.position.y = -0.002; g.add(bot);
+        if (!up) { g.rotation.z = Math.PI; g.position.y = CT + LIFT; } else g.position.y = LIFT;
+        g.position.x = x; g.position.z = z; g.rotation.y = yaw || 0; g.rotation.order = 'YXZ';
+        cards.add(g); return g;
+      }
+      // Tichu-size two-piece card box, 95 × 70 × 30 mm: the lid sits on the base, which shows a 2 mm lip
+      const LW = 2.21, LD = 1.63, LH = 0.64, LIP = 0.06;
+      const cside = new THREE.TextureLoader(manager), ctex = (n) => { const t = cside.load(CARD_TEX + n + '.webp'); t.encoding = THREE.sRGBEncoding; t.anisotropy = Math.min(8, maxAniso); return t; };
+      const lsd = ctex('card-box-side'), lend = ctex('card-box-end');
+      const lidMats = [
+        new THREE.MeshStandardMaterial({ map: lend, roughness: 0.55 }),
+        new THREE.MeshStandardMaterial({ map: lend, roughness: 0.55 }),
+        new THREE.MeshStandardMaterial({ map: ctex('card-box-top'), roughness: 0.5 }),
+        new THREE.MeshStandardMaterial({ color: C('#6E120D'), roughness: 0.8 }),
+        new THREE.MeshStandardMaterial({ map: lsd, roughness: 0.55 }),
+        new THREE.MeshStandardMaterial({ map: lsd, roughness: 0.55 }),
+      ];
+      const cbox = new THREE.Group(); cbox.name = 'card box';
+      const lid = new THREE.Mesh(new THREE.BoxGeometry(LW, LH, LD), lidMats); lid.position.y = LIP + LH / 2; lid.castShadow = lid.receiveShadow = true; cbox.add(lid);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(LW - 0.04, LIP + 0.01, LD - 0.04), new THREE.MeshStandardMaterial({ color: C('#7A1A12'), roughness: 0.7 }));
+      base.position.y = (LIP + 0.01) / 2; base.castShadow = base.receiveShadow = true; cbox.add(base);
+      cards.add(cbox);
+      cardLayout(card, cbox);
+      return cards;
+    }
+
     // Camera rig
     const cur = { t: new THREE.Vector3(), d: 0, th: 0, ph: 0 }, goal = { t: new THREE.Vector3(), d: 0, th: 0, ph: 0 };
     function setGoal(name, instant) {
       const p = VIEWS[name] || VIEWS.all;
+      showSet(name === 'cards' && VIEWS[name] ? cardSet() : stage);
       goal.t.set(p.t[0], p.t[1], p.t[2]); goal.d = p.d; goal.th = p.th; goal.ph = p.ph;
       if (instant || reduce) { cur.t.copy(goal.t); cur.d = goal.d; cur.th = goal.th; cur.ph = goal.ph; }
       sway0 = goal.th;
@@ -219,8 +290,11 @@
 
     setGoal(opts.view || 'all', true);
     resize();
+    let ready = false;
     manager.onLoad = () => {
       dirty = true; place(); renderer.render(scene, camera);
+      if (ready) return; // later loads (the card set, built on first use) just redraw
+      ready = true;
       el.classList.add('is-ready');
       if (opts.onReady) opts.onReady();
       if (!opts.still) loop();
@@ -230,7 +304,7 @@
       setView(name) { setGoal(name); if (!opts.still) loop(); },
       renderNow() { place(); renderer.render(scene, camera); },
       canvas,
-      _debug: { scene, stage, camera, renderer, ground },
+      _debug: { scene, get stage() { return active; }, camera, renderer, ground },
     };
   }
 

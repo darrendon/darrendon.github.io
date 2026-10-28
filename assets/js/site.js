@@ -30,6 +30,20 @@
     Object.keys(map).forEach(function (id) { io.observe(document.getElementById(id)); });
   }
 
+  /* "Learn to play" in a game page's hero: load the embedded build straight into its tutorial. */
+  document.querySelectorAll('[data-tutorial]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      var frame = document.querySelector('#frame iframe, .play-frame iframe');
+      if (!frame) return;
+      e.preventDefault();
+      var src = (frame.getAttribute('src') || '').split(/[?#]/)[0];
+      frame.setAttribute('loading', 'eager');
+      frame.src = src + '?tutorial';
+      (frame.closest('.play-frame') || frame).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'tutorial-button' + location.pathname, title: 'Learn to play', event: true });
+    });
+  });
+
   /* Analytics (GoatCounter). Off until the <meta name="goatcounter"> tag on a page holds an account code,
      e.g. content="darrendon" for darrendon.goatcounter.com. Pageviews are counted by GoatCounter's script;
      a ?ref=publisher on a pitch link shows up as that visit's referrer. Events counted below:

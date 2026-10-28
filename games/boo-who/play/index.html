@@ -505,6 +505,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   function start(data) {
     if (data && data.state && (data.state.boos || data.state.phase === "intro")) { S = data.state; render(); }
     else { S = { phase: "intro", log: [] }; render(); }
+    if (/[?&#]tutorial\b/.test(location.search + location.hash) && S.phase === "intro") startTutorial();
   }
   window.claude?.hot?.snapshot?.(() => ({ state: S }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
