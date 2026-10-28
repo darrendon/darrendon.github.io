@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Diggers — play in your browser</title>
-<meta name="description" content="Diggers, a lane battler of rival paleontologists. Play 2 to 4 players against bots in your browser.">
+<meta name="description" content="Diggers, a shedding lane battler of rival paleontologists. Play 2 to 4 players against bots in your browser.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
@@ -1248,7 +1248,7 @@ function catalogueHtml() {
 function setupHtml() {
   const desc = { 2: "One rival · three sites between your camps · three species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · four species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all five species · 10 in your rock face" };
   return `<div class="top"><div><div class="eyebrow">A new dig</div><h1>Diggers</h1>
-    <p class="sub">A lane battler. Rival paleontologists fight over the dig sites between their camps, and each site goes to whoever brings up the finer skeleton.</p></div></div>
+    <p class="sub">A shedding lane battler. Rival paleontologists fight over the dig sites between their camps, and each site goes to whoever brings up the finer skeleton.</p></div></div>
   <div class="setup">
     <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can be up to 4 cards.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
