@@ -81,15 +81,6 @@ button:focus-visible, [data-act]:focus-visible { outline: 2px solid var(--accent
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--pc); display: inline-block; flex-shrink: 0; }
 .turnflag { font-family: var(--font-caps); font-size: 13px; letter-spacing: .05em; color: var(--pc); float: right; margin-left: 6px; }
 
-.lane { position: relative; border: 1.5px dashed var(--bone-edge); border-radius: 0; padding: 8px 6px 6px; display: flex; flex-direction: column; gap: 4px; min-height: 108px; justify-content: space-between; background: transparent; }
-.lane::before, .lane::after { content: ""; position: absolute; top: -4px; width: 7px; height: 7px; background: var(--bone-edge); transform: rotate(45deg); }
-.lane::before { left: -4px; } .lane::after { right: -4px; }
-.lane.owned { border-style: solid; border-color: var(--oc); background: color-mix(in srgb, var(--oc) 9%, transparent); }
-.lane.owned::before, .lane.owned::after { background: var(--oc); }
-.lane.target { cursor: pointer; box-shadow: 0 0 0 3px var(--accent); }
-.lane .lbl { font-family: var(--font-caps); font-size: 13px; letter-spacing: .04em; color: var(--muted); }
-.lane .owner { font-size: 12px; font-weight: 600; color: var(--oc); }
-.lane .owner.none { color: var(--muted); font-weight: 400; font-style: italic; }
 .meld { display: flex; gap: 2px; flex-wrap: nowrap; justify-content: center; min-height: 40px; align-items: center; }
 .empty-note { font-size: 12.5px; color: var(--muted); font-style: italic; }
 
@@ -153,7 +144,6 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-dire
   .hand .card .ix { min-width: 12px; } .hand .card .ix.tl { left: 2px; top: 2px; }
   .hand .card .ix b { font-size: 13px; } .hand .card .ix svg { display: block; width: 10px; height: 10px; }
   .slot { height: 56px; }
-  .lane { min-height: 98px; padding: 7px 5px 5px; }
   .seat { padding: 6px 7px; }
   .seat .name { font-size: 15px; }
   .seat .score { font-size: 19px; }
@@ -182,17 +172,6 @@ body { background-color: var(--rock); }
 .top, .status, .seat, .hand-wrap, .log, details.rules, .setup, .center, .coach { box-shadow: var(--lift); }
 .seat.turn { box-shadow: 0 0 0 2px var(--pc), var(--lift); }
 .center { background: var(--sheet); border: 1px solid var(--line); border-radius: 2px; }
-.lane { border: 1.5px dashed rgba(243, 232, 207, .5); color: var(--pit-ink);
-  background: radial-gradient(120% 90% at 50% 30%, rgba(30, 18, 8, .52), rgba(30, 18, 8, .74));
-  box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), inset 0 -1px 0 rgba(255, 240, 210, .12), 0 1px 0 rgba(255, 240, 210, .18); }
-.lane::before, .lane::after { background: #e2cc9c; box-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
-.lane .lbl { color: var(--pit-ink); font-size: 14px; }
-.lane .lbl span { display: block; font-family: var(--font-body); font-size: 11.5px; letter-spacing: 0; color: var(--pit-muted); }
-.lane .empty-note, .lane .owner.none { color: var(--pit-muted); }
-.lane.owned { background: radial-gradient(120% 90% at 50% 30%, color-mix(in srgb, var(--oc) 28%, rgba(30, 18, 8, .55)), rgba(30, 18, 8, .76)); }
-.lane .owner:not(.none) { align-self: flex-start; background: var(--oc); color: var(--accent-ink); padding: 1px 7px; border-radius: 2px; font-size: 11.5px; line-height: 1.35; max-width: 100%; }
-.lane.target { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 3px var(--glow); }
-.lane .card.edge { outline-color: var(--glow); }
 
 /* ---- field lessons (the tutorial) ---- */
 .coach { background: var(--sheet); border: 1px solid var(--line); border-left: 4px solid #b8572f; border-radius: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
@@ -207,12 +186,56 @@ body { background-color: var(--rock); }
 @keyframes tutpulse { 0%, 100% { outline-color: var(--glow); outline-offset: 1px; } 50% { outline-color: rgba(245, 199, 90, .35); outline-offset: 4px; } }
 .card.tut, .slot.tut { outline: 3px solid var(--glow); outline-offset: 1px; animation: tutpulse 1.3s ease-in-out infinite; }
 .slot.tut { background: rgba(245, 199, 90, .25); }
-.lane.tut { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 3px var(--glow); animation: lanepulse 1.3s ease-in-out infinite; }
 @keyframes lanepulse { 50% { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 6px rgba(245, 199, 90, .35); } }
-.hand-wrap.tut-focus, .table.tut-focus .lane { outline: 3px solid var(--glow); outline-offset: 3px; }
+.hand-wrap.tut-focus, .table.tut-focus .site { outline: 3px solid var(--glow); outline-offset: 3px; }
 .tut-note { border-left: 3px solid #b8572f; padding-left: 10px; }
 .setup .actions .tutbtn { background: #b8572f; border-color: #b8572f; color: #fbf3e2; }
-@media (prefers-reduced-motion: reduce) { .card.tut, .slot.tut, .lane.tut { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .card.tut, .slot.tut, .site.tut { animation: none; } }
+
+/* ---- dig sites: a wooden board lying between two camps; each camp has its own side of it ---- */
+.seat.wide { grid-column: 1 / -1; justify-self: center; width: min(100%, 320px); }
+.site { position: relative; display: grid; border-radius: 3px; overflow: hidden; color: var(--pit-ink); min-height: 132px;
+  background: radial-gradient(120% 90% at 50% 40%, rgba(30, 18, 8, .5), rgba(30, 18, 8, .74));
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 1px 0 rgba(255, 240, 210, .18); }
+.site.h { grid-template-rows: 1fr auto 1fr; }
+.site.v { grid-template-columns: 1fr auto 1fr; }
+.site .side { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px 5px; min-width: 0; min-height: 44px; }
+.site.h .side.a { border-top: 4px solid var(--pc); justify-content: flex-start; }
+.site.h .side.b { border-bottom: 4px solid var(--pc); justify-content: flex-end; }
+.site.v .side.a { border-left: 4px solid var(--pc); }
+.site.v .side.b { border-right: 4px solid var(--pc); }
+.site .side.held { background: color-mix(in srgb, var(--pc) 26%, transparent); }
+.site .who .short { display: none; }
+.site .who { font-family: var(--font-caps); font-size: 12px; letter-spacing: .04em; color: var(--pit-muted); text-align: center; line-height: 1.15; }
+.site .held .who { color: var(--pit-ink); }
+.site .what { font-size: 11.5px; font-style: italic; color: var(--pit-ink); text-align: center; line-height: 1.2; }
+.site .meld { min-height: 0; flex-wrap: wrap; }
+.site.v .meld { max-width: 76px; }
+.site .board { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 8px; color: #3b230f; padding: 5px 10px;
+  background: repeating-linear-gradient(0deg, rgba(110, 68, 30, .16) 0 1px, transparent 1px 5px), linear-gradient(#d2ab72, #c49a60 55%, #b48955);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .55), inset 0 0 0 1.5px rgba(40, 22, 8, .8); }
+.site .board::before, .site .board::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #6f675d; box-shadow: inset -1px -1px 0 #2c2620; top: 50%; margin-top: -2.5px; }
+.site .board::before { left: 4px; } .site .board::after { right: 4px; }
+.site .board b { font-family: var(--font-num); font-weight: 400; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.site .board .untouched { font-size: 11px; font-style: italic; color: rgba(59, 35, 15, .75); white-space: nowrap; }
+.site.v .board { writing-mode: vertical-rl; transform: rotate(180deg); flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 12px 5px; background: repeating-linear-gradient(90deg, rgba(110, 68, 30, .16) 0 1px, transparent 1px 5px), linear-gradient(90deg, #d2ab72, #c49a60 55%, #b48955); }
+.site.v .board::before { left: 50%; top: 4px; margin: 0 0 0 -2.5px; } .site.v .board::after { left: 50%; top: auto; bottom: 4px; right: auto; margin: 0 0 0 -2.5px; }
+.site.far { filter: saturate(.75) brightness(.92); }
+.site.target { cursor: pointer; box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 3px var(--glow); }
+.site.tut { animation: lanepulse 1.3s ease-in-out infinite; }
+.site .card.edge { outline-color: var(--glow); }
+@media (max-width: 460px) {
+  .site { min-height: 112px; }
+  .site .board { padding: 4px 6px; } .site .board b { font-size: 11.5px; letter-spacing: .04em; }
+  .site.v .board { padding: 8px 3px; }
+  .site .board .untouched:not(.farnote) { display: none; }
+  .site .board .farnote { font-size: 9.5px; }
+  .site .who { font-size: 10.5px; } .site .what { font-size: 10px; }
+  .site .who .full { display: none; } .site .who .short { display: inline; }
+  .site.v .what { display: none; }
+  .site.v .who { font-size: 10px; letter-spacing: .03em; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .site.v .meld { max-width: 44px; }
+}
 </style>
 
 </head>
@@ -1050,16 +1073,24 @@ function buildFaces() {
   } catch (e) { console.warn("fossil art failed", e); }
 }
 
-function seatHtml(i) {
+function seatHtml(i, wide = false) {
   const p = G.players[i];
   const turn = (G.phase === "play" || G.phase === "offer") && G.turn === i;
-  return `<div class="cell seat ${turn ? "turn" : ""}" style="--pc:${PCOL[i]}">
+  return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${PCOL[i]}">
     <div class="name"><span class="dot"></span>${fullName(i)}${turn ? `<span class="turnflag">digging</span>` : ""}</div>
     <div class="score">${p.score}<span class="meta"> prestige</span></div>
     <div class="meta">${p.hand.length} fossil${p.hand.length === 1 ? "" : "s"} in the rock</div>
   </div>`;
 }
 
+// Where each dig-site board lies: the two camps it sits between, in the order they face it,
+// and whether the board runs across the cell ("h": camps above and below) or down it ("v": camps left and right).
+// Every board touches both of its camps in the grid, so a find sits on its owner's side, as it does on the table.
+const LAYOUT = {
+  2: { cells: ["-", "s1", "c", "l0", "l1", "l2", "-", "s0", "-"], sides: [[1, 0, "h"], [1, 0, "h"], [1, 0, "h"]] },
+  3: { cells: ["s1", "l1", "s2", "l0", "c", "l2", "s0w"], sides: [[1, 0, "h"], [1, 2, "v"], [2, 0, "h"]] },
+  4: { cells: ["s1", "l1", "s2", "l0", "c", "l2", "s0", "l3", "s3"], sides: [[1, 0, "h"], [1, 2, "v"], [2, 3, "h"], [0, 3, "v"]] },
+};
 function laneHtml(i) {
   const L = G.lanes[i];
   const mine = L.a === 0 || L.b === 0;
@@ -1068,17 +1099,25 @@ function laneHtml(i) {
   const T = tutStep();
   const target = humanTurn() && mine && selInf && canPlayOn(G, i, selInf) && (!T || (T.act === "play" && T.lane === i && tutSelOk()));
   const canScout = humanTurn() && mine && ui.sel.length === 0 && L.meld.length > 0 && (!T || (T.act === "scout" && T.lane === i));
-  const oc = L.owner === null ? "var(--bone-edge)" : PCOL[L.owner];
   const cards = L.meld.map((v, k) => {
     const edge = canScout && (k === 0 || k === L.meld.length - 1);
     return cardHtml(v, edge ? `edge ${T ? "tut" : ""}` : "", edge ? `data-act="scout" data-lane="${i}" data-left="${k === 0 ? 1 : 0}" role="button" tabindex="0" aria-label="Poach the ${cardName(v)}"` : "");
   }).join("");
-  const label = SITES[i] + (G.n === 2 ? "" : `<span>${G.players[L.a].name} · ${G.players[L.b].name}</span>`);
-  const owner = L.owner === null ? `<span class="owner none">Unclaimed</span>` : `<span class="owner">${L.owner === 0 ? "Yours" : G.players[L.owner].name} · ${describe(L.meld)}</span>`;
-  return `<div class="cell lane ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" style="--oc:${oc}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate here"` : ""}>
-    <div class="lbl">${label}</div>
-    <div class="meld">${cards || `<span class="empty-note">untouched ground</span>`}</div>
-    ${owner}
+  const [pa, pb, dir] = LAYOUT[G.n].sides[i];
+  const side = (q, pos) => {
+    const held = L.owner === q;
+    const name = q === 0 ? "You" : G.players[q].name;
+    const who = `<span class="full">${q === 0 ? "Your side" : `${name}'s side`}${held ? " · holds it" : ""}</span><span class="short">${name}</span>`;
+    return `<div class="side ${pos} ${held ? "held" : ""}" style="--pc:${PCOL[q]}">
+      <span class="who">${who}</span>
+      ${held ? `<div class="meld">${cards}</div><span class="what">${describe(L.meld)}</span>` : ""}
+    </div>`;
+  };
+  const empty = L.owner === null ? `<span class="untouched">untouched ground</span>` : "";
+  return `<div class="cell site ${dir} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${SITES[i]}"` : ""}>
+    ${side(pa, "a")}
+    <div class="board"><b>${SITES[i]}</b>${mine ? empty : `<span class="untouched farnote">not beside you</span>`}</div>
+    ${side(pb, "b")}
   </div>`;
 }
 
@@ -1094,10 +1133,8 @@ function centerHtml() {
 }
 
 function tableHtml() {
-  const blank = `<div class="cell"></div>`;
-  if (G.n === 2) return `<div class="table ${tutStep() && tutStep().focus === "sites" ? "tut-focus" : ""}">${blank}${seatHtml(1)}${centerHtml()}${laneHtml(0)}${laneHtml(1)}${laneHtml(2)}${blank}${seatHtml(0)}${blank}</div>`;
-  if (G.n === 3) return `<div class="table">${seatHtml(1)}${laneHtml(1)}${seatHtml(2)}${laneHtml(0)}${centerHtml()}${laneHtml(2)}${blank}${seatHtml(0)}${blank}</div>`;
-  return `<div class="table">${laneHtml(1)}${seatHtml(2)}${laneHtml(2)}${seatHtml(1)}${centerHtml()}${seatHtml(3)}${laneHtml(0)}${seatHtml(0)}${laneHtml(3)}</div>`;
+  const cell = c => c === "-" ? `<div class="cell"></div>` : c === "c" ? centerHtml() : c === "s0w" ? seatHtml(0, true) : c[0] === "s" ? seatHtml(+c[1]) : laneHtml(+c[1]);
+  return `<div class="table t${G.n} ${tutStep() && tutStep().focus === "sites" ? "tut-focus" : ""}">${LAYOUT[G.n].cells.map(cell).join("")}</div>`;
 }
 
 function statusHtml() {
