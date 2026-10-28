@@ -33,7 +33,9 @@ html,body{margin:0;background:#8E9499}
 h1{margin:0;font-family:Rye;font-weight:400;font-size:33pt;line-height:1.02;letter-spacing:.02em;text-transform:uppercase}
 h1 em{font-style:normal;color:var(--red);display:block}
 .pitch{margin:.16in 0 0;font-size:11.3pt;line-height:1.45;max-width:5.75in}
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.24in}
+.fans{margin:.1in 0 0;font-family:"IM Fell English";font-style:italic;font-size:12.5pt;color:var(--soft)}
+.fans b{font-style:normal;font-family:"IM Fell English SC";font-weight:400;letter-spacing:.03em;color:var(--ink)}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.2in}
 .panel{position:relative;display:flex;flex-direction:column;background:var(--label);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
 .panel::after{content:"";position:absolute;inset:4px;border:1px solid rgba(36,24,14,.45);pointer-events:none}
 .panel .art{height:1.85in;position:relative;overflow:hidden;border-bottom:2px solid var(--ink)}
@@ -79,9 +81,11 @@ h1 em{font-style:normal;color:var(--red);display:block}
   </aside>
 
   <main class="main">
-    <p class="kicker">Card game · 2–4 players · 15–20 minutes</p>
+    <p class="kicker">Lane battler · 2–4 players · 15–20 minutes</p>
     <h1>Your hand is locked. <em>Their finds aren't.</em></h1>
-    <p class="pitch">Rival paleontologists share a ring of dig sites, one between each pair of camps. You win a site by laying a better find there: a run or a set of cards that sit side by side in your hand, because you can never rearrange it. Missing a bone? Take it from a rival. When anyone's hand runs out, the season ends and every site you hold scores.</p>
+    <p class="pitch">A lane battler for rival paleontologists. Every pair of camps shares a dig site, and you win it by laying a better find there: a run or a set of cards that sit side by side in your hand, because you can never rearrange it. Missing a bone? Take it from a rival. When anyone's hand runs out, the season ends and every site you hold scores.</p>
+
+    <p class="fans">For fans of <b>Scout</b> and <b>Schotten Totten</b></p>
 
     <div class="strip">
       <div class="panel p1">
@@ -100,9 +104,9 @@ h1 em{font-style:normal;color:var(--red);display:block}
           <img class="c" src="/games/diggers/img/src/tex/face-27.jpg" alt="" style="left:.22in;top:.36in">
           <img class="c" src="/games/diggers/img/src/tex/face-38.jpg" alt="" style="left:.66in;top:.36in">
           <img class="site" src="/games/diggers/img/src/tex/marker-1.jpg" alt="">
-          <img class="c lift" src="/games/diggers/img/src/tex/face-9.jpg" alt="" style="left:1.18in;top:1.24in">
+          <img class="c lift" src="/games/diggers/img/src/tex/face-9.jpg" alt="" style="left:1.4in;top:1.3in">
           <span class="lbl" style="left:.12in;bottom:.1in">your side</span>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M58 26 C 76 24, 80 44, 70 64" fill="none" stroke="#24180E" stroke-width="1.6" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/><path d="M66 60 L70 66 L75 61" fill="none" stroke="#24180E" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M58 26 C 78 24, 88 42, 84 66" fill="none" stroke="#24180E" stroke-width="1.6" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/><path d="M80 62 L84 68 L89 63" fill="none" stroke="#24180E" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
         </div>
         <p>Take an end bone off a rival's find and slide it anywhere into your hand. Then send them a card back. They keep it, or it's out for the season.</p>
       </div>
