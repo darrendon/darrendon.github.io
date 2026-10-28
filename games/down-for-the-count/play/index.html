@@ -68,6 +68,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 .pop { position: absolute; left: 50%; top: -18px; transform: translate(-50%, -50%) rotate(-4deg); z-index: 5; pointer-events: none;
   font: 900 15px/1 var(--display); font-style: italic; font-stretch: 110%; color: var(--ink); background: var(--gold); border: 3px solid var(--ink); border-radius: 10px;
   padding: 6px 10px; white-space: nowrap; box-shadow: 3px 3px 0 var(--ink); animation: pop .9s ease-out forwards; }
+.you.tutmode { position: relative; }
+.you.tutmode .pop { top: 6px; }
 @keyframes pop { 0% { transform: translate(-50%, -30%) scale(.4) rotate(-12deg); opacity: 0; } 18% { transform: translate(-50%, -50%) scale(1.15) rotate(-4deg); opacity: 1; } 75% { opacity: 1; } 100% { transform: translate(-50%, -80%) scale(1) rotate(-4deg); opacity: 0; } }
 
 /* the ring */
@@ -158,6 +160,32 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 .startbox { background: var(--paper); color: var(--ink); border: 4px solid var(--ink); border-radius: 18px; box-shadow: var(--hard); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .startbox h2 { font-size: 22px; }
 @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .card, .hand .card img { width: 64px; } .tablecards .card { width: 70px; } .hand .card { flex-basis: 64px; } .status { font-size: 17px; } }
+/* tutorial: entry on the setup screen, the coach, and what it points at */
+.learn { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; background: #fff1b8; border: 3px solid var(--ink); border-radius: 12px; padding: 12px 14px; }
+.learn h2 { font-size: 20px; color: var(--crimson); }
+.learn p { margin: 3px 0 0; font-size: 14px; color: #4d4668; max-width: 52ch; }
+.coach { position: relative; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-left-width: 10px; border-left-color: var(--crimson); border-radius: 14px; box-shadow: var(--hard); padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 7px; margin-bottom: 8px; }
+.coach .ctop { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.coach .who { white-space: nowrap; font: 900 11px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; background: var(--ink); color: var(--gold); border-radius: 6px; padding: 4px 7px; }
+.coach .prog { flex: 0 1 140px; min-width: 36px; height: 8px; border-radius: 99px; background: #e3dccb; border: 2px solid var(--ink); overflow: hidden; }
+.coach .prog i { display: block; height: 100%; background: var(--crimson); }
+.coach h3 { font-size: 20px; line-height: 1.05; color: var(--crimson); }
+.coach p { margin: 0; font-size: 15px; line-height: 1.45; max-width: 68ch; }
+.coach p b { font-weight: 800; }
+.coach .cact { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-top: 2px; }
+.coach .cue { font: 800 12px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--crimson); }
+.coach .cue.wait { color: #6b6488; }
+.coach .exit { background: none; border: 0; box-shadow: none; padding: 6px 2px; color: #6b6488; font: 600 13px/1 var(--body); text-transform: none; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; margin-left: auto; }
+.coach .exit:hover:not(:disabled) { color: var(--ink); transform: none; box-shadow: none; }
+.tut-spot { outline: 4px solid var(--gold) !important; outline-offset: 3px; animation: tutring 1.3s ease-in-out infinite; }
+@keyframes tutring { 50% { outline-offset: 7px; outline-color: rgba(255, 214, 48, .45); } }
+.hand .card.tut img { box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px var(--ink), 0 8px 14px -8px rgba(0, 0, 0, .6); animation: tutbob 1.1s ease-in-out infinite; }
+@keyframes tutbob { 50% { transform: translateY(-9px); } }
+.tablecards .card.pick.tut img { animation: tutbob 1.1s ease-in-out infinite; }
+.finish p { font-size: 15px; }
+.finish .actions { justify-content: flex-start; }
+.finish button.plain { background: transparent; box-shadow: none; border-color: transparent; text-decoration: underline; text-underline-offset: 3px; text-transform: none; font-weight: 700; padding-inline: 6px; }
+@media (max-width: 760px) { .coach h3 { font-size: 18px; } .coach p { font-size: 14.5px; } .learn h2 { font-size: 18px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
@@ -187,12 +215,15 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 
   // ---------------------------------------------------------------- setup
   function setup() {
-    clearTimeout(timer); g = null; ov.hidden = true;
+    clearTimeout(timer); g = null; tut = null; ov.hidden = true;
     app.innerHTML =
       '<div class="hero"><div><h1>Down for<br>the Count</h1>' +
       '<p class="tag">A shedding game where you don’t want to shed, for 2–5. Beat the move on the table or spend stamina. Run out of cards and you tap out; run out of stamina and you’re pinned. Last one standing wins.</p></div>' +
       '<div class="fan"><img src="' + IMG + 'card-4.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-10.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-7.webp" alt="" width="240" height="336"></div></div>' +
-      '<div class="startbox"><h2>How many wrestlers?</h2>' +
+      '<div class="startbox">' +
+      '<div class="learn"><div><h2>New here? Take the tutorial</h2><p>A coach walks you through one short round against two bots, one move at a time. About 3 minutes.</p></div>' +
+      '<button type="button" class="gold" id="learn">Learn to play</button></div>' +
+      '<h2>How many wrestlers?</h2>' +
       '<div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5].map((n) => '<button type="button" data-n="' + n + '" aria-pressed="' + (n === chosenN) + '">' + n + '</button>').join('') + '</div>' +
       '<p class="setup-note" id="note"></p>' +
       '<h2>Bots</h2><div class="pick-n" role="group" aria-label="Bot strength">' +
@@ -217,8 +248,167 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     }));
     note(); botnote();
     document.getElementById('start').addEventListener('click', start);
+    document.getElementById('learn').addEventListener('click', startTutorial);
   }
+  // ---------------------------------------------------------------- tutorial
+  // One short scripted round at three players. The deal and every bot move are fixed, and each step only lets you do the
+  // move it teaches, so the round always plays out the same way: You 3 points, Hal taps out (2), the Duchess is pinned (1).
+  // Stamina cards are drawn from the end of each counts array: your reversal discards the 5, your kick out draws the 9.
+  const TUT_DEAL = { hands: [[1, 4, 5, 9, 9], [3, 3, 8, 8, 8], [1, 2, 4, 5, 7]], counts: [[6, 9, 5], [3, 2, 1], [2, 7, 1]], aside: 0 };
+  const TUT_BOTS = {
+    1: [{ type: 'play', cards: [3, 3] }, { type: 'kickout' }, { type: 'play', cards: [8, 8, 8] }, { type: 'kickout' }, { type: 'kickout' }, { type: 'play', cards: [1, 2, 3] }],
+    2: [{ type: 'kickout' }, { type: 'kickout' }, { type: 'kickout' }]
+  };
+  const TUT = [
+    { title: 'Last one standing wins', spot: '.you', next: true,
+      text: 'This is a short practice round against two bots, Hacksaw Hal and the Duchess. Along the bottom is your hand: every card is a wrestling move you can still make. Wrestlers drop out one by one, and the <b>last one standing</b> wins the round.' },
+    { title: 'Your stamina', spot: '.you .counts', next: true,
+      text: 'The three face-down cards by your name are your <b>stamina</b>. Each time you can’t beat the move on the table, or don’t want to, you spend one. Nobody, not even you, knows what they are.' },
+    { title: 'Sets and runs', spot: '.hand', next: true,
+      text: 'You play <b>moves</b> of 1 to 4 cards. A <b>set</b> is cards of one rank, like your two 9s. A single card counts as a set of one. A <b>run</b> is 2 to 4 ranks in a row, like your 4 and 5.' },
+    { title: 'Open the round', do: { type: 'play', cards: [4, 5] },
+      text: 'The mat is empty, so you open, and any move will do. Tap your <b>4</b> and <b>5</b>, then press <b>Play</b>.' },
+    { title: 'Beating a move', spot: '.tablecards', next: true,
+      wait: 'Your 4-5 is on the table. Each wrestler after you has to beat it or spend stamina. Watch Hal and the Duchess.',
+      text: 'Hal beat your 4-5 with a <b>pair of 3s</b>. To beat a move, <b>more cards always wins</b>. With the same number of cards, a <b>set beats a run</b>. After that, the higher rank wins, and a run counts its top card.' },
+    { title: 'Kick out', spot: '.seat[data-p="2"]', next: true,
+      text: 'The Duchess couldn’t beat the 3s, so she <b>kicked out</b>: she took one of her stamina cards into her hand, and the move on the table stayed. She’s a card richer and one step closer to being pinned.' },
+    { title: 'Answer the move', do: { type: 'play', cards: [9, 9] },
+      text: 'Your <b>pair of 9s</b> beats the 3s: same size, both sets, and 9 is higher. Tap both 9s, then press <b>Play</b>. The list under your hand shows every move that beats the table.' },
+    { title: 'The takeback', do: { type: 'takeback', rank: 9 },
+      wait: 'Your 9s are up. Only a higher pair or a bigger move beats them.',
+      text: 'Hal and the Duchess both kicked out, so your 9s came all the way back to you <b>untouched</b>. That earns a <b>takeback</b>: take one card off your move, for free. Tap a <b>9 on the table</b>.' },
+    { title: 'More cards wins', spot: '.tablecards', next: true,
+      wait: 'You took a 9 back. The other 9 stays up, and Hal has to answer it.',
+      text: 'Hal answered your single 9 with <b>three 8s</b>. More cards wins, whatever the ranks. He had those 8s last turn too, but kicked out to save them. The Duchess kicked out again, and now she has <b>no stamina left</b>.' },
+    { title: 'Reversal', do: { type: 'reverse', rank: 8 },
+      text: 'Nothing in your hand beats three 8s, so spend stamina. A <b>reversal</b> takes one card off the move into your hand and discards one of your stamina cards. What’s left stays up as a smaller move. From a run you can only take an end card. Press <b>Reversal</b>.' },
+    { title: 'Pinned', spot: '.seat[data-p="2"]', next: true,
+      wait: 'You took an 8. A pair of 8s is left on the table, and it’s Hal’s turn.',
+      text: 'Hal’s 8s came back to him, but you had reversed them, so there was <b>no takeback</b>: a reversed move is live, and he kicked out. Then the Duchess had to answer the 8s with no stamina left and nothing that beats them. <b>1, 2, 3: she’s pinned</b> and out of the round.' },
+    { title: 'Kick out yourself', do: { type: 'kickout' },
+      text: 'Your single 9 can’t beat a pair, so spend stamina again. Press <b>Kick out</b>: your next stamina card goes into your hand, and the 8s stay up for Hal.' },
+    { title: 'Hal’s on the ropes', do: { type: 'play', cards: [9, 9] },
+      wait: 'You drew a stamina card into your hand. The 8s stay up for Hal.',
+      text: 'Your stamina card was a 9, so you hold a pair of 9s again. Hal kicked out once more and has <b>no stamina left</b>. Play your <b>pair of 9s</b>. If he can’t beat them, he’s pinned.' },
+    { title: 'Tapped out', spot: '.seat[data-p="1"]', next: true,
+      wait: 'Hal has no stamina left. He has to beat your 9s or be pinned.',
+      text: 'Hal beat your 9s with 1-2-3, but that was his <b>last card</b>, so he <b>tapped out</b>. Emptying your hand doesn’t win: it takes you out of the round, the same as a pin. You’re the last one standing, so the round is yours.' },
+    { title: 'Scoring', spot: '.coach .standings', next: 'Finish',
+      text: 'The last one standing scores the number of players, and the first out scores 1. A match is three rounds, and each round’s winner opens the next. Most points wins, and tied players share the belt.' }
+  ];
+  let tut = null; // { step, bots: {p: [actions]}, focused }
+  function startTutorial() {
+    clearTimeout(timer); ov.hidden = true;
+    g = E.newMatch(['You', 'Hacksaw Hal', 'The Duchess'], { seed: 20261028, you: 0, opener: 0, deal: TUT_DEAL });
+    g.log = []; g.log.push({ text: 'Tutorial round: you, Hacksaw Hal and the Duchess, five cards each. You open.', kind: 'round', who: null, round: 1 });
+    tut = { step: 0, bots: { 1: TUT_BOTS[1].slice(), 2: TUT_BOTS[2].slice() }, focused: '' };
+    sel = []; mode = null; lastLog = 0; pops = [];
+    window.scrollTo(0, 0);
+    render();
+  }
+  const tstep = () => (tut ? TUT[tut.step] || null : null);
+  const tutDo = () => { const s = tstep(); return s && s.do && g.turn === 0 && !g.roundOver ? s.do : null; };
+  const sameCards = (a, b) => a.length === b.length && a.slice().sort((x, y) => x - y).every((r, i) => r === b.slice().sort((x, y) => x - y)[i]);
+  function tutMatches(a) {
+    const d = tutDo();
+    if (!d || d.type !== a.type) return false;
+    if (d.cards) return sameCards(d.cards, a.cards);
+    if (d.rank != null) return d.rank === a.rank;
+    return true;
+  }
+  // may hand card i be selected right now? only the cards the step asks for
+  function tutCanPick(i) {
+    const d = tutDo();
+    if (!d || d.type !== 'play') return false;
+    if (sel.includes(i)) return true;
+    const r = g.hands[0][i], want = d.cards.filter((x) => x === r).length, have = sel.filter((k) => g.hands[0][k] === r).length;
+    return have < want;
+  }
+  function tutNext() {
+    if (!tut) return;
+    if (tut.step >= TUT.length - 1) return tutFinish();
+    tut.step++; render();
+  }
+  function coachHtml() {
+    const s = tstep(); if (!s) return '';
+    const waiting = !g.roundOver && g.turn !== 0;
+    const n = TUT.length, k = tut.step + 1;
+    let body = '<p>' + (waiting && s.wait ? s.wait : s.text) + '</p>';
+    if (!waiting && tut.step === n - 1) {
+      const h = g.history[g.history.length - 1], order = h.order.slice().reverse();
+      body += '<table class="standings"><thead><tr><th>Finish</th><th>How</th><th class="num">Points</th></tr></thead><tbody>' +
+        order.map((p, i) => '<tr class="' + (p === 0 ? 'me' : '') + '"><td>' + (i + 1) + '. ' + esc(g.names[p]) + '</td><td>' + (i === 0 ? 'Last one standing' : h.how[p] === 'pinned' ? 'Pinned' : 'Tapped out') + '</td><td class="num">+' + h.pts[p] + '</td></tr>').join('') + '</tbody></table>';
+    }
+    let act;
+    if (waiting) act = '<span class="cue wait">Watching the bots…</span>';
+    else if (s.next) act = '<button type="button" class="go" id="tnext">' + (typeof s.next === 'string' ? s.next : 'Next') + '</button>';
+    else act = '<span class="cue">Your move</span>';
+    return '<section class="coach" aria-label="Tutorial coach"><div class="ctop"><span class="who">Coach · step ' + k + ' of ' + n + '</span>' +
+      '<span class="prog" aria-hidden="true"><i style="width:' + Math.round(k / n * 100) + '%"></i></span></div>' +
+      '<h3>' + esc(s.title) + '</h3>' + body +
+      '<div class="cact">' + act + '<button type="button" class="exit" id="texit">Exit tutorial</button></div></section>';
+  }
+  // after each render: point at what the step is about, and keep the coach and that target on screen together
+  function tutDecorate(said) {
+    const s = tstep(); if (!s) return;
+    const waiting = !g.roundOver && g.turn !== 0, d = tutDo();
+    let target = null;
+    if (!waiting) {
+      if (d && d.type === 'play') {
+        app.querySelectorAll('.hand .card').forEach((el) => { if (!sel.includes(+el.dataset.i) && tutCanPick(+el.dataset.i)) el.classList.add('tut'); });
+        const done = sameCards(d.cards, sel.map((i) => g.hands[0][i]));
+        const play = document.getElementById('play');
+        if (done && play) play.classList.add('tut-spot');
+        target = app.querySelector('.you');
+      } else if (d && d.type === 'takeback') {
+        app.querySelectorAll('.tablecards .card.pick').forEach((el) => el.classList.add('tut'));
+        target = app.querySelector('.tablecards');
+      } else if (d) {
+        target = document.getElementById(d.type === 'reverse' ? 'rev' : 'kick');
+        if (target) target.classList.add('tut-spot');
+        target = app.querySelector('.you');
+      } else if (s.spot) {
+        target = app.querySelector(s.spot);
+        if (target) target.classList.add('tut-spot');
+      }
+    } else target = app.querySelector('.ring');
+    const key = tut.step + (waiting ? 'w' : 'm');
+    if (key === tut.focused) return;
+    tut.focused = key;
+    const c = app.querySelector('.coach');
+    if (c) live.textContent = (said ? said + ' ' : '') + c.querySelector('h3').textContent + '. ' + c.querySelector('p').textContent;
+    reveal([c, target]);
+    if (!waiting && s.next) { const b = document.getElementById('tnext'); if (b) b.focus({ preventScroll: true }); }
+  }
+  // scroll this document (never the page around the iframe) so the given elements fit; the last one wins if they can't all fit
+  function reveal(els) {
+    els = els.filter(Boolean); if (!els.length) return;
+    const vh = window.innerHeight, rs = els.map((el) => el.getBoundingClientRect());
+    let top = Math.min.apply(null, rs.map((r) => r.top)), bottom = Math.max.apply(null, rs.map((r) => r.bottom));
+    if (bottom - top > vh - 20) { const t = rs[rs.length - 1]; top = t.top; bottom = t.bottom; }
+    // keep a margin at both edges where there's room: inside the game page's iframe, the page's sticky header can cover the top
+    const pad = Math.max(10, Math.min(90, (vh - (bottom - top)) / 2));
+    let dy = 0;
+    if (top < pad || bottom > vh - pad) dy = (top + bottom) / 2 - vh / 2;
+    if (Math.abs(dy) > 2) window.scrollBy({ top: dy, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+  function tutFinish() {
+    clearTimeout(timer);
+    ovBody.innerHTML = '<div class="finish" style="display:flex;flex-direction:column;gap:14px"><h2 id="ov-h">Ready for the ring</h2>' +
+      '<p>That’s the whole game. Open with a set or a run. Beat the move with more cards, or a set over a run, or a higher rank. When you can’t, or won’t, spend stamina on a reversal or a kick out. Running out of cards or stamina puts you out.</p>' +
+      '<p>A real match deals 9 to 15 cards each, so there’s more room to plan. Save your big moves for a wrestler with no stamina left.</p>' +
+      '<div class="actions"><button type="button" class="go" id="tplay">Play against bots</button><button type="button" id="tmenu">Back to menu</button><button type="button" class="plain" id="tagain">Replay the tutorial</button></div>' +
+      '<p class="setup-note" style="margin:0">Starts a three-round match: you and ' + (chosenN - 1) + ' ' + (tough ? 'tough' : 'casual') + ' bot' + (chosenN > 2 ? 's' : '') + '. Pick players and bot strength from the menu.</p></div>';
+    ov.hidden = false;
+    const b = document.getElementById('tplay'); if (b) b.focus();
+    document.getElementById('tplay').addEventListener('click', () => { ov.hidden = true; start(); });
+    document.getElementById('tmenu').addEventListener('click', () => { ov.hidden = true; setup(); window.scrollTo(0, 0); });
+    document.getElementById('tagain').addEventListener('click', () => { ov.hidden = true; startTutorial(); });
+  }
+
   function start() {
+    clearTimeout(timer); tut = null; ov.hidden = true;
     const names = ['You'].concat(BOTS.slice(0, chosenN - 1));
     g = E.newMatch(names, { seed: (Date.now() ^ (Math.random() * 1e9)) >>> 0, you: 0 });
     sel = []; mode = null; lastLog = 0; pops = [];
@@ -229,6 +419,12 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
   function schedule() {
     clearTimeout(timer);
     if (!g) return;
+    if (tut) { // scripted bots, at a pace a new player can follow; the coach takes over at the end of the round
+      if (g.roundOver || g.turn === 0) return;
+      const p = g.turn;
+      timer = setTimeout(() => { const a = tut.bots[p].shift(); if (!a) return; E.act(g, a); afterAct(); }, 1250);
+      return;
+    }
     if (g.roundOver) { timer = setTimeout(roundModal, 900); return; }
     if (g.turn === 0) return;
     const humanOut = g.status[0] !== 'in';
@@ -257,7 +453,12 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     sel = []; mode = null; render(); schedule();
   }
   function justOut(p) { for (let i = g.log.length - 1; i >= lastLog - 1 && i >= 0; i--) if (g.log[i].who === p && g.log[i].kind === 'out') return true; return false; }
-  function human(a) { try { E.act(g, a); } catch (e) { return; } afterAct(); }
+  function human(a) {
+    if (tut && !tutMatches(a)) return;
+    try { E.act(g, a); } catch (e) { return; }
+    if (tut) tut.step++;
+    afterAct();
+  }
 
   // ---------------------------------------------------------------- render
   function render() {
@@ -275,7 +476,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     } else if (g.status[0] !== 'in') { status = 'You’re ' + (g.status[0] === 'pinned' ? 'pinned' : 'tapped out') + '. Watching the rest of the round…'; hint = cur ? E.beatHint(cur, g.top) : ''; }
     else { status = g.names[g.turn] + (g.phase === 'open' ? ' is opening…' : ' is thinking…'); hint = cur ? E.beatHint(cur, g.top) : ''; }
 
-    const picks = mine ? (g.phase === 'takeback' ? o.takeback : mode === 'reverse' ? o.reverse : []) : [];
+    const td = tut ? tutDo() : null; // in the tutorial only the taught move is allowed
+    const picks = mine && (!tut || (td && (td.type === 'takeback' || td.type === 'reverse'))) ? (g.phase === 'takeback' ? o.takeback : mode === 'reverse' ? o.reverse : []) : [];
     const used = {};
     const tcards = cur ? cur.cards.map((r, i) => {
       const end = cur.type === 'run' ? (i === 0 || i === cur.cards.length - 1) : true;
@@ -285,7 +487,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     }).join('') : '<span class="empty">Open mat</span>';
     const ownerName = cur ? (g.owner === -1 ? 'left by a wrestler who’s out' : g.owner === 0 ? 'your move' : g.names[g.owner] + '’s move') : '';
 
-    const handLocked = !mine || g.phase === 'takeback' || mode === 'reverse';
+    const handLocked = !mine || g.phase === 'takeback' || mode === 'reverse' || (tut && !(td && td.type === 'play'));
     const hand = g.hands[0].map((r, i) => '<button type="button" class="card' + (sel.includes(i) ? ' sel' : '') + '" data-i="' + i + '" aria-pressed="' + sel.includes(i) + '" aria-label="' + r + '"' + (handLocked ? ' tabindex="-1"' : '') + '><img src="' + IMG + 'card-' + r + '.webp" alt="" width="240" height="336"></button>').join('');
 
     let actions = '', chips = '';
@@ -293,16 +495,17 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
       if (mode === 'reverse') actions = '<button type="button" class="ghost" id="cancel">Cancel</button>';
       else {
         const m = E.classify(sel.map((i) => g.hands[0][i]));
-        const legal = m && o.plays.some((x) => x.type === m.type && x.size === m.size && x.top === m.top);
-        const label = !sel.length ? 'Play' : !m ? 'Not a set or run' : !legal ? 'Doesn’t beat it' : 'Play ' + E.describe(m) + (m.size === g.hands[0].length ? ' (taps you out)' : '');
+        let legal = m && o.plays.some((x) => x.type === m.type && x.size === m.size && x.top === m.top);
+        if (tut && legal && !(td && td.type === 'play' && sameCards(td.cards, m.cards))) legal = false;
+        const label = !sel.length || (tut && !legal) ? 'Play' : !m ? 'Not a set or run' : !legal ? 'Doesn’t beat it' : 'Play ' + E.describe(m) + (m.size === g.hands[0].length ? ' (taps you out)' : '');
         actions = '<button type="button" class="go" id="play"' + (legal ? '' : ' disabled') + '>' + esc(label) + '</button>';
         if (g.phase === 'answer') {
-          actions += '<button type="button" class="gold" id="rev"' + (o.reverse.length ? '' : ' disabled') + ' title="Take a card off the move; discard a stamina card">Reversal</button>';
-          if (g.n > 2) actions += '<button type="button" class="gold" id="kick"' + (o.kickOut ? '' : ' disabled') + ' title="Take a stamina card into your hand">Kick out</button>';
+          actions += '<button type="button" class="gold" id="rev"' + (o.reverse.length && (!tut || (td && td.type === 'reverse')) ? '' : ' disabled') + ' title="Take a card off the move; discard a stamina card">Reversal</button>';
+          if (g.n > 2) actions += '<button type="button" class="gold" id="kick"' + (o.kickOut && (!tut || (td && td.type === 'kickout')) ? '' : ' disabled') + ' title="Take a stamina card into your hand">Kick out</button>';
         }
         if (sel.length) actions += '<button type="button" class="ghost" id="clear">Clear</button>';
         const plays = o.plays.slice().sort((a, b) => a.size - b.size || (a.type === b.type ? 0 : a.type === 'run' ? -1 : 1) || a.top - b.top);
-        if (g.phase === 'answer') chips = plays.length ? '<span class="lbl">Beats it:</span>' + plays.slice(0, 10).map((m, k) => '<button type="button" class="chip" data-chip="' + k + '">' + esc(E.describe(m)) + '</button>').join('') + (plays.length > 10 ? '<span class="lbl">+' + (plays.length - 10) + ' more</span>' : '')
+        if (g.phase === 'answer') chips = plays.length ? '<span class="lbl">Beats it:</span>' + plays.slice(0, 10).map((m, k) => '<button type="button" class="chip" data-chip="' + k + '"' + (tut && !(td && td.type === 'play' && sameCards(td.cards, m.cards)) ? ' disabled' : '') + '>' + esc(E.describe(m)) + '</button>').join('') + (plays.length > 10 ? '<span class="lbl">+' + (plays.length - 10) + ' more</span>' : '')
           : '<span class="lbl">' + (g.counts[0].length ? 'Nothing in your hand beats it. Reverse or kick out.' : 'Nothing beats it and no stamina left.') + '</span>';
         app._plays = plays;
       }
@@ -311,18 +514,18 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     const youOut = g.status[0] !== 'in';
     app.innerHTML =
       '<div class="top"><div class="logo">Down for the Count<small>BY DARREN DON</small></div><div class="right">' +
-      '<span class="pill">Round ' + g.round + ' of ' + g.rounds + '</span>' +
-      '<button type="button" class="ghost" id="rulesbtn">' + (showRules ? 'Hide rules' : 'Rules') + '</button><button type="button" class="ghost" id="new">New match</button></div></div>' +
+      '<span class="pill">' + (tut ? 'Tutorial' : 'Round ' + g.round + ' of ' + g.rounds) + '</span>' +
+      '<button type="button" class="ghost" id="rulesbtn">' + (showRules ? 'Hide rules' : 'Rules') + '</button><button type="button" class="ghost" id="new">' + (tut ? 'Exit tutorial' : 'New match') + '</button></div></div>' +
       '<div class="seats">' + seats.join('') + '</div>' +
       '<div class="ring"><span class="post tl"></span><span class="post tr"></span><span class="post bl"></span><span class="post br"></span><div class="mat">' +
       '<div class="status" id="status">' + esc(status) + '</div>' +
       '<div class="tablecards">' + tcards + '</div>' +
       '<div class="hint">' + esc(cur ? E.describe(cur).replace(/^./, (c) => c.toUpperCase()) + ', ' + ownerName + (g.touched && g.owner !== -1 ? ' (reversed)' : '') + '. ' : '') + esc(hint) + '</div>' +
       (g.aside ? '<div class="aside"><img src="' + IMG + 'back.webp" alt="" width="240" height="336">' + g.aside + ' set aside</div>' : '') +
-      '</div></div>' +
-      '<div class="you' + (mine ? ' turn' : '') + '" style="--pc:' + COLORS[0] + '">' +
+      '</div></div>' + (tut ? coachHtml() : '') +
+      '<div class="you' + (mine ? ' turn' : '') + (tut ? ' tutmode' : '') + '" style="--pc:' + COLORS[0] + '">' +
       '<div class="head"><div class="nm"><span class="dot" style="--pc:' + COLORS[0] + '"></span>You' + (youOut ? ' <span class="badge">' + (g.status[0] === 'pinned' ? 'Pinned' : 'Tapped out') + '</span>' : '') + '</div>' +
-      '<div class="meta"><span>Your stamina</span><div class="counts">' + backs(g.counts[0].length) + '</div><span>' + g.hands[0].length + ' cards</span><span>' + g.scores[0] + ' pts</span></div></div>' +
+      '<div class="meta"><span>Your stamina</span><div class="counts">' + backs(g.counts[0].length) + '</div><span>' + g.hands[0].length + (g.hands[0].length === 1 ? ' card' : ' cards') + '</span><span>' + g.scores[0] + ' pts</span></div></div>' +
       '<div class="hand' + (handLocked ? ' locked' : '') + '">' + (hand || '<span class="lbl" style="align-self:center">No cards</span>') + '</div>' +
       (actions ? '<div class="actions">' + actions + '</div>' : '') + (chips ? '<div class="chips">' + chips + '</div>' : '') +
       '</div>' +
@@ -334,8 +537,10 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
       if (el && x.word) { const s = document.createElement('span'); s.className = 'pop'; s.textContent = x.word; el.appendChild(s); }
     });
     pops = [];
-    if (g.log.length > lastLog) { live.textContent = g.log.slice(lastLog).map((l) => l.text).join(' '); lastLog = g.log.length; }
+    let said = '';
+    if (g.log.length > lastLog) { said = g.log.slice(lastLog).map((l) => l.text).join(' '); live.textContent = said; lastLog = g.log.length; }
     wire();
+    if (tut) tutDecorate(said);
   }
   function seatHtml(p) {
     const st = g.status[p], cls = ['seat'];
@@ -344,7 +549,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     if (st !== 'in') cls.push('out');
     return '<div class="' + cls.join(' ') + '" data-p="' + p + '" style="--pc:' + COLORS[p] + '">' +
       '<div class="nm"><span class="dot"></span><span>' + esc(g.names[p]) + '</span></div>' +
-      '<div class="row"><span>' + g.hands[p].length + ' cards</span>' + (st !== 'in' ? '<span class="badge">' + (st === 'pinned' ? 'Pinned' : 'Tapped out') + '</span>' : '<span class="pts">' + g.scores[p] + '</span>') + '</div>' +
+      '<div class="row"><span>' + g.hands[p].length + (g.hands[p].length === 1 ? ' card' : ' cards') + '</span>' + (st !== 'in' ? '<span class="badge">' + (st === 'pinned' ? 'Pinned' : 'Tapped out') + '</span>' : '<span class="pts">' + g.scores[p] + '</span>') + '</div>' +
       '<div class="lbl">Stamina</div><div class="counts">' + (st === 'in' ? backs(g.counts[p].length) : '') + '</div></div>';
   }
   function logHtml() {
@@ -363,6 +568,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
   function wire() {
     const on = (id, f) => { const el = document.getElementById(id); if (el) el.addEventListener('click', f); };
     on('new', setup);
+    on('texit', setup);
+    on('tnext', tutNext);
     on('rulesbtn', () => { showRules = !showRules; render(); });
     on('play', () => { const cards = sel.map((i) => g.hands[0][i]); human({ type: 'play', cards }); });
     on('kick', () => human({ type: 'kickout' }));
@@ -370,7 +577,7 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
     on('cancel', () => { mode = null; render(); });
     on('clear', () => { sel = []; render(); });
     app.querySelectorAll('.hand:not(.locked) .card').forEach((b) => b.addEventListener('click', () => {
-      const i = +b.dataset.i; sel = sel.includes(i) ? sel.filter((x) => x !== i) : sel.concat(i); render();
+      const i = +b.dataset.i; if (tut && !tutCanPick(i)) return; sel = sel.includes(i) ? sel.filter((x) => x !== i) : sel.concat(i); render();
       const again = app.querySelector('.hand .card[data-i="' + i + '"]'); if (again) again.focus();
     }));
     app.querySelectorAll('[data-take]').forEach((el) => {

@@ -88,19 +88,27 @@
       top: SETUP[n][0], handSize: SETUP[n][1], countSize: SETUP[n][2],
       rounds: opts.rounds || 3, round: 0, scores: Array(n).fill(0), history: [],
       opener: opts.opener != null ? opts.opener : Math.floor(rngFrom(opts.seed || Date.now())() * n),
-      log: [], over: false, you: opts.you != null ? opts.you : -1
+      log: [], over: false, you: opts.you != null ? opts.you : -1,
+      deal: opts.deal || null // optional fixed first-round deal { hands, counts, aside } (the browser tutorial uses this)
     };
     startRound(g);
     return g;
   }
   function startRound(g) {
     g.round++;
-    const deck = [];
-    for (let r = 1; r <= g.top; r++) for (let k = 0; k < 6; k++) deck.push(r);
-    shuffle(deck, g.rnd);
-    g.hands = []; g.counts = [];
-    for (let p = 0; p < g.n; p++) { g.hands.push(deck.splice(0, g.handSize).sort((a, b) => a - b)); g.counts.push(deck.splice(0, g.countSize)); }
-    g.aside = deck.length;
+    if (g.deal && g.round === 1) {
+      // stamina cards are taken from the end of each counts array
+      g.hands = g.deal.hands.map((h) => h.slice().sort((a, b) => a - b));
+      g.counts = g.deal.counts.map((c) => c.slice());
+      g.aside = g.deal.aside || 0;
+    } else {
+      const deck = [];
+      for (let r = 1; r <= g.top; r++) for (let k = 0; k < 6; k++) deck.push(r);
+      shuffle(deck, g.rnd);
+      g.hands = []; g.counts = [];
+      for (let p = 0; p < g.n; p++) { g.hands.push(deck.splice(0, g.handSize).sort((a, b) => a - b)); g.counts.push(deck.splice(0, g.countSize)); }
+      g.aside = deck.length;
+    }
     g.status = Array(g.n).fill('in'); g.out = [];
     g.cur = null; g.owner = null; g.touched = false; g.lap = null;
     g.turn = g.opener; g.roundOver = false; g.played = {}; g.lastAction = null;
@@ -153,7 +161,7 @@
       if (!o.takeback.includes(a.rank)) throw new Error('illegal takeback');
       g.hands[p].push(a.rank); g.hands[p].sort((x, y) => x - y); fromTable(g, p, a.rank);
       const rest = without(g.cur, a.rank);
-      say(g, 'Nobody touched it, so ' + V(g, p, 'takes', 'take') + ' the ' + a.rank + ' back' + (rest ? '; ' + describe(rest) + ' stays up.' : ' and the table clears.'), 'takeback', p);
+      say(g, 'Nobody touched it, so ' + (g.you === p ? 'you take' : name + ' takes') + ' the ' + a.rank + ' back' + (rest ? '; ' + describe(rest) + ' stays up.' : ' and the table clears.'), 'takeback', p);
       if (rest) { g.cur = rest; g.touched = true; } else clearTable(g);
       return advance(g, p);
     }
