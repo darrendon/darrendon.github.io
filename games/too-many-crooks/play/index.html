@@ -13,6 +13,7 @@
   --slot:#D3DADE; --line:#C4CDD2; --ok:#2F6B3A;
   --slate:#55646E; --slate2:#4A5862; --slate-d:#36424A; --cream:#F2ECDA; --gold:#F5D27A; --hot:#FF8A6B;
   --wall:repeating-linear-gradient(180deg,transparent 0 23px,rgba(242,236,218,.13) 23px 24px);
+  --tut:#F0A818;
   --c0:#C8372D; --c1:#2F6DB5; --c2:#E0B21F; --c3:#3E8E4F; --c4:#F2ECDA; --c5:#2B2B2B;
 }
 *{box-sizing:border-box}
@@ -178,6 +179,58 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .standings .r .n{font-family:Oswald,sans-serif;font-weight:700;font-size:20px;margin-left:auto}
 .toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:4px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
+
+/* ---------------- tutorial ---------------- */
+.learn{display:flex;align-items:center;gap:14px 18px;flex-wrap:wrap;border-left:6px solid var(--red)}
+.learn .trio{display:flex;gap:6px;flex:none}
+.learn .lt{flex:1 1 260px;min-width:0}
+.learn h2{font-size:18px;margin-bottom:4px}
+.learn p{margin:0}
+.btn.ink{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.ink:hover{background:var(--slate-d)}
+.coach{position:fixed;left:0;right:300px;bottom:0;z-index:6;background:var(--wall),var(--slate-d);color:var(--cream);border-top:4px solid var(--tut);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 18px rgba(14,16,20,.22)}
+@media (max-width:980px){.coach{right:0}}
+.coach .c-in{display:flex;gap:10px 18px;align-items:flex-end;flex-wrap:wrap;max-width:1000px;margin:0 auto}
+.coach .c-txt{flex:1 1 380px;min-width:0}
+.coach .c-hd{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.c-eye{font-family:'Courier Prime',monospace;font-weight:700;font-size:11px;letter-spacing:1px;color:var(--gold);text-transform:uppercase}
+.coach .pips{display:flex;gap:3px}
+.coach .pips i{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--gold)}
+.coach .pips i.on{background:var(--gold)}
+.coach h3{font-size:17px;letter-spacing:.8px;margin-bottom:3px}
+.coach p{margin:0;font-size:14.5px;line-height:1.42;max-width:74ch}
+.coach p b{color:var(--gold);font-weight:700}
+.coach q{font-style:italic;color:#fff}
+.coach .c-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.coach .btn{background:transparent;border-color:var(--cream);color:var(--cream)}
+.coach .btn:hover{background:var(--slate2)}
+.coach .btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.coach .btn.red:hover{background:var(--red2)}
+.coach .btn:disabled{opacity:.4}
+.coach .c-exit{background:none;border:0;color:#C9D1D5;text-decoration:underline;font-size:13px;padding:8px 2px}
+.coach .c-exit:hover{color:#fff}
+@media (max-width:640px){.coach{padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}.coach p{font-size:14px;line-height:1.38}.coach h3{font-size:16px}}
+#game.tutmode .actions{display:none}
+#game.tutmode main{padding-bottom:var(--coach-h,200px)}
+@media (max-width:980px){#game.tutmode main{padding-bottom:12px}#game.tutmode{padding-bottom:var(--coach-h,200px)}}
+@keyframes tutpulse{0%,100%{outline-color:var(--tut);outline-offset:2px}50%{outline-color:rgba(240,168,24,.35);outline-offset:5px}}
+.die.tut,.sheet.tut{outline:3px solid var(--tut);outline-offset:2px;animation:tutpulse 1.3s ease-in-out infinite}
+.die.tut.dim{opacity:1}
+.sheet.tut{cursor:pointer}
+.tut-look{outline:3px dashed var(--tut);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.die.tut,.sheet.tut{animation:none}}
+.fin .lead{font-size:15px;line-height:1.45;margin:0 0 12px;max-width:62ch}
+.jobs{border-collapse:collapse;width:100%;max-width:520px;font-size:14px;background:#fff;border:1.5px solid var(--ink)}
+.jobs th,.jobs td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:center}
+.jobs th:first-child,.jobs td:first-child{text-align:left}
+.jobs thead th{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:12px;background:var(--slate);color:var(--cream);border-bottom:0}
+.jobs td.hot{color:var(--red);font-weight:700}
+.fin .rules{margin-top:14px}
+.tnote{background:var(--wall),var(--slate-d);color:var(--cream);border-top:4px solid var(--tut);border-radius:5px;padding:12px 14px;margin:0 0 12px}
+.tnote h3{font-size:17px;letter-spacing:.8px;margin:2px 0 4px}
+.tnote p{margin:0 0 6px;font-size:14.5px;line-height:1.42;max-width:74ch}.tnote p:last-child{margin:0}
+.tnote b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -189,6 +242,12 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     <span class="mono tag">Play online</span>
     <span class="muted small">3–6 players · about 25 minutes</span>
     <svg class="mugs" viewBox="0 0 250 82" aria-hidden="true"><defs/></svg>
+  </div>
+
+  <div class="card learn" id="learn">
+    <div class="trio" aria-hidden="true"><span class="die p1" data-v="2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="die p2" data-v="4"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="die p3" data-v="6"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="lt"><h2>New here? Take the tutorial</h2><p class="muted small">A coach walks you through one job at a four-player table: sending dice, crewing up, paying cuts and making promises. About four minutes.</p></div>
+    <button class="btn red" id="tut-start">Learn to play</button>
   </div>
 
   <div class="card">
@@ -276,6 +335,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     <div class="chatbox"><input id="chat-in" maxlength="200" placeholder="Make a promise…"><button class="btn sm" id="chat-go">Say</button></div>
   </aside>
   <div class="actions" id="actions"></div>
+  <div class="coach hide" id="coach" role="region" aria-label="Tutorial coach" aria-live="polite"></div>
 </div>
 <div id="modal" class="modal hide"></div>
 <div class="toast" id="toast"></div>
@@ -505,6 +565,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   let paySel = {};        // keptId -> crewId
   let pickKept = null;    // kept die id waiting for a crew target
   let submitted = { crew: false, pay: false };
+  let tut = null;          // tutorial state while the coach is running, else null
 
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); }
   const nm = (i) => (view && view.players[i] ? view.players[i].name : '?');
@@ -566,8 +627,8 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     $('t-code').textContent = code ? 'TABLE ' + code : '';
     view = session.view(); if (view) render();
   }
-  function leaveTable() { session && session.leave(); session = null; view = null; $('modal').classList.add('hide'); $('game').classList.add('hide'); $('lobby').classList.remove('hide'); $('h-lobby').classList.add('hide'); $('j-lobby').classList.add('hide'); $('h-open').disabled = false; $('j-go').disabled = false; }
-  $('t-leave').onclick = () => { if (view && view.phase !== 'over' && !confirm('Leave the table?')) return; leaveTable(); };
+  function leaveTable() { endTutorial(); session && session.leave(); session = null; view = null; $('modal').classList.add('hide'); $('game').classList.add('hide'); $('lobby').classList.remove('hide'); $('h-lobby').classList.add('hide'); $('j-lobby').classList.add('hide'); $('h-open').disabled = false; $('j-go').disabled = false; }
+  $('t-leave').onclick = () => { if (!tut && view && view.phase !== 'over' && !confirm('Leave the table?')) return; leaveTable(); };
 
   /* ---------------- chat */
   $('f-chat').onclick = () => { feedMode = 'chat'; $('f-chat').classList.add('on'); $('f-log').classList.remove('on'); renderFeed(); };
@@ -599,7 +660,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     $('t-phase').textContent = ph;
 
     // scoreboard
-    $('score').innerHTML = v.players.map((p, i) => '<div class="sc' + (i === me ? ' me' : '') + (v.phase === 'send' && v.sender === i ? ' turn' : '') + '"><span class="dot p' + i + '"></span><span>' + esc(p.name) + (i === me ? ' (you)' : '') + '</span>' + (v.leader === i && v.job > 0 ? '<span class="lead">LEAD</span>' : '') + '<span class="n">' + v.scores[i] + '</span></div>').join('');
+    $('score').innerHTML = v.players.map((p, i) => '<div class="sc' + (i === me ? ' me' : '') + (v.phase === 'send' && v.sender === i ? ' turn' : '') + '"><span class="dot p' + i + '"></span><span>' + esc(p.name) + (i === me && p.name !== 'You' ? ' (you)' : '') + '</span>' + (v.leader === i && v.job > 0 ? '<span class="lead">LEAD</span>' : '') + '<span class="n">' + v.scores[i] + '</span></div>').join('');
 
     // sheets: rivals + me
     const order = [...Array(v.N).keys()].filter((i) => i !== me);
@@ -613,7 +674,8 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     renderActions();
     renderFeed();
     renderTimer();
-    if (v.phase === 'summary' || v.phase === 'over') renderSummary(); else $('modal').classList.add('hide');
+    if (tut) renderCoach();
+    else if (v.phase === 'summary' || v.phase === 'over') renderSummary(); else $('modal').classList.add('hide');
   }
 
   function sheetHTML(i, mine) {
@@ -701,7 +763,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       if (v.crewDone[me]) h = '<span class="hint">Crew set. Waiting for the others.</span>';
       else if (!v.kitchens[me].length) h = '<span class="hint">Nobody showed up — your own people run this job.</span>';
       else {
-        if (!crewSel) crewSel = T.bestCrew(v.kitchens[me]).map((d) => d.id);
+        if (!crewSel) crewSel = tut ? [] : T.bestCrew(v.kitchens[me]).map((d) => d.id);
         h = '<span class="hint">One of each kind. Click a die to swap it in. You score the total' + (v.job === 2 ? ', <b>doubled</b>' : '') + '.</span><button class="btn red" id="a-crew">Confirm crew</button>';
       }
     } else if (v.phase === 'pay') {
@@ -731,6 +793,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   document.addEventListener('click', (e) => {
     const v = view; if (!v) return; const me = v.me;
     const die = e.target.closest('.die'), sheet = e.target.closest('.sheet');
+    if (tut && !tutClickOk(e, die, sheet)) return;
     if (v.phase === 'send' && v.sender === me) {
       if (die && e.target.closest('#hand')) {
         const id = die.dataset.id;
@@ -783,7 +846,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     let h = '<div class="box"><h2>' + (v.phase === 'over' ? 'The split' : 'Job ' + s.job + ' — the split') + '</h2><div class="sub">' + (s.last ? 'LAST JOB — CREWS SCORED DOUBLE' : 'WHO PAID WHOM') + '</div>';
     if (v.phase === 'over') {
       const ranked = v.players.map((p, i) => ({ i, s: v.scores[i] })).sort((a, b) => b.s - a.s);
-      h += '<div class="standings">' + ranked.map((r, k) => '<div class="r' + (k === 0 ? ' win' : '') + '"><span class="dot p' + r.i + '" style="width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)"></span><span>' + esc(nm(r.i)) + (r.i === v.me ? ' (you)' : '') + '</span><span class="n">' + r.s + '</span></div>').join('') + '</div>';
+      h += '<div class="standings">' + ranked.map((r, k) => '<div class="r' + (k === 0 ? ' win' : '') + '"><span class="dot p' + r.i + '" style="width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25)"></span><span>' + esc(nm(r.i)) + (r.i === v.me && nm(r.i) !== 'You' ? ' (you)' : '') + '</span><span class="n">' + r.s + '</span></div>').join('') + '</div>';
     }
     h += '<div class="sumgrid">';
     for (const hst of s.hosts) {
@@ -793,13 +856,266 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       for (const c of hst.crew) h += '<div class="line">' + dieHTML({ id: 'x', v: c.v, owner: c.owner }, 'sm') + '<span class="who">' + esc(nm(c.owner)) + '</span><span class="amt' + (c.paid || c.owner === hst.seat ? '' : ' zero') + '">' + (c.owner === hst.seat ? 'OWN' : c.paid ? '+' + c.paid : 'NOTHING') + '</span></div>';
       h += '<div class="own">Crew ' + hst.crewPts + (s.last ? ' (doubled)' : '') + ' · own cut ' + hst.own + '</div></div>';
     }
-    h += '</div><div class="row" style="margin-top:14px">' + (v.phase === 'summary' && session.isHost() ? '<button class="btn red" id="m-next">Next job</button>' : '') + (v.phase === 'over' ? '<button class="btn red" id="m-again">Back to the lobby</button>' : '') + '<button class="btn" id="m-close">Close</button></div></div>';
+    h += '</div><div class="row" style="margin-top:14px">' + (v.phase === 'summary' && session.isHost() && !tut ? '<button class="btn red" id="m-next">Next job</button>' : '') + (v.phase === 'over' ? '<button class="btn red" id="m-again">Back to the lobby</button>' : '') + '<button class="btn" id="m-close">Close</button></div></div>';
     m.innerHTML = h;
     const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
     on('m-close', () => m.classList.add('hide'));
     on('m-next', () => { m.classList.add('hide'); session.act({ type: 'next' }); });
     on('m-again', () => leaveTable());
   }
+  /* ============================================================ TUTORIAL
+     One scripted first job at a four-player table, with a coach.
+     Fixed rolls and fixed bot moves, so every lesson plays out the same way:
+       You  6 5 4 4 3 2 1 1  send 6→Dot (promised), 1→Sal (his missing inside man), 3 and 1→Vic; keep 5 4 4 2
+       Vic  6 5 4 4 3 2 2 1  sends 6→you, 2→Dot, 4 and 3→Sal; keeps 5 4 2 1 and pays fair
+       Dot  6 6 5 5 4 2 1 1  sends 4→you, 5→Vic, 5 and 6→Sal; keeps 6 2 1 1 and breaks her promise to you
+       Sal  6 5 4 3 3 2 2 1  sends 5 and 2→you, 3→Dot, 6→Vic; keeps 4 3 2 1
+     Your job is sent Vic's 6, Dot's 4, Sal's 5 and 2: crew 2 + 4 + 6 = 12, and Sal's 5 goes home. */
+  const TUT_DEAL = [[[6, 5, 4, 4, 3, 2, 1, 1], [6, 5, 4, 4, 3, 2, 2, 1], [6, 6, 5, 5, 4, 2, 1, 1], [6, 5, 4, 3, 3, 2, 2, 1]]];
+  const TUT_BOTS = ['Vic', 'Dot', 'Sal'];
+  const TUT_SENDS = { 1: [[6, 0], [2, 2], [4, 3], [3, 3]], 2: [[4, 0], [5, 1], [5, 3], [6, 3]], 3: [[5, 0], [2, 0], [3, 2], [6, 1]] };
+  // bot cuts: [kept die value, owner of the crew die, value of the crew die]
+  const TUT_PAYS = { 1: [[5, 3, 6], [4, 0, 3], [2, 0, 1]], 2: [[1, 0, 6], [1, 1, 2], [2, 3, 3]], 3: [[4, 2, 6], [3, 1, 4], [2, 0, 1]] };
+  // your sends, by step: [die value, which of that value (0 = first), to seat]
+  const TUT_MINE = { send6: [[6, 0, 2]], send1: [[1, 0, 3]], sendV: [[3, 0, 1], [1, 1, 1]] };
+  const TUT_STEPS = ['table', 'roll', 'talk', 'land', 'send6', 'send1', 'sendV', 'sendGo', 'crew', 'pay', 'reveal'];
+
+  class TutorialSession {
+    constructor(name) {
+      this.kind = 'tutorial'; this.seat = 0;
+      this.game = new T.Game([{ name, bot: false }].concat(TUT_BOTS.map((n) => ({ name: n, bot: true }))), { startSeat: 1, deal: TUT_DEAL });
+      this.game.start();
+    }
+    onUpdate(cb) { this.cb = cb; }
+    view() { return this.game.view(0); }
+    act(a) { const r = this.game.act(0, a); if (r.ok) this.cb && this.cb(); return r; }
+    bot(seat, a) { const r = this.game.act(seat, a); if (r.ok) this.cb && this.cb(); return r; }
+    isHost() { return true; }
+    leave() {}
+  }
+
+  const take = (dice, v, nth) => dice.filter((d) => d.v === v)[nth || 0];
+  function tutLater(fn, ms) { const t = setTimeout(() => { if (tut) fn(); }, ms); tut.timers.push(t); }
+
+  function startTutorial() {
+    if (session) leaveTable();
+    session = new TutorialSession(myName());
+    const hand = session.game.state.hands[0];
+    const plan = {};
+    for (const k of Object.keys(TUT_MINE)) plan[k] = TUT_MINE[k].map(([v, nth, to]) => ({ id: take(hand, v, nth).id, to }));
+    tut = { step: 0, plan, timers: [], landed: 0, scrollKey: '' };
+    bind(session);
+    document.getElementById('game').classList.add('tutmode');
+    $('coach').classList.remove('hide');
+    showGame('');
+    $('t-code').textContent = 'TUTORIAL';
+    window.scrollTo(0, 0);
+  }
+  function endTutorial() {
+    if (!tut) return;
+    tut.timers.forEach(clearTimeout); tut = null;
+    document.getElementById('game').classList.remove('tutmode');
+    $('coach').classList.add('hide'); $('coach').innerHTML = '';
+    document.querySelectorAll('.tut-look').forEach((el) => el.classList.remove('tut-look'));
+    lastSeq = -1; render._phase = null;
+  }
+  const tutId = () => (tut ? TUT_STEPS[tut.step] || 'finish' : null);
+  function tutGo(id) { tut.step = TUT_STEPS.indexOf(id); if (tut.step < 0) tut.step = TUT_STEPS.length; tutEnter(); view = session.view(); render(); }
+  function tutEnter() {
+    const id = tutId(), g = session.game;
+    if (id === 'talk' && !tut.talked) {
+      tut.talked = true;
+      g.act(2, { type: 'chat', text: 'I need muscle. Send me your 6 and my best cut is yours.' });
+      g.act(1, { type: 'chat', text: 'My 6 is coming your way. Pay me well.' });
+    }
+    if (id === 'land' && !tut.landed) {
+      tut.landed = 1;
+      [1, 2, 3].forEach((seat, k) => tutLater(() => {
+        const hand = g.state.hands[seat], used = new Set();
+        const assign = TUT_SENDS[seat].map(([v, to]) => { const d = hand.find((x) => x.v === v && !used.has(x.id)); used.add(d.id); return { dieId: d.id, to }; });
+        session.bot(seat, { type: 'send', assign });
+        if (seat === 3) { tut.landed = 2; render(); }
+      }, 700 + k * 1000));
+    }
+  }
+  // after your send: the bots crew up (crews are picked in the open)
+  function tutBotsCrew() { const g = session.game; for (const s of [1, 2, 3]) g.act(s, { type: 'crew', dieIds: T.bestCrew(g.state.kitchens[s]).map((d) => d.id) }); }
+  // after your crew: the bots hand out their cuts, face down
+  function tutBotsPay() {
+    const g = session.game;
+    for (const s of [1, 2, 3]) {
+      const kept = g.state.kept[s], crew = g.state.crews[s], used = new Set(), assign = {};
+      for (const [kv, owner, cv] of TUT_PAYS[s]) {
+        const k = kept.find((d) => d.v === kv && !used.has(d.id)); used.add(k.id);
+        assign[k.id] = crew.find((d) => d.owner === owner && d.v === cv).id;
+      }
+      g.act(s, { type: 'pay', assign });
+    }
+  }
+  const tutWantCrew = () => { const k = view.kitchens[0]; return [take(k.filter((d) => d.owner === 1), 6), take(k.filter((d) => d.owner === 2), 4), take(k.filter((d) => d.owner === 3), 2)].map((d) => d.id); };
+
+  // which clicks the lesson allows right now
+  function tutClickOk(e, die, sheet) {
+    if (!die && !sheet) return true;
+    if (e.target.closest('#modal') || e.target.closest('#coach')) return true;
+    const id = tutId(), v = view;
+    const no = (m) => { toast(m || 'Follow the highlighted step, or exit the tutorial.'); return false; };
+    if (TUT_MINE[id]) {
+      const left = tut.plan[id].filter((p) => !staged.some((s) => s.dieId === p.id));
+      if (die && e.target.closest('#hand')) {
+        if (pickDie && die.dataset.id === pickDie) return true;
+        return left.some((p) => p.id === die.dataset.id) ? true : no('Click the highlighted die.');
+      }
+      if (sheet && pickDie) {
+        const p = left.find((x) => x.id === pickDie);
+        if (!p || +sheet.dataset.seat !== p.to) return no('Send it to the highlighted job.');
+        staged.push({ dieId: pickDie, to: p.to }); pickDie = null; render(); return false;   // anywhere on the job, even on a die already there
+      }
+      if (die && die.classList.contains('staged')) return no('Leave that one where it is for now.');
+      return no();
+    }
+    if (id === 'crew' && v.phase === 'crew') return die && tutWantCrew().includes(die.dataset.id) ? true : no('Click the highlighted dice.');
+    if (id === 'pay' && v.phase === 'pay') return true;
+    return no();
+  }
+
+  const B = (t) => '<b>' + t + '</b>';
+  function tutText(id) {
+    const v = view;
+    switch (id) {
+      case 'table': return ['Meet the table',
+        "You're red. Vic, Dot and Sal are bots. Every job needs a crew of three, one of each kind: an " + B('inside man') + ' (a 1 or 2), a ' + B('getaway driver') + ' (3 or 4) and ' + B('the muscle') + " (5 or 6). The catch: you can't use your own dice on your own job. Your crew comes from dice your rivals send you."];
+      case 'roll': return ['Everyone rolls in the open',
+        'Everyone rolled 8 dice, face up, so you can see what each rival has to offer. Yours are at the bottom. You will ' + B('send 4') + " to rivals' jobs and " + B('keep 4') + '. The dice you keep are the only thing you can pay anyone with.'];
+      case 'talk': return ['Talk is free',
+        'Dot says: <q>Send me your 6 and my best cut is yours.</q> Vic says: <q>My 6 is coming your way. Pay me well.</q> Ask, offer and promise whatever you like. Promises are made out loud, and ' + B('none of them are binding') + '.'];
+      case 'land': return tut.landed < 2 ? ['Rivals send first', 'Players send in turn. Vic, Dot and Sal go before you this job. Watch your job.']
+        : ['Dice land on your job', "Four dice landed on your job: Vic's 6, Dot's 4, and Sal's 5 and 2. Each one sits in the slot for its kind. Now it's your turn to send."];
+      case 'send6': return ['Your turn to send', 'You told Dot you would. Click your ' + B('6') + ', then click ' + B("Dot's job") + '.'];
+      case 'send1': return ['Hold the missing kind', "Sal's job has no inside man, and only a 1 or 2 can fill that slot. Whoever holds the missing kind holds the job. Send Sal a " + B('1') + '.'];
+      case 'sendV': return ['Any split you like', 'Vic has no driver and no inside man yet. Send him your ' + B('3') + ' and your other ' + B('1') + '. You can split your four any way, even all four to one rival. Never to your own job.'];
+      case 'sendGo': return ['Your payroll', "That's four. You keep 5, 4, 4 and 2. Send your best dice out and you'd have nothing good left to pay with. Click " + B('Send them out') + '.'];
+      case 'crew': return ['Pick your crew', "Everyone now picks a crew from what they were sent: one of each kind, never two. You have two muscles, so take Vic's " + B('6') + ". Add Dot's " + B('4') + " and Sal's " + B('2') + ". Sal's 5 goes home and earns him nothing. Your crew scores its total: 12."];
+      case 'pay': {
+        const need = v.handOut || 3, have = Object.keys(paySel).length;
+        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. On job 1 you pay all three of your crew. Click a die from your hand, then a crew member. You can stack two on one person. The die you keep is your own cut. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
+      }
+    }
+    return ['', ''];
+  }
+
+  function renderCoach() {
+    const v = view, c = $('coach');
+    // advance on its own when you've done what a send step asked
+    let id = tutId();
+    if (TUT_MINE[id] && v.phase === 'send' && tut.plan[id].every((p) => staged.some((s) => s.dieId === p.id))) { tut.step++; tutEnter(); id = tutId(); }
+    if (id === 'reveal' || id === 'finish') { c.classList.add('hide'); tutModal(id); return; }
+    c.classList.remove('hide'); $('modal').classList.add('hide');
+    const [title, text] = tutText(id);
+    const n = TUT_STEPS.length, k = tut.step;
+    let btns = '';
+    if (id === 'table' || id === 'roll') btns = '<button class="btn red" data-t="next">Next</button>';
+    else if (id === 'talk') btns = '<button class="btn red" data-t="deal">Say “Deal, Dot.”</button>';
+    else if (id === 'land') btns = '<button class="btn red" data-t="next"' + (tut.landed < 2 ? ' disabled' : '') + '>Next</button>';
+    else if (id === 'sendGo') btns = '<button class="btn red" data-t="send">Send them out</button>';
+    else if (id === 'crew') btns = '<button class="btn red" data-t="crew"' + ((crewSel || []).length !== 3 ? ' disabled' : '') + '>Confirm crew</button>';
+    else if (id === 'pay') btns = '<button class="btn" data-t="pclear"' + (Object.keys(paySel).length ? '' : ' disabled') + '>Clear</button><button class="btn red" data-t="pay"' + (Object.keys(paySel).length !== v.handOut ? ' disabled' : '') + '>Hand them out</button>';
+    c.innerHTML = '<div class="c-in"><div class="c-txt"><div class="c-hd"><span class="c-eye">Tutorial · ' + (k + 1) + ' of ' + n + '</span><span class="pips">' + TUT_STEPS.map((_, j) => '<i class="' + (j <= k ? 'on' : '') + '"></i>').join('') + '</span></div><h3>' + title + '</h3><p>' + text + '</p></div><div class="c-act">' + btns + '<button class="c-exit" data-t="exit">Exit tutorial</button></div></div>';
+    document.getElementById('game').style.setProperty('--coach-h', (c.offsetHeight + 16) + 'px');
+    tutDecorate(id);
+  }
+
+  // highlight what the coach is asking for, then make sure it's on screen above the coach
+  function tutDecorate(id) {
+    const v = view, mySheet = document.querySelector('.sheet[data-seat="0"]');
+    const sheetOf = (s) => document.querySelector('.sheet[data-seat="' + s + '"]');
+    let focus = null, key = id;
+    document.querySelectorAll('.tut-look').forEach((el) => el.classList.remove('tut-look'));
+    if (id === 'table' || id === 'land') { mySheet.classList.add('tut-look'); focus = mySheet; }
+    else if (id === 'roll') { $('hand').classList.add('tut-look'); focus = $('hand'); }
+    if (TUT_MINE[id]) {
+      document.querySelectorAll('.sheet.target').forEach((s) => s.classList.remove('target'));
+      const left = tut.plan[id].filter((p) => !staged.some((s) => s.dieId === p.id));
+      const cur = left.find((p) => p.id === pickDie);
+      if (cur) { focus = sheetOf(cur.to); focus.classList.add('tut', 'target'); key += ':to' + cur.to; }
+      else { left.forEach((p) => { const d = document.querySelector('#hand .die[data-id="' + p.id + '"]'); if (d) d.classList.add('tut'); }); focus = $('hand'); key += ':hand'; }
+    }
+    if (id === 'sendGo') { mySheet.classList.add('tut-look'); }
+    if (id === 'crew' && v.phase === 'crew') {
+      tutWantCrew().filter((d) => !(crewSel || []).includes(d)).forEach((d) => { const el = mySheet.querySelector('.die[data-id="' + d + '"]'); if (el) el.classList.add('tut'); });
+      focus = mySheet;
+    }
+    if (id === 'pay' && v.phase === 'pay' && !v.payDone[0]) {
+      if (pickKept) v.crews[0].forEach((d) => { const el = mySheet.querySelector('.bands .die[data-id="' + d.id + '"]'); if (el) el.classList.add('tut'); });
+      else if (Object.keys(paySel).length < v.handOut) v.kept[0].filter((d) => !paySel[d.id]).forEach((d) => { const el = mySheet.querySelector('.kept .die[data-id="' + d.id + '"]'); if (el) el.classList.add('tut'); });
+      focus = mySheet;
+    }
+    if (focus && key !== tut.scrollKey) { tut.scrollKey = key; requestAnimationFrame(() => tutReveal(focus)); }
+  }
+  function tutReveal(el) {
+    const top = document.querySelector('#game .top').getBoundingClientRect().bottom + 10;
+    const bottom = window.innerHeight - $('coach').offsetHeight - 10;
+    const r = el.getBoundingClientRect();
+    if (r.top >= top && r.bottom <= bottom) return;
+    const room = bottom - top;
+    const dy = r.height <= room ? r.top - top - (room - r.height) / 2 : r.top - top;
+    window.scrollBy({ top: dy, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+
+  function tutModal(id) {
+    const v = view, m = $('modal'), s = v.summary, me = s.hosts[0];
+    const from = (i) => s.hosts[i].given[0] || 0, paid = (i) => me.given[i] || 0;
+    if (id === 'reveal') {
+      renderSummary();
+      const got = from(1) + from(2) + from(3), total = me.crewPts + me.own + got;
+      const amt = (i) => (paid(i) ? paid(i) : 'nothing');
+      const word = 'You paid Vic ' + amt(1) + ', Dot ' + amt(2) + ' and Sal ' + amt(3) + '. ' + (paid(1) ? '' : "Vic sent you his 6 and got nothing. He'll remember. ");
+      const note = '<div class="tnote"><span class="c-eye">Tutorial · ' + TUT_STEPS.length + ' of ' + TUT_STEPS.length + '</span><h3>The reveal</h3>' +
+        '<p>Everyone\'s cuts flip over at once. You scored ' + B(total) + ': your crew\'s ' + me.crewPts + ', your own cut of ' + me.own + ', and cuts of ' + from(1) + ' from Vic, ' + from(3) + ' from Sal and ' + from(2) + ' from Dot.</p>' +
+        '<p>' + word + 'Dot promised you her best cut for your 6. She handed you her ' + B(from(2)) + ' and kept her 6 for herself. That\'s allowed: promises don\'t bind. But the whole table saw it, and there are two more jobs. Next time, you choose who gets your dice.</p></div>';
+      m.querySelector('.sub').insertAdjacentHTML('afterend', note);
+      m.querySelector('.box > .row').outerHTML = '<div class="row" style="margin-top:14px"><button class="btn red" data-t="finish">Next</button><button class="btn ghost" data-t="exit">Exit tutorial</button></div>';
+      m.querySelector('.box').scrollTop = 0;
+      return;
+    }
+    const ranked = v.players.map((p, i) => ({ i, s: v.scores[i] })).sort((a, b) => b.s - a.s);
+    m.classList.remove('hide');
+    m.innerHTML = '<div class="box fin" role="dialog" aria-label="Tutorial complete"><h2>That\'s a whole job</h2><div class="sub">TUTORIAL COMPLETE</div>' +
+      '<p class="lead">A game is three jobs, played just like this one. You roll one fewer die each job, because the die you keep as your own cut takes the money and walks. Highest total after job 3 wins.</p>' +
+      '<table class="jobs"><thead><tr><th></th><th>Job 1</th><th>Job 2</th><th>Job 3</th></tr></thead><tbody>' +
+      '<tr><td>Roll</td><td>8</td><td>7</td><td>6</td></tr><tr><td>Send out</td><td>4</td><td>4</td><td>4</td></tr><tr><td>Keep</td><td>4</td><td>3</td><td>2</td></tr>' +
+      '<tr><td>Cuts you pay</td><td>3</td><td class="hot">2</td><td class="hot">2</td></tr><tr><td>Your own cut</td><td>1</td><td>1</td><td class="hot">none</td></tr>' +
+      '<tr><td>Your crew scores</td><td>its total</td><td>its total</td><td class="hot">double</td></tr></tbody></table>' +
+      '<div class="rules"><p><b>Jobs 2 and 3.</b> You pay only two cuts, so one of your crew gets nothing. You choose who.</p>' +
+      '<p><b>The last job.</b> Your crew scores double, and both kept dice go out to your crew. Nothing is left for you, and nobody can pay you back afterward. Everyone knows that.</p>' +
+      '<p><b>Frozen out.</b> If nobody sends you anything, run the job with your own people: one of each kind from your kept dice, scored as your crew (doubled on job 3). You pay no one. On jobs 1 and 2 you still score your best leftover kept die as your cut.</p>' +
+      '<p><b>After job 1.</b> ' + ranked.map((r) => esc(nm(r.i)) + (r.i === 0 && nm(r.i) !== 'You' ? ' (you)' : '') + ' ' + r.s).join(' · ') + '</p></div>' +
+      '<div class="row" style="margin-top:14px"><button class="btn red" data-t="play">Play against bots</button><button class="btn" data-t="again">Replay the tutorial</button><button class="btn ghost" data-t="menu">Back to the menu</button></div></div>';
+    m.querySelector('.box').scrollTop = 0;
+  }
+
+  function tutAction(t) {
+    if (!tut) return;
+    const id = tutId();
+    if (t === 'exit' || t === 'menu') { leaveTable(); return; }
+    if (t === 'again') { leaveTable(); startTutorial(); return; }
+    if (t === 'play') { leaveTable(); $('l-start').onclick(); return; }
+    if (t === 'next') { if (id === 'land' && tut.landed < 2) return; tutGo(TUT_STEPS[tut.step + 1]); return; }
+    if (t === 'deal' && id === 'talk') { session.act({ type: 'chat', text: 'Deal, Dot.' }); tutGo('land'); return; }
+    if (t === 'send' && id === 'sendGo') {
+      const r = session.act({ type: 'send', assign: staged.slice() }); if (!r.ok) { toast(r.error); return; }
+      staged = []; pickDie = null; tutBotsCrew(); tutGo('crew'); return;
+    }
+    if (t === 'crew' && id === 'crew') { const r = session.act({ type: 'crew', dieIds: crewSel }); if (!r.ok) { toast(r.error); return; } tutBotsPay(); tutGo('pay'); return; }
+    if (t === 'pclear' && id === 'pay') { paySel = {}; pickKept = null; render(); return; }
+    if (t === 'pay' && id === 'pay') { const r = session.act({ type: 'pay', assign: paySel }); if (!r.ok) { toast(r.error); return; } tutGo('reveal'); return; }
+    if (t === 'finish') { tutGo('finish'); return; }
+  }
+  $('coach').addEventListener('click', (e) => { const b = e.target.closest('[data-t]'); if (b && !b.disabled) tutAction(b.dataset.t); });
+  $('modal').addEventListener('click', (e) => { const b = e.target.closest('[data-t]'); if (b && tut) tutAction(b.dataset.t); });
+  $('tut-start').onclick = startTutorial;
+  if (/[?&#]tutorial\b/.test(location.search + location.hash)) startTutorial();
+
 })();
 </script>
 <script>

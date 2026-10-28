@@ -105,6 +105,8 @@
         leader: -1, log: [], chat: [], summary: null, history: [], seq: 0,
       };
       this._dieSeq = 0;
+      // optional fixed rolls, used by the tutorial: deal[job][seat] = array of die values. Anything missing is rolled.
+      this.deal = Array.isArray(opts.deal) ? opts.deal : null;
     }
 
     get S() { return this.state; }
@@ -121,7 +123,11 @@
       S.hands = []; S.kitchens = []; S.kept = []; S.crews = []; S.selfCrew = []; S.pays = []; S.crewDone = []; S.payDone = []; S.summary = null;
       for (let i = 0; i < S.N; i++) {
         const h = [];
-        for (let k = 0; k < job.roll; k++) h.push({ id: 'd' + (this._dieSeq++), v: d6(), owner: i });
+        const fixed = this.deal && this.deal[S.job] && this.deal[S.job][i];
+        for (let k = 0; k < job.roll; k++) {
+          const fv = fixed && fixed[k];
+          h.push({ id: 'd' + (this._dieSeq++), v: fv >= 1 && fv <= 6 ? fv | 0 : d6(), owner: i });
+        }
         h.sort((a, b) => b.v - a.v);
         S.hands.push(h); S.kitchens.push([]); S.kept.push([]); S.crews.push([]); S.pays.push({}); S.crewDone.push(false); S.payDone.push(false);
       }
