@@ -14,18 +14,24 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#8E9499}
 @page{size:11in 8.5in;margin:0}
-@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
 .sheet{width:11in;height:8.5in;margin:24px auto;position:relative;overflow:hidden;display:grid;grid-template-columns:3.3in 1fr;
   color:var(--ink);background:var(--paper);font-family:Spectral,Georgia,serif;font-size:10pt;line-height:1.38;
   box-shadow:0 10px 30px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-/* ---- left: the box on red sandstone, and one card of each species */
+/* ---- left: the box and one assembled skeleton on red sandstone, the turn, and the QR to the demo */
 .side{position:relative;overflow:hidden;border-right:5px solid var(--ink);background:#b2523a}
 .side canvas{position:absolute;inset:0;width:100%;height:100%}
-.box{position:absolute;left:.5in;top:.32in;width:2.12in;transform:rotate(-3deg);border:3px solid var(--ink);box-shadow:7px 7px 0 var(--ink)}
-.turn{position:absolute;left:.26in;right:.3in;top:3.42in;background:var(--label);border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:.34in .14in .12in}
-.fan{position:absolute;left:0;right:0;bottom:.28in;height:1.1in}
-.fan img{position:absolute;bottom:0;width:.64in;border-radius:4px;border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(36,24,14,.6);transform-origin:50% 120%}
+.box{position:absolute;left:.2in;top:.42in;width:1.3in;transform:rotate(-2.5deg);border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+.slab{position:absolute;right:.26in;top:.3in;width:1.46in;transform:rotate(2deg);filter:drop-shadow(4px 4px 0 var(--ink))}
+.slabcap{position:absolute;left:.2in;right:.24in;top:2.48in;text-align:center;color:#FBF3E2;text-shadow:0 1px 2px rgba(30,10,4,.7)}
+.slabcap b{display:block;font-family:Rye;font-weight:400;font-size:14pt;letter-spacing:.03em;line-height:1.1}
+.slabcap span{font-family:"IM Fell English";font-style:italic;font-size:11.5pt}
+.turn{position:absolute;left:.26in;right:.3in;top:3.2in;background:var(--label);border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:.34in .14in .12in}
+.qr{position:absolute;left:.26in;right:.3in;bottom:.42in;display:flex;align-items:center;gap:.16in;color:#FBF3E2;text-shadow:0 1px 2px rgba(30,10,4,.7)}
+.qr img{width:1in;height:1in;display:block;border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);flex:none}
+.qr b{display:block;font-family:Rye;font-weight:400;font-size:15pt;line-height:1.1}
+.qr span{display:block;font-size:10pt;line-height:1.3;margin-top:.03in}
+.qr .url{font-size:9.5pt;opacity:.9}
 .turn::after{content:"";position:absolute;inset:4px;border:1px solid rgba(36,24,14,.4);pointer-events:none}
 .turn .cap{position:absolute;top:-2.5px;left:-2.5px;background:var(--red);color:#FBF3E2;border:2.5px solid var(--ink);padding:3px 8px 2px;font-family:"IM Fell English SC";font-size:12.5pt;letter-spacing:.05em;line-height:1.05}
 
@@ -42,7 +48,12 @@ h1 em{font-style:normal;color:var(--red);display:block}
 
 .shot{margin:.16in 0 0;border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:#17120D}
 /* a close render of the three sites; the box is already on the left */
-.shot img{display:block;width:100%;aspect-ratio:2.85/1;object-fit:cover;object-position:50% 51%}
+.shot .frame{position:relative;aspect-ratio:2.7/1;overflow:hidden}
+.shot img{position:absolute;width:113%;left:-6.8%;top:50%;transform:translateY(-51%);display:block}
+.side-lbl{position:absolute;font-family:"IM Fell English SC";font-size:11pt;letter-spacing:.06em;line-height:1;color:#FBF3E2;padding:3px 8px 2px;border:2px solid #FBF3E2;border-radius:2px}
+.side-lbl.them{left:63.5%;top:13%;background:#7b2d2a}
+.side-lbl.you{left:3%;bottom:14%;background:#2d4a6b}
+.side-lbl i{font-style:normal;font-size:9pt;opacity:.85}
 .shot figcaption{background:var(--label);border-top:2px solid var(--ink);padding:.05in .1in;font-size:10pt;line-height:1.3;color:var(--soft)}
 .steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.1in}
 .steps li{display:grid;grid-template-columns:.28in 1fr;gap:.05in;align-items:start}
@@ -56,18 +67,17 @@ h1 em{font-style:normal;color:var(--red);display:block}
 .lab .cap{position:absolute;top:-2.5px;left:-2.5px;background:var(--red);color:#FBF3E2;border:2.5px solid var(--ink);padding:2px 7px 1px;font-family:"IM Fell English SC";font-size:11.5pt;letter-spacing:.05em;line-height:1.05}
 .lab p{margin:.04in 0 0;font-size:11pt;line-height:1.3}
 
-.foot{margin-top:auto;display:grid;grid-template-columns:1fr auto;gap:.2in;align-items:end;padding-top:.12in;border-top:3px double var(--ink)}
+.foot{margin-top:auto;display:grid;grid-template-columns:1fr auto;gap:.1in .4in;align-items:end;padding-top:.12in;border-top:3px double var(--ink)}
 .facts{display:flex;gap:.34in}
 .facts b{display:block;font-family:Rye;font-weight:400;font-size:20pt;line-height:1.05}
 .facts span{font-size:10pt;color:var(--soft)}
 .ready{margin:.07in 0 0;font-size:10.5pt;line-height:1.35;color:var(--soft)}
 .ready b{color:var(--ink)}
-.contact{margin:.06in 0 0;font-size:10.5pt}
+.contact{margin:0;font-size:10.5pt;line-height:1.35}
+
 .contact b{font-family:"IM Fell English SC";font-weight:400;font-size:12pt;letter-spacing:.04em}
-.qr{display:flex;flex-direction:column;align-items:center;gap:.03in}
-.qr img{width:.95in;height:.95in;display:block;border:2px solid var(--ink)}
-.qr span{font-family:"IM Fell English SC";font-size:11pt;letter-spacing:.05em;color:var(--red)}
-.qr u{text-decoration:none;font-size:9pt;color:var(--soft)}
+/* print overrides last, so they win over the on-screen margin and shadow above */
+@media print{html,body{background:#fff;height:8.5in;overflow:hidden}.sheet{box-shadow:none;margin:0}}
 </style>
 </head>
 <body>
@@ -75,6 +85,8 @@ h1 em{font-style:normal;color:var(--red);display:block}
   <aside class="side">
     <canvas id="rock" width="680" height="1700"></canvas>
     <img class="box" src="/games/diggers/img/src/tex/box-top.jpg" alt="">
+    <img class="slab" src="/games/diggers/img/slab-bronto.webp" alt="">
+    <p class="slabcap"><b>Nine cards, one skeleton</b><span>Five species to dig up</span></p>
     <div class="turn"><span class="cap">On your turn, do one</span>
       <ol class="steps">
         <li><span class="n">1</span><div><b>Excavate</b><p>Play a run or set of cards that sit side by side in your hand. Beat the find on a site and it's yours.</p></div></li>
@@ -82,7 +94,7 @@ h1 em{font-style:normal;color:var(--red);display:block}
         <li><span class="n">3</span><div><b>Go out</b><p>Empty your hand to end the season. Sites score 1, then 2, then 4.</p></div></li>
       </ol>
     </div>
-    <div class="fan" id="fan"></div>
+    <div class="qr"><img src="/games/diggers/img/qr-diggers.svg" alt="QR code linking to darrendon.github.io/games/diggers"><div><b>Play it now</b><span>Browser demo with a tutorial</span><span class="url">darrendon.github.io/<br>games/diggers</span></div></div>
   </aside>
 
   <main class="main">
@@ -90,12 +102,12 @@ h1 em{font-style:normal;color:var(--red);display:block}
     <h1>Outdig the camp next door. <em>Poach the bones you need.</em></h1>
     <p class="pitch">Race to empty your hand, but when anyone goes out, only the dig sites you hold score. Take a site with a better run or set, played from a hand you can never rearrange. <i>For fans of <b>Scout</b> and <b>Schotten Totten</b>.</i></p>
 
-    <figure class="shot"><img src="/games/diggers/img/render-lanes.webp" alt=""><figcaption>Three dig sites, each find on its owner's side of the board.</figcaption></figure>
+    <figure class="shot"><div class="frame"><img src="/games/diggers/img/render-lanes.webp" alt=""><span class="side-lbl them">↑ Their side</span><span class="side-lbl you">↓ Your side</span></div><figcaption>A two-player season: three dig sites between the camps. They hold two, you hold one.</figcaption></figure>
 
     <div class="new">
       <div class="lab"><span class="cap">Lanes for up to four</span><p>A site between every pair of neighbors, so it plays as a duel or a four-way ring.</p></div>
       <div class="lab"><span class="cap">A race with teeth</span><p>Going out ends the season for everyone, locking in the sites you hold.</p></div>
-      <div class="lab"><span class="cap">Nothing is safe</span><p>Any find you lay can be stripped for parts, and the rival hands you junk back.</p></div>
+      <div class="lab"><span class="cap">Every poach is a trade</span><p>Take their bone, then hand them one of yours. Pick the one that hurts.</p></div>
     </div>
 
     <div class="foot">
@@ -105,10 +117,9 @@ h1 em{font-style:normal;color:var(--red);display:block}
           <div><b>15–20</b><span>minutes, three seasons</span></div>
           <div><b>45</b><span>cards, 4 site boards</span></div>
         </div>
-        <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser demo with a tutorial.</p>
-        <p class="contact"><b>Darren Don</b> &nbsp;What's Good Board Games<br>darren@whatsgoodboardgames.com</p>
+        <p class="ready"><b>Ready now:</b> rules, print-and-play, and a browser demo.</p>
       </div>
-      <div class="qr"><img src="/games/diggers/img/qr-diggers.svg" alt="QR code linking to darrendon.github.io/games/diggers"><span>Play it now</span><u>darrendon.github.io/games/diggers</u></div>
+      <p class="contact"><b>Darren Don</b><br>What's Good Board Games<br>darren@whatsgoodboardgames.com</p>
     </div>
   </main>
 </div>
@@ -130,12 +141,6 @@ h1 em{font-style:normal;color:var(--red);display:block}
   const v = g.createRadialGradient(c.width / 2, c.height * .45, c.height * .2, c.width / 2, c.height * .45, c.height * .75);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(30,10,4,.35)'); g.fillStyle = v; g.fillRect(0, 0, c.width, c.height);
 })();
-// one card of each species, fanned under the turn
-[1, 11, 23, 32, 45].forEach((n, i) => {
-  const img = new Image(); img.src = `/games/diggers/img/src/tex/face-${n}.jpg`; img.alt = '';
-  img.style.left = `calc(${50 + (i - 2) * 11.5}% - .32in)`; img.style.transform = `rotate(${(i - 2) * 6}deg)`; img.style.zIndex = 10 - Math.abs(i - 2);
-  document.getElementById('fan').appendChild(img);
-});
 Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((res) => i.onload = i.onerror = res))).then(() => document.fonts.ready).then(() => window.__done = true);
 </script>
 </body>
