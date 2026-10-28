@@ -618,7 +618,8 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 
   function sheetHTML(i, mine) {
     const v = view, me = v.me;
-    const k = v.kitchens[i], crew = v.crews[i], pays = v.pays[i];
+    const self = !!(v.selfCrew && v.selfCrew[i]);
+    const k = self ? v.crews[i] : v.kitchens[i], crew = v.crews[i], pays = v.pays[i];
     const stagedHere = staged.filter((s) => s.to === i).length;
     let st = '';
     if (v.phase === 'send' && v.sender === i) st = 'SENDING';
@@ -631,7 +632,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     for (let b = 0; b < 3; b++) {
       const dice = k.filter((d) => T.band(d.v) === b);
       const crewHere = crew.find((d) => T.band(d.v) === b);
-      const showCrew = v.phase === 'pay' || v.phase === 'summary' || v.phase === 'over' || (v.phase === 'crew' && v.crewDone[i] && !mine);
+      const showCrew = self || v.phase === 'pay' || v.phase === 'summary' || v.phase === 'over' || (v.phase === 'crew' && v.crewDone[i] && !mine);
       out += '<div class="bandcol"><div class="bl">' + (mine ? BANDN[b] : BANDS[b]) + '</div><div class="bn">' + BANDR[b] + '</div><div class="slot' + (showCrew && crewHere ? ' crew' : '') + '">';
       // dice in this band
       const list = dice.slice().sort((a, b2) => b2.v - a.v);
@@ -655,7 +656,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     } else {
       out += '<div class="kept"><span class="lbl">' + (mine ? 'YOUR HAND' : 'THEIR HAND') + '</span>';
       const assignedIds = (v.phase === 'pay' && mine) ? paySel : ((v.phase === 'summary' || v.phase === 'over' || (v.phase === 'pay' && v.payDone[i] && pays)) ? (pays || {}) : {});
-      for (const d of (v.kept[i] || [])) {
+      for (const d of (v.kept[i] || []).filter((x) => !self || !crew.some((c) => c.id === x.id))) {
         const given = assignedIds[d.id];
         let cls = 'sm';
         if (mine && v.phase === 'pay' && !v.payDone[me]) cls += ' pick' + (pickKept === d.id ? ' sel' : '') + (given ? ' staged' : '');
@@ -698,7 +699,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       } else h = '<span class="hint">Waiting for <b>' + esc(nm(v.sender)) + '</b> to send. Talk, promise, bargain.</span>';
     } else if (v.phase === 'crew') {
       if (v.crewDone[me]) h = '<span class="hint">Crew set. Waiting for the others.</span>';
-      else if (!v.kitchens[me].length) h = '<span class="hint">Nobody showed up.</span>';
+      else if (!v.kitchens[me].length) h = '<span class="hint">Nobody showed up — your own people run this job.</span>';
       else {
         if (!crewSel) crewSel = T.bestCrew(v.kitchens[me]).map((d) => d.id);
         h = '<span class="hint">One of each kind. Click a die to swap it in. You score the total' + (v.job === 2 ? ', <b>doubled</b>' : '') + '.</span><button class="btn red" id="a-crew">Confirm crew</button>';
@@ -787,8 +788,9 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     h += '<div class="sumgrid">';
     for (const hst of s.hosts) {
       h += '<div class="sumh"><div class="hd"><span class="dot p' + hst.seat + '" style="width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)"></span><span class="nm">' + esc(nm(hst.seat)) + '</span><span class="pts">+' + (hst.crewPts + hst.own) + '</span></div>';
-      if (hst.noCrew) h += '<div class="line muted">Nobody showed up. Kept everything.</div>';
-      for (const c of hst.crew) h += '<div class="line">' + dieHTML({ id: 'x', v: c.v, owner: c.owner }, 'sm') + '<span class="who">' + esc(nm(c.owner)) + '</span><span class="amt' + (c.paid ? '' : ' zero') + '">' + (c.paid ? '+' + c.paid : 'NOTHING') + '</span></div>';
+      if (hst.selfCrew) h += '<div class="line muted">Nobody showed up — ran it with their own people.</div>';
+      else if (hst.noCrew) h += '<div class="line muted">Nobody showed up.</div>';
+      for (const c of hst.crew) h += '<div class="line">' + dieHTML({ id: 'x', v: c.v, owner: c.owner }, 'sm') + '<span class="who">' + esc(nm(c.owner)) + '</span><span class="amt' + (c.paid || c.owner === hst.seat ? '' : ' zero') + '">' + (c.owner === hst.seat ? 'OWN' : c.paid ? '+' + c.paid : 'NOTHING') + '</span></div>';
       h += '<div class="own">Crew ' + hst.crewPts + (s.last ? ' (doubled)' : '') + ' · own cut ' + hst.own + '</div></div>';
     }
     h += '</div><div class="row" style="margin-top:14px">' + (v.phase === 'summary' && session.isHost() ? '<button class="btn red" id="m-next">Next job</button>' : '') + (v.phase === 'over' ? '<button class="btn red" id="m-again">Back to the lobby</button>' : '') + '<button class="btn" id="m-close">Close</button></div></div>';

@@ -97,7 +97,7 @@
         N,
         players: players.map((p, i) => ({ name: p.name, bot: !!p.bot, persona: p.bot ? (p.persona || PERSONAS[(i + Math.floor(Math.random() * 5)) % PERSONAS.length]) : null })),
         job: 0, phase: 'lobby', scores: new Array(N).fill(0),
-        hands: [], kitchens: [], kept: [], crews: [], pays: [], crewDone: [], payDone: [],
+        hands: [], kitchens: [], kept: [], crews: [], selfCrew: [], pays: [], crewDone: [], payDone: [],
         startSeat: opts.startSeat != null ? opts.startSeat : Math.floor(Math.random() * N),
         turnOrder: [], turnIdx: 0, turnStart: 0, timer: opts.timer || 0,
         trust: Array.from({ length: N }, () => new Array(N).fill(0)),
@@ -118,7 +118,7 @@
 
     beginJob() {
       const S = this.S, job = JOBS[S.job];
-      S.hands = []; S.kitchens = []; S.kept = []; S.crews = []; S.pays = []; S.crewDone = []; S.payDone = []; S.summary = null;
+      S.hands = []; S.kitchens = []; S.kept = []; S.crews = []; S.selfCrew = []; S.pays = []; S.crewDone = []; S.payDone = []; S.summary = null;
       for (let i = 0; i < S.N; i++) {
         const h = [];
         for (let k = 0; k < job.roll; k++) h.push({ id: 'd' + (this._dieSeq++), v: d6(), owner: i });
@@ -185,7 +185,9 @@
       if (S.turnIdx >= S.N) {
         for (let i = 0; i < S.N; i++) S.kept[i] = S.hands[i].slice();
         S.phase = 'crew';
-        for (let i = 0; i < S.N; i++) if (!S.kitchens[i].length) { S.crewDone[i] = true; this.log('Nobody showed up for ' + S.players[i].name + '.'); }
+        // frozen out: nobody sent you anything, so you run the job with your own people —
+        // one of each kind from your kept dice, by the usual crew rules. You pay no one and keep no extra cut.
+        for (let i = 0; i < S.N; i++) if (!S.kitchens[i].length) { S.crews[i] = bestCrew(S.kept[i]); S.selfCrew[i] = true; S.crewDone[i] = true; this.log('Nobody showed up for ' + S.players[i].name + ' — they run it with their own people.'); }
         this.log('Everyone picks a crew.');
       }
       S.turnStart = Date.now();
@@ -212,7 +214,7 @@
       S.crewDone[seat] = true;
       if (S.crewDone.every(Boolean)) {
         S.phase = 'pay';
-        for (let i = 0; i < S.N; i++) if (!S.crews[i].length) S.payDone[i] = true;
+        for (let i = 0; i < S.N; i++) if (!S.crews[i].length || S.selfCrew[i]) S.payDone[i] = true;
         this.log('Everyone hands out the cuts.');
       }
       S.turnStart = Date.now();
@@ -220,7 +222,7 @@
       return { ok: true };
     }
 
-    handOut(seat) { const S = this.S; return S.crews[seat].length ? Math.min(JOBS[S.job].pay, S.kept[seat].length) : 0; }
+    handOut(seat) { const S = this.S; return S.crews[seat].length && !S.selfCrew[seat] ? Math.min(JOBS[S.job].pay, S.kept[seat].length) : 0; }
 
     doPay(seat, assign) {
       const S = this.S;
@@ -256,13 +258,15 @@
           paidThis[i][cd.owner] += kd.v;
           paidOut += kd.v;
         }
-        const own = sum(kept.filter((d) => !(d.id in pays)).map((d) => d.v));
+        const self = !!S.selfCrew[i];
+        const own = self ? 0 : sum(kept.filter((d) => !(d.id in pays)).map((d) => d.v));
         S.scores[i] += crewPts + own;
         for (const o of Object.keys(given)) S.scores[o] += given[o];
-        const stiffed = crew.filter((d) => !(d.owner in given)).map((d) => d.owner);
-        summary.push({ seat: i, crew: crew.map((d) => ({ v: d.v, owner: d.owner, paid: given[d.owner] || 0 })), crewPts, own, given, stiffed, paidOut, noCrew: !crew.length });
+        const stiffed = crew.filter((d) => d.owner !== i && !(d.owner in given)).map((d) => d.owner);
+        summary.push({ seat: i, crew: crew.map((d) => ({ v: d.v, owner: d.owner, paid: given[d.owner] || 0 })), crewPts, own, given, stiffed, paidOut, noCrew: !crew.length, selfCrew: self });
         // reputation: compare what each sender got to what they might have
         for (const d of crew) {
+          if (d.owner === i) continue;
           const got = given[d.owner] || 0;
           const could = kept.length ? Math.max(...kept.map((x) => x.v)) : 0;
           const delta = got >= could ? 1 : got > 0 ? 0.3 : -1;
@@ -317,7 +321,7 @@
       return {
         me: seat, N: S.N, players: S.players.map((p) => ({ name: p.name, bot: p.bot })),
         job: S.job, jobs: JOBS, phase: S.phase, scores: S.scores, hands: S.hands, kitchens: S.kitchens,
-        kept: S.kept, crews: S.crews, pays, crewDone: S.crewDone, payDone: S.payDone,
+        kept: S.kept, crews: S.crews, selfCrew: S.selfCrew, pays, crewDone: S.crewDone, payDone: S.payDone,
         turnOrder: S.turnOrder, turnIdx: S.turnIdx, sender: this.currentSender(), turnStart: S.turnStart, timer: S.timer,
         leader: S.leader, log: S.log.slice(-40), chat: S.chat.slice(-60), summary: S.summary, history: S.history, seq: S.seq,
         handOut: S.phase === 'pay' ? this.handOut(seat) : 0,
