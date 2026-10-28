@@ -1,6 +1,6 @@
 # darrendon.github.io
 
-Portfolio site for Darren Don, board game designer at What's Good Board Games. Published with GitHub Pages.
+Portfolio site for Darren Don, a board game designer in Kansas City. Published with GitHub Pages.
 
 ## Pages
 - `/` — home: games, how I work with publishers, about

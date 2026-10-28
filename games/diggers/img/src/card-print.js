@@ -64,7 +64,7 @@ const PRINT = (() => {
     c.fillStyle = ink; c.textAlign = "center";
     c.font = "118px Rye"; c.letterSpacing = "6px"; c.fillText("DIGGERS", W / 2 + 3, TRIM + 236);
     c.font = "italic 34px 'IM Fell English'"; c.letterSpacing = "2px"; c.fillText("Rival excavations in three field seasons", W / 2, TRIM + 290);
-    c.font = "30px 'IM Fell English SC'"; c.letterSpacing = "6px"; c.fillText("What’s Good Board Games", W / 2 + 4, H - TRIM - 120);
+    c.font = "30px 'IM Fell English SC'"; c.letterSpacing = "6px"; c.fillText("The great bone rush of 1877", W / 2 + 4, H - TRIM - 120);
     return cv;
   }
   function overview() {
