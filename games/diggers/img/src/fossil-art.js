@@ -6,7 +6,6 @@ const SPECIES = [
   { key: "tri", name: "Triceratops", rock: "orange ironstone", suit: "#e8862a", base: "#c27a35", bands: ["#cf8740", "#b56e2e", "#d9924a", "#c47d38", "#ba7332"], seed: 23, sym: "M2.5 16.5C2.5 9.5 6.8 5 12 5C17.2 5 21.5 9.5 21.5 16.5L17.6 16.5L15 22L9 22L6.4 16.5ZM7.2 12.6L4.2 2.6L10 11ZM16.8 12.6L19.8 2.6L14 11ZM10.6 17.4L12 13.6L13.4 17.4Z" },
   { key: "stego", name: "Stegosaurus", rock: "green mudstone", suit: "#3fa155", base: "#5f9460", bands: ["#6aa16a", "#558a56", "#77ad74", "#5c935d", "#669b64"], seed: 37, sym: "M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" },
   { key: "bronto", name: "Brontosaurus", rock: "purple shale", suit: "#8a55c4", base: "#8a6aa8", bands: ["#9677b4", "#7e5f9c", "#a283bf", "#8768a5", "#9172ae"], seed: 41, sym: "M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" },
-  { key: "ankylo", name: "Ankylosaurus", rock: "blue slate", suit: "#3a7fc4", base: "#5a84ad", bands: ["#6690b9", "#4f79a2", "#729cc4", "#5a86af", "#6189b2"], seed: 53, sym: "M1.5 12.6L13 11.2L13 13.4L1.5 14.4ZM12 12.2C12 9 14 7 16.6 7.4C18.4 7.6 19.2 8.8 19.4 9.6C21.4 9.8 22.6 11 22.6 12.4C22.6 13.8 21.4 15 19.4 15.2C19.2 16 18.4 17.2 16.6 17.4C14 17.8 12 15.6 12 12.2Z" },
   { key: "ptera", name: "Pteranodon", rock: "golden limestone", suit: "#e0b52d", base: "#c4a14a", bands: ["#d0ad55", "#b8953f", "#dab863", "#c6a24b", "#bd9b45"], seed: 67, sym: "M0.8 15.4L11.2 11.2L13.4 9.8L21.6 2.2C22.4 1.6 23.4 2.4 22.8 3.2L17.2 10.4C18.6 11.8 18.6 14.6 16.8 16C15.2 17.2 12.8 17.2 10.8 16.8L0.8 15.4ZM14.6 12.2A1.3 1.3 0 1 0 14.61 12.2Z" },
 ];
 const BONE_NAMES = ["Jaws", "Skull", "Tail", "Shoulder", "Ribs", "Hips", "Forefoot", "Hind leg", "Hind foot"];
@@ -15,7 +14,6 @@ const BONE_OVERRIDES = {
   tri: { 1: "Horns & beak", 2: "Frill" },
   stego: { 1: "Skull", 2: "Neck & plates", 3: "Thagomizer" },
   bronto: { 1: "Skull", 2: "Long neck", 3: "Whip tail" },
-  ankylo: { 1: "Skull", 2: "Horns", 3: "Tail club" },
   ptera: { 1: "Wing", 2: "Skull", 3: "Wing" },
 };
 function boneName(sp, v) { const o = BONE_OVERRIDES[SPECIES[sp].key]; return (o && o[v]) || BONE_NAMES[v - 1]; }
@@ -162,13 +160,6 @@ const FossilArt = (() => {
       P.detail(c => { c.fillStyle = BONE; for (let x = 10; x < 30; x += 3.2) c.fillRect(x, 26.5, 1.2, 3.2); });
       P.holeEll(33, 15, 2.8, 2.6); P.holeEll(25, 11, 2.4, 1.6); P.holeEll(17, 20, 4.2, 2.4);
     },
-    ankylo(P) {
-      P.poly([[14, 108], [40, 116], [72, 116], [84, 112], [80, 121], [50, 125], [22, 121]]);
-      P.poly([[88, 82], [97, 79], [114, 66]], false); P.poly([[92, 108], [100, 103], [114, 118]], false); P.poly([[66, 112], [78, 110], [76, 126]], false);
-      P.poly([[6, 98], [12, 88], [28, 81], [52, 77], [74, 77], [90, 81], [100, 88], [104, 97], [99, 106], [85, 112], [60, 114], [34, 113], [15, 108]]);
-      P.detail(c => { c.strokeStyle = "rgba(110,90,60,.6)"; c.lineWidth = 0.7; for (const [x, y, r] of [[34, 87, 4.5], [48, 84, 5], [62, 84, 5], [76, 86, 4.5], [88, 92, 4], [42, 96, 4], [56, 102, 4], [82, 102, 3.6]]) { c.beginPath(); c.arc(x, y, r, 0, 6.283); c.stroke(); } });
-      P.holeEll(68, 94, 3.8, 3.4); P.holeEll(16, 95, 3, 2.4);
-    },
     ptera(P) {
       P.poly([[4, 47], [40, 49], [70, 49], [74, 52], [42, 55], [12, 51]]);
       P.poly([[60, 32], [72, 25], [110, 3], [114, 8], [82, 34]], true, { shadeW: 2.4 });
@@ -277,36 +268,6 @@ const FossilArt = (() => {
         { pts: [[110, 4], [90, 78], [94, 132], [80, 154]], w: [20, 16, 10.5], toes: [80, 154, [LEFT - 0.3, LEFT - 0.7], 11, 6] },
       ],
     }),
-    // Ankylosaurus: low and wide, short legs, armour over everything, a heavy tail club
-    ankylo: P => {
-      const neck = [[-30, -64], [-26, -40], [-14, -16], [0, 0]], back = [[0, 0], [40, -8], [100, -10], [150, 0]];
-      const tail = [[150, 0], [184, -6], [208, -30], [218, -62], [212, -96], [192, -122]];
-      return standard(P, {
-        key: "ankylo", skull: { at: [-30, -66], anchor: [98, 100], k: 0.62, rot: 1.15 },
-        neck, neckO: { step: 9, size: () => 16, spine: () => 3 },
-        back, backO: { step: 9, size: () => 17, spine: () => 6 },
-        tail, tailO: { step: 9, size: t => 16 - 6 * t, spine: t => 5 * (1 - t), chevron: t => 8 * (1 - t) },
-        rib: [10, 140, 12], ribLen: ribLen(40, 34), ribLean: 0.36, ribW: 4.8,
-        pelvis: { ilium: [146, -4, 48, 17, 0], pubis: [[136, 8], [122, 38]], pw: 9, ischium: [[160, 8], [180, 38]], iw: 8 },
-        fore: { pts: [[12, -4], [-2, 26], [-12, 62], [-6, 92], [-14, 106]], w: [11, 16, 13.5, 9.5], toes: [-14, 106, FD, 11, 6] },
-        hind: { pts: [[150, 6], [134, 60], [150, 98], [168, 114]], w: [21, 16.5, 11], toes: [168, 114, FR, 15, 6.5] },
-        far: [
-          { pts: [[24, 0], [20, 40], [28, 74], [20, 90]], w: [14, 12, 8.5], toes: [20, 90, FL, 10, 5.5] },
-          { pts: [[138, 6], [110, 52], [114, 90], [96, 106]], w: [18, 14, 9.5], toes: [96, 106, FL, 13, 6] },
-        ],
-        front: bp => {
-          const nk = resample(spline(neck, 12), 3), tl = resample(spline(tail, 12), 3);
-          return [() => {
-            along(bp, 5, (p, nx, ny, a) => P.ell(p[0] + nx * 15, p[1] + ny * 15, 8.5, 6, a, { shadeW: 3.6 }));
-            along(bp, 9, (p, nx, ny) => P.poly([[p[0] + nx * 19 - 5, p[1] + ny * 19], [p[0] + nx * 19 + 5, p[1] + ny * 19], [p[0] + nx * 34 + 8, p[1] + ny * 34]], false));
-            along(tl, 6, (p, nx, ny, a) => P.ell(p[0] + nx * 12, p[1] + ny * 12, 7, 5, a, { shadeW: 3.2 }), 2);
-            along(nk, 4, (p, nx, ny) => P.line([[p[0] - nx * 13, p[1] - ny * 13], [p[0] + nx * 14, p[1] + ny * 14]], 8), 2);
-            P.ell(172, -132, 22, 14, 0.5); P.ell(186, -150, 20, 13, 0.5); P.ell(180, -140, 15, 15);
-          }];
-        },
-      });
-    },
-    // Pteranodon: splayed as found, wings spread, the long wing finger sweeping up to each corner
     ptera: P => {
       const wing = sx => {
         const X = x => x * sx;
@@ -337,7 +298,7 @@ const FossilArt = (() => {
     },
   };
   // fit each animal to the slab: rotate it, then scale and centre it inside the 300 x 420 world
-  const FIT_ROT = { rex: 0, tri: 0, stego: 0, bronto: 0.05, ankylo: 0, ptera: 0 };
+  const FIT_ROT = { rex: 0, tri: 0, stego: 0, bronto: 0.05, ptera: 0 };
   const fitCache = {};
   function fit(key) {
     if (fitCache[key]) return fitCache[key];
@@ -479,7 +440,7 @@ const FossilArt = (() => {
     return cv;
   }
 
-  // in-page faces: 54 small jpegs keyed by card id (species * 10 + value)
+  // in-page faces: 45 small jpegs keyed by card id (species * 10 + value)
   let cache = null;
   function build(scale = 2) {
     if (cache) return cache;

@@ -28,11 +28,11 @@ main{display:grid;grid-template-columns:1.18fr 1fr;gap:.28in;padding:.16in .5in 
 .art{display:flex;flex-direction:column;gap:.11in;min-height:0}
 .render{border:1.5px solid var(--ink);background:#17120D;overflow:hidden;flex:1;min-height:0}
 .render img{width:100%;height:100%;object-fit:cover;display:block}
-.species{display:grid;grid-template-columns:repeat(6,1fr);gap:.06in}
+.species{display:grid;grid-template-columns:repeat(5,1fr);gap:.06in}
 .sp{border:1.5px solid var(--ink);background:#fff;display:flex;flex-direction:column;align-items:center;padding:.05in .02in .04in;gap:1px}
 .sp svg{width:.3in;height:.3in;stroke:var(--ink);stroke-width:1}
 .sp b{font-family:"IM Fell English";font-weight:400;font-size:8.3pt;line-height:1.1;text-align:center}
-.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:.06in}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:.06in}
 .cards img{width:100%;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.35);display:block}
 .copy{display:flex;flex-direction:column;gap:.09in;min-height:0}
 h2{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:.06em;margin:0 0 3px;color:var(--red)}
@@ -80,7 +80,7 @@ footer .u{color:var(--red);font-weight:600}
           <li><b>A hand you can't sort.</b> Only cards that sit side by side can be played together, so every turn is a small puzzle. Poaching lets you slot exactly the bone you need into the gap.</li>
           <li><b>Every site is shared.</b> Every find you lay is a target. The specimen you send back for a poached bone can be a gift or dead weight.</li>
           <li><b>A built-in arc.</b> Sites are worth 1, then 2, then 4 prestige, so the last season outweighs the first two. In simulated games the final season overturns the leader about a third of the time.</li>
-          <li><b>Six skeletons.</b> Each species' nine cards assemble into a fossil slab, and a suited run, all from one skeleton, outranks any set its size.</li>
+          <li><b>Five skeletons.</b> Each species' nine cards assemble into a fossil slab, and a suited run, all from one skeleton, outranks any set its size.</li>
         </ul>
       </div>
       <div class="seasons">
@@ -94,7 +94,7 @@ footer .u{color:var(--red);font-weight:600}
           <dt>Players</dt><dd>2–4 (scales by deck and sites, no rule changes)</dd>
           <dt>Genre</dt><dd>Climbing card game, area control</dd>
           <dt>Length</dt><dd>15–20 minutes, 3 seasons</dd>
-          <dt>Components</dt><dd>54 fossil cards, 4 field guides, 4 named dig-site boards</dd>
+          <dt>Components</dt><dd>45 fossil cards, 4 field guides, 4 named dig-site boards</dd>
           <dt>Ready</dt><dd>Rules, print-and-play, browser build with tutorial, simulations</dd>
         </dl>
       </div>
@@ -108,7 +108,7 @@ footer .u{color:var(--red);font-weight:600}
 <script src="/games/diggers/img/src/fossil-art.js"></script>
 <script>
 document.getElementById('species').innerHTML = SPECIES.map(sp => `<div class="sp"><svg viewBox="0 0 24 24"><path d="${sp.sym}" fill="${sp.suit}" fill-rule="evenodd"/></svg><b>${sp.name}</b></div>`).join('');
-document.getElementById('cards').innerHTML = [2, 14, 23, 35, 46, 59].map(id => `<img src="/games/diggers/img/src/tex/face-${id}.jpg" alt="">`).join('');
+document.getElementById('cards').innerHTML = [2, 14, 23, 35, 45].map(id => `<img src="/games/diggers/img/src/tex/face-${id}.jpg" alt="">`).join('');
 Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
 </script>
 </body>

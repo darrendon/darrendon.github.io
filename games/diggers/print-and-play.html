@@ -63,16 +63,16 @@ td.n{font-family:Rye}
       <p>You are rival paleontologists working the same badlands. Between every pair of neighboring camps lies a <b>dig site</b>, and a site belongs to whoever brought up the finest find there last. Over three field seasons, earn the most <b>prestige</b> from the sites you hold.</p>
       <h2>Components</h2>
       <ul>
-        <li><b>54 fossil cards:</b> six species (five dinosaurs and a pterosaur), each numbered 1 to 9. A species' nine cards lay out in three rows of three as one fossil slab.</li>
+        <li><b>45 fossil cards:</b> five species (four dinosaurs and a pterosaur), each numbered 1 to 9. A species' nine cards lay out in three rows of three as one fossil slab.</li>
         <li><b>4 field guides</b> (reference cards)</li>
         <li><b>4 dig-site boards:</b> Como Bluff, Garden Park, Morrison and Smoky Hill</li>
       </ul>
       <h2>Setup</h2>
       <table><tr><th>Diggers</th><th>Species</th><th>Hand</th><th>Sites</th></tr>
-        <tr><td class="n">2</td><td>any 4 (36 cards)</td><td>12</td><td>3, all between you</td></tr>
-        <tr><td class="n">3</td><td>any 5 (45 cards)</td><td>11</td><td>1 between each pair of neighbors</td></tr>
-        <tr><td class="n">4</td><td>all 6 (54 cards)</td><td>10</td><td>1 between each pair of neighbors</td></tr></table>
-      <p>Return any unused species to the box, lay out the site boards, shuffle, and deal each digger a hand.</p>
+        <tr><td class="n">2</td><td>any 3 (27 cards)</td><td>12</td><td>3, all between you</td></tr>
+        <tr><td class="n">3</td><td>any 4 (36 cards)</td><td>11</td><td>1 between each pair of neighbors</td></tr>
+        <tr><td class="n">4</td><td>all 5 (45 cards)</td><td>10</td><td>1 between each pair of neighbors</td></tr></table>
+      <p>Use one more species than there are diggers. Return any unused species to the box, lay out the site boards, shuffle, and deal each digger a hand.</p>
       <div class="sites"><div><b>Two diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="10" r="6"/><circle cx="60" cy="60" r="6"/><rect x="18" y="33" width="22" height="4"/><rect x="49" y="33" width="22" height="4"/><rect x="80" y="33" width="22" height="4"/></svg></div>
         <div><b>Three diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="8" r="6"/><circle cx="20" cy="60" r="6"/><circle cx="100" cy="60" r="6"/><rect x="29" y="31" width="22" height="4" transform="rotate(-52 40 33)"/><rect x="69" y="31" width="22" height="4" transform="rotate(52 80 33)"/><rect x="49" y="58" width="22" height="4"/></svg></div>
         <div><b>Four diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="7" r="6"/><circle cx="60" cy="63" r="6"/><circle cx="18" cy="35" r="6"/><circle cx="102" cy="35" r="6"/><rect x="28" y="19" width="20" height="4" transform="rotate(-34 38 21)"/><rect x="72" y="19" width="20" height="4" transform="rotate(34 82 21)"/><rect x="28" y="47" width="20" height="4" transform="rotate(34 38 49)"/><rect x="72" y="47" width="20" height="4" transform="rotate(-34 82 49)"/></svg></div></div>
@@ -142,7 +142,7 @@ td.n{font-family:Rye}
 
 <script src="/games/diggers/img/src/fossil-art.js"></script>
 <script>
-// six slab pages, a page of backs, then the field guides and markers
+// five slab pages, a page of backs, then the field guides and markers
 const marks = () => {
   const L = 0.5, T = 0.25, xs = [0, 2.5, 5, 7.5].map(v => L + v), ys = [0, 3.5, 7, 10.5].map(v => T + v);
   let s = '<svg class="marks" viewBox="0 0 8.5 11" preserveAspectRatio="none" width="100%" height="100%">';

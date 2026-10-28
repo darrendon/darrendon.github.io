@@ -72,11 +72,13 @@ const PRINT = (() => {
     const cols = 3, labelH = 80, W2 = margin * 2 + cols * slabW + (cols - 1) * 50, H2 = margin * 2 + 130 + 2 * (slabH + labelH) + 50;
     const cv = document.createElement("canvas"); cv.width = W2; cv.height = H2; const c = cv.getContext("2d");
     c.fillStyle = "#1d1813"; c.fillRect(0, 0, W2, H2);
-    c.fillStyle = "#efe4c8"; c.font = "64px Rye"; c.letterSpacing = "4px"; c.fillText("DIGGERS · THE SIX SKELETONS", margin, margin + 60);
+    c.fillStyle = "#efe4c8"; c.font = "64px Rye"; c.letterSpacing = "4px"; c.fillText("DIGGERS · THE FIVE SKELETONS", margin, margin + 60);
     c.font = "italic 28px 'IM Fell English'"; c.letterSpacing = "1px"; c.fillStyle = "#b9a983";
     c.fillText("Each number is a bone. Lay a species’ 1–9 in three rows of three and the whole skeleton comes out of the rock.", margin, margin + 104);
     SPECIES.forEach((sp, i) => {
-      const sl = FossilArt.slab(i, s), ox = margin + (i % cols) * (slabW + 50), oy = margin + 130 + Math.floor(i / cols) * (slabH + labelH + 50);
+      // a short last row is centred
+      const row = Math.floor(i / cols), inRow = Math.min(cols, SPECIES.length - row * cols);
+      const sl = FossilArt.slab(i, s), ox = margin + (cols - inRow) * (slabW + 50) / 2 + (i % cols) * (slabW + 50), oy = margin + 130 + Math.floor(i / cols) * (slabH + labelH + 50);
       for (let v = 1; v <= 9; v++) {
         const col = (v - 1) % 3, row = Math.floor((v - 1) / 3), x = ox + col * (cellW + gap), y = oy + row * (cellH + gap);
         c.save(); c.beginPath(); c.roundRect(x, y, cellW, cellH, 10); c.clip();

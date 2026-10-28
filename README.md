@@ -8,7 +8,7 @@ Portfolio site for Darren Don, board game designer at What's Good Board Games. P
 - `/games/dim-sum-rush/` — sell sheet, 3D component mockups, the playable build (embedded from the `dim-sum-rush` repo's Pages site at `/dim-sum-rush/`) and rules in brief
 - `/games/boo-who/` — rendered mockups, the playable build with a tutorial (hosted in this repo at `/games/boo-who/play/`), sell sheet, print-and-play PDF and rules in brief
 - `/games/too-many-crooks/` — rendered mockups, the playable build with online tables (hosted in this repo at `/games/too-many-crooks/play/`), sell sheet, print-and-play PDF and rules in brief
-- `/games/diggers/` — rendered mockups, the playable build against bots (hosted in this repo at `/games/diggers/play/`), the six species, sell sheet, print-and-play PDF and rules in brief
+- `/games/diggers/` — rendered mockups, the playable build against bots (hosted in this repo at `/games/diggers/play/`), the five species, sell sheet, print-and-play PDF and rules in brief
 - `/games/down-for-the-count/` — rendered mockups, the playable build against bots (hosted in this repo at `/games/down-for-the-count/play/`), the ten cards and box art, sell sheet, print-and-play PDF and rules in brief
 
 ## Assets

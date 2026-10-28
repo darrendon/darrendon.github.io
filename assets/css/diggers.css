@@ -23,8 +23,8 @@
 .g-dig .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
 .g-dig .viewer .bar{background:var(--g-panel)}
 
-/* the six species */
-.species{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(10px,1.6vw,18px);margin-top:clamp(28px,4vw,44px)}
+/* the five species */
+.species{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(10px,1.6vw,18px);margin-top:clamp(28px,4vw,44px)}
 .species figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
 .species img{width:100%;aspect-ratio:5/7;border-radius:7%/5%;box-shadow:0 1px 0 #D8CCAE,0 3px 0 #C4B48F,0 16px 22px -12px rgba(36,24,14,.55);transition:transform .2s}
 .species figure:hover img{transform:translateY(-4px) rotate(-1.2deg)}
