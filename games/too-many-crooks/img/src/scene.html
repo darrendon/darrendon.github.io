@@ -5,7 +5,7 @@
 </head><body>
 <script>
 /* Too Many Crooks! — still renders. Units are inches. ?scene=hero|table|kit|themed  &w=1600&h=1000
-   themed = noir heist-planning desk (blueprint under a hanging lamp). &check=1 runs the per-object overlap check -> window.__check */
+   themed = quiet card table (green felt, soft overhead pool, vignette, one small cash bundle). &check=1 runs the per-object overlap check -> window.__check */
 (async function () {
   const q = new URLSearchParams(location.search);
   const SCENE = q.get('scene') || 'hero', W = +q.get('w') || 1600, H = +q.get('h') || 1000;
@@ -185,69 +185,33 @@
   }
 
   let checkObjs = null, checkHide = [];
+  let vignette = null;
   if (SCENE === 'themed') {
-    // ---- a heist-planning desk: The Night Bank's blueprint spread out under one hanging lamp
-    scene.remove(table); scene.fog = null; scene.background = C('#070B11');
-    hemi.intensity = 0.11; key.intensity = 0; key.castShadow = false; rim.intensity = 0.14; fill.intensity = 0.0;
-    const front = new THREE.SpotLight(0xffe8c8, 0.42, 0, 0.3, 1.0); front.position.set(-1.2, 9, 22); front.target.position.set(-2.4, 0.8, -1.2); scene.add(front); scene.add(front.target);
-    const lamp = new THREE.SpotLight(0xffdcaa, 2.5, 0, 0.385, 1.0); lamp.position.set(-0.6, 24, 0.4); lamp.target.position.set(-0.6, 0, 0.6);
-    lamp.castShadow = true; lamp.shadow.mapSize.set(4096, 4096); lamp.shadow.radius = 6; lamp.shadow.bias = -0.0004;
-    Object.assign(lamp.shadow.camera, { near: 10, far: 40 }); scene.add(lamp); scene.add(lamp.target);
+    // ---- a quiet card table: deep green felt, one soft overhead pool of light, a gentle vignette, one small cash bundle
+    scene.remove(table); scene.fog = null; scene.background = C('#0B1611');
+    hemi.color = C('#FFF1DC'); hemi.groundColor = C('#2A3A30'); hemi.intensity = 0.1;
+    key.intensity = 0.22; key.position.set(4, 10, 12); rim.intensity = 0.1; fill.intensity = 0.2; fill.position.set(-3, 5, 12);
+    key.castShadow = false;
+    const pool = new THREE.SpotLight(0xfff0dc, 2.6, 0, 0.62, 1.0, 0); pool.position.set(-6.5, 21, -5.5); pool.target.position.set(-0.2, 0, 0.6);
+    pool.castShadow = true; pool.shadow.mapSize.set(4096, 4096); pool.shadow.radius = 9; pool.shadow.bias = -0.0004;
+    Object.assign(pool.shadow.camera, { near: 8, far: 40 }); scene.add(pool); scene.add(pool.target);
 
-    // the blueprint (a 40 x 40 in sheet that fills the whole frame — it is the table surface here)
-    function blueprint() {
-      const N = 4096, S = N / 40, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d');
-      const X = (x) => (x + 20) * S, Z = (z) => (z + 20) * S, L = (v) => v * S;
-      g.fillStyle = '#1A4270'; g.fillRect(0, 0, N, N);
-      const r = rnd(11);
-      for (let i = 0; i < 26000; i++) { g.fillStyle = 'rgba(' + (r() < 0.5 ? '255,255,255' : '0,10,30') + ',' + (0.02 + r() * 0.05) + ')'; g.fillRect(r() * N, r() * N, 2 + r() * 5, 2 + r() * 5); }
-      // grid
-      g.strokeStyle = 'rgba(205,228,255,0.055)'; g.lineWidth = 2;
-      for (let v = -20; v <= 20; v += 0.5) { g.beginPath(); g.moveTo(X(v), 0); g.lineTo(X(v), N); g.stroke(); g.beginPath(); g.moveTo(0, Z(v)); g.lineTo(N, Z(v)); g.stroke(); }
-      g.strokeStyle = 'rgba(205,228,255,0.1)'; g.lineWidth = 3;
-      for (let v = -20; v <= 20; v += 2) { g.beginPath(); g.moveTo(X(v), 0); g.lineTo(X(v), N); g.stroke(); g.beginPath(); g.moveTo(0, Z(v)); g.lineTo(N, Z(v)); g.stroke(); }
-      const ink = 'rgba(226,238,255,0.6)', soft = 'rgba(226,238,255,0.36)';
-      const wall = (pts, w) => { g.strokeStyle = ink; g.lineWidth = L(w || 0.11); g.lineJoin = 'miter'; g.beginPath(); pts.forEach(([x, z], i) => (i ? g.lineTo(X(x), Z(z)) : g.moveTo(X(x), Z(z)))); g.stroke(); };
-      const thin = (pts, a, dash) => { g.strokeStyle = a || soft; g.lineWidth = L(0.035); g.setLineDash(dash || []); g.beginPath(); pts.forEach(([x, z], i) => (i ? g.lineTo(X(x), Z(z)) : g.moveTo(X(x), Z(z)))); g.stroke(); g.setLineDash([]); };
-      const door = (x, z, rad, a0, a1) => { g.strokeStyle = soft; g.lineWidth = L(0.03); g.beginPath(); g.moveTo(X(x), Z(z)); g.arc(X(x), Z(z), L(rad), a0, a1); g.closePath(); g.stroke(); };
-      const label = (t, x, z, size, a) => { g.fillStyle = a || 'rgba(226,238,255,0.5)'; g.font = '600 ' + L(size) + 'px "Courier New", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t.split('').join(String.fromCharCode(8202)), X(x), Z(z)); };
-      // outer walls of the bank, with gaps for doors
-      wall([[-12, -9], [12, -9], [12, 8.5], [2, 8.5]], 0.17); wall([[0, 8.5], [-12, 8.5], [-12, -9]], 0.17);
-      // interior walls
-      wall([[-12, -2.5], [-5, -2.5]]); wall([[-3.6, -2.5], [3, -2.5]]); wall([[4.4, -2.5], [12, -2.5]]);
-      wall([[3.7, -9], [3.7, -5.6]]); wall([[3.7, -4.2], [3.7, -2.5]]);
-      wall([[-4.2, -9], [-4.2, -2.5]]);
-      wall([[6.5, -2.5], [6.5, 2.4]]); wall([[6.5, 3.8], [6.5, 8.5]]);
-      // teller counter
-      thin([[-9.5, 1.2], [3.6, 1.2]], ink); thin([[-9.5, 1.5], [3.6, 1.5]], ink);
-      for (let x = -8.5; x < 3.6; x += 2.2) thin([[x, 1.2], [x, 0.4]]);
-      // doors
-      door(-5, -2.5, 1.4, Math.PI, Math.PI * 1.5); door(3, -2.5, 1.4, -Math.PI / 2, 0); door(3.7, -5.6, 1.4, Math.PI / 2, Math.PI);
-      door(6.5, 2.4, 1.4, Math.PI / 2, Math.PI); door(2, 8.5, 2, Math.PI, Math.PI * 1.5);
-      // the vault: a round door in a thick-walled room
-      wall([[5.0, -8.2], [11.2, -8.2], [11.2, -3.2], [5.0, -3.2], [5.0, -8.2]], 0.24);
-      g.strokeStyle = ink; g.lineWidth = L(0.1); g.beginPath(); g.arc(X(8.1), Z(-5.7), L(1.5), 0, Math.PI * 2); g.stroke();
-      g.lineWidth = L(0.04); g.beginPath(); g.arc(X(8.1), Z(-5.7), L(1.05), 0, Math.PI * 2); g.stroke();
-      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; thin([[8.1 + Math.cos(a) * 0.3, -5.7 + Math.sin(a) * 0.3], [8.1 + Math.cos(a) * 1.0, -5.7 + Math.sin(a) * 1.0]]); }
-      // dimension lines
-      thin([[-12, -10.2], [12, -10.2]]); thin([[-12, -10.5], [-12, -9.9]]); thin([[12, -10.5], [12, -9.9]]); label('84\'-0"', 0, -10.55, 0.34);
-      thin([[13.2, -9], [13.2, 8.5]]); thin([[12.9, -9], [13.5, -9]]); thin([[12.9, 8.5], [13.5, 8.5]]);
-      // room names
-      label('VAULT', 8.1, -3.75, 0.36); label('MANAGER', -8, -6, 0.36); label('COUNTING ROOM', 0, -7.6, 0.36);
-      label('LOBBY', -3, 5.2, 0.42); label('TELLERS', -3, -0.6, 0.36); label('LOADING DOCK', 9.3, 6.6, 0.36); label('ALLEY', 9.3, 10.0, 0.36);
-      // title block, front left
-      g.strokeStyle = ink; g.lineWidth = L(0.05); g.strokeRect(X(-19.4), Z(5.6), L(5.6), L(2.4));
-      label('THE NIGHT BANK  ·  GROUND FLOOR', 0, -11.4, 0.4, 'rgba(226,238,255,0.6)');
-      // the plan, in red grease pencil: in through the alley, past the tellers, to the vault
-      g.strokeStyle = 'rgba(214,62,46,0.72)'; g.lineWidth = L(0.07); g.lineCap = 'round'; g.setLineDash([L(0.32), L(0.22)]);
-      g.beginPath(); g.moveTo(X(9.6), Z(11.5)); g.bezierCurveTo(X(9.4), Z(8), X(7.6), Z(5), X(5.6), Z(3.1)); g.bezierCurveTo(X(4.2), Z(1.6), X(4.6), Z(-1.2), X(5.8), Z(-2.0)); g.bezierCurveTo(X(7.2), Z(-2.8), X(7.8), Z(-3.6), X(8.0), Z(-4.4)); g.stroke(); g.setLineDash([]);
-      g.lineWidth = L(0.08); g.beginPath(); g.ellipse(X(8.1), Z(-5.7), L(2.1), L(1.85), -0.2, 0.3, Math.PI * 2.15); g.stroke();
-      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 16; return t;
+    function feltTexture() {
+      const N = 2048, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d');
+      g.fillStyle = '#2C6A48'; g.fillRect(0, 0, N, N);
+      const r = rnd(17);
+      // soft mottling
+      for (let i = 0; i < 200; i++) { const x0 = r() * N, y0 = r() * N, rad = 60 + r() * 200, a = 0.012 + r() * 0.016, col = r() < 0.5 ? '255,255,240' : '0,12,6';
+        for (const ox of [-N, 0, N]) for (const oy of [-N, 0, N]) { const x = x0 + ox, y = y0 + oy; if (x + rad < 0 || x - rad > N || y + rad < 0 || y - rad > N) continue;
+          const gr = g.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, 'rgba(' + col + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + col + ',0)'); g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); } }
+      // fine fibres
+      for (let i = 0; i < 140000; i++) { g.fillStyle = 'rgba(' + (r() < 0.4 ? '120,190,150' : '0,14,8') + ',' + (0.02 + r() * 0.035) + ')'; const x = r() * N, y = r() * N, a = r() * Math.PI; g.save(); g.translate(x, y); g.rotate(a); g.fillRect(0, 0, 2 + r() * 5, 1); g.restore(); }
+      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 4); t.encoding = THREE.sRGBEncoding; t.anisotropy = 16; return t;
     }
-    const paper = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ map: blueprint(), roughness: 0.92 }));
-    paper.rotation.x = -Math.PI / 2; paper.receiveShadow = true; scene.add(paper); checkHide.push(paper);
+    const felt = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshLambertMaterial({ map: feltTexture() }));
+    felt.rotation.x = -Math.PI / 2; felt.receiveShadow = true; scene.add(felt); checkHide.push(felt);
 
-    // ---- props: a stack of cash bundles and a flashlight
+    // ---- the one prop: a single banded bundle of hundreds
     function billTex() {
       const c = document.createElement('canvas'); c.width = 1024; c.height = 446; const g = c.getContext('2d');
       g.fillStyle = '#D8DCC2'; g.fillRect(0, 0, 1024, 446);
@@ -256,13 +220,11 @@
       for (let k = 0; k < 40; k++) { g.beginPath(); g.ellipse(512, 223, 140 + k * 2.2, 150 - k * 1.2, k * 0.08, 0, Math.PI * 2); g.stroke(); }
       g.fillStyle = '#E4E6D2'; g.beginPath(); g.ellipse(512, 223, 118, 140, 0, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#4E6A4C';
-      // a fedora-and-collar silhouette in the oval
       g.beginPath(); g.ellipse(512, 210, 46, 54, 0, 0, Math.PI * 2); g.fill();
       g.fillRect(430, 152, 164, 14); g.beginPath(); g.moveTo(462, 154); g.lineTo(472, 104); g.lineTo(552, 104); g.lineTo(562, 154); g.fill();
       g.beginPath(); g.moveTo(420, 352); g.quadraticCurveTo(430, 268, 512, 262); g.quadraticCurveTo(594, 268, 604, 352); g.fill();
       g.font = 'bold 74px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
       for (const [x, y] of [[130, 108], [894, 108], [130, 340], [894, 340]]) g.fillText('100', x, y);
-      g.font = 'bold 30px Georgia, serif'; g.fillText('THE NIGHT BANK', 270, 223); g.fillText('ONE HUNDRED', 754, 223);
       const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
     }
     function edgeTex(rows) {
@@ -271,83 +233,41 @@
       for (let i = 0; i < rows; i++) { g.fillStyle = i % 2 ? 'rgba(70,90,66,0.35)' : 'rgba(255,255,240,0.3)'; g.fillRect(0, i * 64 / rows, 256, 64 / rows * 0.5); }
       const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
     }
-    function bandTex() {
-      const c = document.createElement('canvas'); c.width = 256; c.height = 512; const g = c.getContext('2d');
-      g.fillStyle = '#C8A55A'; g.fillRect(0, 0, 256, 512); g.fillStyle = '#5B3F1C';
-      g.font = 'bold 54px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.save(); g.translate(128, 256); g.rotate(-Math.PI / 2); g.fillText('$10,000', 0, 0); g.restore();
-      g.fillRect(0, 10, 256, 6); g.fillRect(0, 496, 256, 6);
-      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
-    }
-    const BL = 3.1, BWD = 1.32, BT = 0.24;
-    const billMat = new THREE.MeshStandardMaterial({ map: billTex(), roughness: 0.85 });
-    const edgeMat = new THREE.MeshStandardMaterial({ map: edgeTex(18), roughness: 0.9 });
-    const bandMat = new THREE.MeshStandardMaterial({ map: bandTex(), roughness: 0.7 });
-    const bandPlain = new THREE.MeshStandardMaterial({ color: C('#C8A55A'), roughness: 0.7 });
+    const BL = 3.1, BWD = 1.32, BT = 0.3;
     function makeCash() {
       const g = new THREE.Group();
-      [[0, 0, 0.0], [0.08, -0.05, 0.07], [-0.05, 0.04, -0.05]].forEach(([dx, dz, yaw], i) => {
-        const b = new THREE.Group();
-        const m = new THREE.Mesh(new THREE.BoxGeometry(BL, BT, BWD), [edgeMat, edgeMat, billMat, billMat, edgeMat, edgeMat]); m.castShadow = true; m.receiveShadow = true; b.add(m);
-        const band = new THREE.Mesh(new THREE.BoxGeometry(0.62, BT + 0.012, BWD + 0.012), [bandPlain, bandPlain, bandMat, bandPlain, bandPlain, bandPlain]); band.castShadow = true; b.add(band);
-        b.position.set(dx, BT / 2 + i * (BT + 0.006), dz); b.rotation.y = yaw; g.add(b);
-      });
-      return g;
-    }
-    function makeFlashlight() {
-      const g = new THREE.Group(), axis = new THREE.Group(); g.add(axis);
-      const black = new THREE.MeshStandardMaterial({ color: C('#23262B'), roughness: 0.34, metalness: 0.3 });
-      const grip = new THREE.MeshStandardMaterial({ color: C('#3A3E45'), roughness: 0.5, metalness: 0.3 });
-      const chrome = new THREE.MeshStandardMaterial({ color: C('#E4E7EC'), roughness: 0.2, metalness: 0.45 });
-      const lens = new THREE.MeshStandardMaterial({ color: C('#FFF4D6'), roughness: 0.1, metalness: 0.2, emissive: C('#FFE9B0'), emissiveIntensity: 0.9 });
-      const rT = 0.4, rH = 0.6, LEN = 5.4; g.scale.setScalar(0.72);
-      const cyl = (r0, r1, len, x, m, seg) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len, seg || 40), m); c.rotation.z = -Math.PI / 2; c.position.x = x; c.castShadow = true; c.receiveShadow = true; axis.add(c); return c; };
-      cyl(rT, rT, 0.25, -LEN / 2 + 0.125, chrome);        // tail cap
-      cyl(rT, rT, 3.2, -LEN / 2 + 0.25 + 1.6, black);    // barrel
-      for (let k = 0; k < 9; k++) cyl(rT + 0.025, rT + 0.025, 0.1, -LEN / 2 + 0.7 + k * 0.22, grip, 32); // knurled rings
-      cyl(rT, rH, 1.3, -LEN / 2 + 3.45 + 0.65, black);  // flared head
-      const xt = -LEN / 2, xh = -LEN / 2 + 4.97;
-      cyl(rH + 0.02, rH + 0.02, 0.22, xh - 0.11, chrome); // bezel
-      const lz = new THREE.Mesh(new THREE.CircleGeometry(rH - 0.04, 40), lens); lz.rotation.y = Math.PI / 2; lz.position.x = xh + 0.004; axis.add(lz);
-      const tip = new THREE.Object3D(); tip.position.x = xh + 0.12; axis.add(tip); const aim = new THREE.Object3D(); aim.position.x = xh + 10; axis.add(aim); g.userData = { tip, aim };
-      const sw = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.1, 0.2), chrome); sw.position.set(0.7, rT + 0.03, 0); axis.add(sw);
-      // rest on the table: tail cap and bezel both touch, so the axis tips up toward the head
-      const th = Math.atan2(rH + 0.02 - rT, xh - xt); axis.rotation.z = th;
-      axis.position.y = -xt * Math.sin(th) + rT * Math.cos(th);
-      return g;
+      const billMat = new THREE.MeshStandardMaterial({ map: billTex(), roughness: 0.85 }), edgeMat = new THREE.MeshStandardMaterial({ map: edgeTex(22), roughness: 0.9 });
+      const bandMat = new THREE.MeshStandardMaterial({ color: C('#B89650'), roughness: 0.7 });
+      const m = new THREE.Mesh(new THREE.BoxGeometry(BL, BT, BWD), [edgeMat, edgeMat, billMat, billMat, edgeMat, edgeMat]); m.castShadow = true; m.receiveShadow = true; m.position.y = BT / 2; g.add(m);
+      const band = new THREE.Mesh(new THREE.BoxGeometry(0.5, BT + 0.014, BWD + 0.014), bandMat); band.castShadow = true; band.position.y = BT / 2; g.add(band);
+      g.scale.setScalar(0.82); return g;
     }
 
     const objs = [];
     const add = (o, name) => { o.name = name; scene.add(o); objs.push(o); return o; };
-    const box = add(makeBox(), 'box'); box.position.set(-2.6, 0, -1.7); box.rotation.y = 0.3;
-    const s = add(makeSheet(2), 'crew sheet'); s.position.set(3.8, 0, 2.2); s.rotation.y = -0.16;
-    const cash = add(makeCash(), 'cash'); cash.position.set(4.9, 0, -2.5); cash.rotation.y = -0.42;
-    const torch = add(makeFlashlight(), 'flashlight'); torch.position.set(-6.4, 0, 3.0); torch.rotation.y = -0.5;
-    // it's switched on: a soft cone of light thrown across the floor plan (a ground glow, not an object)
-    torch.updateMatrixWorld(true);
-    function beamTex() {
-      const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const g = c.getContext('2d');
-      g.globalCompositeOperation = 'lighter';
-      for (let k = 0; k < 160; k++) { const t = k / 159, x = 20 + t * 900, ry = 30 + t * 200, rx = 18 + t * 70, a = 0.03 * Math.pow(1 - t, 1.1) + 0.012;
-        const gr = g.createRadialGradient(x, 256, 0, x, 256, ry); gr.addColorStop(0, 'rgba(255,255,255,' + a + ')'); gr.addColorStop(0.7, 'rgba(255,255,255,' + a * 0.5 + ')'); gr.addColorStop(1, 'rgba(255,255,255,0)');
-        g.fillStyle = gr; g.save(); g.translate(x, 256); g.scale(rx / ry, 1); g.translate(-x, -256); g.beginPath(); g.arc(x, 256, ry, 0, Math.PI * 2); g.fill(); g.restore(); }
-      const t = new THREE.CanvasTexture(c); return t;
-    }
-    const tipW = new THREE.Vector3(); torch.userData.tip.getWorldPosition(tipW);
-    const glow = new THREE.Group(), BEAM = 6.4; glow.position.set(tipW.x, 0.004, tipW.z); glow.rotation.y = torch.rotation.y;
-    const gm = new THREE.Mesh(new THREE.PlaneGeometry(BEAM, BEAM * 0.5), new THREE.MeshBasicMaterial({ map: beamTex(), color: C('#FFE6B5'), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
-    gm.rotation.x = -Math.PI / 2; gm.position.x = BEAM / 2 - 0.1; glow.add(gm); scene.add(glow); checkHide.push(glow);
-    // six crooks' dice in a loose row in front of the box
-    const r = rnd(5), ca = Math.cos(0.3), sa = Math.sin(0.3);
-    const edge = (t, off) => [-2.6 - 3.5 * ca + 2.5 * sa + t * ca + off * sa, -1.7 + 3.5 * sa + 2.5 * ca - t * sa + off * ca];
-    [[1.2, 2.2, 4, 6], [2.15, 2.05, 5, 2], [3.1, 2.2, 3, 5], [4.05, 2.05, 1, 1], [5.0, 2.2, 0, 4], [5.95, 2.05, 2, 3]].forEach(([t, off, c, v], i) => {
-      const [x, z] = edge(t, off); const d = add(makeDie(c, v, 0.3 + (r() - 0.5) * 0.5), 'die ' + (i + 1)); d.position.set(x, DIE / 2, z);
+    const box = add(makeBox(), 'box'); box.position.set(-2.7, 0, -1.6); box.rotation.y = 0.24;
+    const s = add(makeSheet(2), 'crew sheet'); s.position.set(4.3, 0, 1.75); s.rotation.y = -0.14;
+    const cash = add(makeCash(), 'cash'); cash.position.set(4.6, 0, -2.4); cash.rotation.y = -0.32;
+    // six crooks' dice in an even row in front of the box
+    const r = rnd(5), ca = Math.cos(0.24), sa = Math.sin(0.24);
+    const edge = (t, off) => [-2.7 - 3.5 * ca + 2.5 * sa + t * ca + off * sa, -1.6 + 3.5 * sa + 2.5 * ca - t * sa + off * ca];
+    [[0.9, 2.1, 4, 6], [2.05, 2.1, 5, 2], [3.2, 2.1, 3, 5], [4.35, 2.1, 1, 1], [5.5, 2.1, 0, 4], [6.65, 2.1, 2, 3]].forEach(([t, off, c, v], i) => {
+      const [x, z] = edge(t, off); const d = add(makeDie(c, v, 0.24 + (r() - 0.5) * 0.4), 'die ' + (i + 1)); d.position.set(x, DIE / 2, z);
     });
-    frame([-7.9, 0, -4.6], [6.9, 1.6, 4.5], 44, 6, 0.95);
+    frame([-6.6, 0, -3.4], [6.2, 1.6, 3.4], 40, 4, 0.97);
     checkObjs = objs;
-  }
 
-  renderer.render(scene, camera);
+    // gentle screen-space vignette (drawn over the final frame only; not part of the overlap check)
+    const vc = document.createElement('canvas'); vc.width = 512; vc.height = 320; const vg = vc.getContext('2d');
+    const gr = vg.createRadialGradient(256, 150, 60, 256, 160, 330); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0.58)');
+    vg.fillStyle = gr; vg.fillRect(0, 0, 512, 320);
+    const vt = new THREE.CanvasTexture(vc);
+    vignette = { scene: new THREE.Scene(), cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
+    vignette.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: vt, transparent: true, depthTest: false, depthWrite: false })));
+  }
+  const draw = () => { renderer.autoClear = true; renderer.render(scene, camera); if (vignette) { renderer.autoClear = false; renderer.render(vignette.scene, vignette.cam); renderer.autoClear = true; } };
+
+  draw();
   if (checkObjs && q.get('check')) {
     // per-object silhouettes: render each object alone in flat white, then compare masks pairwise
     const gl = renderer.getContext(), PW = gl.drawingBufferWidth, PH = gl.drawingBufferHeight;
@@ -381,7 +301,7 @@
     window.__check = res;
   }
   // a second pass so shadow maps settle
-  await new Promise((r) => setTimeout(r, 50)); renderer.render(scene, camera);
+  await new Promise((r) => setTimeout(r, 50)); draw();
   window.__done = true;
 })();
 </script>
