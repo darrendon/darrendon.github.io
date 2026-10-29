@@ -77,7 +77,7 @@ def scene(p, name, w=1600, h=1000):
         im.save(os.path.join(IMG, "og.jpg"), quality=88)
     elif name == "home":
         save_sizes(im, "render-home", [640, 1200])
-    elif name == "cozy":  # the themed still: a knit blanket in a sunbeam -> render-scene (homepage card and first image on the page)
+    elif name == "cozy":  # the themed still: plum felt cloth, one overhead pool of light -> render-scene (homepage card and first image on the page)
         save_sizes(im, "render-scene", [240, 480, 640, 800, 1200], q=84)
     else:
         save_sizes(im, "render-" + name, [240, 480, 800, 640])
