@@ -128,6 +128,20 @@ button{font:inherit;color:inherit}
 .stats div{display:flex;flex-direction:column}
 .stats .v{font-size:22px;font-weight:800;color:var(--gold)}
 .stats .k{font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.card.hint{box-shadow:0 0 0 4px var(--good),0 6px 14px rgba(0,0,0,.35)}
+
+/* tutorial coach */
+.coach{display:flex;flex-direction:column;gap:10px;padding:16px 18px;border-radius:16px;background:var(--felt-2);border:2px solid var(--gold)}
+.coach .who{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.coach p{margin:0;max-width:70ch;font-size:15.5px}
+.coach p+p{margin-top:-2px}
+.coach b{color:var(--gold);font-weight:800}
+.coach .go{gap:10px}
+.coach .btn.primary{font-size:15px;padding:9px 20px}
+.coach.nudge{animation:nudge .35s}
+@keyframes nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.spot{border-radius:18px;box-shadow:0 0 0 3px var(--gold);animation:spot 1.4s ease-in-out infinite}
+@keyframes spot{50%{box-shadow:0 0 0 8px rgba(255,201,74,.3)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -193,6 +207,7 @@ button{font:inherit;color:inherit}
     </ol>
     <div class="go">
       <button class="btn primary" id="startBtn" type="button">Start game</button>
+      <button class="btn" id="learnBtn" type="button">Learn to play</button>
       <span class="hint">Click a toy, or press 1–5 for the toys and 6 for the cat.</span>
     </div>
   </section>
@@ -210,6 +225,7 @@ button{font:inherit;color:inherit}
 
   <div class="seats" id="seats" hidden></div>
   <div class="table" id="table"></div>
+  <div class="coach" id="coach" role="status" aria-live="polite" hidden></div>
   <div class="grab" id="grab"></div>
   <div class="banner" id="banner"></div>
 </div>
@@ -340,7 +356,7 @@ const S = {
   players: [], discard: [], round: 0, rounds: 0, flips: 1,
   legal: new Set(), t0: 0, timers: [], resolved: true, out: new Set(), misgrabs: [],
   eligible: [], sudden: false, taken: new Map(), done: new Set(), scorers: [], paused: false, waiting: false, live: false,
-  stats: {times: [], miss: 0}
+  stats: {times: [], miss: 0}, tut: null
 };
 const $ = id => document.getElementById(id);
 const rand = (a,b) => a + Math.random()*(b-a);
@@ -401,15 +417,16 @@ function renderTable(mode){
   const slots = S.players.map(p => {
     let cards = "";
     if (mode === "backs") cards = Array.from({length: S.sudden ? 1 : S.flips}, () => `<div class="card back"></div>`).join("");
-    else cards = p.flipped.map(c => `<div class="card flip" role="img" aria-label="${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
+    else cards = p.flipped.map(c => `<div class="card flip"${isCorrect(c) ? ' data-ok="1"' : ""} role="img" aria-label="${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
     return `<div class="slot${p.human?" you":""}"><div class="cards">${cards}</div><div class="who">${p.name}</div></div>`;
   }).join("");
   $("table").innerHTML = slots + `<div class="chant" id="chant"></div>`;
 }
 function banner(html){ $("banner").innerHTML = html; }
 function updatePill(){
-  $("roundPill").textContent = S.sudden ? "Sudden death" : `Round ${S.round} / ${S.rounds}`;
+  $("roundPill").textContent = S.tut ? `Learn to play · ${Math.max(1, S.round)} of ${S.rounds}` : S.sudden ? "Sudden death" : `Round ${S.round} / ${S.rounds}`;
   $("modePill").textContent = DIFF[S.diff].label;
+  $("modePill").hidden = !!S.tut;
 }
 
 /* ---------- example table on the setup screen ---------- */
@@ -424,7 +441,7 @@ function showExample(){
 
 /* ---------- game flow ---------- */
 function startGame(){
-  clearTimers();
+  clearTimers(); endTutorial();
   const P = S.opp + 1;
   S.flips = P <= 3 ? 2 : 1;
   const deck = buildDeck(), per = 60 / P;
@@ -463,14 +480,15 @@ function flip(){
   if (S.legal.size === 0) S.legal.add("cat");
   S.resolved = false; S.t0 = performance.now();
   refreshToys();
-  S.eligible.filter(p => !p.human).forEach(b => planBot(b, all));
+  if (S.tut) tutFlipped(all);
+  else S.eligible.filter(p => !p.human).forEach(b => planBot(b, all));
   banner(S.sudden ? "Sudden death: only tied players may grab." : "&nbsp;");
 }
-function planBot(bot, cards){
-  const d = DIFF[S.diff], isCat = S.legal.has("cat");
+function planBot(bot, cards, opt){
+  const d = DIFF[(opt && opt.diff) || S.diff], isCat = S.legal.has("cat");
   let t = d.mean + d.sd*gauss() + d.perCard*cards.length + (isCat ? d.catExtra : 0);
   t = Math.max(.5, t);
-  if (Math.random() < d.miss){
+  if (!(opt && opt.noMiss) && Math.random() < d.miss){
     // tempted by a distractor: a wrong-colored card wearing another toy's color
     let tempt = cards.filter(c => !isCorrect(c)).map(c => OWNER[c.color]).filter(o => !S.legal.has(o));
     if (!isCat) tempt.push("cat");
@@ -495,8 +513,14 @@ function grab(p, target){
   if (S.resolved || S.out.has(p) || S.done.has(p) || !S.eligible.includes(p)) return;
   if (S.taken.has(target)) return; // someone is already holding it
   const t = (performance.now() - S.t0) / 1000;
+  if (S.tut && p.human && !S.legal.has(target) && !TUT.rounds[S.tut.i].live){
+    const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss");
+    later(() => el.classList.remove("miss"), 600);
+    return tutHint(target);
+  }
   if (S.legal.has(target)){
     S.taken.set(target, p); S.done.add(p); S.scorers.push({p, target, t});
+    if (S.tut && p.human) tutYouGrabbed();
     $("toy-"+target).classList.add("won");
     tagToy(target, `${p.name} · ${t.toFixed(2)}s`, false);
     if (S.sudden) return resolve();
@@ -535,7 +559,7 @@ function resolve(){
   let head;
   if (!scorers.length) head = "Nobody grabbed a correct toy. Nobody scores this round.";
   else if (scorers.length === 1) head = `${who(scorers[0])} scored.`;
-  else head = `${scorers.map(who).join(" and ")} all scored.`;
+  else head = `${scorers.map(who).join(" and ")} ${scorers.length === 2 ? "both" : "all"} scored.`;
   const sub = [ansText, notes.join(" · ")].filter(Boolean).join(" ");
   banner(`<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`);
   renderSeats();
@@ -545,6 +569,7 @@ function resolve(){
     else later(() => suddenDeath(S.eligible), 1800);
     return;
   }
+  if (S.tut) return tutAfter();
   S.waiting = true;
   if (!S.paused) later(advance, 2300);
 }
@@ -584,9 +609,126 @@ function finish(winner){
   banner("");
 }
 function toSetup(){
-  S.live = false; clearTimers(); S.resolved = true;
+  S.live = false; clearTimers(); S.resolved = true; endTutorial();
   $("end").hidden = true; $("setup").hidden = false; $("meta").hidden = true; $("seats").hidden = true;
   showExample();
+}
+
+/* ---------- tutorial: an intro to the toys, four coached rounds the bots wait out, then one round at full speed ----------
+   Four players: you, Minou, Pompon and Biscotte, five scripted cards each (one per round). */
+const TUT = {
+  bots: ["Minou","Pompon","Biscotte"],
+  rounds: [
+    { // one toy in its own color, on someone else's card
+      cards: [["bird","pink"],["fish","green"],["fly","blue"],["mouse","yellow"]],
+      pre: "Everyone chants <b>“un, deux, trois, cat!”</b> and flips their top card at the same moment. Nobody knows what’s coming, not even you.",
+      prompt: "Look at <b>every</b> card on the table, not just yours. Is any toy shown in its own color? Grab that toy.",
+      hint: "Not that one. Check each card against the toys below: Minou flipped a <b>green fish</b>, and green is the fish’s own color.",
+      after: "That’s the whole idea. The green fish was on <b>Minou’s</b> card, not yours, and it still counts. Grab a correct toy and you keep the card you flipped: that’s a point."
+    },
+    { // nothing in its own color: the cat
+      cards: [["mouse","green"],["bird","blue"],["ball","pink"],["fly","yellow"]],
+      pre: "Next flip. This time, look closely at the colors.",
+      prompt: "Is any toy in its own color this time?",
+      hint: "Look again: that toy isn’t shown in its own color anywhere. When <b>nothing</b> on the table is in its own color, grab the <b>cat</b>.",
+      after: "Nothing was in its own color, so the <b>cat</b> was the answer. Notice the trick: every wrong color belongs to another toy. The green mouse pulls your eye to the fish, and the blue bird to the ball. That’s what makes it hard at speed."
+    },
+    { // two toys at once: two players score
+      cards: [["fish","orange"],["ball","blue"],["bird","green"],["mouse","pink"]],
+      follow: 2,                                   // Biscotte takes the other correct toy just after you
+      pre: "Sometimes more than one toy turns up in its own color.",
+      prompt: "Two different toys are in their own colors. <b>Either one</b> is correct, but you can only take one.",
+      hint: "Two cards show a toy in its own color: Minou’s <b>blue ball</b> and Biscotte’s <b>pink mouse</b>. Grab one of those.",
+      after: "You and Biscotte <b>both</b> scored. When two different toys are correct, each can be grabbed once, so two players score in the same round."
+    },
+    { // a wrong grab: Biscotte falls for the decoys
+      cards: [["fly","orange"],["ball","green"],["fish","yellow"],["bird","blue"]],
+      wrong: [2, "fish", 450],                     // Biscotte grabs the fish 0.45 s after the flip
+      pre: "One more slow round. Keep an eye on Biscotte.",
+      prompt: "Find the toy in its own color.",
+      wrongNote: "<b>Biscotte grabbed the fish!</b> There’s a fish card and a green card on the table, but no green fish. That’s a wrong grab, so she’s out this round. Now you find the right toy.",
+      hint: "Still not it. Hint: the answer is on <b>your own</b> card this time.",
+      after: "The answer was your own <b>orange butterfly</b>. Wrong grabs cost you: Biscotte sat out the round and had to discard one of her scored cards, so she’s back to zero."
+    },
+    { // full speed
+      cards: [["ball","pink"],["fish","blue"],["bird","yellow"],["mouse","green"]],
+      live: true,
+      pre: "That’s everything. The last round is at <b>full speed</b>: the bots won’t wait this time, and a wrong grab counts.",
+      prompt: "Go!"
+    }
+  ]
+};
+function coach(html, buttons, spot){
+  const el = $("coach");
+  el.hidden = false;
+  el.innerHTML = `<span class="who">Coach</span>${[].concat(html).map(h => `<p>${h}</p>`).join("")}`
+    + (buttons && buttons.length ? `<div class="go">${buttons.map(([id, label, primary]) => `<button class="btn${primary ? " primary" : ""}" id="${id}" type="button">${label}</button>`).join("")}</div>` : "");
+  (buttons || []).forEach(([id, , , fn]) => $(id).addEventListener("click", fn));
+  $("grab").classList.toggle("spot", !!spot);
+  if (buttons && buttons.length) $(buttons[0][0]).focus({preventScroll: true});
+}
+function startTutorial(){
+  clearTimers();
+  const R = TUT.rounds;
+  S.players = [{name:"You", human:true}, ...TUT.bots.map(n => ({name:n, human:false}))]
+    .map((p,i) => Object.assign(p, {deck: R.map(r => ({obj: r.cards[i][0], color: r.cards[i][1]})), vp: [], flipped: []}));
+  S.flips = 1; S.discard = []; S.round = 0; S.rounds = R.length; S.sudden = false; S.eligible = S.players;
+  S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
+  S.tut = {i: -1};
+  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false; $("seats").hidden = false;
+  $("pauseBtn").hidden = true; $("quitBtn").textContent = "Skip tutorial";
+  resetToys(false); renderSeats(); renderTable("backs"); updatePill(); banner("&nbsp;");
+  coach([
+    "Welcome to the table. These five toys sit in the middle, each in its own color: a <b>yellow bird</b>, a <b>green fish</b>, a <b>blue ball</b>, a <b>pink mouse</b> and an <b>orange butterfly</b>. The <b>cat</b> is the sixth thing you can grab.",
+    "You’re playing Minou, Pompon and Biscotte. For the first four rounds they’ll wait for you."
+  ], [["tNext", "Let’s flip", true, tutPre]], true);
+}
+function endTutorial(){
+  if (!S.tut) return;
+  S.tut = null;
+  $("coach").hidden = true; $("grab").classList.remove("spot");
+  $("pauseBtn").hidden = false; $("quitBtn").textContent = "Quit"; $("modePill").hidden = false;
+}
+function tutPre(){
+  S.tut.i++; S.round = S.tut.i + 1;
+  const r = TUT.rounds[S.tut.i];
+  resetToys(false); renderTable("backs"); updatePill(); banner("&nbsp;");
+  coach(r.pre, [["tFlip", "Flip", true, () => { $("coach").innerHTML = `<span class="who">Coach</span><p>Un… deux… trois…</p>`; startRound(S.players, false); }]]);
+}
+function tutFlipped(all){
+  const r = TUT.rounds[S.tut.i];
+  coach(r.prompt);
+  if (r.live){ S.players.filter(p => !p.human).forEach(b => planBot(b, all, {diff: "easy", noMiss: true})); return; }
+  if (r.wrong){
+    const [bi, target, ms] = r.wrong, bot = S.players[bi + 1];
+    setToysEnabled(false);                       // wait for the wrong grab, so you see it happen
+    later(() => { grab(bot, target); coach(r.wrongNote); refreshToys(); }, ms);
+  }
+}
+function tutHint(target){
+  const r = TUT.rounds[S.tut.i];
+  coach([r.hint]);
+  const el = $("coach"); el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge");
+}
+function tutYouGrabbed(){
+  const r = TUT.rounds[S.tut.i];
+  if (r.follow === undefined) return;
+  const bot = S.players[r.follow + 1];
+  later(() => { const open = [...S.legal].filter(o => !S.taken.has(o)); if (open.length) grab(bot, open[0]); }, 700);
+}
+function tutAfter(){
+  const r = TUT.rounds[S.tut.i];
+  document.querySelectorAll(".card[data-ok]").forEach(el => el.classList.add("hint"));
+  if (!r.live) return coach(r.after, [["tNext", "Next round", true, tutPre]]);
+  const me = S.players[0], won = S.scorers.some(s => s.p.human);
+  const first = S.scorers[0];
+  const line = won ? "Nice grab: the <b>yellow bird</b> was the only toy in its own color."
+    : first ? `<b>${first.p.name}</b> got the bird first. The <b>yellow bird</b> was the only toy in its own color. Real games go fast!`
+    : "The <b>yellow bird</b> was the only toy in its own color.";
+  coach([
+    line + ` You finished the tutorial with <b>${me.vp.length} ${me.vp.length === 1 ? "card" : "cards"}</b>.`,
+    "A real game works the same way: deal out all 60 cards, chant and flip until they’re gone, and <b>most cards wins</b>. A tie goes to one sudden death flip. With two or three players, everyone flips two cards at a time."
+  ], [["tPlay", "Set up a game", true, toSetup], ["tAgain", "Replay the tutorial", false, startTutorial]]);
 }
 
 /* ---------- input ---------- */
@@ -601,6 +743,7 @@ document.addEventListener("keydown", e => {
   e.preventDefault(); grab(S.players[0], t);
 });
 $("startBtn").addEventListener("click", startGame);
+$("learnBtn").addEventListener("click", startTutorial);
 $("againBtn").addEventListener("click", startGame);
 $("settingsBtn").addEventListener("click", toSetup);
 $("quitBtn").addEventListener("click", toSetup);
@@ -614,6 +757,7 @@ $("pauseBtn").addEventListener("click", () => {
 if (![1,2,3,4,5].includes(S.opp)) S.opp = 3;
 if (!DIFF[S.diff]) S.diff = "easy";
 renderToys(); syncSetup(); showExample();
+if (/[?&#]tutorial\b/.test(location.search + location.hash)) startTutorial();
 })();
 </script>
 </body>
