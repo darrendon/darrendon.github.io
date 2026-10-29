@@ -61,3 +61,6 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, add its card to both `index.html` and `games/index.html`, add the page to `sitemap.xml`, add it to every game page's "More games" row, give its build a `?tutorial` deep link, and regenerate `assets/css/home-games.css`.
 
 Game-page images over ~2x their display size have `-240/-480/-800/-1200` copies served through `srcset`; regenerate those copies whenever the full-size image changes.
+
+## Stylesheet versions
+Every page links its stylesheets with a content hash, e.g. `/assets/css/site.css?v=cf4b4e27`, so visitors get new CSS the moment it changes instead of a cached copy (GitHub Pages caches files for about 10 minutes). After editing any file in `assets/css/`, update the `?v=` on every page to the first 8 characters of the file's MD5 hash (`md5sum assets/css/site.css`).
