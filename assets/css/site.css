@@ -352,3 +352,9 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
 .about .copy a.chip{text-decoration:none}
 @media (max-width:600px){.feature .go{align-self:flex-start}}
 @supports not (grid-template-rows:subgrid){.feature .go{align-self:flex-start}}
+/* big logo: the four dice */
+.hero-dice{justify-self:end;width:100%;max-width:400px}
+.hero-dice .dice{width:100%;height:auto;display:block;overflow:visible}
+@media (prefers-color-scheme: dark){.hero-dice .dice rect[fill^="rgba"]{fill:rgba(0,0,0,.35)}}
+@media (max-width:820px){.hero-dice{order:-1;justify-self:start;max-width:150px}}
+@media (prefers-color-scheme: dark){.hero-dice .dice rect[fill="#3A3F42"]{stroke:rgba(239,235,227,.35);stroke-width:2}}
