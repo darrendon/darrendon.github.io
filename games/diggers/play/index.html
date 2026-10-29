@@ -218,11 +218,12 @@ body { background-color: var(--rock); }
 .site .board::before { left: 4px; } .site .board::after { right: 4px; }
 .site .board b { font-family: var(--font-num); font-weight: 400; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
 .site .board .fxtag { font-family: var(--font-caps); font-size: 11.5px; letter-spacing: .04em; white-space: nowrap; background: #3b230f; color: #f3e3c0; padding: 1px 7px 0; border-radius: 2px; }
-.fxlegend { background: var(--sheet); border: 1px solid var(--line); border-left: 4px solid #b8572f; border-radius: 2px; padding: 10px 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 18px; box-shadow: var(--lift); }
-.fxlegend .eyebrow { grid-column: 1 / -1; }
-.fxlegend div { font-size: 13.5px; line-height: 1.35; }
-.fxlegend b { font-family: var(--font-display); font-weight: 400; font-size: 16px; }
-.fxlegend span { display: block; color: var(--muted); }
+.site .board .fxrule { flex-basis: 100%; text-align: center; font-family: var(--font-display); font-style: italic; font-size: 13px; line-height: 1.2; color: #2d1a0b; padding-top: 2px; }
+.site.v.fx { grid-template-rows: auto 1fr; }
+.site .fxbanner { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1px; padding: 5px 8px 6px; color: #3b230f; line-height: 1.2;
+  background: repeating-linear-gradient(0deg, rgba(110, 68, 30, .16) 0 1px, transparent 1px 5px), linear-gradient(#d2ab72, #c49a60 55%, #b48955); box-shadow: 0 2px 4px rgba(0, 0, 0, .55), inset 0 0 0 1.5px rgba(40, 22, 8, .8); }
+.site .fxbanner b { font-family: var(--font-caps); font-weight: 400; font-size: 12.5px; letter-spacing: .04em; background: #3b230f; color: #f3e3c0; padding: 1px 7px 0; border-radius: 2px; }
+.site .fxbanner span { font-family: var(--font-display); font-style: italic; font-size: 13px; color: #2d1a0b; }
 .advtoggle { display: flex; gap: 12px; align-items: flex-start; text-align: left; font-weight: 400; padding: 12px; }
 .advtoggle .box { flex: none; width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 3px; margin-top: 2px; display: grid; place-items: center; font-weight: 700; line-height: 1; }
 .advtoggle.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
@@ -243,6 +244,7 @@ body { background-color: var(--rock); }
   .site .board .untouched:not(.farnote) { display: none; }
   .site .board .farnote { font-size: 9.5px; }
   .site .board .fxtag { font-size: 10px; padding: 1px 5px 0; }
+  .site .board .fxrule, .site .fxbanner span { font-size: 11px; } .site .fxbanner b { font-size: 10.5px; padding: 1px 4px 0; } .site .fxbanner { padding: 4px 4px 5px; }
   .site .who { font-size: 10.5px; } .site .what { font-size: 10px; }
   .site .who .full { display: none; } .site .who .short { display: inline; }
   .site.v .what { display: none; }
@@ -324,7 +326,8 @@ button:disabled { opacity: .55; cursor: default; }
   .hand .card.sel { transform: translateY(-12px); }
   .slot { width: 12px; height: 106px; }
   .hand .incoming .lab { font-size: 13.5px; }
-  .fxlegend div, .log { font-size: 14.5px; } .fxlegend b { font-size: 17.5px; }
+  .log { font-size: 14.5px; }
+  .site .board .fxrule, .site .fxbanner span { font-size: 15px; } .site .fxbanner b { font-size: 14px; } .site .fxbanner { padding: 7px 12px 8px; }
 }
 @media (min-width: 760px) and (min-height: 640px) {
   /* the rock face stays docked at the bottom of the screen while the table scrolls above it */
@@ -1341,9 +1344,12 @@ function laneHtml(i) {
     </div>`;
   };
   const empty = L.owner === null ? `<span class="untouched">untouched ground</span>` : "";
-  return `<div class="cell site ${dir} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
-    ${side(pa, "a")}
-    <div class="board" ${L.fx ? `title="${FX[L.fx].name}: ${FX[L.fx].rule}"` : ""}><b>${laneName(G, i)}</b>${L.fx ? `<span class="fxtag">${FX[L.fx].name}</span>` : ""}${mine ? (L.fx ? "" : empty) : `<span class="untouched farnote">not beside you</span>`}</div>
+  // an advanced site carries its effect on the site itself: inside the plank on a horizontal site, as a banner across the top of an upright one
+  const fx = L.fx ? FX[L.fx] : null;
+  const banner = fx && dir === "v" ? `<div class="fxbanner"><b>${fx.name}</b><span>${fx.rule}</span></div>` : "";
+  return `<div class="cell site ${dir} ${fx ? "fx" : ""} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
+    ${banner}${side(pa, "a")}
+    <div class="board"><b>${laneName(G, i)}</b>${fx && dir !== "v" ? `<span class="fxtag">${fx.name}</span>` : ""}${mine ? (fx ? "" : empty) : `<span class="untouched farnote">not beside you</span>`}${fx && dir !== "v" ? `<span class="fxrule">${fx.rule}</span>` : ""}</div>
     ${side(pb, "b")}
   </div>`;
 }
@@ -1359,10 +1365,6 @@ function centerHtml() {
   </div>`;
 }
 
-function fxLegendHtml() {
-  if (!G.adv || !G.lanes.some(L => L.fx)) return "";
-  return `<div class="fxlegend" aria-label="Site effects this season"><div class="eyebrow">Site effects this season</div>${G.lanes.map((L, i) => `<div><b>${laneName(G, i)} · ${FX[L.fx].name}</b><span>${FX[L.fx].rule}</span></div>`).join("")}</div>`;
-}
 function tableHtml() {
   const cell = c => c === "-" ? `<div class="cell"></div>` : c === "c" ? centerHtml() : c === "s0w" ? seatHtml(0, true) : c[0] === "s" ? seatHtml(+c[1]) : laneHtml(+c[1]);
   return `<div class="table t${G.n} ${tutStep() && tutStep().focus === "sites" ? "tut-focus" : ""}">${LAYOUT[G.n].cells.map(cell).join("")}</div>`;
@@ -1507,7 +1509,7 @@ function render() {
   if (!G) { root.innerHTML = net ? lobbyHtml() : ui.invite ? inviteHtml() : setupHtml(); return; }
   root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}${G.adv ? " · site effects" : ""}</div><h1>Diggers</h1></div>
     <button data-act="setup">${net ? "Leave the table" : "New expedition"}</button></div>
-    ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${fxLegendHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
+    ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
   ui.lastShown = ui.shownNow; ui.shownNow = null; // the face-up card only slides in the first time it appears
   if (net && net.kind === "host") net.sync();
 }
