@@ -46,11 +46,13 @@ td.n{font-family:Rye}
 .grid img{width:2.5in;height:3.5in;display:block}
 .marks{position:absolute;inset:0;pointer-events:none}
 .cap{position:absolute;left:.5in;right:.5in;bottom:.06in;text-align:center;font-family:"IM Fell English SC";font-size:9pt;letter-spacing:1px;color:#6B5A44}
-/* dig-site boards: four 63 x 22 mm strips butted into one card-sized block (63 x 88 mm), crop marks at every cut */
-.boards{position:absolute;left:calc(4.25in - 31.5mm);top:2.4in;width:63mm;display:flex;flex-direction:column}
-.boards img{width:63mm;height:22mm;display:block}
-.boards-note{position:absolute;left:1.5in;right:1.5in;top:6.6in;font-size:10.5pt;line-height:1.45;color:#24180E}
-.boards-note b{font-family:"IM Fell English SC";font-weight:400;font-size:13pt;letter-spacing:1px;color:#A8452D;display:block;margin-bottom:4px}
+/* dig-site cards: six half cards (88 x 31.5 mm), plain sides in the left column, effect sides in the right; fold down the middle and glue */
+.boards{position:absolute;left:calc(4.25in - 88mm);top:1.05in;width:176mm;display:grid;grid-template-columns:88mm 88mm}
+.boards img{width:88mm;height:31.5mm;display:block}
+.boards-head{position:absolute;left:calc(4.25in - 88mm);right:calc(4.25in - 88mm);top:.42in;display:flex;justify-content:space-between;font-family:"IM Fell English SC";font-size:11pt;letter-spacing:1px;color:#6B5A44}
+.boards-note{position:absolute;left:calc(4.25in - 88mm);right:calc(4.25in - 88mm);top:8.78in;display:grid;grid-template-columns:1fr 1.25fr;gap:.3in;font-size:9.6pt;line-height:1.42;color:#24180E}
+.boards-note p{margin:0}
+.boards-note b{font-family:"IM Fell English SC";font-weight:400;font-size:12.5pt;letter-spacing:1px;color:#A8452D;display:block;margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -66,18 +68,18 @@ td.n{font-family:Rye}
       <ul>
         <li><b>45 fossil cards:</b> five species (four dinosaurs and a pterosaur), each numbered 1 to 9. A species' nine cards lay out in three rows of three as one fossil slab.</li>
         <li><b>4 field guides</b> (reference cards)</li>
-        <li><b>4 dig-site boards:</b> Como Bluff, Garden Park, Morrison and Smoky Hill</li>
+        <li><b>6 dig-site cards,</b> half the size of a fossil card, each with a plain side and an advanced effect side</li>
       </ul>
       <h2>Setup</h2>
       <table><tr><th>Diggers</th><th>Species</th><th>Hand</th><th>Sites</th></tr>
         <tr><td class="n">2</td><td>any 3 (27 cards)</td><td>12</td><td>3, all between you</td></tr>
         <tr><td class="n">3</td><td>any 4 (36 cards)</td><td>11</td><td>1 between each pair of neighbors</td></tr>
         <tr><td class="n">4</td><td>all 5 (45 cards)</td><td>10</td><td>1 between each pair of neighbors</td></tr></table>
-      <p>Use one more species than there are diggers. Return any unused species to the box, lay out the site boards, shuffle, and deal each digger a hand.</p>
+      <p>Use one more species than there are diggers. Return any unused species to the box, lay out the site cards plain side up, shuffle, and deal each digger a hand.</p>
       <div class="sites"><div><b>Two diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="10" r="6"/><circle cx="60" cy="60" r="6"/><rect x="18" y="33" width="22" height="4"/><rect x="49" y="33" width="22" height="4"/><rect x="80" y="33" width="22" height="4"/></svg></div>
         <div><b>Three diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="8" r="6"/><circle cx="20" cy="60" r="6"/><circle cx="100" cy="60" r="6"/><rect x="29" y="31" width="22" height="4" transform="rotate(-52 40 33)"/><rect x="69" y="31" width="22" height="4" transform="rotate(52 80 33)"/><rect x="49" y="58" width="22" height="4"/></svg></div>
         <div><b>Four diggers</b><svg viewBox="0 0 120 70"><circle cx="60" cy="7" r="6"/><circle cx="60" cy="63" r="6"/><circle cx="18" cy="35" r="6"/><circle cx="102" cy="35" r="6"/><rect x="28" y="19" width="20" height="4" transform="rotate(-34 38 21)"/><rect x="72" y="19" width="20" height="4" transform="rotate(34 82 21)"/><rect x="28" y="47" width="20" height="4" transform="rotate(34 38 49)"/><rect x="72" y="47" width="20" height="4" transform="rotate(-34 82 49)"/></svg></div></div>
-      <p class="small">Circles are camps, bars are dig-site boards. With three or four diggers, you may only use the two sites beside your camp.</p>
+      <p class="small">Circles are camps, bars are dig-site cards. With three or four diggers, you may only use the two sites beside your camp.</p>
     </div>
     <div>
       <div class="box"><b>Your hand is locked.</b> Pick up your cards one at a time, each to the right of the last, and <b>never rearrange them</b>. Hold them so the numbers face you. The order only changes when cards leave your hand or when you insert a new one.</div>
@@ -106,7 +108,7 @@ td.n{font-family:Rye}
       <h2 style="margin-top:0">Your turn</h2>
       <p>Do <b>one</b> of these:</p>
       <h3>Excavate</h3>
-      <p>Lay a find from your hand at a dig site <b>beside your camp</b> (with two diggers, any of the three). If the site is empty, any find will do. If a find is already there, yours or a rival's, yours must <b>beat</b> it; the old find is discarded. Slide your find to your side of the board: you hold that site.</p>
+      <p>Lay a find from your hand at a dig site <b>beside your camp</b> (with two diggers, any of the three). If the site is empty, any find will do. If a find is already there, yours or a rival's, yours must <b>beat</b> it; the old find is discarded. Slide your find to your side of the site card: you hold that site.</p>
       <h3>Poach</h3>
       <p>Take <b>one card from either end</b> of a find at a site beside your camp and insert it <b>anywhere</b> in your hand. If that empties the site, nobody holds it.</p>
       <p>Then <b>send a specimen:</b> give any one card from your hand, even the one you just took, to the digger across that site. They either insert it anywhere in their hand, or turn it away; a turned-away card is discarded for the season.</p>
@@ -114,19 +116,29 @@ td.n{font-family:Rye}
       <p>If you can do neither, pass.</p>
       <h3>Example</h3>
       <p>Ada's hand reads 2 · 5 · 6 · 7 · 9. A rival holds the site between them with a run 3-4. Ada can excavate 5-6-7 there: three cards beat two. Or she could poach the 4 from that run, insert it between her 2 and 5, and send her 9 across.</p>
-    </div>
-    <div>
-      <h2 style="margin-top:0">Seasons</h2>
+      <h2>Seasons</h2>
       <p>A game is three seasons, and each is worth more than the last:</p>
       <table><tr><th>Season</th><th>Each site is worth</th></tr>
         <tr><td class="n">1</td><td>1 prestige</td></tr>
         <tr><td class="n">2</td><td>2 prestige</td></tr>
         <tr><td class="n">3</td><td>4 prestige</td></tr></table>
-      <h2>Ending a season</h2>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Ending a season</h2>
       <p>The moment any digger's hand is <b>empty</b>, the season ends. Nobody takes another turn. Each digger scores every site they hold, at that season’s value.</p>
       <p>Then clear every site, gather all the cards, shuffle, and deal fresh hands. Nothing carries over. The next digger to the left goes first.</p>
       <h2>Winning</h2>
       <p>After the third season, the most prestige wins. If tied, the digger who ended the most seasons by emptying their hand wins; if still tied, the most prestige in the third season.</p>
+      <h2>Advanced: site effects</h2>
+      <p>Once you know the game, turn the site cards over. At the start of each season, shuffle all six and deal one, effect side up, to each dig site in play. An effect changes only finds at its own site:</p>
+      <ul class="fx">
+        <li><b>Hard Rock:</b> finds here are 2 or more cards.</li>
+        <li><b>Shallow Pit:</b> finds here are 1 or 2 cards.</li>
+        <li><b>Shared Claim:</b> a find that ties the one here takes the site.</li>
+        <li><b>Overturned Beds:</b> at equal size and kind, the lower total wins.</li>
+        <li><b>Trackway:</b> runs beat sets of the same size. Suited runs still beat both.</li>
+        <li><b>Open Pit:</b> poach here without sending a card back.</li>
+      </ul>
       <h2>Tips from the field</h2>
       <ul>
         <li>Every card you play makes your hand shorter. Ending the season while you hold the most sites is the cleanest win.</li>
@@ -160,18 +172,21 @@ html += `<div class="page sheet"><div class="grid">${Array(9).fill('<img src="/g
   <div class="cap">Card backs (optional): print on the reverse of any sheet, or sleeve the cards over plain backs</div></div>`;
 html += `<div class="page sheet"><div class="grid">${Array(4).fill('<img src="/games/diggers/img/src/tex/ref.jpg" alt="">').join('')}</div>${marks()}
   <div class="cap">Four field guides, one per digger</div></div>`;
-// crop marks for the board block: 63 mm wide, a cut every 22 mm, marks start 0.06 in off the art and run 0.35 in
+// crop marks for the site block: two 88 mm columns, a cut every 31.5 mm; the middle line is a fold, marked dashed. Marks start 0.06 in off the art and run 0.3 in
 const boardMarks = () => {
-  const mm = 1 / 25.4, W = 63 * mm, L = 4.25 - W / 2, T = 2.4, ys = [0, 1, 2, 3, 4].map(k => T + k * 22 * mm), g = .06, n = .35;
-  const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#555" stroke-width=".01"/>`;
+  const mm = 1 / 25.4, W = 88 * mm, L = 4.25 - W, T = 1.05, ys = [0, 1, 2, 3, 4, 5, 6].map(k => T + k * 31.5 * mm), g = .06, n = .3;
+  const ln = (x1, y1, x2, y2, d = '') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#555" stroke-width=".01" ${d ? `stroke-dasharray="${d}"` : ''}/>`;
   let s = '<svg class="marks" viewBox="0 0 8.5 11" preserveAspectRatio="none" width="100%" height="100%">';
-  for (const y of ys) s += ln(L - g - n, y, L - g, y) + ln(L + W + g, y, L + W + g + n, y);
-  for (const x of [L, L + W]) s += ln(x, ys[0] - g - n, x, ys[0] - g) + ln(x, ys[4] + g, x, ys[4] + g + n);
+  for (const y of ys) s += ln(L - g - n, y, L - g, y) + ln(L + 2 * W + g, y, L + 2 * W + g + n, y);
+  for (const x of [L, L + 2 * W]) s += ln(x, ys[0] - g - n, x, ys[0] - g) + ln(x, ys[6] + g, x, ys[6] + g + n);
+  s += ln(L + W, ys[0] - g - n, L + W, ys[0] - g, '.04 .03') + ln(L + W, ys[6] + g, L + W, ys[6] + g + n, '.04 .03');
   return s + '</svg>';
 };
-html += `<div class="page sheet"><div class="boards">${[0, 1, 2, 3].map(i => `<img src="/games/diggers/img/src/tex/marker-${i}.jpg" alt="">`).join('')}</div>${boardMarks()}
-  <div class="boards-note"><b>The dig sites</b>Each board is named for a quarry from the Bone Wars, the feud that sent Cope's and Marsh's crews racing each other across the West in the 1870s. Glue this sheet to thin cardboard (a cereal box works), then cut along the crop marks. Each strip is the width of a card, so all four fit in a tuck box with the deck. With two diggers, use any three.</div>
-  <div class="cap">Four dig-site boards, 63 × 22 mm (about 2½ × ⅞ inches), each the width of a card</div></div>`;
+html += `<div class="page sheet"><div class="boards-head"><span>Plain side</span><span>fold</span><span>Effect side</span></div>
+  <div class="boards">${[0, 1, 2, 3, 4, 5].map(i => `<img src="/games/diggers/img/src/tex/marker-${i}.jpg" alt=""><img src="/games/diggers/img/src/tex/marker-${i}-fx.jpg" alt="">`).join('')}</div>${boardMarks()}
+  <div class="boards-note"><p><b>The dig sites</b>Each is a quarry from the Bone Wars, the feud that sent Cope's and Marsh's crews racing each other across the West. Cut each strip out along the crop marks, fold it down the dashed middle line and glue the halves back to back. Two side by side are the size of one card.</p>
+  <p><b>Advanced: site effects</b>Once you know the game, play with the effect sides. At the start of each season, shuffle all six site cards and deal one, effect side up, to each dig site in play; return the rest to the box. An effect changes only finds at its own site, and everything else plays as normal. The rule is printed facing both camps.</p></div>
+  <div class="cap">Six dig-site cards, 88 × 31.5 mm (about 3½ × 1¼ inches), half a card each</div></div>`;
 document.getElementById('sheets').innerHTML = html;
 Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
 </script>

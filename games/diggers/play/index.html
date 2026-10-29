@@ -217,6 +217,18 @@ body { background-color: var(--rock); }
 .site .board::before, .site .board::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #6f675d; box-shadow: inset -1px -1px 0 #2c2620; top: 50%; margin-top: -2.5px; }
 .site .board::before { left: 4px; } .site .board::after { right: 4px; }
 .site .board b { font-family: var(--font-num); font-weight: 400; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.site .board .fxtag { font-family: var(--font-caps); font-size: 11.5px; letter-spacing: .04em; white-space: nowrap; background: #3b230f; color: #f3e3c0; padding: 1px 7px 0; border-radius: 2px; }
+.fxlegend { background: var(--sheet); border: 1px solid var(--line); border-left: 4px solid #b8572f; border-radius: 2px; padding: 10px 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 18px; box-shadow: var(--lift); }
+.fxlegend .eyebrow { grid-column: 1 / -1; }
+.fxlegend div { font-size: 13.5px; line-height: 1.35; }
+.fxlegend b { font-family: var(--font-display); font-weight: 400; font-size: 16px; }
+.fxlegend span { display: block; color: var(--muted); }
+.advtoggle { display: flex; gap: 12px; align-items: flex-start; text-align: left; font-weight: 400; padding: 12px; }
+.advtoggle .box { flex: none; width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 3px; margin-top: 2px; display: grid; place-items: center; font-weight: 700; line-height: 1; }
+.advtoggle.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.advtoggle.on .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.advtoggle b { font-family: var(--font-display); font-weight: 400; font-size: 18px; display: block; }
+.advtoggle .d { font-size: 13px; color: var(--muted); }
 .site .board .untouched { font-size: 11px; font-style: italic; color: rgba(59, 35, 15, .75); white-space: nowrap; }
 .site.v .board { writing-mode: vertical-rl; transform: rotate(180deg); flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 12px 5px; background: repeating-linear-gradient(90deg, rgba(110, 68, 30, .16) 0 1px, transparent 1px 5px), linear-gradient(90deg, #d2ab72, #c49a60 55%, #b48955); }
 .site.v .board::before { left: 50%; top: 4px; margin: 0 0 0 -2.5px; } .site.v .board::after { left: 50%; top: auto; bottom: 4px; right: auto; margin: 0 0 0 -2.5px; }
@@ -230,6 +242,7 @@ body { background-color: var(--rock); }
   .site.v .board { padding: 8px 3px; }
   .site .board .untouched:not(.farnote) { display: none; }
   .site .board .farnote { font-size: 9.5px; }
+  .site .board .fxtag { font-size: 10px; padding: 1px 5px 0; }
   .site .who { font-size: 10.5px; } .site .what { font-size: 10px; }
   .site .who .full { display: none; } .site .who .short { display: inline; }
   .site.v .what { display: none; }
@@ -750,8 +763,18 @@ const ROUND_CAPS = [4, 4, 4];
 let CAP = ROUND_CAPS[0];
 const TURN_CAP = 400;
 const NAMES = ["You", "Ashworth", "Penrose", "Hale"];
-// the four dig-site markers are named for real Bone Wars quarries
-const SITES = ["Como Bluff", "Garden Park", "Morrison", "Smoky Hill"];
+// the six dig-site cards are named for real Bone Wars quarries; the basic game uses the first ones in order
+const SITES = ["Como Bluff", "Garden Park", "Morrison", "Smoky Hill", "Judith River", "Lance Creek"];
+// Advanced variant: each site card's back has an effect. Every season the site cards are reshuffled and dealt.
+const SITE_FX = ["hard", "shared", "overturned", "shallow", "trackway", "open"];
+const FX = {
+  overturned: { name: "Overturned Beds", rule: "At equal size and kind, the lower total wins." },
+  shared:     { name: "Shared Claim",    rule: "A find that ties the one here takes the site." },
+  trackway:   { name: "Trackway",        rule: "Runs beat sets of the same size. Suited runs still beat both." },
+  shallow:    { name: "Shallow Pit",     rule: "Finds here are 1 or 2 cards." },
+  hard:       { name: "Hard Rock",       rule: "Finds here are 2 or more cards." },
+  open:       { name: "Open Pit",        rule: "Poach here without sending a card back." },
+};
 const TITLES = ["", "Prof.", "Dr.", "Mr."];
 
 function cmp(a, b) { for (let i = 0; i < 3; i++) { if (a[i] !== b[i]) return a[i] - b[i]; } return 0; }
@@ -793,13 +816,27 @@ function describe(cards) {
 }
 function myLanes(G, p) { return G.lanes.map((l, i) => i).filter(i => G.lanes[i].a === p || G.lanes[i].b === p); }
 function neighbor(G, i, p) { const l = G.lanes[i]; return l.a === p ? l.b : l.a; }
-function canPlayOn(G, lane, inf) { const m = G.lanes[lane].meld; return m.length === 0 || cmp(inf, meldInfo(m)) > 0; }
+// How a site ranks a find: [size, kind, total], bent by the site's effect in the advanced game.
+function siteKey(L, inf) {
+  if (!inf) return inf;
+  if (L.fx === "overturned") return [inf[0], inf[1], -inf[2]];
+  if (L.fx === "trackway") return [inf[0], inf[1] === 2 ? 2 : inf[1] === 1 ? 0 : 1, inf[2]]; // suited run > run > set
+  return inf;
+}
+function siteFits(L, inf) { return !(L.fx === "shallow" && inf[0] > 2) && !(L.fx === "hard" && inf[0] < 2); }
+function canPlayOn(G, lane, inf) {
+  const L = G.lanes[lane], m = L.meld;
+  if (!siteFits(L, inf)) return false;
+  if (!m.length) return true;
+  const c = cmp(siteKey(L, inf), siteKey(L, meldInfo(m)));
+  return L.fx === "shared" ? c >= 0 : c > 0;
+}
 function obj(G, i) { return i === 0 && !G.online ? "you" : G.players[i].name; }
 
-function newGame(n, humanSeats) {
+function newGame(n, humanSeats, adv = false) {
   const cfg = CONFIG[n];
   const G = {
-    n, cfg, round: 0, turn: 0, first: 0, turnCount: 0, phase: "play",
+    n, cfg, adv: !!adv, round: 0, turn: 0, first: 0, turnCount: 0, phase: "play",
     players: Array.from({ length: n }, (_, i) => ({ name: NAMES[i], title: TITLES[i], human: humanSeats.includes(i), hand: [], score: 0, sheds: 0, r3: 0, roundPts: [] })),
     lanes: cfg.lanes.map(([a, b]) => ({ a, b, meld: [], owner: null })),
     log: [], offer: null, last: null, roundResult: null,
@@ -811,6 +848,9 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.fl
 function dealRound(G) {
   // sites and rock faces are cleared between seasons; the player-count deck is reshuffled
   for (const L of G.lanes) { L.meld = []; L.owner = null; }
+  // basic game: the first site cards, plain side up. Advanced: the six are reshuffled and dealt effect side up.
+  const deal = G.adv ? shuffle([0, 1, 2, 3, 4, 5]) : [0, 1, 2, 3, 4, 5];
+  G.lanes.forEach((L, i) => { L.site = deal[i]; L.fx = G.adv ? SITE_FX[deal[i]] : null; });
   for (const p of G.players) p.hand = [];
   CAP = ROUND_CAPS[G.round];
   G.last = null;
@@ -820,7 +860,7 @@ function dealRound(G) {
   for (let k = 0; k < G.cfg.hand; k++) for (const p of G.players) p.hand.push(pool.pop());
   G.first = G.round % G.n; G.turn = G.first; G.turnCount = 0; G.phase = "play"; G.offer = null;
   const v = ROUND_VALUES[G.round];
-  addLog(G, `Season ${G.round + 1} opens. Each site is worth ${v} prestige.`);
+  addLog(G, `Season ${G.round + 1} opens. Each site is worth ${v} prestige.` + (G.adv ? ` Site effects: ${G.lanes.map(L => `${SITES[L.site]} (${FX[L.fx].name})`).join(", ")}.` : ""));
 }
 function addLog(G, msg) { G.log.unshift(msg); if (G.log.length > 40) G.log.pop(); }
 
@@ -855,6 +895,10 @@ function makeOffer(G, from, lane, takenCard, offered) {
   if (tut) { h.splice(h.indexOf(TUT_KEEP_AFTER) + 1, 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
   else if (botAccepts(h, offered)) { h.splice(bestInsert(h, offered), 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
   else addLog(G, `${G.players[to].name} turned it away; it is out of the dig this season.`);
+  nextTurn(G);
+}
+function keepPoach(G, from, lane, takenCard) {
+  addLog(G, `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)}; it's an open pit, so nothing went back.`);
   nextTurn(G);
 }
 function resolveOffer(G, accept, pos) {
@@ -899,7 +943,7 @@ function viewFor(G, seat) {
   const n = G.n, real = j => (j + seat) % n, rot = i => (i - seat + n) % n;
   const laneOf = j => n === 2 ? j : (j + seat) % n; // 3-4 diggers: site i lies between camps i and i+1
   return {
-    online: true, you: seat, ver: G.ver, gid: G.gid, n, cfg: G.cfg, round: G.round, turnCount: G.turnCount, phase: G.phase,
+    online: true, you: seat, ver: G.ver, gid: G.gid, n, cfg: G.cfg, adv: !!G.adv, round: G.round, turnCount: G.turnCount, phase: G.phase,
     turn: rot(G.turn), first: rot(G.first),
     players: Array.from({ length: n }, (_, j) => {
       const p = G.players[real(j)];
@@ -908,7 +952,7 @@ function viewFor(G, seat) {
     }),
     lanes: Array.from({ length: G.lanes.length }, (_, j) => {
       const L = G.lanes[laneOf(j)];
-      return { a: rot(L.a), b: rot(L.b), meld: L.meld.slice(), owner: L.owner === null ? null : rot(L.owner), site: laneOf(j) };
+      return { a: rot(L.a), b: rot(L.b), meld: L.meld.slice(), owner: L.owner === null ? null : rot(L.owner), site: L.site != null ? L.site : laneOf(j), fx: L.fx || null };
     }),
     offer: G.offer ? { from: rot(G.offer.from), to: rot(G.offer.to), card: G.offer.to === seat || G.offer.from === seat ? G.offer.card : null } : null,
     roundResult: G.roundResult ? { round: G.roundResult.round, value: G.roundResult.value, shedder: G.roundResult.shedder === null ? null : rot(G.roundResult.shedder),
@@ -941,9 +985,10 @@ function hostApply(G, seat, a) {
       doPlay(G, seat, lane, a.s, a.e); return { ok: true };
     }
     if (!G.lanes[lane].meld.length) return no("There's nothing at that site to poach.");
-    if (!int(a.pos, 0, h.length) || !int(a.oi, 0, h.length)) return no("That spot isn't in your rock face.");
+    if (!int(a.pos, 0, h.length) || (G.lanes[lane].fx !== "open" && !int(a.oi, 0, h.length))) return no("That spot isn't in your rock face.");
     const card = scoutTake(G, seat, lane, !!a.left);
     h.splice(a.pos, 0, card);
+    if (G.lanes[lane].fx === "open") { keepPoach(G, seat, lane, card); return { ok: true }; }
     const offered = h.splice(a.oi, 1)[0];
     makeOffer(G, seat, lane, card, offered); return { ok: true };
   }
@@ -975,9 +1020,10 @@ function botBestPlay(G, p) {
   const urgency = Math.max(0, 7 - h.length) * 2.5;
   for (const x of slices(h)) for (const lane of myLanes(G, p)) {
     const L = G.lanes[lane]; let sc;
-    if (!L.meld.length) sc = x.inf[0] * (10 + urgency) + x.inf[2] * .3 + 4;
-    else if (cmp(x.inf, meldInfo(L.meld)) > 0) sc = x.inf[0] * (10 + urgency) + x.inf[2] * .3 - L.meld.length * 6 + (L.owner !== p ? 5 : 0);
-    else continue;
+    if (!canPlayOn(G, lane, x.inf)) continue;
+    const tot = (L.fx === "overturned" ? 20 - x.inf[2] : x.inf[2]) * .3;
+    if (!L.meld.length) sc = x.inf[0] * (10 + urgency) + tot + 4;
+    else sc = x.inf[0] * (10 + urgency) + tot - L.meld.length * 6 + (L.owner !== p ? 5 : 0);
     if (!best || sc > best.sc) best = { sc, lane, s: x.s, e: x.e, inf: x.inf };
   }
   return best;
@@ -993,7 +1039,8 @@ function botScoutOptions(G, p) {
       const nw = rem.length ? meldInfo(rem) : [0,0,0];
       const pos = bestInsert(h, card); const nh = [...h.slice(0, pos), card, ...h.slice(pos)];
       let oi = 0, post = null;
-      for (let j = 0; j < nh.length; j++) { const m = bestMeld([...nh.slice(0, j), ...nh.slice(j + 1)]); if (!post || cmp(m, post) > 0) { post = m; oi = j; } }
+      if (L.fx === "open") { post = bestMeld(nh); oi = -1; } // an open pit: keep the bone, send nothing
+      else for (let j = 0; j < nh.length; j++) { const m = bestMeld([...nh.slice(0, j), ...nh.slice(j + 1)]); if (!post || cmp(m, post) > 0) { post = m; oi = j; } }
       const gain = cmp(post, cur) > 0 ? (post[0] - cur[0]) * 8 + (post[2] - cur[2]) * .3 : 0;
       const dmg = (old[0] - nw[0]) * 6 + (old[2] - nw[2]) * .2 + (rem.length ? 0 : 15);
       out.push({ sc: gain * .6 - 4 + (L.owner === p ? -dmg : dmg), size: post[0], lane, left, pos, oi });
@@ -1029,6 +1076,7 @@ function botTurn(G) {
   if (act.kind === "play") return doPlay(G, p, act.lane, act.s, act.e);
   const card = scoutTake(G, p, act.lane, act.left);
   const h = G.players[p].hand; h.splice(act.pos, 0, card);
+  if (act.oi < 0) return keepPoach(G, p, act.lane, card);
   const offered = h.splice(act.oi, 1)[0];
   makeOffer(G, p, act.lane, card, offered);
 }
@@ -1159,7 +1207,7 @@ function applyDigSite() {
 // ===================== UI =====================
 let G = null;
 let net = null; // an online table: NETX.HostSession or NETX.GuestSession
-let ui = { sel: [], mode: null, scout: null, setupN: 3, open: {} };
+let ui = { sel: [], mode: null, scout: null, setupN: 3, adv: false, open: {} };
 let botTimer = null;
 const root = typeof document !== "undefined" ? document.getElementById("root") : null;
 const PCOL = ["var(--p0)", "var(--p1)", "var(--p2)", "var(--p3)"];
@@ -1241,7 +1289,7 @@ function laneHtml(i) {
   const empty = L.owner === null ? `<span class="untouched">untouched ground</span>` : "";
   return `<div class="cell site ${dir} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
     ${side(pa, "a")}
-    <div class="board"><b>${laneName(G, i)}</b>${mine ? empty : `<span class="untouched farnote">not beside you</span>`}</div>
+    <div class="board" ${L.fx ? `title="${FX[L.fx].name}: ${FX[L.fx].rule}"` : ""}><b>${laneName(G, i)}</b>${L.fx ? `<span class="fxtag">${FX[L.fx].name}</span>` : ""}${mine ? (L.fx ? "" : empty) : `<span class="untouched farnote">not beside you</span>`}</div>
     ${side(pb, "b")}
   </div>`;
 }
@@ -1257,6 +1305,10 @@ function centerHtml() {
   </div>`;
 }
 
+function fxLegendHtml() {
+  if (!G.adv || !G.lanes.some(L => L.fx)) return "";
+  return `<div class="fxlegend" aria-label="Site effects this season"><div class="eyebrow">Site effects this season</div>${G.lanes.map((L, i) => `<div><b>${laneName(G, i)} · ${FX[L.fx].name}</b><span>${FX[L.fx].rule}</span></div>`).join("")}</div>`;
+}
 function tableHtml() {
   const cell = c => c === "-" ? `<div class="cell"></div>` : c === "c" ? centerHtml() : c === "s0w" ? seatHtml(0, true) : c[0] === "s" ? seatHtml(+c[1]) : laneHtml(+c[1]);
   return `<div class="table t${G.n} ${tutStep() && tutStep().focus === "sites" ? "tut-focus" : ""}">${LAYOUT[G.n].cells.map(cell).join("")}</div>`;
@@ -1282,7 +1334,7 @@ function statusHtml() {
     hint = "The host's browser checks every move before it lands.";
   } else if (ui.mode === "placeScout") {
     who = `Set the poached ${cardName(ui.scout.card)}`;
-    hint = "Tap a gap in your rock face to place it.";
+    hint = G.lanes[ui.scout.lane].fx === "open" ? "Tap a gap in your rock face to place it. It's an open pit, so you send nothing back." : "Tap a gap in your rock face to place it.";
   } else if (ui.mode === "chooseOffer") {
     who = `Send a specimen to ${fullName(ui.scout.to)}`;
     hint = "Tap any fossil in your rock face, including the one you just poached. They can keep it or turn it away.";
@@ -1362,6 +1414,7 @@ function rulesHtml() {
     <li><b>Between seasons:</b> every site and rock face is cleared, the deck is reshuffled, and each camp gets ${c.hand} fresh fossils.</li>
     <li><b>Deck:</b> one more species than diggers: two diggers play with three species (27 cards), three with four (36), four with all five (45).</li>
     <li><b>Tiebreaker:</b> most seasons closed by finishing your dig, then most prestige in the final season.</li>
+    <li><b>Advanced: site effects.</b> Each season, shuffle the six site cards and deal one effect side up to each site. ${Object.values(FX).map(f => `<i>${f.name}:</i> ${f.rule}`).join(" ")}</li>
   </ul></details>`;
 }
 
@@ -1383,6 +1436,7 @@ function setupHtml() {
   <div class="setup">
     <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can be up to 4 cards.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
+    <button class="advtoggle ${ui.adv ? "on" : ""}" data-act="advtoggle" aria-pressed="${ui.adv}"><span class="box">${ui.adv ? "✓" : ""}</span><span><b>Advanced: site effects</b><span class="d">Each season the six site cards are shuffled and dealt effect side up: Overturned Beds, Shared Claim, Trackway, Shallow Pit, Hard Rock and Open Pit. Online tables use this setting too.</span></span></button>
     <div class="actions"><button class="primary" data-act="start">Open the first season</button><button class="tutbtn" data-act="tutorial">New here? Take the 2-minute field lesson</button></div>
   </div>${onlinePanelHtml()}${rulesHtml()}${catalogueHtml()}`;
 }
@@ -1390,9 +1444,9 @@ function setupHtml() {
 function render() {
   if (!root) return;
   if (!G) { root.innerHTML = net ? lobbyHtml() : ui.invite ? inviteHtml() : setupHtml(); return; }
-  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}</div><h1>Diggers</h1></div>
+  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}${G.adv ? " · site effects" : ""}</div><h1>Diggers</h1></div>
     <button data-act="setup">${net ? "Leave the table" : "New expedition"}</button></div>
-    ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
+    ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${fxLegendHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
   if (net && net.kind === "host") net.sync();
 }
 
@@ -1401,7 +1455,8 @@ function onAct(t) {
   if (netOnAct(act, t)) return;
   const guest = net && net.kind === "guest";
   if (act === "pickn") { ui.setupN = +t.dataset.n; return render(); }
-  if (act === "start" || act === "again") { tut = null; G = newGame(act === "again" ? G.n : ui.setupN, [0]); resetUi(); render(); return scheduleBot(); }
+  if (act === "advtoggle") { ui.adv = !ui.adv; return render(); }
+  if (act === "start" || act === "again") { tut = null; G = newGame(act === "again" ? G.n : ui.setupN, [0], act === "again" ? G.adv : ui.adv); resetUi(); render(); return scheduleBot(); }
   if (act === "tutorial") { clearTimeout(botTimer); botTimer = null; startTutorial(); resetUi(); render(); return window.scrollTo(0, 0); }
   if (act === "tutnext") { tut.step++; return render(); }
   if (act === "tutskip") { tut = null; render(); return scheduleBot(); }
@@ -1432,7 +1487,15 @@ function onAct(t) {
   }
   if (act === "slot") {
     const pos = +t.dataset.pos;
-    if (ui.mode === "placeScout") { me.hand.splice(pos, 0, ui.scout.card); ui.scout.pos = pos; ui.mode = "chooseOffer"; return render(); }
+    if (ui.mode === "placeScout") {
+      me.hand.splice(pos, 0, ui.scout.card); ui.scout.pos = pos;
+      if (G.lanes[ui.scout.lane].fx === "open") {
+        const sc = ui.scout; resetUi();
+        if (guest) { netSend({ type: "poach", lane: sc.lane, left: sc.left, pos: sc.pos, oi: -1 }); return render(); }
+        keepPoach(G, 0, sc.lane, sc.card); render(); return scheduleBot();
+      }
+      ui.mode = "chooseOffer"; return render();
+    }
     if (ui.mode === "placeReceived" && guest) { ui.mode = null; netSend({ type: "keep", pos }); return render(); }
     if (ui.mode === "placeReceived") { ui.mode = null; resolveOffer(G, true, pos); render(); return scheduleBot(); }
   }
@@ -1650,7 +1713,7 @@ const NETX = (() => {
     toggleSeat(i) { const s = this.seats[i]; if (this.started || !s) return; if (s.kind === "guest") this.replyRaw(s.token, { t: "rejected", reason: "The host gave your seat to a bot." }); this.seats[i] = { kind: s.kind === "open" ? "bot" : s.kind === "guest" ? "bot" : "open" }; this.pushLobby(); }
     startGame() {
       const humans = this.seats.map((s, i) => s.kind === "host" || s.kind === "guest" ? i : -1).filter(i => i >= 0);
-      tut = null; G = newGame(this.n, humans);
+      tut = null; G = newGame(this.n, humans, ui.adv);
       G.online = true; G.ver = 0; G.ready = []; G.gid = Math.random().toString(36).slice(2, 8);
       this.seats.forEach((s, i) => {
         const p = G.players[i];
@@ -1951,7 +2014,7 @@ if (root) {
   window.claude?.hot?.snapshot?.(() => ({ G, setupN: ui.setupN }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 }
-if (typeof module !== "undefined") module.exports = { newGame, botTurn, nextRound, standings, meldInfo, cmp, describe, V, SP, cardName, viewFor, logFor, makeOffer, resolveOffer, doPlay, scoutTake, myLanes, canPlayOn, botAccepts, bestInsert, hostApply, standIn };
+if (typeof module !== "undefined") module.exports = { canPlayOn, FX, SITES, newGame, botTurn, nextRound, standings, meldInfo, cmp, describe, V, SP, cardName, viewFor, logFor, makeOffer, resolveOffer, doPlay, scoutTake, myLanes, canPlayOn, botAccepts, bestInsert, hostApply, standIn };
 </script>
 </body>
 </html>

@@ -29,7 +29,7 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - `assets/css/diggers.css` — Diggers skin on top of the shared game-page layout
 - `games/diggers/sell-sheet.html` and `games/diggers/print-and-play.html` — sources for the two Diggers PDFs (sell sheet: US Letter landscape; print-and-play: US Letter portrait; no margins, backgrounds on)
 - `games/diggers/img/src/` — sources for the Diggers mockups: `scene.html` (three.js stills, `?scene=hero|table|kit`), the box, field-guide and marker art, `fossil-art.js` (draws the six skeleton slabs every card face is cut from) and `card-print.js` (composes print-ready faces with bleed); rendered textures in `tex/`
-- Diggers production spec the art is drawn to: dig-site boards are 63 × 22 mm punchboard strips (four make one card-sized layer) and the box is a 66 × 92 × 32 mm poker-card tuck box. `img/og.jpg` is `render-hero` scaled to 1200 wide and cropped to rows 60–690
+- Diggers production spec the art is drawn to: dig-site cards are six double-sided half cards, 88 × 31.5 mm (a poker card cut top to bottom; plain side `marker.html?i=N`, effect side `?i=N&side=fx`) and the box is a 66 × 92 × 32 mm poker-card tuck box. `img/og.jpg` is `render-hero` scaled to 1200 wide and cropped to rows 60–690
 - `games/diggers/play/index.html` — the playable build; its script also runs in node (`module.exports`), so bot-only games can be checked headless
 - `assets/css/down-for-the-count.css` — Down for the Count skin on top of the shared game-page layout
 - `games/down-for-the-count/sell-sheet.html` and `games/down-for-the-count/print-and-play.html` — sources for the two Down for the Count PDFs (sell sheet: US Letter landscape; print-and-play: US Letter portrait; no margins, backgrounds on)

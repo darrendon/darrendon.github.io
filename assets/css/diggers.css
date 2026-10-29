@@ -76,13 +76,16 @@
 .slab-sheet{margin:clamp(32px,5vw,56px) 0 0}
 .slab-sheet img{display:block;width:100%;max-width:880px;height:auto;margin:0 auto;border:3px solid var(--g-ink);box-shadow:6px 6px 0 var(--dig-shadow)}
 
-/* the four quarries */
+/* the six quarries: each card shown plain side over effect side */
 .quarries{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:clamp(24px,4vw,56px);margin-top:clamp(48px,7vw,88px);align-items:start}
 .quarries h3{font-family:var(--dig-title);font-size:clamp(24px,2.6vw,32px);line-height:1.1;margin:0 0 12px}
 .quarries .q-head p{font-size:16.5px;color:var(--g-muted);max-width:42ch;margin:0}
 .q-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 26px}
 .q-grid figure{margin:0;display:flex;flex-direction:column;gap:10px}
 .q-grid img{width:100%;height:auto;display:block;border:2px solid var(--g-ink);box-shadow:4px 4px 0 var(--dig-shadow)}
+.q-grid .sides{display:flex;flex-direction:column;gap:8px}
+.quarries .q-head p.q-adv{margin-top:16px;color:var(--g-ink);border-left:4px solid var(--g-red);padding-left:12px}
+.q-adv b{font-family:var(--dig-head);font-weight:400;font-size:18px;color:var(--g-red)}
 .q-grid figcaption{font-size:15px;line-height:1.45;color:var(--g-muted)}
 .q-grid figcaption b{font-family:var(--dig-head);font-weight:400;font-size:19px;color:var(--g-ink)}
 .q-grid figcaption span{font-family:var(--dig-caps);font-size:14px;color:var(--g-red);display:block;margin-bottom:2px}

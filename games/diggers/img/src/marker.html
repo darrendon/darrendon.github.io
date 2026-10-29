@@ -1,73 +1,93 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/css/fonts.css"><style>
 html,body{margin:0;background:#000}
-/* dig-site board: a printed punchboard strip the width of a card, 63 x 22 mm at 16 px/mm (about 406 dpi).
-   Four of them laid side by side are exactly one card (63 x 88 mm). The art is a weathered quarry plank. ?i=0..3 picks the site */
-#m{width:1008px;height:352px;position:relative;overflow:hidden;color:#3b230f}
+/* dig-site card: half a poker card, cut top to bottom (88 x 31.5 mm), at 16 px/mm (about 406 dpi). Six of them, double-sided:
+   the plain side is the site; the effect side (?side=fx) adds an advanced rule, printed twice so both camps read it the right way up.
+   ?i=0..5 picks the site */
+#m{width:1408px;height:504px;position:relative;overflow:hidden;color:#3b230f}
 #m canvas{position:absolute;inset:0}
-#m .bev{position:absolute;inset:0;box-shadow:inset 0 0 0 4px rgba(40,22,8,.85),inset 0 0 0 12px rgba(255,236,200,.10),inset 0 0 34px rgba(50,26,8,.55)}
-#m .rule{position:absolute;left:120px;right:120px;height:3px;background:rgba(59,35,15,.55)}
-#m .rule.a{top:58px}#m .rule.b{bottom:58px}
-#m .scale{position:absolute;left:120px;right:120px;top:40px;height:13px;display:flex}
+#m .bev{position:absolute;inset:0;box-shadow:inset 0 0 0 5px rgba(40,22,8,.85),inset 0 0 0 16px rgba(255,236,200,.10),inset 0 0 46px rgba(50,26,8,.55)}
+#m .rule{position:absolute;left:168px;right:168px;height:4px;background:rgba(59,35,15,.55)}
+#m .rule.a{top:82px}#m .rule.b{bottom:82px}
+#m .scale{position:absolute;left:168px;right:168px;top:58px;height:18px;display:flex}
 #m .scale i{flex:1;background:rgba(48,26,10,.78)}#m .scale i:nth-child(even){background:rgba(250,236,206,.5)}
-#m .name{position:absolute;left:0;right:0;top:92px;text-align:center;font-family:Rye;font-size:104px;letter-spacing:7px;line-height:1;white-space:nowrap;
-  mix-blend-mode:multiply;text-shadow:0 0 2px rgba(70,34,10,.9),0 0 7px rgba(90,46,14,.35)}
-#m .sub{position:absolute;left:0;right:0;bottom:76px;text-align:center;font-family:"IM Fell English SC";font-size:38px;letter-spacing:5px;white-space:nowrap;mix-blend-mode:multiply;color:#4a2c14}
-#m .end{position:absolute;top:58px;bottom:58px;width:120px;display:flex;align-items:center;justify-content:center}
+#m .name{position:absolute;left:0;right:0;top:132px;text-align:center;font-family:Rye;font-size:146px;letter-spacing:10px;line-height:1;white-space:nowrap;
+  mix-blend-mode:multiply;text-shadow:0 0 3px rgba(70,34,10,.9),0 0 10px rgba(90,46,14,.35)}
+#m .sub{position:absolute;left:0;right:0;bottom:106px;text-align:center;font-family:"IM Fell English SC";font-size:52px;letter-spacing:7px;white-space:nowrap;mix-blend-mode:multiply;color:#4a2c14}
+#m .end{position:absolute;top:82px;bottom:82px;width:168px;display:flex;align-items:center;justify-content:center}
 #m .end.l{left:0}#m .end.r{right:0}
-#m .end svg{width:78px;height:78px;mix-blend-mode:multiply}
-#m .nail{position:absolute;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d8d2c4,#7c746a 45%,#2c2620 80%);box-shadow:1px 2px 2px rgba(20,10,2,.7)}
-</style></head><body><div id="m"><canvas id="cv" width="1008" height="352"></canvas><div class="bev"></div>
-<div class="scale"></div><div class="rule a"></div><div class="rule b"></div>
-<div class="end l"></div><div class="end r"></div>
-<div class="name" id="name"></div><div class="sub" id="sub"></div></div>
+#m .end svg{width:108px;height:108px;mix-blend-mode:multiply}
+#m .nail{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d8d2c4,#7c746a 45%,#2c2620 80%);box-shadow:1px 2px 3px rgba(20,10,2,.7)}
+/* effect side: a red sandstone band carries the site name; the rule sits above it upside down and below it the right way up */
+#m.fx .band{position:absolute;left:0;right:0;top:192px;height:120px;background:#9c3f27;box-shadow:inset 0 5px 0 rgba(36,24,14,.55),inset 0 -5px 0 rgba(36,24,14,.55);display:flex;align-items:center;justify-content:center;gap:34px}
+#m.fx .band b{font-family:Rye;font-weight:400;font-size:66px;letter-spacing:8px;color:#f6e8c8;line-height:1;white-space:nowrap;text-shadow:0 2px 0 rgba(36,24,14,.5)}
+#m.fx .band svg{width:62px;height:62px;flex:none}
+#m.fx .half{position:absolute;left:70px;right:70px;height:192px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px}
+#m.fx .half.top{top:0;transform:rotate(180deg)}#m.fx .half.bot{bottom:0}
+#m.fx .half h2{margin:0;font-family:"IM Fell English SC";font-weight:400;font-size:66px;letter-spacing:4px;line-height:1;mix-blend-mode:multiply;color:#3b230f}
+#m.fx .half p{margin:0;font-family:"IM Fell English";font-size:48px;line-height:1.08;mix-blend-mode:multiply;color:#2d1a0b;max-width:1220px}
+</style></head><body><div id="m"><canvas id="cv" width="1408" height="504"></canvas><div class="bev"></div></div>
 <script>
-const W = 1008, H = 352;
+const W = 1408, H = 504;
 const SITES = [
-  ['Como Bluff', 'Site I · Wyoming Territory · 1877'],
-  ['Garden Park', 'Site II · Colorado · 1877'],
-  ['Morrison', 'Site III · Colorado · 1877'],
-  ['Smoky Hill', 'Site IV · Kansas · 1870'],
+  ['Como Bluff', 'Site I · Wyoming Territory · 1877', 'Hard Rock', 'Finds here are 2 or more cards.'],
+  ['Garden Park', 'Site II · Colorado · 1877', 'Shared Claim', 'A find that ties the one here takes the site.'],
+  ['Morrison', 'Site III · Colorado · 1877', 'Overturned Beds', 'At equal size and kind, the lower total wins.'],
+  ['Smoky Hill', 'Site IV · Kansas · 1870', 'Shallow Pit', 'Finds here are 1 or 2 cards.'],
+  ['Judith River', 'Site V · Montana Territory · 1876', 'Trackway', 'Runs beat sets of the same size. Suited runs still beat both.'],
+  ['Lance Creek', 'Site VI · Wyoming Territory · 1889', 'Open Pit', 'Poach here without sending a card back.'],
 ];
-const i = +(new URLSearchParams(location.search).get('i') || 0);
-document.getElementById('name').textContent = SITES[i][0].toUpperCase();
-document.getElementById('sub').textContent = SITES[i][1];
-document.querySelector('.scale').innerHTML = '<i></i>'.repeat(16);
+const q = new URLSearchParams(location.search), i = +(q.get('i') || 0), fx = q.get('side') === 'fx';
+const [NAME, SUB, FXN, FXR] = SITES[i];
+const m = document.getElementById('m');
 // crossed pick and brush, burned into the plank
-const tool = `<svg viewBox="0 0 100 100" fill="#3b230f" aria-hidden="true">
+const tool = (col) => `<svg viewBox="0 0 100 100" fill="${col}" aria-hidden="true">
   <g transform="rotate(-38 50 50)"><rect x="47" y="14" width="6" height="74" rx="2"/><path d="M14 22 Q50 2 86 22 L84 27 Q50 12 16 27Z"/></g>
-  <g transform="rotate(38 50 50)"><rect x="47.5" y="38" width="5" height="50" rx="2"/><path d="M41 38 L59 38 L60 22 L40 22Z"/><path d="M40 22 L39 6 M43 22 L42.5 5 M46 22 L46 4 M49 22 L49 4 M52 22 L52 4 M55 22 L55.5 5 M58 22 L59 5 M60 22 L61 6" stroke="#3b230f" stroke-width="2.2"/></g>
+  <g transform="rotate(38 50 50)"><rect x="47.5" y="38" width="5" height="50" rx="2"/><path d="M41 38 L59 38 L60 22 L40 22Z"/><path d="M40 22 L39 6 M43 22 L42.5 5 M46 22 L46 4 M49 22 L49 4 M52 22 L52 4 M55 22 L55.5 5 M58 22 L59 5 M60 22 L61 6" stroke="${col}" stroke-width="2.2"/></g>
 </svg>`;
-document.querySelectorAll('.end').forEach(e => e.innerHTML = tool);
-for (const [x, y] of [[30, 30], [30, H - 50], [W - 50, 30], [W - 50, H - 50]]) { const n = document.createElement('div'); n.className = 'nail'; n.style.left = x + 'px'; n.style.top = y + 'px'; document.getElementById('m').appendChild(n); }
+if (fx) {
+  m.classList.add('fx');
+  m.insertAdjacentHTML('beforeend', `<div class="band">${tool('#f6e8c8')}<b>${NAME.toUpperCase()}</b>${tool('#f6e8c8')}</div>` +
+    ['top', 'bot'].map(k => `<div class="half ${k}"><h2>${FXN}</h2><p>${FXR}</p></div>`).join(''));
+} else {
+  m.insertAdjacentHTML('beforeend', `<div class="scale">${'<i></i>'.repeat(16)}</div><div class="rule a"></div><div class="rule b"></div>
+    <div class="end l">${tool('#3b230f')}</div><div class="end r">${tool('#3b230f')}</div>
+    <div class="name" id="name">${NAME.toUpperCase()}</div><div class="sub">${SUB}</div>`);
+  for (const [x, y] of [[40, 40], [40, H - 66], [W - 66, 40], [W - 66, H - 66]]) m.insertAdjacentHTML('beforeend', `<div class="nail" style="left:${x}px;top:${y}px"></div>`);
+}
 
 // weathered pine: long grain, a knot, sun-bleached streaks
 const c = document.getElementById('cv'), g = c.getContext('2d');
-let s = 11 + i * 97; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+let s = 11 + i * 97 + (fx ? 5003 : 0); const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
 const base = g.createLinearGradient(0, 0, 0, H); base.addColorStop(0, '#d2ab72'); base.addColorStop(.5, '#c79d63'); base.addColorStop(1, '#b88c55');
 g.fillStyle = base; g.fillRect(0, 0, W, H);
-const kx = 220 + r() * 560, ky = 110 + r() * 80; // the knot sits in the name band, clear of the small type
-for (let k = 0; k < 300; k++) {
-  const y0 = r() * (H + 10) - 5, dark = r() < .55;
-  g.strokeStyle = dark ? `rgba(110,68,30,${.08 + r() * .2})` : `rgba(240,214,170,${.06 + r() * .14})`; g.lineWidth = .8 + r() * 3;
+// the knot sits in the name band on the plain side, under the sandstone band on the effect side: clear of the small type either way
+const kx = 300 + r() * 800, ky = fx ? 252 : 160 + r() * 110;
+for (let k = 0; k < 420; k++) {
+  const y0 = r() * (H + 14) - 7, dark = r() < .55;
+  g.strokeStyle = dark ? `rgba(110,68,30,${.08 + r() * .2})` : `rgba(240,214,170,${.06 + r() * .14})`; g.lineWidth = 1.1 + r() * 4;
   g.beginPath();
-  for (let x = -10; x <= W + 10; x += 10) {
+  for (let x = -14; x <= W + 14; x += 14) {
     const dx = x - kx, dy = y0 - ky, d2 = dx * dx / 9 + dy * dy;
-    const bend = 1500 / (d2 / 40 + 30) * Math.sign(dy || 1);
-    const y = y0 + Math.sin(x / 120 + y0) * 3 + bend;
+    const bend = 2100 / (d2 / 56 + 42) * Math.sign(dy || 1);
+    const y = y0 + Math.sin(x / 168 + y0) * 4 + bend;
     x < 0 ? g.moveTo(x, y) : g.lineTo(x, y);
   }
   g.stroke();
 }
-for (let k = 9; k > 0; k--) { g.strokeStyle = `rgba(90,50,20,${.18 + (9 - k) * .04})`; g.lineWidth = 1.8; g.beginPath(); g.ellipse(kx, ky, k * 7, k * 3.2, 0, 0, 6.29); g.stroke(); }
-g.fillStyle = 'rgba(70,36,12,.55)'; g.beginPath(); g.ellipse(kx, ky, 9, 4.4, 0, 0, 6.29); g.fill();
-for (let k = 0; k < 1200; k++) { g.fillStyle = `rgba(${r() < .5 ? '80,46,18' : '250,230,195'},${r() * .12})`; g.fillRect(r() * W, r() * H, 1 + r() * 4, 1.4); }
+for (let k = 9; k > 0; k--) { g.strokeStyle = `rgba(90,50,20,${.18 + (9 - k) * .04})`; g.lineWidth = 2.5; g.beginPath(); g.ellipse(kx, ky, k * 10, k * 4.5, 0, 0, 6.29); g.stroke(); }
+g.fillStyle = 'rgba(70,36,12,.55)'; g.beginPath(); g.ellipse(kx, ky, 13, 6, 0, 0, 6.29); g.fill();
+for (let k = 0; k < 2300; k++) { g.fillStyle = `rgba(${r() < .5 ? '80,46,18' : '250,230,195'},${r() * .12})`; g.fillRect(r() * W, r() * H, 1 + r() * 5, 2); }
 const ends = g.createLinearGradient(0, 0, W, 0);
 ends.addColorStop(0, 'rgba(60,32,10,.35)'); ends.addColorStop(.07, 'rgba(60,32,10,0)'); ends.addColorStop(.93, 'rgba(60,32,10,0)'); ends.addColorStop(1, 'rgba(60,32,10,.35)');
 g.fillStyle = ends; g.fillRect(0, 0, W, H);
 document.fonts.ready.then(() => {
-  // keep the longest quarry name clear of the tool marks at the ends
-  const nm = document.getElementById('name'), span = document.createElement('span'); span.textContent = nm.textContent; nm.textContent = ''; nm.appendChild(span);
-  let fs = 104; while (span.getBoundingClientRect().width > W - 2 * 128 && fs > 60) { fs -= 2; nm.style.fontSize = fs + 'px'; }
+  const fit = (el, max, min, fs) => { const sp = document.createElement('span'); sp.textContent = el.textContent; el.textContent = ''; el.appendChild(sp);
+    while (sp.getBoundingClientRect().width > max && fs > min) { fs -= 2; el.style.fontSize = fs + 'px'; } };
+  if (fx) {
+    // keep the band's name clear of the tool marks, and every rule on at most two lines
+    const b = m.querySelector('.band b'); let fs = 66; while (b.getBoundingClientRect().width > W - 340 && fs > 40) { fs -= 2; b.style.fontSize = fs + 'px'; }
+    m.querySelectorAll('.half p').forEach(p => { let f = 48; while (p.getBoundingClientRect().height > 48 * 1.08 * 2 + 2 && f > 30) { f -= 2; p.style.fontSize = f + 'px'; } });
+  } else fit(document.getElementById('name'), W - 2 * 178, 80, 146);
   window.__done = true;
 });
 </script></body></html>
