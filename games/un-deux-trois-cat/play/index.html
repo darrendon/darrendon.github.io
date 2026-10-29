@@ -258,10 +258,10 @@ button{font:inherit;color:inherit}
       </div>
     </div>
     <ol class="rules">
-      <li>Any card shows a toy in <b>its own color</b>: grab that toy. If several different toys show their own color, each one can be grabbed, and everyone who grabs one scores.</li>
+      <li>Hold your cards face down. On “cat!”, everyone flips their top card. If any card shows a toy in <b>its own color</b>, grab that toy. If several do, each one is a correct grab, and a fast player can take more than one.</li>
       <li>No card shows a toy in its own color: <b>grab the cat</b>.</li>
-      <li>Grab a correct toy and keep your flipped card. Grab the wrong thing and you're out for the round, and you discard one of your scored cards.</li>
-      <li>When the decks run out, most cards wins. Ties go to a sudden death flip.</li>
+      <li>Each correct toy you grab is <b>a point</b>: a card face down in your point pile. Grab the wrong thing and you're out for the round, and you <b>lose a point</b>.</li>
+      <li>When the cards run out, most points wins. Ties go to a sudden death flip.</li>
     </ol>
     <div class="go">
       <button class="btn primary" id="startBtn" type="button">Start game</button>
@@ -644,8 +644,8 @@ const NAME = {bird:"Bird",fish:"Fish",ball:"Ball",mouse:"Mouse",fly:"Butterfly",
 const OWNER = Object.fromEntries(Object.entries(CORRECT).map(([o,c]) => [c,o]));
 const BOTS = ["Minou","Pompon","Biscotte","Chaussette","Moustache"];
 const DIFF = {
-  easy:{mean:1.95,sd:.45,perCard:.10,catExtra:.50,miss:.14,label:"Easy bots"},
-  hard:{mean:.92,sd:.18,perCard:.05,catExtra:.25,miss:.05,label:"Hard bots"}
+  easy:{mean:1.95,sd:.45,perCard:.10,catExtra:.50,miss:.14,again:.3,label:"Easy bots"},
+  hard:{mean:.92,sd:.18,perCard:.05,catExtra:.25,miss:.05,again:.65,label:"Hard bots"}
 };
 
 /* ---------- drawings (hand-painted look via the #paint filter) ---------- */
@@ -758,7 +758,7 @@ const O = {
   on: false, role: "", sess: null, code: "",
   phase: "", rid: 0, flipAt: 0, shown: null, claims: [], log: [], acks: {}, late: new Set(), win: null, close: null,
   res: null, tie: null, endInfo: null, stats: {},
-  view: null, key: "", facesRid: -1, t0: 0, t0rid: -1, renderAt: 0, pend: null, seq: 0, note: "", trouble: false, downAt: null
+  view: null, key: "", facesRid: -1, t0: 0, t0rid: -1, renderAt: 0, pends: [], seq: 0, note: "", trouble: false, downAt: null
 };
 const $ = id => document.getElementById(id);
 const rand = (a,b) => a + Math.random()*(b-a);
@@ -823,7 +823,7 @@ function renderSeats(){
     const dim = S.sudden && !S.eligible.includes(p);
     const flag = !S.resolved && S.out.has(p) ? `<span class="flag">Out</span>` : p.away ? `<span class="flag">Away</span>` : "";
     return `<div class="seat${p.human?" you":""}${dim||p.open?" dim":""}${p.away?" away":""}" data-seat="${i}"><span class="ava">${avatar(p.name, p.fur)}</span>
-      <span class="txt"><span class="nm">${p.name}</span><span class="sub"><span class="vp">★ ${p.vp.length}</span><span class="left">${p.deck.length} left</span>${flag}</span></span></div>`;
+      <span class="txt"><span class="nm">${p.name}</span><span class="sub"><span class="vp" title="Points">★ ${p.vp.length}</span><span class="left" title="Cards in hand">${p.deck.length} in hand</span>${flag}</span></span></div>`;
   }).join("");
   place();
 }
@@ -831,7 +831,7 @@ function renderTable(mode){
   const html = S.players.map((p,i) => {
     const n = p.deck.length, layers = Math.min(6, Math.ceil(n / 3));
     const stack = Array.from({length: layers}, (_, k) => `${(k+1)*1.5}px ${(k+1)*1.5}px 0 ${k % 2 ? "#e9e1d4" : "#2a1d31"}`).concat("0 8px 16px rgba(0,0,0,.4)").join(",");
-    const pile = n ? `<div class="pile" data-seat="${i}" style="box-shadow:${stack}" role="img" aria-label="${p.name}: ${n} cards left"></div>` : `<div class="pile empty" data-seat="${i}"></div>`;
+    const pile = n ? `<div class="pile" data-seat="${i}" style="box-shadow:${stack}" role="img" aria-label="${p.name}: ${n} cards in hand"></div>` : `<div class="pile empty" data-seat="${i}"></div>`;
     const faces = mode === "backs"
       ? Array.from({length: S.sudden ? 1 : S.flips}, () => `<div class="card spotmark"></div>`).join("")
       : p.flipped.map(c => `<div class="card flip"${isCorrect(c) ? ' data-ok="1"' : ""} role="img" aria-label="${p.name} flipped a ${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
@@ -1013,14 +1013,24 @@ function planBot(bot, cards, opt){
   }
 }
 const CLOSE_MS = 2500; // once someone scores, the other correct toys stay open this long
+// a bot that just scored may reach for another correct toy nobody holds yet, at its usual speed
+function botAgain(bot){
+  const d = DIFF[(O.on && O.sess && O.sess.diff) || S.diff];
+  if (S.sudden || Math.random() >= d.again) return;
+  later(() => {
+    if (S.resolved || S.out.has(bot)) return;
+    const open = [...S.legal].filter(o => !S.taken.has(o));
+    if (open.length) grab(bot, open[Math.floor(Math.random()*open.length)]);
+  }, Math.max(.35, d.mean*0.6 + d.sd*gauss()) * 1000);
+}
 function refreshToys(){
   const me = S.players[0];
-  const canAct = !S.resolved && S.eligible.includes(me) && !S.out.has(me) && !S.done.has(me);
+  const canAct = !S.resolved && S.eligible.includes(me) && !S.out.has(me);
   document.querySelectorAll(".toy").forEach(el => { el.disabled = !canAct || S.taken.has(el.dataset.t); });
 }
 function grab(p, target){
   if (O.on){ if (p.bot) claim(p, target, performance.now() - S.t0, 0); return; }   // online, bots claim like everyone else
-  if (S.resolved || S.out.has(p) || S.done.has(p) || !S.eligible.includes(p)) return;
+  if (S.resolved || S.out.has(p) || !S.eligible.includes(p)) return;
   if (S.taken.has(target)) return; // someone is already holding it
   const t = (performance.now() - S.t0) / 1000;
   if (S.tut && p.human && !S.legal.has(target) && !TUT.rounds[S.tut.i].live){
@@ -1035,10 +1045,11 @@ function grab(p, target){
     tagToy(target, `${p.name}<span class="tm"> · ${t.toFixed(2)}s</span>`, false);
     if (S.sudden) return resolve();
     const open = [...S.legal].filter(o => !S.taken.has(o));
-    if (!open.length || S.eligible.every(q => S.out.has(q) || S.done.has(q))) return resolve();
+    if (!open.length || S.eligible.every(q => S.out.has(q))) return resolve();
     if (S.scorers.length === 1) later(resolve, CLOSE_MS);
     banner(`${p.human ? "<b>You</b> have" : `<b>${p.name}</b> has`} the ${NAME[target].toLowerCase()}. Still up for grabs: ${open.map(o => NAME[o].toLowerCase()).join(", ")}.`);
     refreshToys(); renderSeats();
+    if (!p.human && !S.tut) botAgain(p);
     return;
   }
   S.out.add(p); S.misgrabs.push({p, target});
@@ -1046,7 +1057,7 @@ function grab(p, target){
   tagToy(target, p.name, true);
   if (p.human){ S.stats.miss++; banner(`Wrong grab. That's not the ${NAME[target].toLowerCase()}. You're out this round.`); }
   refreshToys(); renderSeats();
-  if (S.eligible.every(q => S.out.has(q) || S.done.has(q))) resolve();
+  if (S.eligible.every(q => S.out.has(q))) resolve();
 }
 function resolve(){
   if (S.resolved) return;
@@ -1054,23 +1065,24 @@ function resolve(){
   if (O.on){ O.win = O.close = null; O.claims = []; }
   S.legal.forEach(o => $("toy-"+o).classList.add("legal"));
   const scorers = S.scorers, first = scorers[0] ? scorers[0].p : null;
-  const me = scorers.find(s => s.p.human);
-  if (me && !S.sudden) S.stats.times.push(me.t);
+  if (!S.sudden) scorers.filter(s => s.p.human).forEach(s => S.stats.times.push(s.t));
 
   const notes = [], lost = [];
   if (!S.sudden){
-    const scored = new Set(scorers.map(s => s.p));
-    S.players.forEach(p => { (scored.has(p) ? p.vp : S.discard).push(...p.flipped); p.flipped = []; });
+    // each correct toy is a point: a card into the grabber's point pile, their own flipped card first, then any flipped card nobody claimed
+    const need = new Map();
+    scorers.forEach(s => need.set(s.p, (need.get(s.p) || 0) + 1));
+    const spare = [];
+    S.players.forEach(p => { const n = need.get(p) || 0; p.vp.push(...p.flipped.slice(0, n)); spare.push(...p.flipped.slice(n)); need.set(p, Math.max(0, n - p.flipped.length)); p.flipped = []; });
+    S.players.forEach(p => { for (let n = need.get(p) || 0; n > 0 && spare.length; n--) p.vp.push(spare.shift()); });
+    S.discard.push(...spare);
     for (const m of S.misgrabs){
-      if (m.p.vp.length){ S.discard.push(m.p.vp.pop()); notes.push(`${m.p.human ? "You" : m.p.name} lost a card`); lost.push(m.p); }
+      if (m.p.vp.length){ S.discard.push(m.p.vp.pop()); notes.push(`${m.p.human ? "You" : m.p.name} lost a point`); lost.push(m.p); }
     }
   }
+  S.lastLost = lost;
   const ansText = S.legal.has("cat") ? "No toy was in its own color, so it was the cat." : "";
-  const who = s => `<b>${s.p.human ? "You" : s.p.name}</b> (${NAME[s.target].toLowerCase()}, ${s.t.toFixed(2)}s)`;
-  let head;
-  if (!scorers.length) head = "Nobody grabbed a correct toy. Nobody scores this round.";
-  else if (scorers.length === 1) head = `${who(scorers[0])} scored.`;
-  else head = `${scorers.slice(0, -1).map(who).join(", ")} and ${who(scorers[scorers.length - 1])} ${scorers.length === 2 ? "both" : "all"} scored.`;
+  const head = scoreLine(scorers.map(s => ({key: s.p, name: s.p.human ? "You" : s.p.name, toy: s.target, t: s.t})));
   const sub = [ansText, notes.join(" · ")].filter(Boolean).join(" ");
   banner(`<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`);
   renderSeats();
@@ -1084,6 +1096,15 @@ function resolve(){
   if (S.tut) return tutAfter();
   S.waiting = true;
   if (!S.paused) later(advance, O.on ? 3200 : 2300);
+}
+// "You (fish, 0.84s) scored." / "Minou (ball, 1.21s · bird, 1.60s) scored 2 points." / "You and Minou both scored."
+function scoreLine(rows){
+  if (!rows.length) return "Nobody grabbed a correct toy. Nobody scores this round.";
+  const groups = [];
+  rows.forEach(r => { let g = groups.find(x => x.key === r.key); if (!g) groups.push(g = {key: r.key, name: r.name, grabs: []}); g.grabs.push(r); });
+  const who = g => `<b>${g.name}</b> (${g.grabs.map(r => `${NAME[r.toy].toLowerCase()}, ${r.t.toFixed(2)}s`).join(" · ")})`;
+  if (groups.length === 1) return `${who(groups[0])} scored${groups[0].grabs.length > 1 ? ` ${groups[0].grabs.length} points` : ""}.`;
+  return `${groups.slice(0, -1).map(who).join(", ")} and ${who(groups[groups.length - 1])} ${groups.length === 2 ? "both" : "all"} scored.`;
 }
 function advance(){ if (!S.waiting) return; S.waiting = false; nextRound(); }
 function endGame(){
@@ -1111,14 +1132,14 @@ function finish(winner){
   }
   $("againBtn").hidden = false; $("againBtn").textContent = "Play again"; $("settingsBtn").textContent = "Change settings"; $("endHint").hidden = true;
   $("endTitle").textContent = winner.human ? "You win!" : `${winner.name} wins.`;
-  $("standings").innerHTML = order.map((p,i) => `<li class="${i===0?"first":""}"><span class="n">${p.name}</span><span>★ ${p.vp.length} ${p.vp.length === 1 ? "card" : "cards"}</span></li>`).join("");
+  $("standings").innerHTML = order.map((p,i) => `<li class="${i===0?"first":""}"><span class="n">${p.name}</span><span>★ ${p.vp.length} ${p.vp.length === 1 ? "point" : "points"}</span></li>`).join("");
   const ts = S.stats.times;
   const best = ts.length ? Math.min(...ts) : null;
   let rec = load("udtc-best", null);
   if (best !== null && (rec === null || best < rec)){ rec = best; save("udtc-best", rec); }
   const avg = ts.length ? ts.reduce((a,b)=>a+b,0)/ts.length : null;
   $("stats").innerHTML = [
-    ["Rounds you scored", ts.length],
+    ["Correct grabs", ts.length],
     ["Your fastest grab", best !== null ? best.toFixed(2)+"s" : "–"],
     ["Your average grab", avg !== null ? avg.toFixed(2)+"s" : "–"],
     ["Wrong grabs", S.stats.miss],
@@ -1143,7 +1164,7 @@ const TUT = {
       pre: "Everyone chants <b>“un, deux, trois, cat!”</b> and flips their top card at the same moment. Nobody knows what’s coming, not even you.",
       prompt: "Look at <b>every</b> card on the table, not just yours. Is any toy shown in its own color? Grab that toy.",
       hint: "Not that one. Check each card against the toys in the middle: Minou flipped a <b>green fish</b>, and green is the fish’s own color.",
-      after: "That’s the whole idea. The green fish was on <b>Minou’s</b> card, not yours, and it still counts. Grab a correct toy and you keep the card you flipped: that’s a point."
+      after: "That’s the whole idea. The green fish was on <b>Minou’s</b> card, not yours, and it still counts. Grab a correct toy and your flipped card goes face down into your <b>point pile</b>, apart from the cards in your hand: that’s a point."
     },
     { // nothing in its own color: the cat
       cards: [["mouse","green"],["bird","blue"],["ball","pink"],["fly","yellow"]],
@@ -1154,11 +1175,13 @@ const TUT = {
     },
     { // two toys at once: two players score
       cards: [["fish","orange"],["ball","blue"],["bird","green"],["mouse","pink"]],
-      follow: 2,                                   // Biscotte takes the other correct toy just after you
+      follow: [2, 1500],                           // Biscotte reaches for the other correct toy 1.5 s after your first grab
       pre: "Sometimes more than one toy turns up in its own color.",
-      prompt: "Two different toys are in their own colors. <b>Either one</b> is correct, but you can only take one.",
-      hint: "Two cards show a toy in its own color: Minou’s <b>blue ball</b> and Biscotte’s <b>pink mouse</b>. Grab one of those.",
-      after: "You and Biscotte <b>both</b> scored. When two different toys are correct, each can be grabbed once, so two players score in the same round."
+      prompt: "Two different toys are in their own colors. <b>Both</b> are correct, and each one is a point. Grab one, then grab the other if you’re fast enough.",
+      hint: "Two cards show a toy in its own color: Minou’s <b>blue ball</b> and Biscotte’s <b>pink mouse</b>. Grab those.",
+      after: () => S.scorers.filter(s => s.p.human).length > 1
+        ? "You grabbed <b>both</b>: two points. Your own flipped card went into your point pile for the first toy, and a card another player flipped went in for the second."
+        : "You and Biscotte <b>both</b> scored. Each correct toy is a point, and one player can take both if they’re fast enough. Biscotte got to the second one first."
     },
     { // a wrong grab: Biscotte falls for the decoys
       cards: [["fly","orange"],["ball","green"],["fish","yellow"],["bird","blue"]],
@@ -1167,7 +1190,8 @@ const TUT = {
       prompt: "Find the toy in its own color.",
       wrongNote: "<b>Biscotte grabbed the fish!</b> There’s a fish card and a green card on the table, but no green fish. That’s a wrong grab, so she’s out this round. Now you find the right toy.",
       hint: "Still not it. Hint: the answer is on <b>your own</b> card this time.",
-      after: "The answer was your own <b>orange butterfly</b>. Wrong grabs cost you: Biscotte sat out the round and had to discard one of her scored cards, so she’s back to zero."
+      after: () => "The answer was your own <b>orange butterfly</b>. Wrong grabs cost you: Biscotte sat out the round"
+        + ((S.lastLost || []).some(p => p.name === "Biscotte") ? " and <b>lost a point</b>." : ". She had no points yet, so there was none to lose, but normally a wrong grab <b>loses a point</b>.")
     },
     { // full speed
       cards: [["ball","pink"],["fish","blue"],["bird","yellow"],["mouse","green"]],
@@ -1231,22 +1255,23 @@ function tutHint(target){
 }
 function tutYouGrabbed(){
   const r = TUT.rounds[S.tut.i];
-  if (r.follow === undefined) return;
-  const bot = S.players[r.follow + 1];
-  later(() => { const open = [...S.legal].filter(o => !S.taken.has(o)); if (open.length) grab(bot, open[0]); }, 700);
+  if (r.follow === undefined || S.tut.followed === S.tut.i) return;
+  S.tut.followed = S.tut.i;
+  const [bi, ms] = r.follow, bot = S.players[bi + 1];
+  later(() => { const open = [...S.legal].filter(o => !S.taken.has(o)); if (open.length) grab(bot, open[0]); }, ms);
 }
 function tutAfter(){
   const r = TUT.rounds[S.tut.i];
   document.querySelectorAll(".card[data-ok]").forEach(el => el.classList.add("hint"));
-  if (!r.live) return coach(r.after, [["tNext", "Next round", true, tutPre]]);
+  if (!r.live) return coach(typeof r.after === "function" ? r.after() : r.after, [["tNext", "Next round", true, tutPre]]);
   const me = S.players[0], won = S.scorers.some(s => s.p.human);
   const first = S.scorers[0];
   const line = won ? "Nice grab: the <b>yellow bird</b> was the only toy in its own color."
     : first ? `<b>${first.p.name}</b> got the bird first. The <b>yellow bird</b> was the only toy in its own color. Real games go fast!`
     : "The <b>yellow bird</b> was the only toy in its own color.";
   coach([
-    line + ` You finished the tutorial with <b>${me.vp.length} ${me.vp.length === 1 ? "card" : "cards"}</b>.`,
-    "A real game works the same way: deal out all 60 cards, chant and flip until they’re gone, and <b>most cards wins</b>. A tie goes to one sudden death flip. With two or three players, everyone flips two cards at a time."
+    line + ` You finished the tutorial with <b>${me.vp.length} ${me.vp.length === 1 ? "point" : "points"}</b>.`,
+    "A real game works the same way: deal out all 60 cards, hold them face down, and chant and flip until they’re gone. <b>Most points wins</b>. A tie goes to one sudden death flip. With two or three players, everyone flips two cards at a time."
   ], [["tPlay", "Set up a game", true, toSetup], ["tAgain", "Replay the tutorial", false, startTutorial]]);
 }
 
@@ -1268,7 +1293,7 @@ const TOYS = [...OBJ, "cat"];
 /* --- host: the authoritative side --- */
 function seatOn(i){ const s = O.sess && O.sess.seats[i]; return !!s && (s.kind !== "guest" || s.connected); }
 const absent = p => p.remote && (!seatOn(p.seat) || O.late.has(p.seat));
-const activeGrabbers = () => S.eligible.filter(q => !S.out.has(q) && !S.done.has(q) && !absent(q));
+const activeGrabbers = () => S.eligible.filter(q => !S.out.has(q) && !absent(q));
 function windowMs(){
   let m = 0;
   O.sess.seats.forEach((s, i) => { if (s.kind === "guest" && s.connected) m = Math.max(m, O.sess.rtt(i)); });
@@ -1296,7 +1321,7 @@ function startOnline(){
   S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
   S.out = new Set(); S.done = new Set(); S.taken = new Map(); S.scorers = []; S.misgrabs = [];
   O.stats = {}; all.forEach(p => { O.stats[p.seat] = {times: [], miss: 0}; });
-  Object.assign(O, {phase: "ready", log: [], res: null, tie: null, endInfo: null, late: new Set(), acks: {}, shown: null, pend: null, claims: []});
+  Object.assign(O, {phase: "ready", log: [], res: null, tie: null, endInfo: null, late: new Set(), acks: {}, shown: null, pends: [], claims: []});
   syncAway(); showGameScreen(); resetToys(false); renderSeats(); renderTable("backs"); updatePill();
   H.pushLobby(); netPush();
   later(nextRound, 1500);
@@ -1315,8 +1340,8 @@ function claim(p, toy, rt, seq, adj){
   if (O.phase !== "live" || S.resolved) return "Too late: that flip is over.";
   if (!S.eligible.includes(p)) return "Only the tied players grab in sudden death.";
   if (O.late.has(p.seat)) return "You rejoined during this flip, so you sit it out.";
-  if (S.out.has(p) || S.done.has(p)) return "You’re already done this flip.";
-  if (O.claims.some(c => c.p === p)) return "You’re already reaching for a toy.";
+  if (S.out.has(p)) return "You’re out this flip.";
+  if (O.claims.some(c => c.p === p && c.toy === toy)) return "You’re already reaching for that toy.";
   if (!TOYS.includes(toy)) return "That isn’t a toy on this table.";
   O.claims.push({p, toy, rt, seq: seq || 0, adj: !!adj, at: performance.now()});
   if (!O.win) O.win = later(commit, windowMs());
@@ -1326,7 +1351,7 @@ function claim(p, toy, rt, seq, adj){
 }
 function retryBot(p){
   later(() => {
-    if (S.resolved || S.done.has(p) || S.out.has(p)) return;
+    if (S.resolved || S.out.has(p)) return;
     const open = [...S.legal].filter(o => !S.taken.has(o));
     if (open.length) grab(p, open[Math.floor(Math.random()*open.length)]);
   }, 250 + Math.random()*350);
@@ -1339,13 +1364,14 @@ function commit(){
   for (const c of batch){
     const p = c.p, row = {seat: p.seat, toy: c.toy, rt: Math.round(c.rt), adj: c.adj};
     if (c.seq) O.acks[p.seat] = Math.max(O.acks[p.seat] || 0, c.seq);
-    if (S.out.has(p) || S.done.has(p)) continue;
+    if (S.out.has(p)) continue;
     if (S.sudden && S.scorers.length){ row.res = "late"; O.log.push(row); continue; }
     if (S.legal.has(c.toy)){
       const by = S.taken.get(c.toy);
       if (by){ row.res = "beaten"; row.by = by.seat; O.log.push(row); if (p.bot) retryBot(p); continue; }
       S.taken.set(c.toy, p); S.done.add(p); S.scorers.push({p, target: c.toy, t: c.rt / 1000});
       row.res = "won"; O.log.push(row);
+      if (p.bot) botAgain(p);
     } else {
       S.out.add(p); S.misgrabs.push({p, target: c.toy});
       O.stats[p.seat].miss++; if (p.human) S.stats.miss++;
@@ -1424,8 +1450,8 @@ function markPaint(rid){
 function canGrabNow(v, toy){
   if (!v || v.phase !== "live") return false;
   const me = v.me;
-  if (!v.eligible.includes(me) || v.out.includes(me) || v.done.includes(me) || v.mine.late) return false;
-  if (O.pend && O.pend.rid === v.rid && O.pend.seq > v.mine.ack) return false;
+  if (!v.eligible.includes(me) || v.out.includes(me) || v.mine.late) return false;
+  if (O.pends.some(q => q.rid === v.rid && q.seq > v.mine.ack && q.toy === toy)) return false;
   return !v.taken.some(([o]) => o === toy);
 }
 function onlineInput(toy, ts){
@@ -1433,9 +1459,10 @@ function onlineInput(toy, ts){
   if (!canGrabNow(v, toy) || O.t0rid !== v.rid) return;
   const now = performance.now(), base = O.t0 || O.renderAt, at = ts > 0 && ts <= now + 5 ? ts : now;
   const rt = Math.max(0, at - base);
-  O.pend = {rid: v.rid, toy, rt, seq: ++O.seq}; O.note = "";
-  if (O.role === "host"){ const why = claim(S.players[0], toy, rt, O.pend.seq); if (why){ O.pend = null; O.note = why; } }
-  else O.sess.act({type: "grab", rid: v.rid, toy, rt: Math.round(rt), seq: O.pend.seq});
+  const pend = {rid: v.rid, toy, rt, seq: ++O.seq}; O.note = "";
+  O.pends.push(pend);
+  if (O.role === "host"){ const why = claim(S.players[0], toy, rt, pend.seq); if (why){ O.pends = O.pends.filter(q => q !== pend); O.note = why; } }
+  else O.sess.act({type: "grab", rid: v.rid, toy, rt: Math.round(rt), seq: pend.seq});
   paintOnline(O.role === "host" ? netView(O.sess.hostSeat()) : O.view);
 }
 const secs = ms => (ms / 1000).toFixed(2) + "s";
@@ -1444,24 +1471,25 @@ function paintOnline(v){
   if (!v) return;
   O.view = v;
   const me = v.me, nm = i => i === me ? "You" : esc(v.players[i].name);
-  if (O.pend && (O.pend.rid !== v.rid || O.pend.seq <= v.mine.ack)) O.pend = null;
-  const pend = O.pend, live = v.phase === "live", fresh = live || v.phase === "result";
+  O.pends = O.pends.filter(q => q.rid === v.rid && q.seq > v.mine.ack);
+  const pends = O.pends, pend = pends[pends.length - 1] || null, live = v.phase === "live", fresh = live || v.phase === "result";
   const won = {}, missed = {};
   if (fresh) for (const r of v.log){ if (r.res === "won") won[r.toy] = r; if (r.res === "miss") (missed[r.toy] = missed[r.toy] || []).push(r); }
   const taken = new Set(v.taken.map(([o]) => o));
-  const mayGrab = live && v.eligible.includes(me) && !v.out.includes(me) && !v.done.includes(me) && !v.mine.late && !pend;
+  const mayGrab = live && v.eligible.includes(me) && !v.out.includes(me) && !v.mine.late;
+  const pendOn = o => pends.find(q => q.toy === o);
   document.querySelectorAll(".toy").forEach(el => {
     const o = el.dataset.t;
     el.classList.toggle("won", !!won[o]);
     el.classList.toggle("miss", !!missed[o]);
     el.classList.toggle("legal", !!(v.res && v.res.legal.includes(o)));
-    el.classList.toggle("pend", !!pend && pend.toy === o);
+    el.classList.toggle("pend", !!pendOn(o));
     let tags = "";
     if (won[o]) tags += `<span class="tag">${nm(won[o].seat)}<span class="tm"> · ${secs(won[o].rt)}</span></span>`;
     if (missed[o]) tags += missed[o].map(r => `<span class="tag bad">${nm(r.seat)}</span>`).join("");
-    if (pend && pend.toy === o) tags += `<span class="tag pend">You<span class="tm"> · ${secs(pend.rt)}</span></span>`;
+    if (pendOn(o)) tags += `<span class="tag pend">You<span class="tm"> · ${secs(pendOn(o).rt)}</span></span>`;
     const t = el.querySelector(".tags"); if (t.innerHTML !== tags) t.innerHTML = tags;
-    el.disabled = !mayGrab || taken.has(o);
+    el.disabled = !mayGrab || taken.has(o) || !!pendOn(o);
   });
   // the banner, worded for whoever is looking (the same words as a game against bots)
   const mineRows = v.log.filter(r => r.seat === me), last = mineRows[mineRows.length - 1];
@@ -1477,7 +1505,10 @@ function paintOnline(v){
     else if (!v.eligible.includes(me)) html = "Sudden death: only the tied players may grab.";
     else if (pend) html = `You grabbed the <b>${toyName(pend.toy)}</b> in <b>${secs(pend.rt)}</b>.<span class="sub">Checking everyone’s reaction times…</span>`;
     else if (v.out.includes(me) && last) html = `Wrong grab. That's not the ${toyName(last.toy)}. You're out this round.`;
-    else if (v.done.includes(me) && last) html = `<b>You</b> have the ${toyName(last.toy)} (${secs(last.rt)}).${v.sudden ? "" : upFor()}`;
+    else if (v.done.includes(me) && last && last.res === "won"){
+      const mine = v.log.filter(r => r.seat === me && r.res === "won");
+      html = `<b>You</b> have the ${mine.map(r => `${toyName(r.toy)} (${secs(r.rt)})`).join(" and the ")}.${v.sudden ? "" : upFor()}`;
+    }
     else if (last && last.res === "beaten"){
       const w = v.log.find(r => r.res === "won" && r.toy === last.toy);
       html = `<b>${w ? nm(w.seat) : "Someone"}</b> reached the ${toyName(last.toy)} first${w ? ` (${secs(w.rt)} to your ${secs(last.rt)})` : ""}.${upFor()}`;
@@ -1488,12 +1519,9 @@ function paintOnline(v){
   } else if (v.phase === "result"){
     const sc = wonRows.slice().sort((a, b) => a.rt - b.rt);
     const who = r => `<b>${nm(r.seat)}</b> (${toyName(r.toy)}, ${secs(r.rt)})`;
-    let head;
-    if (!sc.length) head = "Nobody grabbed a correct toy. Nobody scores this round.";
-    else if (sc.length === 1) head = `${who(sc[0])} scored.`;
-    else head = `${sc.slice(0, -1).map(who).join(", ")} and ${who(sc[sc.length - 1])} ${sc.length === 2 ? "both" : "all"} scored.`;
+    let head = scoreLine(sc.map(r => ({key: r.seat, name: nm(r.seat), toy: r.toy, t: r.rt / 1000})));
     if (v.sudden && sc.length) head = `${who(sc[0])} won the sudden death flip.`;
-    const notes = (v.res.lost || []).map(i => `${nm(i)} lost a card`);
+    const notes = (v.res.lost || []).map(i => `${nm(i)} lost a point`);
     const sub = [v.res.legal.includes("cat") ? "No toy was in its own color, so it was the cat." : "", notes.join(" · "), v.paused ? "The host paused the game." : ""].filter(Boolean).join(" ");
     html = `<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`;
   } else if (v.phase === "tie"){
@@ -1507,7 +1535,7 @@ function paintOnline(v){
   const glog = $("glog");
   glog.hidden = v.phase === "over";
   const rows = v.log.slice().sort((a, b) => a.rt - b.rt);
-  if (pend) rows.push({seat: me, toy: pend.toy, rt: pend.rt, res: "pend"});
+  pends.forEach(q => rows.push({seat: me, toy: q.toy, rt: q.rt, res: "pend"}));
   rows.sort((a, b) => a.rt - b.rt);
   $("glogH").textContent = v.phase === "live" || v.phase === "result" ? `${v.sudden ? "Sudden death" : `Round ${v.round}`}: who grabbed what` : "Last flip";
   const res = r => {
@@ -1529,10 +1557,10 @@ function showOnlineEnd(v){
   const me = v.me, nm = i => i === me ? "You" : esc(v.players[i].name);
   $("endTitle").textContent = e.winner === me ? "You win!" : `${v.players[e.winner].name} wins.`;
   $("standings").innerHTML = e.order.map((r, k) => `<li class="${k === 0 ? "first" : ""}"><span class="n">${nm(r.seat)}</span>`
-    + `<span>★ ${r.vp} ${r.vp === 1 ? "card" : "cards"}${r.best != null ? ` · fastest ${r.best.toFixed(2)}s` : ""}</span></li>`).join("");
+    + `<span>★ ${r.vp} ${r.vp === 1 ? "point" : "points"}${r.best != null ? ` · fastest ${r.best.toFixed(2)}s` : ""}</span></li>`).join("");
   const m = e.mine;
   $("stats").innerHTML = [
-    ["Rounds you scored", m.scored],
+    ["Correct grabs", m.scored],
     ["Your fastest grab", m.best != null ? m.best.toFixed(2)+"s" : "–"],
     ["Your average grab", m.avg != null ? m.avg.toFixed(2)+"s" : "–"],
     ["Wrong grabs", m.miss]
@@ -1697,7 +1725,7 @@ async function joinTable(codeArg, auto){
   if (!name){ netMsg("Type your name first, so everyone knows who’s grabbing."); $("nameIn").focus(); return; }
   $("hostBtn").disabled = $("joinBtn").disabled = true; netMsg(`${auto ? "Rejoining" : "Looking for"} table ${code}…`);
   const G = new NETX.GuestSession(code, name);
-  Object.assign(O, {on: true, role: "guest", sess: G, code, view: null, key: "", facesRid: -1, trouble: false, note: "", pend: null});
+  Object.assign(O, {on: true, role: "guest", sess: G, code, view: null, key: "", facesRid: -1, trouble: false, note: "", pends: []});
   G.onLobby = st => { if (!st.started && O.sess === G) { if (O.view && O.view.phase !== "over") return; O.view = null; O.key = ""; renderLobby(st); } };
   G.onView = v => { if (O.sess === G) applyView(v); };
   G.onErr = m => { O.note = m; if (O.view) paintOnline(O.view); };
@@ -1715,7 +1743,7 @@ async function joinTable(codeArg, auto){
 }
 function leaveOnline(msg, closedByHost){
   const s = O.sess;
-  Object.assign(O, {on: false, role: "", sess: null, view: null, key: "", phase: "", pend: null, trouble: false, note: "", claims: []});
+  Object.assign(O, {on: false, role: "", sess: null, view: null, key: "", phase: "", pends: [], trouble: false, note: "", claims: []});
   if (s) s.leave(!closedByHost);
   setTableParam(null);
   $("lobby").hidden = true; $("glog").hidden = true;
