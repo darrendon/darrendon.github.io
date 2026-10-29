@@ -413,3 +413,14 @@ a.chip:hover{border-color:var(--orange)}
 .game-grid .feature.feature{--g-bg:var(--surface);--g-ink:var(--ink);--g-muted:var(--muted);--g-line:var(--line);background:var(--surface);border-color:var(--line)}
 .game-grid .feature.feature h3{font-family:var(--display);font-weight:600;font-style:normal;font-stretch:100%;text-transform:none;text-shadow:none;letter-spacing:-.005em;font-size:clamp(26px,2.4vw,31px);line-height:1.05;color:var(--g-red)}
 .game-grid .feature.feature .go{color:var(--g-red)}
+/* Title colors: the four dice colors in turn (darker shades so they read on the card) */
+.game-grid .feature.feature{--card-c:#A35F05}
+.game-grid .feature.feature:nth-child(4n+2){--card-c:#5C6283}
+.game-grid .feature.feature:nth-child(4n+3){--card-c:#6B680E}
+.game-grid .feature.feature:nth-child(4n+4){--card-c:#A8635B}
+@media (prefers-color-scheme: dark){
+  .game-grid .feature.feature{--card-c:#F0A33A}
+  .game-grid .feature.feature:nth-child(4n+2){--card-c:#AEB4D0}
+  .game-grid .feature.feature:nth-child(4n+3){--card-c:#C2BD45}
+  .game-grid .feature.feature:nth-child(4n+4){--card-c:#E3B2AC}}
+.game-grid .feature.feature h3,.game-grid .feature.feature .go{color:var(--card-c)}
