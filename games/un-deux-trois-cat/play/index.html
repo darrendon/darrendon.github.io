@@ -157,6 +157,49 @@ button{font:inherit;color:inherit}
 @keyframes nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 #grab.spot .coaster{border-color:var(--gold);animation:spot 1.4s ease-in-out infinite}
 @keyframes spot{50%{box-shadow:0 0 0 9px rgba(255,201,74,.35),0 6px 0 #1a1020}}
+
+/* online tables: the setup block, the lobby, the grab log beside the table */
+.txtin{background:var(--felt);border:2px solid var(--felt-3);border-radius:10px;padding:9px 12px;color:var(--ink);font:inherit;font-weight:600;min-width:0;width:100%}
+.txtin:focus{outline:none;border-color:var(--gold)}
+.txtin.code{text-transform:uppercase;letter-spacing:.22em;font-weight:800;width:7.6em;flex:none}
+.txtin::placeholder{color:var(--muted);opacity:.7;letter-spacing:normal}
+.online{border-top:1px solid var(--felt-3);padding-top:20px;display:flex;flex-direction:column;gap:14px}
+.online h2{font-size:26px;color:var(--gold)}
+.online .ohead{display:flex;flex-direction:column;gap:4px}
+.online.invite{border:2px solid var(--gold);border-radius:14px;padding:18px}
+.online.invite #joinBtn{border-color:var(--gold);color:var(--gold)}
+.joinrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lobtop{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.codebox{display:flex;flex-direction:column;gap:2px}
+.tcode{font-family:var(--display);font-size:clamp(40px,11vw,60px);line-height:1;color:var(--gold);letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.share{display:flex;gap:8px;flex-wrap:wrap}
+.btn.done{border-color:var(--good);color:var(--good)}
+.txtin.link{font-weight:500;font-size:13px;color:var(--muted)}
+.lobseats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.lobseats li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--felt);border:2px solid transparent;min-width:0}
+.lobseats li.me{border-color:var(--gold)}
+.lobseats .ava{width:34px;height:34px;border-radius:50%;background:#e9dfcf;display:grid;place-items:center;flex:none}
+.lobseats .ava svg{width:32px;height:32px}
+.lobseats .ava.empty{background:none;border:2px dashed var(--felt-3)}
+.lobseats .who{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.25}
+.lobseats .who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lobseats .who span{font-size:12px;color:var(--muted)}
+.lobseats .btn{padding:5px 10px;font-size:13px;flex:none}
+.seat.away{opacity:.6}
+.toy.pend .coaster{border-color:var(--paper);border-style:dashed}
+.tag.pend{background:var(--paper)}
+.glog{background:var(--felt-2);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.glog .gh{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.glog ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-variant-numeric:tabular-nums}
+.glog li{display:grid;grid-template-columns:3.4em minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 10px;border-radius:9px;background:var(--felt);font-size:13.5px}
+.glog li.empty{display:block;color:var(--muted)}
+.glog .tm{font-weight:800}
+.glog .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.glog .res{font-size:12px;font-weight:700;color:var(--muted);text-align:right}
+.glog li.won .tm,.glog li.won .res{color:var(--gold)}
+.glog li.miss .res{color:var(--bad)}
+.glog li.me{box-shadow:inset 0 0 0 1px var(--felt-3)}
+.glog .gn{margin:0;font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -224,6 +267,52 @@ button{font:inherit;color:inherit}
       <button class="btn primary" id="startBtn" type="button">Start game</button>
       <button class="btn" id="learnBtn" type="button">Learn to play</button>
     </div>
+    <div class="online" id="online">
+      <div class="ohead">
+        <h2>Play online</h2>
+        <span class="hint" id="onlineHint">Friends join from their own phones or computers with a table code. Your browser runs the game, and bots fill any empty seats.</span>
+      </div>
+      <div class="cols">
+        <label class="field"><span class="lab">Your name</span><input class="txtin" id="nameIn" maxlength="16" autocomplete="nickname" spellcheck="false" placeholder="e.g. Camille"></label>
+        <div class="field"><span class="lab">Have a code?</span>
+          <div class="joinrow"><input class="txtin code" id="codeIn" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Table code"><button class="btn" id="joinBtn" type="button">Join a table</button></div>
+        </div>
+      </div>
+      <div class="go"><button class="btn" id="hostBtn" type="button">Host an online table</button><span class="hint" id="netMsg" role="status"></span></div>
+    </div>
+  </section>
+
+  <!-- online lobby -->
+  <section class="panel" id="lobby" hidden>
+    <div class="lobtop">
+      <div class="codebox"><span class="lab hint">Table code</span><span class="tcode" id="tCode">-----</span></div>
+      <div class="share">
+        <button class="btn" id="copyCode" type="button">Copy code</button>
+        <button class="btn" id="copyLink" type="button">Copy link</button>
+      </div>
+    </div>
+    <input class="txtin link" id="shareLink" readonly aria-label="Link that opens this table">
+    <span class="hint" id="lobStatus" role="status"></span>
+    <div class="cols" id="lobHostCtl">
+      <div class="field">
+        <span class="lab">Players</span>
+        <div class="seg" id="lobN">
+          <button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button><button type="button" data-v="6">6</button>
+        </div>
+        <span class="hint" id="lobNHint"></span>
+      </div>
+      <div class="field">
+        <span class="lab">Bots</span>
+        <div class="seg" id="lobDiff"><button type="button" data-v="easy">Easy</button><button type="button" data-v="hard">Hard</button></div>
+        <span class="hint" id="lobDiffHint"></span>
+      </div>
+    </div>
+    <ol class="lobseats" id="lobSeats"></ol>
+    <div class="go">
+      <button class="btn primary" id="lobStart" type="button">Start game</button>
+      <button class="btn" id="lobLeave" type="button">Leave table</button>
+      <span class="hint" id="lobHint"></span>
+    </div>
   </section>
 
   <!-- end -->
@@ -234,6 +323,7 @@ button{font:inherit;color:inherit}
     <div class="go">
       <button class="btn primary" id="againBtn" type="button">Play again</button>
       <button class="btn" id="settingsBtn" type="button">Change settings</button>
+      <span class="hint" id="endHint" hidden></span>
     </div>
   </section>
 
@@ -247,11 +337,293 @@ button{font:inherit;color:inherit}
     <aside class="side">
       <div class="coach" id="coach" role="status" aria-live="polite" hidden></div>
       <div class="banner" id="banner" aria-live="polite"></div>
+      <div class="glog" id="glog" hidden><div class="gh" id="glogH"></div><ol id="glogL"></ol>
+        <p class="gn">Each time runs from the moment the cards appeared on that player’s own screen, so a slow connection doesn’t cost anyone the grab.</p></div>
       <p class="keys">Click a toy, or press 1–5 for the toys and 6 for the cat.</p>
     </aside>
   </div>
 </div>
 
+<script>
+/* ============================================================ NET: online tables (same relay pattern as Too Many Crooks and Dim Sum Rush)
+   The host's browser runs the game; guests are thin clients that send grabs and receive their own view.
+   Relay transport: MQTT over WebSockets through public brokers, so nobody needs a peer-to-peer connection.
+   ?relay=local swaps in a BroadcastChannel transport with the same API, so pages in one browser can play each other
+   (for testing); &lag=ms adds that much delay to every message in and out of the page. */
+(function (root) {
+  "use strict";
+  const BROKERS = [
+    { key: "E", url: "wss://broker.emqx.io:8084/mqtt", name: "EMQX" },
+    { key: "H", url: "wss://broker.hivemq.com:8884/mqtt", name: "HiveMQ" },
+    { key: "M", url: "wss://test.mosquitto.org:8081", name: "Mosquitto" },
+  ];
+  const TOPIC_ROOT = "whatsgood/undeuxtroiscat/v1/";
+  const Q = new URLSearchParams(location.search);
+  const LOCAL = Q.get("relay") === "local";
+  const LAG = LOCAL ? Math.max(0, Math.min(3000, parseInt(Q.get("lag"), 10) || 0)) : 0;
+  const SANDBOXED = /claude/i.test(location.hostname) || /claudeusercontent|anthropic/i.test(location.hostname);
+  const LIB_SOURCES = [
+    "https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js",
+    "https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js",
+  ];
+  let libLoad = null;
+  function loadLib() {
+    if (root.mqtt) return Promise.resolve(root.mqtt);
+    if (libLoad) return libLoad;
+    libLoad = new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= LIB_SOURCES.length) { libLoad = null; reject(new Error("Could not load the networking library. Check your connection or ad blocker.")); return; }
+        const s = document.createElement("script"); s.src = LIB_SOURCES[i++];
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; s.remove(); tryNext(); } }, 9000);
+        s.onload = () => { if (done) return; done = true; clearTimeout(t); if (root.mqtt) resolve(root.mqtt); else { s.remove(); tryNext(); } };
+        s.onerror = () => { if (done) return; done = true; clearTimeout(t); s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+    return libLoad;
+  }
+  const makeCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ"; let c = ""; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; };
+  const cleanId = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40);
+  const cleanName = (s) => String(s == null ? "" : s).replace(/[<>&"'`\\\u0000-\u001f]/g, "").replace(/\s+/g, " ").trim().slice(0, 16);
+  const parse = (p) => { try { return JSON.parse(typeof p === "string" ? p : p.toString()); } catch (e) { return null; } };
+  function connectBroker(mqtt, broker, opts) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const client = mqtt.connect(broker.url, Object.assign({ clean: true, connectTimeout: 7000, reconnectPeriod: 2000, keepalive: 30, clientId: "udtc_" + Math.random().toString(16).slice(2, 12) }, opts || {}));
+      const to = setTimeout(() => { if (!done) { done = true; try { client.end(true); } catch (e) {} reject(new Error("timeout")); } }, 8000);
+      client.once("connect", () => { if (!done) { done = true; clearTimeout(to); resolve(client); } });
+      const fail = (e) => { if (!done) { done = true; clearTimeout(to); try { client.end(true); } catch (e2) {} reject(e || new Error("connection closed")); } };
+      client.on("error", fail); client.on("close", () => fail(new Error("connection refused"))); client.on("offline", () => fail(new Error("offline")));
+    });
+  }
+  async function connectAny(mqtt, list, optsFor) {
+    let last = null;
+    for (const b of list) { try { const c = await connectBroker(mqtt, b, optsFor ? optsFor(b) : null); return { client: c, broker: b }; } catch (e) { last = e; } }
+    throw new Error("Could not reach any relay server" + (last ? " (" + (last.message || last) + ")" : "") + (SANDBOXED ? ". This page is running inside claude.ai, which blocks outside connections; use the copy hosted on the website for online play." : ". Try again, or try a different network."));
+  }
+
+  // ---------------- Relay transport: one small API over MQTT or the in-browser test channel ----------------
+  // link.sub(topic, fn) · link.pub(topic, msg, qos) · link.onUp(fn) after a reconnect · link.onDown(fn) · link.end()
+  function mqttLink(client, broker) {
+    const subs = new Map();
+    client.on("message", (t, p) => { const fn = subs.get(t); if (fn) { const m = parse(p); if (m) fn(m); } });
+    return {
+      key: broker.key, name: broker.name,
+      sub(topic, fn) { subs.set(topic, fn); return new Promise((res, rej) => client.subscribe(topic, { qos: 1 }, (e) => (e ? rej(e) : res()))); },
+      pub(topic, m, qos) { try { client.publish(topic, JSON.stringify(m), { qos: qos == null ? 1 : qos }); } catch (e) {} },
+      onUp(fn) { client.on("connect", fn); },
+      onDown(fn) { client.on("offline", fn); },
+      end() { try { client.end(); } catch (e) {} },
+    };
+  }
+  function localLink(will) {
+    const bc = new BroadcastChannel("whatsgood-udtc-relay"), subs = new Map();
+    const delay = (fn) => (LAG ? setTimeout(fn, LAG / 2) : fn());
+    bc.onmessage = (e) => {
+      const d = e.data; if (!d || !subs.has(d.topic)) return;
+      const m = parse(d.payload); if (!m) return;
+      delay(() => { const fn = subs.get(d.topic); if (fn) fn(m); });
+    };
+    const bye = () => { if (will) try { bc.postMessage({ topic: will.topic, payload: JSON.stringify(will.msg) }); } catch (e) {} };
+    addEventListener("pagehide", bye);
+    return {
+      key: "L", name: "in-browser test",
+      sub(topic, fn) { subs.set(topic, fn); return Promise.resolve(); },
+      pub(topic, m) { const payload = JSON.stringify(m); delay(() => { try { bc.postMessage({ topic, payload }); } catch (e) {} }); },
+      onUp() {}, onDown() {},
+      end() { removeEventListener("pagehide", bye); subs.clear(); setTimeout(() => { try { bc.close(); } catch (e) {} }, LAG + 50); },
+    };
+  }
+  async function openLink(list, will) {
+    if (LOCAL) {
+      if (typeof BroadcastChannel === "undefined") throw new Error("This browser can't run the test relay.");
+      return localLink(will);
+    }
+    const mqtt = await loadLib();
+    const { client, broker } = await connectAny(mqtt, list, will ? () => ({ will: { topic: will.topic, payload: JSON.stringify(will.msg), qos: 1 } }) : null);
+    return mqttLink(client, broker);
+  }
+
+  // A guest's seat token lives in sessionStorage (so a refresh in the same tab rejoins the same seat) and, keyed by
+  // name, in localStorage (so reopening the link in a new tab with the same name does too).
+  function seatToken(code, name) {
+    const k = "udtc-seat-" + code, kn = k + "-" + name.toLowerCase();
+    let t = null;
+    try { t = sessionStorage.getItem(k); } catch (e) {}
+    if (!t) try { t = localStorage.getItem(kn); } catch (e) {}
+    if (!t) t = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+    try { sessionStorage.setItem(k, t); sessionStorage.setItem(k + "-name", name); } catch (e) {}
+    try { localStorage.setItem(kn, t); } catch (e) {}
+    return cleanId(t);
+  }
+  // the name this tab sat down with at that table, if it has a seat there
+  function seatName(code) { try { return sessionStorage.getItem("udtc-seat-" + code) ? sessionStorage.getItem("udtc-seat-" + code + "-name") || "" : ""; } catch (e) { return ""; } }
+  function forgetSeat(code, name) {
+    try { sessionStorage.removeItem("udtc-seat-" + code); sessionStorage.removeItem("udtc-seat-" + code + "-name"); } catch (e) {}
+    try { localStorage.removeItem("udtc-seat-" + code + "-" + String(name).toLowerCase()); } catch (e) {}
+  }
+
+  const openSeat = () => ({ kind: "open", name: null, token: null, connected: false, last: 0, rtts: [] });
+
+  // ---------------- Host: seats, lobby, presence and round-trip times; the game itself lives in the page ----------------
+  class HostSession {
+    constructor(N, name) {
+      this.kind = "host"; this.name = cleanName(name) || "Host"; this.started = false; this.diff = "easy";
+      this.n = 0; this.sent = new Map();
+      this.seats = [{ kind: "host", name: this.name, token: "host", connected: true, last: 0, rtts: [] }];
+      for (let i = 1; i < N; i++) this.seats.push(openSeat());
+    }
+    hostSeat() { return this.seats.findIndex((s) => s.kind === "host"); }
+    async open() {
+      this.link = await openLink(BROKERS);
+      this.code = this.link.key + makeCode(); this.topic = TOPIC_ROOT + this.code;
+      await this.link.sub(this.topic + "/h", (m) => this.onMessage(m));
+      this.link.onUp(() => { this.trouble && this.trouble(false); this.pushLobby(); this.onChange && this.onChange(); });
+      this.link.onDown(() => this.trouble && this.trouble(true));
+      this.timer = setInterval(() => this.tick(), 2500);
+      return this.code;
+    }
+    sendTo(i, m, qos) { const s = this.seats[i]; if (!s || s.kind !== "guest" || !s.token) return; this.link.pub(this.topic + "/g/" + s.token, m, qos); }
+    reply(tok, m) { this.link.pub(this.topic + "/g/" + tok, m); }
+    tick() {
+      const now = Date.now(); let ch = false;
+      this.seats.forEach((s, i) => {
+        if (s.kind !== "guest") return;
+        if (s.connected && now - s.last > 9000) { s.connected = false; ch = true; }
+        const n = ++this.n; this.sent.set(n, performance.now()); this.sendTo(i, { t: "hping", n }, 0);
+      });
+      for (const k of this.sent.keys()) { if (this.sent.size <= 120) break; this.sent.delete(k); }
+      if (ch) this.changed(); else if (!this.started) this.pushLobby();
+    }
+    changed() { this.pushLobby(); this.onChange && this.onChange(); }
+    rtt(i) { const r = this.seats[i] && this.seats[i].rtts; if (!r || !r.length) return 0; const a = r.slice().sort((x, y) => x - y); return a[a.length >> 1]; }
+    uniqueName(name, self) {
+      let n = name, k = 2;
+      while (this.seats.some((s, i) => i !== self && s.name && s.name.toLowerCase() === n.toLowerCase())) n = name.slice(0, 13) + " " + k++;
+      return n;
+    }
+    onMessage(m) {
+      if (!m || typeof m !== "object" || !m.from) return;
+      const tok = cleanId(m.from);
+      let i = this.seats.findIndex((s) => s.kind === "guest" && s.token === tok);
+      if (m.t === "hello") {
+        const name = cleanName(m.name) || "Guest";
+        if (i < 0) {
+          if (this.started) {
+            // lost their seat token (new device or cleared storage): let them back into a disconnected seat with the same name
+            i = this.seats.findIndex((s) => s.kind === "guest" && !s.connected && s.name.toLowerCase() === name.toLowerCase());
+            if (i < 0) { this.reply(tok, { t: "rejected", reason: "That game has already started." }); return; }
+            this.seats[i].token = tok;
+          } else {
+            i = this.seats.findIndex((s) => s.kind === "open");
+            if (i < 0) { this.reply(tok, { t: "rejected", reason: "That table is full." }); return; }
+            this.seats[i] = { kind: "guest", name: this.uniqueName(name, i), token: tok, connected: true, last: Date.now(), rtts: [] };
+          }
+        }
+        const s = this.seats[i];
+        s.connected = true; s.last = Date.now();
+        if (!this.started && name.toLowerCase() !== s.name.toLowerCase()) s.name = this.uniqueName(name, i);
+        this.sendTo(i, { t: "welcome", seat: i, code: this.code });
+        this.pushLobby();
+        this.onJoin && this.onJoin(i);
+        return;
+      }
+      if (i < 0) return;
+      const s = this.seats[i];
+      s.last = Date.now();
+      if (m.t === "bye") { s.connected = false; this.changed(); return; }
+      if (!s.connected) { s.connected = true; this.changed(); }
+      if (m.t === "hpong") { const t = this.sent.get(m.n); if (t) { this.sent.delete(m.n); s.rtts.push(performance.now() - t); if (s.rtts.length > 7) s.rtts.shift(); } return; }
+      if (m.t === "sit") { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].kind === "open") { this.seats[to] = s; this.seats[i] = openSeat(); this.changed(); } return; }
+      if (m.t === "act") { const err = this.onAct ? this.onAct(i, m.a || {}) : "There is no game running."; if (err) this.sendTo(i, { t: "err", msg: err }); }
+    }
+    lobbyState() {
+      return { code: this.code, N: this.seats.length, started: this.started, relay: this.link && this.link.name, diff: this.diff,
+        seats: this.seats.map((s, i) => ({ kind: s.kind, name: s.kind === "guest" || s.kind === "host" ? s.name : null, connected: s.kind !== "guest" || s.connected, rtt: s.kind === "guest" ? Math.round(this.rtt(i)) : 0 })) };
+    }
+    pushLobby() { const st = this.lobbyState(); this.seats.forEach((s, i) => this.sendTo(i, { t: "lobby", state: st, seat: i })); this.onLobby && this.onLobby(st); }
+    // lobby controls (host only, before the deal)
+    setN(N) {
+      if (this.started) return false;
+      while (this.seats.length < N) this.seats.push(openSeat());
+      for (let i = this.seats.length - 1; this.seats.length > N && i >= 0; i--) if (this.seats[i].kind === "open" || this.seats[i].kind === "bot") this.seats.splice(i, 1);
+      const ok = this.seats.length === N;
+      this.changed(); return ok;
+    }
+    setKind(i, kind) {
+      const s = this.seats[i]; if (this.started || !s) return;
+      if (s.kind === "open" && kind === "bot") this.seats[i] = Object.assign(openSeat(), { kind: "bot" });
+      else if (s.kind === "bot" && kind === "open") this.seats[i] = openSeat();
+      this.changed();
+    }
+    kick(i) {
+      const s = this.seats[i]; if (this.started || !s || s.kind !== "guest") return;
+      this.reply(s.token, { t: "rejected", reason: "The host gave your seat to someone else." });
+      this.seats[i] = openSeat(); this.changed();
+    }
+    leave() {
+      clearInterval(this.timer);
+      if (!this.link) return;
+      this.seats.forEach((s, i) => this.sendTo(i, { t: "closed" }));
+      const l = this.link; setTimeout(() => l.end(), 300);
+    }
+  }
+
+  // ---------------- Guest: a thin client ----------------
+  class GuestSession {
+    constructor(code, name) { this.kind = "guest"; this.code = String(code || "").toUpperCase().replace(/[^A-Z]/g, ""); this.name = cleanName(name) || "Guest"; this.seat = null; this.lastHeard = 0; }
+    async connect() {
+      if (this.code.length !== 5) throw new Error("A table code is 5 letters.");
+      let list = null;
+      if (!LOCAL) {
+        const b = BROKERS.find((x) => x.key === this.code[0]);
+        if (!b) throw new Error("That doesn't look like a table code. Check it with the host.");
+        list = [b];
+      }
+      this.token = seatToken(this.code, this.name);
+      this.topic = TOPIC_ROOT + this.code;
+      const my = this.topic + "/g/" + this.token;
+      this.link = await openLink(list, { topic: this.topic + "/h", msg: { t: "bye", from: this.token } });
+      const hello = () => this.link.pub(this.topic + "/h", { t: "hello", name: this.name, from: this.token });
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error("No table answered with that code. Check the code, and that the host still has the page open.")); } }, 12000);
+        this.link.sub(my, (m) => {
+          this.lastHeard = Date.now();
+          if (this.troubled) { this.troubled = false; this.onTrouble && this.onTrouble(false); }
+          if (m.t === "welcome") { this.seat = m.seat; if (!settled) { settled = true; clearTimeout(to); resolve(); } }
+          else if (m.t === "rejected") { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.onClosed && this.onClosed(m.reason); }
+          else if (m.t === "lobby") { this.seat = m.seat; this.lobby = m.state; this.onLobby && this.onLobby(m.state); }
+          else if (m.t === "view") { this.onView && this.onView(m.view); }
+          else if (m.t === "hping") { this.link.pub(this.topic + "/h", { t: "hpong", n: m.n, from: this.token }, 0); }
+          else if (m.t === "err") { this.onErr && this.onErr(m.msg); }
+          else if (m.t === "closed") { this.onClosed && this.onClosed("The host closed the table."); }
+        }).then(hello, (e) => { if (!settled) { settled = true; clearTimeout(to); reject(e); } });
+      }).catch((e) => { this.leave(false); throw e; });
+      this.link.onUp(hello);
+      // the host pings every 2.5 s; if it goes quiet, say so and keep knocking
+      this.watch = setInterval(() => {
+        if (Date.now() - this.lastHeard < 12000) return;
+        if (!this.troubled) { this.troubled = true; this.onTrouble && this.onTrouble(true); }
+        hello();
+      }, 4000);
+    }
+    act(a) { if (this.link) this.link.pub(this.topic + "/h", { t: "act", a, from: this.token }); }
+    sit(seat) { if (this.link) this.link.pub(this.topic + "/h", { t: "sit", seat, from: this.token }); }
+    leave(forget) {
+      clearInterval(this.watch);
+      if (this.link) { this.link.pub(this.topic + "/h", { t: "bye", from: this.token }); const l = this.link; this.link = null; setTimeout(() => l.end(), 300); }
+      if (forget) forgetSeat(this.code, this.name);
+    }
+  }
+
+  root.UDTCNet = { HostSession, GuestSession, LOCAL, LAG, SANDBOXED, cleanName, seatName };
+})(window);
+</script>
 <script>
 (() => {
 "use strict";
@@ -380,6 +752,14 @@ const S = {
   eligible: [], sudden: false, taken: new Map(), done: new Set(), scorers: [], paused: false, waiting: false, live: false,
   stats: {times: [], miss: 0}, tut: null
 };
+/* online table state. On the host it sits beside S (which stays the authoritative game); on a guest, S is a mirror of
+   the host's view and O holds the view itself. */
+const O = {
+  on: false, role: "", sess: null, code: "",
+  phase: "", rid: 0, flipAt: 0, shown: null, claims: [], log: [], acks: {}, late: new Set(), win: null, close: null,
+  res: null, tie: null, endInfo: null, stats: {},
+  view: null, key: "", facesRid: -1, t0: 0, t0rid: -1, renderAt: 0, pend: null, seq: 0, note: "", trouble: false, downAt: null
+};
 const $ = id => document.getElementById(id);
 const rand = (a,b) => a + Math.random()*(b-a);
 function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
@@ -428,17 +808,21 @@ function tagToy(o, text, bad){
 }
 /* each player is a cat; their face sits on their seat label (fur, ears, eyes) */
 const FUR = {You:["#8a827c","#5d5652","#2a2421"], Minou:["#2e292b","#151213","#ffc94a"], Pompon:["#f6f1ea","#d9cfc2","#2a2421"],
-  Biscotte:["#b98a5e","#7a5636","#2a2421"], Chaussette:["#3a3431","#1f1b1a","#9ad1c8"], Moustache:["#e8d9bf","#5a4436","#3f6fb0"]};
-function avatar(name){
-  const [f, e, y] = FUR[name] || FUR.You;
+  Biscotte:["#b98a5e","#7a5636","#2a2421"], Chaussette:["#3a3431","#1f1b1a","#9ad1c8"], Moustache:["#e8d9bf","#5a4436","#3f6fb0"],
+  Grisou:["#9a948f","#6b6560","#79e2a8"], Caramel:["#d9a066","#a8743d","#2a2421"]};
+/* online, every person keeps one cat by seat, the same on every screen */
+const HFUR = [["#e08a3c","#a85a1c","#2a2421"],["#c9c2bb","#8f877f","#3f6fb0"],["#4a3b35","#2a201c","#79e2a8"],
+  ["#f0e0c8","#c7a882","#2a2421"],["#7d5a44","#4e3628","#ffc94a"],["#a9a3b8","#6f6882","#2a2421"]];
+function avatar(name, fur){
+  const [f, e, y] = fur || FUR[name] || FUR.You;
   return `<svg viewBox="-20 -22 40 40" aria-hidden="true"><path d="M-14 -5 L-12 -20 L-2 -12 Z M14 -5 L12 -20 L2 -12 Z" fill="${e}"/><circle r="14" fill="${f}"/>`
     + `<ellipse cx="-5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><ellipse cx="5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><path d="M-2 5 L2 5 L0 7.6 Z" fill="#c98f8f"/></svg>`;
 }
 function renderSeats(){
   $("seats").innerHTML = S.players.map((p,i) => {
     const dim = S.sudden && !S.eligible.includes(p);
-    const flag = !S.resolved && S.out.has(p) ? `<span class="flag">Out</span>` : "";
-    return `<div class="seat${p.human?" you":""}${dim?" dim":""}" data-seat="${i}"><span class="ava">${avatar(p.name)}</span>
+    const flag = !S.resolved && S.out.has(p) ? `<span class="flag">Out</span>` : p.away ? `<span class="flag">Away</span>` : "";
+    return `<div class="seat${p.human?" you":""}${dim||p.open?" dim":""}${p.away?" away":""}" data-seat="${i}"><span class="ava">${avatar(p.name, p.fur)}</span>
       <span class="txt"><span class="nm">${p.name}</span><span class="sub"><span class="vp">★ ${p.vp.length}</span><span class="left">${p.deck.length} left</span>${flag}</span></span></div>`;
   }).join("");
   place();
@@ -543,7 +927,7 @@ function place(){
 function banner(html){ $("banner").innerHTML = html === "&nbsp;" ? "" : html; }
 function updatePill(){
   $("roundPill").textContent = S.tut ? `Learn to play · ${Math.max(1, S.round)} of ${S.rounds}` : S.sudden ? "Sudden death" : `Round ${S.round} / ${S.rounds}`;
-  $("modePill").textContent = DIFF[S.diff].label;
+  $("modePill").textContent = O.on ? `Table ${O.code}` : DIFF[S.diff].label;
   $("modePill").hidden = !!S.tut;
 }
 
@@ -594,6 +978,7 @@ function startRound(eligible, sudden){
     const el = $("chant"); if (el) el.innerHTML = `<span>${w}</span>`;
     if (i === words.length - 1) later(flip, 260);
   }, i*430));
+  if (O.on){ O.phase = "chant"; O.tie = null; netPush(); }
 }
 function flip(){
   if (!S.sudden) S.players.forEach(p => { p.flipped = p.deck.splice(0, S.flips); });
@@ -602,6 +987,7 @@ function flip(){
   S.legal = new Set(all.filter(isCorrect).map(c => c.obj));
   if (S.legal.size === 0) S.legal.add("cat");
   S.resolved = false; S.t0 = performance.now();
+  if (O.on) return hostFlipped(all);
   refreshToys();
   if (S.tut) tutFlipped(all);
   else S.eligible.filter(p => !p.human).forEach(b => planBot(b, all));
@@ -633,6 +1019,7 @@ function refreshToys(){
   document.querySelectorAll(".toy").forEach(el => { el.disabled = !canAct || S.taken.has(el.dataset.t); });
 }
 function grab(p, target){
+  if (O.on){ if (p.bot) claim(p, target, performance.now() - S.t0, 0); return; }   // online, bots claim like everyone else
   if (S.resolved || S.out.has(p) || S.done.has(p) || !S.eligible.includes(p)) return;
   if (S.taken.has(target)) return; // someone is already holding it
   const t = (performance.now() - S.t0) / 1000;
@@ -664,17 +1051,18 @@ function grab(p, target){
 function resolve(){
   if (S.resolved) return;
   S.resolved = true; clearTimers(); setToysEnabled(false);
+  if (O.on){ O.win = O.close = null; O.claims = []; }
   S.legal.forEach(o => $("toy-"+o).classList.add("legal"));
   const scorers = S.scorers, first = scorers[0] ? scorers[0].p : null;
   const me = scorers.find(s => s.p.human);
   if (me && !S.sudden) S.stats.times.push(me.t);
 
-  const notes = [];
+  const notes = [], lost = [];
   if (!S.sudden){
     const scored = new Set(scorers.map(s => s.p));
     S.players.forEach(p => { (scored.has(p) ? p.vp : S.discard).push(...p.flipped); p.flipped = []; });
     for (const m of S.misgrabs){
-      if (m.p.vp.length){ S.discard.push(m.p.vp.pop()); notes.push(`${m.p.human ? "You" : m.p.name} lost a card`); }
+      if (m.p.vp.length){ S.discard.push(m.p.vp.pop()); notes.push(`${m.p.human ? "You" : m.p.name} lost a card`); lost.push(m.p); }
     }
   }
   const ansText = S.legal.has("cat") ? "No toy was in its own color, so it was the cat." : "";
@@ -686,15 +1074,16 @@ function resolve(){
   const sub = [ansText, notes.join(" · ")].filter(Boolean).join(" ");
   banner(`<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`);
   renderSeats();
+  if (O.on) hostResolved(scorers, lost);
 
   if (S.sudden){
-    if (first) later(() => finish(first), 1800);
-    else later(() => suddenDeath(S.eligible), 1800);
+    if (first) later(() => finish(first), O.on ? 2600 : 1800);
+    else later(() => suddenDeath(S.eligible), O.on ? 2600 : 1800);
     return;
   }
   if (S.tut) return tutAfter();
   S.waiting = true;
-  if (!S.paused) later(advance, 2300);
+  if (!S.paused) later(advance, O.on ? 3200 : 2300);
 }
 function advance(){ if (!S.waiting) return; S.waiting = false; nextRound(); }
 function endGame(){
@@ -702,7 +1091,8 @@ function endGame(){
   const tied = S.players.filter(p => p.vp.length === top);
   if (tied.length === 1) return finish(tied[0]);
   banner(`Tie at ${top} between ${tied.map(p => p.name).join(" and ")}. Sudden death next.`);
-  later(() => suddenDeath(tied), 1800);
+  if (O.on){ O.phase = "tie"; O.tie = {top, seats: tied.map(p => p.seat)}; netPush(); }
+  later(() => suddenDeath(tied), O.on ? 2600 : 1800);
 }
 function suddenDeath(tied){
   let pool = shuffle(S.discard.splice(0));
@@ -714,6 +1104,12 @@ function suddenDeath(tied){
 function finish(winner){
   S.live = false; clearTimers();
   const order = [...S.players].sort((a,b) => (b === winner) - (a === winner) || b.vp.length - a.vp.length);
+  if (O.on){
+    O.phase = "over"; S.waiting = false;
+    O.endInfo = {winner: winner.seat, order: order.map(p => ({seat: p.seat, vp: p.vp.length}))};
+    return netPush();
+  }
+  $("againBtn").hidden = false; $("againBtn").textContent = "Play again"; $("settingsBtn").textContent = "Change settings"; $("endHint").hidden = true;
   $("endTitle").textContent = winner.human ? "You win!" : `${winner.name} wins.`;
   $("standings").innerHTML = order.map((p,i) => `<li class="${i===0?"first":""}"><span class="n">${p.name}</span><span>★ ${p.vp.length} ${p.vp.length === 1 ? "card" : "cards"}</span></li>`).join("");
   const ts = S.stats.times;
@@ -854,26 +1250,558 @@ function tutAfter(){
   ], [["tPlay", "Set up a game", true, toSetup], ["tAgain", "Replay the tutorial", false, startTutorial]]);
 }
 
+/* ---------- online tables ----------
+   Fairness under network lag: the host broadcasts each flip with a round id (rid). Every screen, the host's included,
+   times its own player from the frame that first paints the flipped cards (requestAnimationFrame) to the input event,
+   and sends {rid, toy, rt}. Bots claim on the host with their usual timing model. The host collects claims for a short
+   window after the first one arrives (longer than the slowest guest's round trip, or until everyone still in has
+   claimed), then settles them in order of reaction time, not arrival. So a player on a slow connection still wins a
+   grab they were faster to. A guest's reported time is checked against when it actually arrived and how long that
+   guest's messages take to come back, so nobody can claim a time their connection makes impossible. */
+const ROUND_LIMIT = 10000;   // online, a flip nobody gets right ends after this long
+const MIN_RT = 120;          // ms; nobody reads six cards faster than this
+const JITTER = 200;          // ms of network wobble a guest's claim is allowed before its time is pushed back
+const NETX = window.UDTCNet;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TOYS = [...OBJ, "cat"];
+
+/* --- host: the authoritative side --- */
+function seatOn(i){ const s = O.sess && O.sess.seats[i]; return !!s && (s.kind !== "guest" || s.connected); }
+const absent = p => p.remote && (!seatOn(p.seat) || O.late.has(p.seat));
+const activeGrabbers = () => S.eligible.filter(q => !S.out.has(q) && !S.done.has(q) && !absent(q));
+function windowMs(){
+  let m = 0;
+  O.sess.seats.forEach((s, i) => { if (s.kind === "guest" && s.connected) m = Math.max(m, O.sess.rtt(i)); });
+  return Math.round(Math.min(1500, Math.max(600, m + 250)));
+}
+function botNamesFor(seats){
+  const used = new Set(seats.filter(s => s.name).map(s => s.name.toLowerCase()));
+  return BOTS.concat("Grisou", "Caramel").filter(n => !used.has(n.toLowerCase()));
+}
+function syncAway(){ if (O.role === "host") S.players.forEach(p => { p.away = p.remote && !seatOn(p.seat); }); }
+function startOnline(){
+  const H = O.sess; if (!H) return;
+  clearTimers(); endTutorial();
+  H.started = true; H.diff = S.diff;
+  const N = H.seats.length, per = 60 / N, deck = buildDeck(), hs = H.hostSeat(), names = botNamesFor(H.seats);
+  let b = 0;
+  const all = H.seats.map((s, i) => {
+    const person = s.kind === "host" || s.kind === "guest", nick = person ? s.name : names[b++ % names.length];
+    return {seat: i, nick, name: i === hs ? "You" : nick, human: i === hs, remote: s.kind === "guest", bot: !person,
+      fur: person ? HFUR[i % HFUR.length] : null, deck: deck.slice(i*per, (i+1)*per), vp: [], flipped: []};
+  });
+  S.players = all.slice(hs).concat(all.slice(0, hs));   // you sit at the bottom of your own screen
+  S.flips = N <= 3 ? 2 : 1;
+  S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players;
+  S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
+  S.out = new Set(); S.done = new Set(); S.taken = new Map(); S.scorers = []; S.misgrabs = [];
+  O.stats = {}; all.forEach(p => { O.stats[p.seat] = {times: [], miss: 0}; });
+  Object.assign(O, {phase: "ready", log: [], res: null, tie: null, endInfo: null, late: new Set(), acks: {}, shown: null, pend: null, claims: []});
+  syncAway(); showGameScreen(); resetToys(false); renderSeats(); renderTable("backs"); updatePill();
+  H.pushLobby(); netPush();
+  later(nextRound, 1500);
+}
+function hostFlipped(all){
+  O.rid++; O.phase = "live"; O.claims = []; O.log = []; O.res = null; O.win = O.close = null; O.late = new Set(); O.note = "";
+  O.shown = {}; S.players.forEach(p => { O.shown[p.seat] = p.flipped.slice(); });
+  S.eligible.filter(p => p.bot).forEach(b => planBot(b, all));
+  later(() => { commit(); if (!S.resolved) resolve(); }, ROUND_LIMIT);
+  O.facesRid = O.rid; markPaint(O.rid);
+  O.flipAt = performance.now();
+  netPush();
+}
+// a grab reaching the host (from a guest, the host's own player, or a bot); returns why it was refused, or ""
+function claim(p, toy, rt, seq, adj){
+  if (O.phase !== "live" || S.resolved) return "Too late: that flip is over.";
+  if (!S.eligible.includes(p)) return "Only the tied players grab in sudden death.";
+  if (O.late.has(p.seat)) return "You rejoined during this flip, so you sit it out.";
+  if (S.out.has(p) || S.done.has(p)) return "You’re already done this flip.";
+  if (O.claims.some(c => c.p === p)) return "You’re already reaching for a toy.";
+  if (!TOYS.includes(toy)) return "That isn’t a toy on this table.";
+  O.claims.push({p, toy, rt, seq: seq || 0, adj: !!adj, at: performance.now()});
+  if (!O.win) O.win = later(commit, windowMs());
+  const act = activeGrabbers();
+  if (act.every(q => O.claims.some(c => c.p === q))) commit();
+  return "";
+}
+function retryBot(p){
+  later(() => {
+    if (S.resolved || S.done.has(p) || S.out.has(p)) return;
+    const open = [...S.legal].filter(o => !S.taken.has(o));
+    if (open.length) grab(p, open[Math.floor(Math.random()*open.length)]);
+  }, 250 + Math.random()*350);
+}
+// settle every claim collected so far, fastest reaction first
+function commit(){
+  if (O.win){ clearTimeout(O.win); O.win = null; }
+  if (S.resolved || !O.claims.length) return;
+  const batch = O.claims.splice(0).sort((a, b) => a.rt - b.rt || a.at - b.at);
+  for (const c of batch){
+    const p = c.p, row = {seat: p.seat, toy: c.toy, rt: Math.round(c.rt), adj: c.adj};
+    if (c.seq) O.acks[p.seat] = Math.max(O.acks[p.seat] || 0, c.seq);
+    if (S.out.has(p) || S.done.has(p)) continue;
+    if (S.sudden && S.scorers.length){ row.res = "late"; O.log.push(row); continue; }
+    if (S.legal.has(c.toy)){
+      const by = S.taken.get(c.toy);
+      if (by){ row.res = "beaten"; row.by = by.seat; O.log.push(row); if (p.bot) retryBot(p); continue; }
+      S.taken.set(c.toy, p); S.done.add(p); S.scorers.push({p, target: c.toy, t: c.rt / 1000});
+      row.res = "won"; O.log.push(row);
+    } else {
+      S.out.add(p); S.misgrabs.push({p, target: c.toy});
+      O.stats[p.seat].miss++; if (p.human) S.stats.miss++;
+      row.res = "miss"; O.log.push(row);
+    }
+  }
+  if (S.sudden && S.scorers.length) return resolve();
+  const open = [...S.legal].filter(o => !S.taken.has(o));
+  if (!open.length || !activeGrabbers().length) return resolve();
+  if (S.scorers.length && !O.close) O.close = later(() => { O.close = null; commit(); if (!S.resolved) resolve(); }, CLOSE_MS);
+  renderSeats(); netPush();
+}
+function checkAllIn(){
+  if (O.phase !== "live" || S.resolved) return;
+  const act = activeGrabbers();
+  if (!act.length){ commit(); if (!S.resolved) resolve(); }
+  else if (O.claims.length && act.every(q => O.claims.some(c => c.p === q))) commit();
+}
+function hostResolved(scorers, lost){
+  O.phase = "result";
+  if (!S.sudden) scorers.forEach(s => O.stats[s.p.seat].times.push(s.t));
+  O.res = {legal: [...S.legal], lost: lost.map(p => p.seat)};
+  netPush();
+}
+// a guest's grab: check the round, then make sure the reported time is one their connection allows
+function onGuestAct(seat, a){
+  const p = S.players.find(q => q.seat === seat);
+  if (!a || a.type !== "grab" || !p || !S.live) return "There is no flip to grab from.";
+  const seq = a.seq | 0, refuse = why => { O.acks[seat] = Math.max(O.acks[seat] || 0, seq); netPushTo(seat); return why; };
+  if (a.rid !== O.rid) return refuse("Too late: that flip is over.");
+  const elapsed = performance.now() - O.flipAt, rtt = O.sess.rtt(seat);
+  let rt = +a.rt, adj = false;
+  if (!isFinite(rt) || rt < 0) rt = elapsed;
+  if (rt > elapsed) rt = elapsed;                                      // can't have reacted after the claim arrived
+  // an honest claim arrives about one round trip after the reaction (flip down, grab up), so it can't claim much less
+  const floor = Math.max(MIN_RT, rtt ? elapsed - rtt - JITTER : 0);
+  if (rt < floor){ rt = floor; adj = true; }
+  const why = claim(p, String(a.toy), rt, seq, adj);
+  return why ? refuse(why) : "";
+}
+function netView(i){
+  const bySeat = [...S.players].sort((a, b) => a.seat - b.seat);
+  const showCards = (O.phase === "live" || O.phase === "result") && O.shown;
+  const st = O.stats[i] || {times: [], miss: 0};
+  let end = null;
+  if (O.phase === "over" && O.endInfo){
+    const ts = st.times, best = s => (O.stats[s] && O.stats[s].times.length) ? Math.min(...O.stats[s].times) : null;
+    end = {winner: O.endInfo.winner, order: O.endInfo.order.map(r => ({seat: r.seat, vp: r.vp, best: best(r.seat)})),
+      mine: {scored: ts.length, best: best(i), avg: ts.length ? ts.reduce((x, y) => x + y, 0) / ts.length : null, miss: st.miss}};
+  }
+  return {
+    code: O.code, me: i, phase: O.phase, rid: O.rid, round: S.round, rounds: S.rounds, flips: S.flips, sudden: S.sudden, paused: S.paused,
+    players: bySeat.map(p => ({name: p.nick, bot: !!p.bot, on: !p.remote || seatOn(p.seat), vp: p.vp.length, left: p.deck.length,
+      shown: showCards ? (O.shown[p.seat] || []) : null})),
+    eligible: S.eligible.map(p => p.seat), out: [...S.out].map(p => p.seat), done: [...S.done].map(p => p.seat),
+    taken: [...S.taken].map(([o, p]) => [o, p.seat]),
+    log: O.phase === "ready" ? [] : O.log,
+    res: O.phase === "result" ? O.res : null, tie: O.phase === "tie" ? O.tie : null, end,
+    mine: {ack: O.acks[i] || 0, late: O.late.has(i)}
+  };
+}
+function netPushTo(i){ if (O.sess && O.sess.started) O.sess.sendTo(i, {t: "view", view: netView(i)}); }
+function netPush(){
+  if (!O.on || O.role !== "host" || !O.sess || !O.sess.started) return;
+  O.sess.seats.forEach((s, i) => { if (s.kind === "guest" && s.connected) netPushTo(i); });
+  paintOnline(netView(O.sess.hostSeat()));
+}
+
+/* --- both sides: timing from paint, input, and drawing a view --- */
+function markPaint(rid){
+  O.t0 = 0; O.t0rid = rid; O.renderAt = performance.now();
+  const set = ts => { if (O.t0rid === rid && !O.t0) O.t0 = ts; };
+  requestAnimationFrame(ts => set(Math.max(ts, O.renderAt)));   // the frame that first paints the cards
+  setTimeout(() => set(performance.now()), 150);                  // background tabs skip frames
+}
+function canGrabNow(v, toy){
+  if (!v || v.phase !== "live") return false;
+  const me = v.me;
+  if (!v.eligible.includes(me) || v.out.includes(me) || v.done.includes(me) || v.mine.late) return false;
+  if (O.pend && O.pend.rid === v.rid && O.pend.seq > v.mine.ack) return false;
+  return !v.taken.some(([o]) => o === toy);
+}
+function onlineInput(toy, ts){
+  const v = O.view;
+  if (!canGrabNow(v, toy) || O.t0rid !== v.rid) return;
+  const now = performance.now(), base = O.t0 || O.renderAt, at = ts > 0 && ts <= now + 5 ? ts : now;
+  const rt = Math.max(0, at - base);
+  O.pend = {rid: v.rid, toy, rt, seq: ++O.seq}; O.note = "";
+  if (O.role === "host"){ const why = claim(S.players[0], toy, rt, O.pend.seq); if (why){ O.pend = null; O.note = why; } }
+  else O.sess.act({type: "grab", rid: v.rid, toy, rt: Math.round(rt), seq: O.pend.seq});
+  paintOnline(O.role === "host" ? netView(O.sess.hostSeat()) : O.view);
+}
+const secs = ms => (ms / 1000).toFixed(2) + "s";
+const toyName = o => NAME[o].toLowerCase();
+function paintOnline(v){
+  if (!v) return;
+  O.view = v;
+  const me = v.me, nm = i => i === me ? "You" : esc(v.players[i].name);
+  if (O.pend && (O.pend.rid !== v.rid || O.pend.seq <= v.mine.ack)) O.pend = null;
+  const pend = O.pend, live = v.phase === "live", fresh = live || v.phase === "result";
+  const won = {}, missed = {};
+  if (fresh) for (const r of v.log){ if (r.res === "won") won[r.toy] = r; if (r.res === "miss") (missed[r.toy] = missed[r.toy] || []).push(r); }
+  const taken = new Set(v.taken.map(([o]) => o));
+  const mayGrab = live && v.eligible.includes(me) && !v.out.includes(me) && !v.done.includes(me) && !v.mine.late && !pend;
+  document.querySelectorAll(".toy").forEach(el => {
+    const o = el.dataset.t;
+    el.classList.toggle("won", !!won[o]);
+    el.classList.toggle("miss", !!missed[o]);
+    el.classList.toggle("legal", !!(v.res && v.res.legal.includes(o)));
+    el.classList.toggle("pend", !!pend && pend.toy === o);
+    let tags = "";
+    if (won[o]) tags += `<span class="tag">${nm(won[o].seat)}<span class="tm"> · ${secs(won[o].rt)}</span></span>`;
+    if (missed[o]) tags += missed[o].map(r => `<span class="tag bad">${nm(r.seat)}</span>`).join("");
+    if (pend && pend.toy === o) tags += `<span class="tag pend">You<span class="tm"> · ${secs(pend.rt)}</span></span>`;
+    const t = el.querySelector(".tags"); if (t.innerHTML !== tags) t.innerHTML = tags;
+    el.disabled = !mayGrab || taken.has(o);
+  });
+  // the banner, worded for whoever is looking (the same words as a game against bots)
+  const mineRows = v.log.filter(r => r.seat === me), last = mineRows[mineRows.length - 1];
+  const wonRows = v.log.filter(r => r.res === "won");
+  const cards = v.players.flatMap(q => q.shown || []), legal = new Set(cards.filter(isCorrect).map(c => c.obj));
+  if (!legal.size) legal.add("cat");
+  const open = [...legal].filter(o => !taken.has(o));
+  const upFor = () => open.length ? ` Still up for grabs: ${open.map(toyName).join(", ")}.` : "";
+  let html = "";
+  if (v.phase === "ready") html = "Get ready…";
+  else if (v.phase === "live"){
+    if (v.mine.late) html = "You rejoined during this flip, so you sit it out. You’re back in on the next one.";
+    else if (!v.eligible.includes(me)) html = "Sudden death: only the tied players may grab.";
+    else if (pend) html = `You grabbed the <b>${toyName(pend.toy)}</b> in <b>${secs(pend.rt)}</b>.<span class="sub">Checking everyone’s reaction times…</span>`;
+    else if (v.out.includes(me) && last) html = `Wrong grab. That's not the ${toyName(last.toy)}. You're out this round.`;
+    else if (v.done.includes(me) && last) html = `<b>You</b> have the ${toyName(last.toy)} (${secs(last.rt)}).${v.sudden ? "" : upFor()}`;
+    else if (last && last.res === "beaten"){
+      const w = v.log.find(r => r.res === "won" && r.toy === last.toy);
+      html = `<b>${w ? nm(w.seat) : "Someone"}</b> reached the ${toyName(last.toy)} first${w ? ` (${secs(w.rt)} to your ${secs(last.rt)})` : ""}.${upFor()}`;
+    } else if (wonRows.length){
+      const r = wonRows[wonRows.length - 1];
+      html = `<b>${nm(r.seat)}</b> ${r.seat === me ? "have" : "has"} the ${toyName(r.toy)}.${upFor()}`;
+    } else if (v.sudden) html = "Sudden death: only the tied players may grab.";
+  } else if (v.phase === "result"){
+    const sc = wonRows.slice().sort((a, b) => a.rt - b.rt);
+    const who = r => `<b>${nm(r.seat)}</b> (${toyName(r.toy)}, ${secs(r.rt)})`;
+    let head;
+    if (!sc.length) head = "Nobody grabbed a correct toy. Nobody scores this round.";
+    else if (sc.length === 1) head = `${who(sc[0])} scored.`;
+    else head = `${sc.slice(0, -1).map(who).join(", ")} and ${who(sc[sc.length - 1])} ${sc.length === 2 ? "both" : "all"} scored.`;
+    if (v.sudden && sc.length) head = `${who(sc[0])} won the sudden death flip.`;
+    const notes = (v.res.lost || []).map(i => `${nm(i)} lost a card`);
+    const sub = [v.res.legal.includes("cat") ? "No toy was in its own color, so it was the cat." : "", notes.join(" · "), v.paused ? "The host paused the game." : ""].filter(Boolean).join(" ");
+    html = `<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`;
+  } else if (v.phase === "tie"){
+    html = `Tie at ${v.tie.top} between ${v.tie.seats.map(nm).join(" and ")}. Sudden death next.`;
+  }
+  if (v.phase !== "over"){
+    const warn = O.trouble ? (O.role === "host" ? "Lost the relay connection. Reconnecting…" : "Can’t reach the host. Still trying…") : O.note;
+    banner(warn ? `<span>${html || ""}<span class="sub">${esc(warn)}</span></span>` : (html || "&nbsp;"));
+  }
+  // the grab log: every claim this flip, fastest first
+  const glog = $("glog");
+  glog.hidden = v.phase === "over";
+  const rows = v.log.slice().sort((a, b) => a.rt - b.rt);
+  if (pend) rows.push({seat: me, toy: pend.toy, rt: pend.rt, res: "pend"});
+  rows.sort((a, b) => a.rt - b.rt);
+  $("glogH").textContent = v.phase === "live" || v.phase === "result" ? `${v.sudden ? "Sudden death" : `Round ${v.round}`}: who grabbed what` : "Last flip";
+  const res = r => {
+    if (r.res === "won") return "Got it";
+    if (r.res === "miss") return "Wrong grab";
+    if (r.res === "late") return "Too slow";
+    if (r.res === "pend") return "Checking…";
+    const w = v.log.find(x => x.res === "won" && x.toy === r.toy);
+    return w ? `Beaten by ${secs(r.rt - w.rt).replace(/^/, "+")}` : "Beaten";
+  };
+  $("glogL").innerHTML = rows.length ? rows.map(r => `<li class="${r.res}${r.seat === me ? " me" : ""}"><span class="tm">${r.adj ? "≈" : ""}${secs(r.rt)}</span>`
+    + `<span class="nm">${nm(r.seat)} · ${toyName(r.toy)}</span><span class="res">${res(r)}</span></li>`).join("")
+    : `<li class="empty">${v.phase === "live" ? "No grabs yet." : "Grabs show up here, fastest first."}</li>`;
+  if (v.phase === "over") showOnlineEnd(v);
+  $("pauseBtn").textContent = v.paused ? "Resume" : "Pause";
+}
+function showOnlineEnd(v){
+  const e = v.end; if (!e) return;
+  const me = v.me, nm = i => i === me ? "You" : esc(v.players[i].name);
+  $("endTitle").textContent = e.winner === me ? "You win!" : `${v.players[e.winner].name} wins.`;
+  $("standings").innerHTML = e.order.map((r, k) => `<li class="${k === 0 ? "first" : ""}"><span class="n">${nm(r.seat)}</span>`
+    + `<span>★ ${r.vp} ${r.vp === 1 ? "card" : "cards"}${r.best != null ? ` · fastest ${r.best.toFixed(2)}s` : ""}</span></li>`).join("");
+  const m = e.mine;
+  $("stats").innerHTML = [
+    ["Rounds you scored", m.scored],
+    ["Your fastest grab", m.best != null ? m.best.toFixed(2)+"s" : "–"],
+    ["Your average grab", m.avg != null ? m.avg.toFixed(2)+"s" : "–"],
+    ["Wrong grabs", m.miss]
+  ].map(([k, x]) => `<div><span class="v">${x}</span><span class="k">${k}</span></div>`).join("");
+  const host = O.role === "host";
+  $("againBtn").hidden = !host; $("againBtn").textContent = "Play again";
+  $("settingsBtn").textContent = host ? "Close table" : "Leave table";
+  $("endHint").hidden = host; $("endHint").textContent = "The host can deal another game at this table.";
+  $("end").hidden = false; $("meta").hidden = true; $("glog").hidden = true;
+  banner("");
+}
+function showGameScreen(){
+  $("setup").hidden = true; $("lobby").hidden = true; $("end").hidden = true; $("meta").hidden = false;
+  $("glog").hidden = false;
+  $("pauseBtn").hidden = O.role !== "host"; $("quitBtn").textContent = "Leave table";
+}
+
+/* --- guest: mirror the host's view into S and redraw --- */
+function chantLocally(){
+  const words = ["Un","Deux","Trois","Cat!"];
+  words.forEach((w, i) => later(() => { const el = $("chant"); if (el) el.innerHTML = `<span>${w}</span>`; }, i*430));
+}
+function applyView(v){
+  if (!O.on || O.role !== "guest" || !v || !Array.isArray(v.players)) return;
+  const N = v.players.length, me = v.me;
+  v.players.forEach(q => { q.name = NETX.cleanName(q.name) || "Player"; });
+  O.code = v.code || O.code;
+  const mk = i => { const q = v.players[i];
+    return {seat: i, nick: q.name, name: i === me ? "You" : q.name, human: i === me, remote: !q.bot && i !== me, bot: q.bot, away: !q.on,
+      fur: q.bot ? null : HFUR[i % HFUR.length], vp: new Array(q.vp | 0).fill(0), deck: new Array(q.left | 0).fill(0),
+      flipped: (q.shown || []).filter(c => c && OBJ.includes(c.obj) && PAL[c.color])}; };
+  S.players = Array.from({length: N}, (_, k) => mk((me + k) % N));
+  const at = i => S.players.find(p => p.seat === i);
+  S.eligible = v.eligible.map(at).filter(Boolean); S.out = new Set(v.out.map(at)); S.done = new Set(v.done.map(at));
+  S.taken = new Map(v.taken.map(([o, i]) => [o, at(i)]));
+  S.sudden = !!v.sudden; S.flips = v.flips; S.round = v.round; S.rounds = v.rounds; S.paused = !!v.paused;
+  S.live = v.phase !== "over"; S.resolved = v.phase !== "live";
+  const key = v.phase + ":" + v.rid + ":" + v.round + ":" + (v.sudden ? 1 : 0);
+  if (key !== O.key){
+    O.key = key; O.note = "";
+    if (v.phase !== "over") showGameScreen();
+    if (v.phase === "ready" || v.phase === "chant" || v.phase === "tie"){
+      clearTimers(); resetToys(false); renderTable("backs"); O.facesRid = -1;
+      if (v.phase === "chant") chantLocally();
+    } else if (v.phase === "live" || v.phase === "result"){
+      if (O.facesRid !== v.rid){
+        clearTimers(); resetToys(false); renderTable("faces"); O.facesRid = v.rid;
+        if (v.phase === "live") markPaint(v.rid);
+      }
+    }
+  }
+  renderSeats(); updatePill(); paintOnline(v);
+}
+
+/* --- lobby --- */
+function shareURL(code){
+  const u = new URL(location.href);
+  u.search = ""; u.hash = "";
+  u.searchParams.set("table", code);
+  if (NETX.LOCAL) u.searchParams.set("relay", "local");
+  return u.toString();
+}
+function setTableParam(code){
+  try {
+    const u = new URL(location.href);
+    if (code) u.searchParams.set("table", code); else u.searchParams.delete("table");
+    history.replaceState(null, "", u.toString());
+  } catch (e) {}
+}
+function netMsg(t){ $("netMsg").textContent = t || ""; }
+function myName(){
+  const n = NETX.cleanName($("nameIn").value);
+  save("udtc-name", n);
+  return n;
+}
+function lobbyPreview(st){
+  // the table as it will be dealt: people where they sit, bots in their seats, open chairs dimmed
+  const N = st.N, mine = O.role === "host" ? O.sess.hostSeat() : O.sess.seat, names = botNamesFor(st.seats);
+  let b = 0;
+  const all = st.seats.map((s, i) => {
+    const person = s.kind === "host" || s.kind === "guest", nick = person ? s.name : names[b++ % names.length];
+    return {seat: i, name: i === mine ? "You" : s.kind === "open" ? "Open seat" : nick, human: i === mine, open: s.kind === "open",
+      away: s.kind === "guest" && !s.connected, fur: person ? HFUR[i % HFUR.length] : null,
+      deck: new Array(60 / N).fill(0), vp: [], flipped: []};
+  });
+  const k = Math.max(0, mine);
+  S.players = all.slice(k).concat(all.slice(0, k));
+  S.eligible = S.players; S.sudden = false; S.resolved = true; S.out = new Set(); S.flips = N <= 3 ? 2 : 1;
+  resetToys(false); renderSeats(); renderTable("backs");
+}
+function renderLobby(st){
+  if (!st || !O.on) return;
+  O.code = st.code;
+  const host = O.role === "host", mine = host ? O.sess.hostSeat() : O.sess.seat;
+  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = true; $("lobby").hidden = false; $("glog").hidden = true;
+  $("tCode").textContent = st.code;
+  $("shareLink").value = shareURL(st.code);
+  const people = st.seats.filter(s => s.kind === "host" || s.kind === "guest").length;
+  const status = O.trouble ? (host ? "Lost the relay connection. Reconnecting…" : "Can’t reach the host. Still trying…")
+    : host ? `Table open on the ${st.relay} relay. Friends open the link, or choose Play online and type the code.`
+    : `You’re at the table (${st.relay} relay). Waiting for the host to start.`;
+  $("lobStatus").textContent = status;
+  $("lobHostCtl").hidden = !host;
+  if (host){
+    $("lobN").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.v === st.N)));
+    $("lobDiff").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.diff)));
+    const f = st.N <= 3 ? 2 : 1, per = 60 / st.N;
+    $("lobNHint").textContent = `${per} cards each · ${per/f} rounds${f === 2 ? " · everyone flips 2 cards" : ""}`;
+    $("lobDiffHint").textContent = S.diff === "easy" ? "Bots take around two seconds and misgrab often." : "Bots grab in about a second and rarely slip.";
+  }
+  const names = botNamesFor(st.seats); let b = 0;
+  $("lobSeats").innerHTML = st.seats.map((s, i) => {
+    const me = i === mine, person = s.kind === "host" || s.kind === "guest";
+    const botName = s.kind === "bot" || s.kind === "open" ? names[b++ % names.length] : null;
+    let ava, who, sub, ctl = "";
+    if (person){
+      ava = `<span class="ava">${avatar(s.name, HFUR[i % HFUR.length])}</span>`;
+      who = esc(s.name) + (me ? " (you)" : "");
+      sub = s.kind === "host" ? "Host" : !s.connected ? "Away · can rejoin with the code" : s.rtt ? `Connected · ${s.rtt} ms round trip` : "Connected";
+      if (host && s.kind === "guest") ctl = `<button class="btn" type="button" data-kick="${i}">Remove</button>`;
+    } else if (s.kind === "bot"){
+      ava = `<span class="ava">${avatar(botName)}</span>`;
+      who = esc(botName); sub = `Bot · ${(host ? S.diff : st.diff) === "hard" ? "hard" : "easy"}`;
+      if (host) ctl = `<button class="btn" type="button" data-kind="${i}" data-v="open">Open for a friend</button>`;
+    } else {
+      ava = `<span class="ava empty"></span>`;
+      who = "Open seat"; sub = `For a friend · else ${esc(botName)} (bot)`;
+      if (host) ctl = `<button class="btn" type="button" data-kind="${i}" data-v="bot">Make it a bot</button>`;
+      else ctl = `<button class="btn" type="button" data-sit="${i}">Sit here</button>`;
+    }
+    return `<li class="${me ? "me" : ""}">${ava}<span class="who"><b>${who}</b><span>${sub}</span></span>${ctl}</li>`;
+  }).join("");
+  $("lobStart").hidden = !host;
+  $("lobHint").textContent = host
+    ? (people > 1 ? `${people} people seated. Open seats become bots when you start.` : "Share the code. You can start any time; bots fill the empty seats.")
+    : "Tap Sit here to change seats.";
+  lobbyPreview(st);
+  banner(host ? "Waiting for friends to sit down…" : "Waiting for the host to start…");
+}
+async function hostTable(){
+  if (O.on) return;
+  const name = myName() || "Host";
+  $("hostBtn").disabled = $("joinBtn").disabled = true; netMsg("Opening a table…");
+  const H = new NETX.HostSession(S.opp + 1, name);
+  try { await H.open(); }
+  catch (e){ netMsg(e.message); $("hostBtn").disabled = $("joinBtn").disabled = false; return; }
+  $("hostBtn").disabled = $("joinBtn").disabled = false; netMsg("");
+  Object.assign(O, {on: true, role: "host", sess: H, code: H.code, view: null, key: "", trouble: false, note: ""});
+  H.diff = S.diff;
+  H.onLobby = st => { if (!H.started) renderLobby(st); };
+  H.onAct = onGuestAct;
+  H.onJoin = i => { if (!H.started) return; if (O.phase === "live" && !S.resolved) O.late.add(i); syncAway(); renderSeats(); netPush(); checkAllIn(); };
+  H.onChange = () => { if (!H.started) return; syncAway(); renderSeats(); netPush(); checkAllIn(); };
+  H.trouble = on => { O.trouble = on; if (H.started) paintOnline(O.view); else renderLobby(H.lobbyState()); };
+  renderLobby(H.lobbyState());
+}
+async function joinTable(codeArg, auto){
+  if (O.on) return;
+  const code = String(codeArg || $("codeIn").value).toUpperCase().replace(/[^A-Z]/g, "");
+  const name = myName();
+  if (code.length !== 5){ netMsg("Type the 5-letter table code."); $("codeIn").focus(); return; }
+  if (!name){ netMsg("Type your name first, so everyone knows who’s grabbing."); $("nameIn").focus(); return; }
+  $("hostBtn").disabled = $("joinBtn").disabled = true; netMsg(`${auto ? "Rejoining" : "Looking for"} table ${code}…`);
+  const G = new NETX.GuestSession(code, name);
+  Object.assign(O, {on: true, role: "guest", sess: G, code, view: null, key: "", facesRid: -1, trouble: false, note: "", pend: null});
+  G.onLobby = st => { if (!st.started && O.sess === G) { if (O.view && O.view.phase !== "over") return; O.view = null; O.key = ""; renderLobby(st); } };
+  G.onView = v => { if (O.sess === G) applyView(v); };
+  G.onErr = m => { O.note = m; if (O.view) paintOnline(O.view); };
+  G.onClosed = m => { if (O.sess === G) leaveOnline(m, true); };
+  G.onTrouble = on => { O.trouble = on; if (O.view) paintOnline(O.view); else if (G.lobby) renderLobby(G.lobby); };
+  try { await G.connect(); }
+  catch (e){
+    Object.assign(O, {on: false, role: "", sess: null});
+    netMsg(e.message); $("hostBtn").disabled = $("joinBtn").disabled = false; return;
+  }
+  $("hostBtn").disabled = $("joinBtn").disabled = false; netMsg("");
+  $("online").classList.remove("invite");
+  setTableParam(code);
+  if (G.lobby && !G.lobby.started && !O.view) renderLobby(G.lobby);
+}
+function leaveOnline(msg, closedByHost){
+  const s = O.sess;
+  Object.assign(O, {on: false, role: "", sess: null, view: null, key: "", phase: "", pend: null, trouble: false, note: "", claims: []});
+  if (s) s.leave(!closedByHost);
+  setTableParam(null);
+  $("lobby").hidden = true; $("glog").hidden = true;
+  $("pauseBtn").hidden = false; $("quitBtn").textContent = "Quit"; $("pauseBtn").textContent = "Pause";
+  toSetup();
+  netMsg(msg || "");
+  if (msg) $("online").scrollIntoView({block: "nearest"});
+}
+async function copyText(text, btn, label){
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {}
+  if (!ok){
+    const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    ta.remove();
+  }
+  btn.textContent = ok ? "Copied" : "Select and copy";
+  btn.classList.toggle("done", ok);
+  if (!ok) $("shareLink").select();
+  setTimeout(() => { btn.textContent = label; btn.classList.remove("done"); }, 1600);
+}
+$("hostBtn").addEventListener("click", hostTable);
+$("joinBtn").addEventListener("click", () => joinTable());
+$("codeIn").addEventListener("keydown", e => { if (e.key === "Enter") joinTable(); });
+$("nameIn").addEventListener("keydown", e => { if (e.key === "Enter" && $("codeIn").value.trim()) joinTable(); });
+$("copyCode").addEventListener("click", () => copyText(O.code, $("copyCode"), "Copy code"));
+$("copyLink").addEventListener("click", () => copyText(shareURL(O.code), $("copyLink"), "Copy link"));
+$("shareLink").addEventListener("focus", e => e.target.select());
+$("lobStart").addEventListener("click", startOnline);
+$("lobLeave").addEventListener("click", () => leaveOnline());
+$("lobN").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || O.role !== "host") return;
+  if (!O.sess.setN(+b.dataset.v)) $("lobHint").textContent = "Too many people are seated for that. Remove someone first.";
+});
+$("lobDiff").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || O.role !== "host") return;
+  S.diff = b.dataset.v; save("udtc-diff", S.diff); syncSetup(); O.sess.diff = S.diff; O.sess.pushLobby();
+});
+$("lobSeats").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || !O.on) return;
+  if (b.dataset.kick) O.sess.kick(+b.dataset.kick);
+  else if (b.dataset.kind) O.sess.setKind(+b.dataset.kind, b.dataset.v);
+  else if (b.dataset.sit) O.sess.sit(+b.dataset.sit);
+});
+addEventListener("beforeunload", e => { if (O.on && O.role === "host" && O.sess && O.sess.started && S.live){ e.preventDefault(); e.returnValue = ""; } });
+
 /* ---------- input ---------- */
+let lastDown = {t: "", at: 0};
+$("grab").addEventListener("pointerdown", e => {
+  if (!O.on || (e.button !== undefined && e.button > 0)) return;
+  const b = e.target.closest(".toy"); if (!b || b.disabled) return;
+  lastDown = {t: b.dataset.t, at: performance.now()};
+  onlineInput(b.dataset.t, e.timeStamp);       // online, the grab starts when the paw comes down
+});
 $("grab").addEventListener("click", e => {
   const b = e.target.closest(".toy"); if (!b || b.disabled) return;
+  if (O.on){ if (!(lastDown.t === b.dataset.t && performance.now() - lastDown.at < 1500)) onlineInput(b.dataset.t, e.timeStamp); return; }
   grab(S.players[0], b.dataset.t);
 });
 document.addEventListener("keydown", e => {
-  if (!S.live || S.resolved || e.repeat) return;
+  if (e.target && e.target.closest && e.target.closest("input,textarea,select")) return;
   const map = {"1":"bird","2":"fish","3":"ball","4":"mouse","5":"fly","6":"cat","c":"cat","C":"cat"};
+  if (O.on){
+    if (e.repeat || !O.view || O.view.phase !== "live") return;
+    const t = map[e.key]; if (!t) return;
+    e.preventDefault(); return onlineInput(t, e.timeStamp);
+  }
+  if (!S.live || S.resolved || e.repeat) return;
   const t = map[e.key]; if (!t) return;
   e.preventDefault(); grab(S.players[0], t);
 });
 $("startBtn").addEventListener("click", startGame);
 $("learnBtn").addEventListener("click", startTutorial);
-$("againBtn").addEventListener("click", startGame);
-$("settingsBtn").addEventListener("click", toSetup);
-$("quitBtn").addEventListener("click", toSetup);
+$("againBtn").addEventListener("click", () => { if (!O.on) return startGame(); if (O.role === "host") startOnline(); });
+$("settingsBtn").addEventListener("click", () => O.on ? leaveOnline() : toSetup());
+$("quitBtn").addEventListener("click", () => {
+  if (!O.on) return toSetup();
+  if (S.live && !confirm(O.role === "host" ? "Close the table for everyone?" : "Leave the table? You can rejoin with the code.")) return;
+  leaveOnline();
+});
 $("pauseBtn").addEventListener("click", () => {
   S.paused = !S.paused;
   $("pauseBtn").textContent = S.paused ? "Resume" : "Pause";
   if (!S.paused && S.waiting) advance();
+  if (O.on) netPush();
 });
 
 /* ---------- boot ---------- */
@@ -883,6 +1811,19 @@ renderToys(); syncSetup(); showExample();
 if (window.ResizeObserver) new ResizeObserver(() => place()).observe($("board")); else window.addEventListener("resize", place);
 if (document.fonts) document.fonts.ready.then(place);
 if (/[?&#]tutorial\b/.test(location.search + location.hash)) startTutorial();
+$("nameIn").value = NETX.cleanName(load("udtc-name", ""));
+{ // ?table=CODE opens straight into joining; after a refresh, the seat token in this tab rejoins at once
+  const code = (new URLSearchParams(location.search).get("table") || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
+  if (code.length === 5 && !S.tut){
+    $("codeIn").value = code;
+    $("joinBtn").textContent = "Take a seat";
+    $("online").classList.add("invite");
+    $("onlineHint").textContent = `You’re invited to table ${code}. Type your name and take a seat.`;
+    const sat = NETX.cleanName(NETX.seatName(code));
+    if (sat){ $("nameIn").value = sat; joinTable(code, true); }
+    else { $("online").scrollIntoView({block: "center"}); $("nameIn").focus({preventScroll: true}); if ($("nameIn").value) $("joinBtn").focus({preventScroll: true}); }
+  }
+}
 })();
 </script>
 </body>
