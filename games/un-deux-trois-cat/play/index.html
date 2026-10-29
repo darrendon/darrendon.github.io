@@ -807,22 +807,22 @@ function tagToy(o, text, bad){
   t.querySelector(".tags").insertAdjacentHTML("beforeend", `<span class="tag${bad?" bad":""}">${text}</span>`);
 }
 /* each player is a cat; their face sits on their seat label: [fur, ears, eyes, markings] */
-const FUR = {You:["#8a827c","#5d5652","#2a2421"],
+const FUR = {You:["#8a827c","#5d5652","#b5d96a"],
   Katsu:["#a3a9af","#6d737a","#ffc94a"],                       // grey
   Gato:["#262224","#151213","#ffc94a","tuxedo"],                // black and white: black with a white blaze and muzzle
   Otag:["#f6f1ea","#1f1b1c","#e0a43a","patch"],                 // white and black: white with black ears and an eye patch
   Oyako:["#7d5a44","#4e3628","#ffc94a"],                        // brown
-  Johnson:["#e0873a","#a8581c","#2a2421","tabby"]};             // orange tabby
+  Johnson:["#e0873a","#a8581c","#9fd88a","tabby"]};             // orange tabby
 /* online, every person keeps one cat by seat, the same on every screen (none of them looks like a bot) */
-const HFUR = [["#e9c79a","#b88a55","#2a2421"],["#c9c2bb","#8f877f","#3f6fb0"],["#4a3b35","#2a201c","#79e2a8"],
-  ["#f0e0c8","#c7a882","#2a2421"],["#8c6f8e","#5e4660","#ffc94a"],["#a9a3b8","#6f6882","#2a2421"]];
+const HFUR = [["#e9c79a","#b88a55","#6fb0d8"],["#c9c2bb","#8f877f","#3f6fb0"],["#4a3b35","#2a201c","#79e2a8"],
+  ["#f0e0c8","#c7a882","#e0a43a"],["#8c6f8e","#5e4660","#ffc94a"],["#a9a3b8","#6f6882","#ffc94a"]];
 function avatar(name, fur){
   const [f, e, y, mark] = fur || FUR[name] || FUR.You;
   const marks = mark === "tuxedo" ? `<path d="M-2.6 -13.6 L2.6 -13.6 L4.6 1 L-4.6 1 Z" fill="#f6f1ea"/><ellipse cx="0" cy="6.2" rx="9.4" ry="6.4" fill="#f6f1ea"/>`
     : mark === "patch" ? `<ellipse cx="-6" cy="-3.5" rx="6.6" ry="6.2" fill="${e}"/>`
     : mark === "tabby" ? `<path d="M0 -13.4 v5 M-4.8 -12.4 l1.2 4.2 M4.8 -12.4 l-1.2 4.2 M-13.4 -2 h3.6 M13.4 -2 h-3.6" stroke="${e}" stroke-width="1.6" stroke-linecap="round"/>` : "";
   return `<svg viewBox="-20 -22 40 40" aria-hidden="true"><path d="M-14 -5 L-12 -20 L-2 -12 Z M14 -5 L12 -20 L2 -12 Z" fill="${e}"/><circle r="14" fill="${f}"/>${marks}`
-    + `<ellipse cx="-5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><ellipse cx="5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><path d="M-2 5 L2 5 L0 7.6 Z" fill="#c98f8f"/></svg>`;
+    + `${[-5.5, 5.5].map(x => `<ellipse cx="${x}" cy="-1" rx="2.4" ry="3.2" fill="${y}"/><ellipse cx="${x}" cy="-0.6" rx="1.5" ry="2.3" fill="#1d1719"/><circle cx="${x - 0.7}" cy="-1.9" r="0.75" fill="#fff"/>`).join("")}<path d="M-2 5 L2 5 L0 7.6 Z" fill="#c98f8f"/></svg>`;
 }
 function renderSeats(){
   $("seats").innerHTML = S.players.map((p,i) => {
