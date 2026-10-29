@@ -642,7 +642,7 @@ const CORRECT = {bird:"yellow",fish:"green",ball:"blue",mouse:"pink",fly:"orange
 const EXTRA   = {ball:"pink",mouse:"orange",fly:"yellow",bird:"green",fish:"blue"};
 const NAME = {bird:"Bird",fish:"Fish",ball:"Ball",mouse:"Mouse",fly:"Butterfly",cat:"Cat"};
 const OWNER = Object.fromEntries(Object.entries(CORRECT).map(([o,c]) => [c,o]));
-const BOTS = ["Minou","Pompon","Biscotte","Chaussette","Moustache"];
+const BOTS = ["Katsu","Gato","Otag","Oyako","Johnson"];
 const DIFF = {
   easy:{mean:1.95,sd:.45,perCard:.10,catExtra:.50,miss:.14,again:.3,label:"Easy bots"},
   hard:{mean:.92,sd:.18,perCard:.05,catExtra:.25,miss:.05,again:.65,label:"Hard bots"}
@@ -807,8 +807,8 @@ function tagToy(o, text, bad){
   t.querySelector(".tags").insertAdjacentHTML("beforeend", `<span class="tag${bad?" bad":""}">${text}</span>`);
 }
 /* each player is a cat; their face sits on their seat label (fur, ears, eyes) */
-const FUR = {You:["#8a827c","#5d5652","#2a2421"], Minou:["#2e292b","#151213","#ffc94a"], Pompon:["#f6f1ea","#d9cfc2","#2a2421"],
-  Biscotte:["#b98a5e","#7a5636","#2a2421"], Chaussette:["#3a3431","#1f1b1a","#9ad1c8"], Moustache:["#e8d9bf","#5a4436","#3f6fb0"],
+const FUR = {You:["#8a827c","#5d5652","#2a2421"], Katsu:["#2e292b","#151213","#ffc94a"], Gato:["#f6f1ea","#d9cfc2","#2a2421"],
+  Otag:["#b98a5e","#7a5636","#2a2421"], Oyako:["#3a3431","#1f1b1a","#9ad1c8"], Johnson:["#e8d9bf","#5a4436","#3f6fb0"],
   Grisou:["#9a948f","#6b6560","#79e2a8"], Caramel:["#d9a066","#a8743d","#2a2421"]};
 /* online, every person keeps one cat by seat, the same on every screen */
 const HFUR = [["#e08a3c","#a85a1c","#2a2421"],["#c9c2bb","#8f877f","#3f6fb0"],["#4a3b35","#2a201c","#79e2a8"],
@@ -1097,7 +1097,7 @@ function resolve(){
   S.waiting = true;
   if (!S.paused) later(advance, O.on ? 3200 : 2300);
 }
-// "You (fish, 0.84s) scored." / "Minou (ball, 1.21s · bird, 1.60s) scored 2 points." / "You and Minou both scored."
+// "You (fish, 0.84s) scored." / "Katsu (ball, 1.21s · bird, 1.60s) scored 2 points." / "You and Katsu both scored."
 function scoreLine(rows){
   if (!rows.length) return "Nobody grabbed a correct toy. Nobody scores this round.";
   const groups = [];
@@ -1155,16 +1155,16 @@ function toSetup(){
 }
 
 /* ---------- tutorial: an intro to the toys, four coached rounds the bots wait out, then one round at full speed ----------
-   Four players: you, Minou, Pompon and Biscotte, five scripted cards each (one per round). */
+   Four players: you, Katsu, Gato and Otag, five scripted cards each (one per round). */
 const TUT = {
-  bots: ["Minou","Pompon","Biscotte"],
+  bots: ["Katsu","Gato","Otag"],
   rounds: [
     { // one toy in its own color, on someone else's card
       cards: [["bird","pink"],["fish","green"],["fly","blue"],["mouse","yellow"]],
       pre: "Everyone chants <b>“un, deux, trois, cat!”</b> and flips their top card at the same moment. Nobody knows what’s coming, not even you.",
       prompt: "Look at <b>every</b> card on the table, not just yours. Is any toy shown in its own color? Grab that toy.",
-      hint: "Not that one. Check each card against the toys in the middle: Minou flipped a <b>green fish</b>, and green is the fish’s own color.",
-      after: "That’s the whole idea. The green fish was on <b>Minou’s</b> card, not yours, and it still counts. Grab a correct toy and your flipped card goes face down into your <b>point pile</b>, apart from the cards in your hand: that’s a point."
+      hint: "Not that one. Check each card against the toys in the middle: Katsu flipped a <b>green fish</b>, and green is the fish’s own color.",
+      after: "That’s the whole idea. The green fish was on <b>Katsu’s</b> card, not yours, and it still counts. Grab a correct toy and your flipped card goes face down into your <b>point pile</b>, apart from the cards in your hand: that’s a point."
     },
     { // nothing in its own color: the cat
       cards: [["mouse","green"],["bird","blue"],["ball","pink"],["fly","yellow"]],
@@ -1175,23 +1175,23 @@ const TUT = {
     },
     { // two toys at once: two players score
       cards: [["fish","orange"],["ball","blue"],["bird","green"],["mouse","pink"]],
-      follow: [2, 1500],                           // Biscotte reaches for the other correct toy 1.5 s after your first grab
+      follow: [2, 1500],                           // Otag reaches for the other correct toy 1.5 s after your first grab
       pre: "Sometimes more than one toy turns up in its own color.",
       prompt: "Two different toys are in their own colors. <b>Both</b> are correct, and each one is a point. Grab one, then grab the other if you’re fast enough.",
-      hint: "Two cards show a toy in its own color: Minou’s <b>blue ball</b> and Biscotte’s <b>pink mouse</b>. Grab those.",
+      hint: "Two cards show a toy in its own color: Katsu’s <b>blue ball</b> and Otag’s <b>pink mouse</b>. Grab those.",
       after: () => S.scorers.filter(s => s.p.human).length > 1
         ? "You grabbed <b>both</b>: two points. Your own flipped card went into your point pile for the first toy, and a card another player flipped went in for the second."
-        : "You and Biscotte <b>both</b> scored. Each correct toy is a point, and one player can take both if they’re fast enough. Biscotte got to the second one first."
+        : "You and Otag <b>both</b> scored. Each correct toy is a point, and one player can take both if they’re fast enough. Otag got to the second one first."
     },
-    { // a wrong grab: Biscotte falls for the decoys
+    { // a wrong grab: Otag falls for the decoys
       cards: [["fly","orange"],["ball","green"],["fish","yellow"],["bird","blue"]],
-      wrong: [2, "fish", 450],                     // Biscotte grabs the fish 0.45 s after the flip
-      pre: "One more slow round. Keep an eye on Biscotte.",
+      wrong: [2, "fish", 450],                     // Otag grabs the fish 0.45 s after the flip
+      pre: "One more slow round. Keep an eye on Otag.",
       prompt: "Find the toy in its own color.",
-      wrongNote: "<b>Biscotte grabbed the fish!</b> There’s a fish card and a green card on the table, but no green fish. That’s a wrong grab, so she’s out this round. Now you find the right toy.",
+      wrongNote: "<b>Otag grabbed the fish!</b> There’s a fish card and a green card on the table, but no green fish. That’s a wrong grab, so Otag is out this round. Now you find the right toy.",
       hint: "Still not it. Hint: the answer is on <b>your own</b> card this time.",
-      after: () => "The answer was your own <b>orange butterfly</b>. Wrong grabs cost you: Biscotte sat out the round"
-        + ((S.lastLost || []).some(p => p.name === "Biscotte") ? " and <b>lost a point</b>." : ". She had no points yet, so there was none to lose, but normally a wrong grab <b>loses a point</b>.")
+      after: () => "The answer was your own <b>orange butterfly</b>. Wrong grabs cost you: Otag sat out the round"
+        + ((S.lastLost || []).some(p => p.name === "Otag") ? " and <b>lost a point</b>." : ". Otag had no points yet, so there was none to lose, but normally a wrong grab <b>loses a point</b>.")
     },
     { // full speed
       cards: [["ball","pink"],["fish","blue"],["bird","yellow"],["mouse","green"]],
@@ -1223,7 +1223,7 @@ function startTutorial(){
   resetToys(false); renderSeats(); renderTable("backs"); updatePill(); banner("&nbsp;");
   coach([
     "Welcome to the table. These five toys sit in the middle, each in its own color: a <b>yellow bird</b>, a <b>green fish</b>, a <b>blue ball</b>, a <b>pink mouse</b> and an <b>orange butterfly</b>. The <b>cat</b> is the sixth thing you can grab.",
-    "You’re playing Minou, Pompon and Biscotte. For the first four rounds they’ll wait for you."
+    "You’re playing Katsu, Gato and Otag. For the first four rounds they’ll wait for you."
   ], [["tNext", "Let’s flip", true, tutPre]], true);
 }
 function endTutorial(){
