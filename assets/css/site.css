@@ -358,3 +358,46 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
 @media (prefers-color-scheme: dark){.hero-dice .dice rect[fill^="rgba"]{fill:rgba(0,0,0,.35)}}
 @media (max-width:820px){.hero-dice{order:-1;justify-self:start;max-width:150px}}
 @media (prefers-color-scheme: dark){.hero-dice .dice rect[fill="#3A3F42"]{stroke:rgba(239,235,227,.35);stroke-width:2}}
+
+/* ============================================================
+   Palette v2 (from the second color swatch): orange, periwinkle,
+   sand, olive and salmon pink on soft paper. Overrides the tokens
+   and color uses above.
+   ============================================================ */
+:root{
+  --paper:#F5F3EE; --surface:#FCFBF8; --ink:#25272E; --muted:#5C5F6B; --line:#DEDAD0; --line-strong:#C4BEB0;
+  --orange:#E18C0A; --peri:#898FA9; --sand:#C9B88E; --olive:#949015; --pink:#CD9993;
+  --orange-text:#A35F05; --olive-text:#6B680E;
+  --accent:var(--orange); --accent-soft:#FBEAD0; --on-accent:#25272E;
+  --red:var(--orange); --green:var(--olive); --slate:var(--peri); --yellow:var(--pink);
+}
+@media (prefers-color-scheme: dark){
+  :root{--paper:#1A1B20; --surface:#23252B; --ink:#EEECE6; --muted:#A9A8A2; --line:#33353D; --line-strong:#474A53;
+    --orange:#EE9A1E; --peri:#9CA2BE; --sand:#D2C29A; --olive:#B3AE2A; --pink:#DDA8A1;
+    --orange-text:#F0A53A; --olive-text:#C2BD3A; --accent-soft:#3A2A12; --on-accent:#1A1B20}
+}
+:focus-visible{outline-color:var(--orange)}
+.nav a:hover,a.chip:hover{color:var(--orange-text)}
+a.chip:hover{border-color:var(--orange)}
+.nav a[aria-current="page"]{box-shadow:inset 0 -3px 0 var(--orange)}
+.mast h1 .dot,.section-head .more,.signed-card .tba{color:var(--orange-text)}
+.btn.accent{background:var(--orange);border-color:var(--orange);color:var(--on-accent)}
+.btn.yellow{background:var(--sand);border-color:var(--sand);color:#25272E}
+/* underlines */
+.con-year a b,.about .copy a,.signed .tba a,.signed-list a{text-decoration-color:var(--pink)}
+/* five-color stripes */
+.site-foot::before,.band::before{background:linear-gradient(90deg,var(--orange) 0 20%,var(--peri) 20% 40%,var(--sand) 40% 60%,var(--olive) 60% 80%,var(--pink) 80%)}
+/* design principles and Let's meet */
+.principles li:nth-child(1) .n{background:var(--orange);color:#25272E}
+.principles li:nth-child(2) .n{background:var(--peri);color:#fff}
+.principles li:nth-child(3) .n{background:var(--olive);color:#fff}
+.point:nth-child(1){border-top-color:var(--orange)}.point:nth-child(2){border-top-color:var(--peri)}.point:nth-child(3){border-top-color:var(--olive)}
+.signed-card:nth-child(1) .bar{background:var(--orange)}.signed-card:nth-child(2) .bar{background:var(--peri)}.signed-card:nth-child(3) .bar{background:var(--olive)}
+/* CTA band: periwinkle panel, dark text */
+.band{background:var(--peri);color:#1F2230}
+.band h2{color:#1F2230}
+.band p{color:rgba(31,34,48,.82)}
+.band .btn{border-color:#1F2230;color:#1F2230}
+.band .btn.yellow,.band .btn.accent{background:var(--orange);border-color:var(--orange);color:#1F2230}
+@media (prefers-color-scheme: dark){.band{background:#5F6584;color:#F5F3EE}.band h2{color:#F5F3EE}.band p{color:rgba(245,243,238,.82)}.band .btn{border-color:#F5F3EE;color:#F5F3EE}.band .btn.yellow,.band .btn.accent{color:#1A1B20}}
+@media (prefers-color-scheme: dark){.hero-dice .dice rect[fill="#3A3F42"]{stroke:none}}

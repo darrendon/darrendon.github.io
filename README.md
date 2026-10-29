@@ -49,7 +49,7 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - Analytics: GoatCounter, off until `<meta name="goatcounter" content="">` on each page holds the account code. `assets/js/site.js` then loads the counter and records PDF downloads, email clicks and the first click into a playable build. Add `?ref=<publisher>` to links in pitch emails to see who opened them
 
 ## Look
-- Palette (`assets/css/site.css` tokens): 茜色 red #B3242C, 常磐色 green #1F7840, 石板色 slate #3A3F42, 黄色 yellow #F2C811 on warm paper #F3EFE6, with dark-mode equivalents. Game pages keep their own palettes.
+- Palette (`assets/css/site.css` tokens, "Palette v2" block): orange #E18C0A, periwinkle #898FA9, sand #C9B88E, olive #949015 and pink #CD9993 on warm paper #F5F3EE with ink #25272E; darker orange #A35F05 and olive #6B680E for text on paper, plus dark-mode equivalents. Game pages keep their own palettes.
 - Type: Jost everywhere. `assets/css/type.css`, loaded last on game pages, applies the site type to every heading, label and button; each game keeps only its logotype (hero h1 and homepage card title) in its own face.
 - Genres and other tag-style labels are Title Case without the word "game" ("Partnership Climbing", "Dexterity").
 - Logo: four dice showing 1–4, one in each palette color (`assets/img/favicon.svg`, also inlined in every page's header).
