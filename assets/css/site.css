@@ -424,3 +424,4 @@ a.chip:hover{border-color:var(--orange)}
   .game-grid .feature.feature:nth-child(4n+3){--card-c:#C2BD45}
   .game-grid .feature.feature:nth-child(4n+4){--card-c:#E3B2AC}}
 .game-grid .feature.feature h3,.game-grid .feature.feature .go{color:var(--card-c)}
+.nw{white-space:nowrap}
