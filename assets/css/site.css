@@ -425,3 +425,22 @@ a.chip:hover{border-color:var(--orange)}
   .game-grid .feature.feature:nth-child(4n+4){--card-c:#E3B2AC}}
 .game-grid .feature.feature h3,.game-grid .feature.feature .go{color:var(--card-c)}
 .nw{white-space:nowrap}
+
+/* Convention schedule: one card per show across the full width */
+.shows{margin:0}
+.shows-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap;margin-bottom:14px}
+.shows-head .note{margin:0;font-size:14.5px;color:var(--muted)}
+.show-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:960px){.show-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.show-list{grid-template-columns:1fr}}
+.show{display:flex;flex-direction:column;gap:4px;height:100%;box-sizing:border-box;padding:18px 20px 16px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--card-c,var(--orange));border-radius:8px;color:var(--ink);text-decoration:none;transition:transform .15s,box-shadow .15s}
+.show-list li:nth-child(4n+2) .show{--card-c:var(--peri)}
+.show-list li:nth-child(4n+3) .show{--card-c:var(--olive)}
+.show-list li:nth-child(4n+4) .show{--card-c:var(--pink)}
+.show:hover{transform:translateY(-2px);box-shadow:0 12px 26px -16px rgba(0,0,0,.35)}
+.show .when{font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.show b{font-family:var(--display);font-weight:600;font-size:21px;line-height:1.15;margin-top:4px;text-decoration:none}
+.show .where{font-size:15px;color:var(--muted)}
+.show .go{margin-top:auto;padding-top:14px;display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--orange-text)}
+.show .go svg{width:16px;height:16px;transition:transform .15s}
+.show:hover .go svg{transform:translateX(3px)}
