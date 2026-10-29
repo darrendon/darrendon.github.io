@@ -34,7 +34,7 @@ const SITES = [
   ['Morrison', 'Site III · Colorado · 1877', 'Overturned Beds', 'At equal size and kind, the lower total wins.'],
   ['Smoky Hill', 'Site IV · Kansas · 1870', 'Shallow Pit', 'Finds here are 1 or 2 cards.'],
   ['Judith River', 'Site V · Montana Territory · 1876', 'Trackway', 'Runs beat sets of the same size. Suited runs still beat both.'],
-  ['Lance Creek', 'Site VI · Wyoming Territory · 1889', 'Open Pit', 'Poach here without sending a card back.'],
+  ['Lance Creek', 'Site VI · Wyoming Territory · 1889', 'Open Pit', 'When you poach here, discard a card instead of sending one.'],
 ];
 const q = new URLSearchParams(location.search), i = +(q.get('i') || 0), fx = q.get('side') === 'fx';
 const [NAME, SUB, FXN, FXR] = SITES[i];

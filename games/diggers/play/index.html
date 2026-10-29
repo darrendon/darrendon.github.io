@@ -773,7 +773,7 @@ const FX = {
   trackway:   { name: "Trackway",        rule: "Runs beat sets of the same size. Suited runs still beat both." },
   shallow:    { name: "Shallow Pit",     rule: "Finds here are 1 or 2 cards." },
   hard:       { name: "Hard Rock",       rule: "Finds here are 2 or more cards." },
-  open:       { name: "Open Pit",        rule: "Poach here without sending a card back." },
+  open:       { name: "Open Pit",        rule: "When you poach here, discard a card instead of sending one." },
 };
 const TITLES = ["", "Prof.", "Dr.", "Mr."];
 
@@ -897,8 +897,9 @@ function makeOffer(G, from, lane, takenCard, offered) {
   else addLog(G, `${G.players[to].name} turned it away; it is out of the dig this season.`);
   nextTurn(G);
 }
-function keepPoach(G, from, lane, takenCard) {
-  addLog(G, `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)}; it's an open pit, so nothing went back.`);
+// an open pit: the poacher throws a fossil on the spoil heap instead of sending it across, so their hand stays the same size
+function pitPoach(G, from, lane, takenCard, dropped) {
+  addLog(G, `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)}, an open pit, and discarded the ${cardName(dropped)}.`);
   nextTurn(G);
 }
 function resolveOffer(G, accept, pos) {
@@ -985,11 +986,11 @@ function hostApply(G, seat, a) {
       doPlay(G, seat, lane, a.s, a.e); return { ok: true };
     }
     if (!G.lanes[lane].meld.length) return no("There's nothing at that site to poach.");
-    if (!int(a.pos, 0, h.length) || (G.lanes[lane].fx !== "open" && !int(a.oi, 0, h.length))) return no("That spot isn't in your rock face.");
+    if (!int(a.pos, 0, h.length) || !int(a.oi, 0, h.length)) return no("That spot isn't in your rock face.");
     const card = scoutTake(G, seat, lane, !!a.left);
     h.splice(a.pos, 0, card);
-    if (G.lanes[lane].fx === "open") { keepPoach(G, seat, lane, card); return { ok: true }; }
     const offered = h.splice(a.oi, 1)[0];
+    if (G.lanes[lane].fx === "open") { pitPoach(G, seat, lane, card, offered); return { ok: true }; }
     makeOffer(G, seat, lane, card, offered); return { ok: true };
   }
   if (a.type === "keep" || a.type === "reject") {
@@ -1039,8 +1040,7 @@ function botScoutOptions(G, p) {
       const nw = rem.length ? meldInfo(rem) : [0,0,0];
       const pos = bestInsert(h, card); const nh = [...h.slice(0, pos), card, ...h.slice(pos)];
       let oi = 0, post = null;
-      if (L.fx === "open") { post = bestMeld(nh); oi = -1; } // an open pit: keep the bone, send nothing
-      else for (let j = 0; j < nh.length; j++) { const m = bestMeld([...nh.slice(0, j), ...nh.slice(j + 1)]); if (!post || cmp(m, post) > 0) { post = m; oi = j; } }
+      for (let j = 0; j < nh.length; j++) { const m = bestMeld([...nh.slice(0, j), ...nh.slice(j + 1)]); if (!post || cmp(m, post) > 0) { post = m; oi = j; } }
       const gain = cmp(post, cur) > 0 ? (post[0] - cur[0]) * 8 + (post[2] - cur[2]) * .3 : 0;
       const dmg = (old[0] - nw[0]) * 6 + (old[2] - nw[2]) * .2 + (rem.length ? 0 : 15);
       out.push({ sc: gain * .6 - 4 + (L.owner === p ? -dmg : dmg), size: post[0], lane, left, pos, oi });
@@ -1076,8 +1076,8 @@ function botTurn(G) {
   if (act.kind === "play") return doPlay(G, p, act.lane, act.s, act.e);
   const card = scoutTake(G, p, act.lane, act.left);
   const h = G.players[p].hand; h.splice(act.pos, 0, card);
-  if (act.oi < 0) return keepPoach(G, p, act.lane, card);
   const offered = h.splice(act.oi, 1)[0];
+  if (G.lanes[act.lane].fx === "open") return pitPoach(G, p, act.lane, card, offered);
   makeOffer(G, p, act.lane, card, offered);
 }
 
@@ -1334,7 +1334,10 @@ function statusHtml() {
     hint = "The host's browser checks every move before it lands.";
   } else if (ui.mode === "placeScout") {
     who = `Set the poached ${cardName(ui.scout.card)}`;
-    hint = G.lanes[ui.scout.lane].fx === "open" ? "Tap a gap in your rock face to place it. It's an open pit, so you send nothing back." : "Tap a gap in your rock face to place it.";
+    hint = G.lanes[ui.scout.lane].fx === "open" ? "Tap a gap in your rock face to place it. It's an open pit, so next you discard a fossil instead of sending one." : "Tap a gap in your rock face to place it.";
+  } else if (ui.mode === "chooseOffer" && G.lanes[ui.scout.lane].fx === "open") {
+    who = "Discard a fossil";
+    hint = "It's an open pit: tap any fossil in your rock face, including the one you just poached. It is out of the dig this season.";
   } else if (ui.mode === "chooseOffer") {
     who = `Send a specimen to ${fullName(ui.scout.to)}`;
     hint = "Tap any fossil in your rock face, including the one you just poached. They can keep it or turn it away.";
@@ -1489,11 +1492,6 @@ function onAct(t) {
     const pos = +t.dataset.pos;
     if (ui.mode === "placeScout") {
       me.hand.splice(pos, 0, ui.scout.card); ui.scout.pos = pos;
-      if (G.lanes[ui.scout.lane].fx === "open") {
-        const sc = ui.scout; resetUi();
-        if (guest) { netSend({ type: "poach", lane: sc.lane, left: sc.left, pos: sc.pos, oi: -1 }); return render(); }
-        keepPoach(G, 0, sc.lane, sc.card); render(); return scheduleBot();
-      }
       ui.mode = "chooseOffer"; return render();
     }
     if (ui.mode === "placeReceived" && guest) { ui.mode = null; netSend({ type: "keep", pos }); return render(); }
@@ -1506,7 +1504,8 @@ function onAct(t) {
     if (guest) { const sc = ui.scout; resetUi(); netSend({ type: "poach", lane: sc.lane, left: sc.left, pos: sc.pos, oi: i }); return render(); }
     const offered = me.hand.splice(i, 1)[0];
     const sc = ui.scout; resetUi();
-    makeOffer(G, 0, sc.lane, sc.card, offered); render(); return scheduleBot();
+    if (G.lanes[sc.lane].fx === "open") pitPoach(G, 0, sc.lane, sc.card, offered); else makeOffer(G, 0, sc.lane, sc.card, offered);
+    render(); return scheduleBot();
   }
   if (act === "accept" && G.phase === "offer") { ui.mode = "placeReceived"; return render(); }
   if (act === "reject" && G.phase === "offer" && guest) { netSend({ type: "reject" }); return render(); }
