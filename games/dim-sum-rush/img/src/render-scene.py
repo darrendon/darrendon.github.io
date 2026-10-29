@@ -1,4 +1,4 @@
-# Renders the teahouse hero still (view 'scene' of /assets/js/dsr-scene.js) to ../render-scene.webp (1600 x 1000,
+# Renders the tablecloth hero still (view 'scene' of /assets/js/dsr-scene.js) to ../render-scene.webp (1600 x 1000,
 # shot at 2x and downscaled) plus its responsive sizes. Overlap check first: python3 shoot3d.py check scene:1600:1000
 import os, subprocess, sys
 from PIL import Image
