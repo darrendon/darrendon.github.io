@@ -5,6 +5,7 @@ function doCheck(ctl) {
   const d = ctl._debug, r = d.renderer, gl = r.getContext();
   const W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
   const objs = d.stage.children.slice(), vis = objs.map(o => o.visible);
+  const env = d.env, bg = d.scene.background; if (env) env.visible = false; d.scene.background = null; // the teahouse scene's table, lights and backdrop
   d.ground.visible = false; d.scene.overrideMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const buf = new Uint8Array(W * H * 4), masks = [];
   for (let i = 0; i < objs.length; i++) {
@@ -16,6 +17,7 @@ function doCheck(ctl) {
     masks.push({ name: objs[i].name || ('obj' + i), m, n });
   }
   objs.forEach((o, j) => o.visible = vis[j]); d.ground.visible = true; d.scene.overrideMaterial = null;
+  if (env) env.visible = true; d.scene.background = bg;
   r.render(d.scene, d.camera);
   const R = 3;
   function dilate(m) {
