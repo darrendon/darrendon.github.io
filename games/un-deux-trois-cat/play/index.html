@@ -806,16 +806,22 @@ function tagToy(o, text, bad){
   const t = $("toy-"+o); if (!t) return;
   t.querySelector(".tags").insertAdjacentHTML("beforeend", `<span class="tag${bad?" bad":""}">${text}</span>`);
 }
-/* each player is a cat; their face sits on their seat label (fur, ears, eyes) */
-const FUR = {You:["#8a827c","#5d5652","#2a2421"], Katsu:["#2e292b","#151213","#ffc94a"], Gato:["#f6f1ea","#d9cfc2","#2a2421"],
-  Otag:["#b98a5e","#7a5636","#2a2421"], Oyako:["#3a3431","#1f1b1a","#9ad1c8"], Johnson:["#e8d9bf","#5a4436","#3f6fb0"],
-  Grisou:["#9a948f","#6b6560","#79e2a8"], Caramel:["#d9a066","#a8743d","#2a2421"]};
-/* online, every person keeps one cat by seat, the same on every screen */
-const HFUR = [["#e08a3c","#a85a1c","#2a2421"],["#c9c2bb","#8f877f","#3f6fb0"],["#4a3b35","#2a201c","#79e2a8"],
-  ["#f0e0c8","#c7a882","#2a2421"],["#7d5a44","#4e3628","#ffc94a"],["#a9a3b8","#6f6882","#2a2421"]];
+/* each player is a cat; their face sits on their seat label: [fur, ears, eyes, markings] */
+const FUR = {You:["#8a827c","#5d5652","#2a2421"],
+  Katsu:["#a3a9af","#6d737a","#ffc94a"],                       // grey
+  Gato:["#262224","#151213","#ffc94a","tuxedo"],                // black and white: black with a white blaze and muzzle
+  Otag:["#f6f1ea","#1f1b1c","#e0a43a","patch"],                 // white and black: white with black ears and an eye patch
+  Oyako:["#7d5a44","#4e3628","#ffc94a"],                        // brown
+  Johnson:["#e0873a","#a8581c","#2a2421","tabby"]};             // orange tabby
+/* online, every person keeps one cat by seat, the same on every screen (none of them looks like a bot) */
+const HFUR = [["#e9c79a","#b88a55","#2a2421"],["#c9c2bb","#8f877f","#3f6fb0"],["#4a3b35","#2a201c","#79e2a8"],
+  ["#f0e0c8","#c7a882","#2a2421"],["#8c6f8e","#5e4660","#ffc94a"],["#a9a3b8","#6f6882","#2a2421"]];
 function avatar(name, fur){
-  const [f, e, y] = fur || FUR[name] || FUR.You;
-  return `<svg viewBox="-20 -22 40 40" aria-hidden="true"><path d="M-14 -5 L-12 -20 L-2 -12 Z M14 -5 L12 -20 L2 -12 Z" fill="${e}"/><circle r="14" fill="${f}"/>`
+  const [f, e, y, mark] = fur || FUR[name] || FUR.You;
+  const marks = mark === "tuxedo" ? `<path d="M-2.6 -13.6 L2.6 -13.6 L4.6 1 L-4.6 1 Z" fill="#f6f1ea"/><ellipse cx="0" cy="6.2" rx="9.4" ry="6.4" fill="#f6f1ea"/>`
+    : mark === "patch" ? `<ellipse cx="-6" cy="-3.5" rx="6.6" ry="6.2" fill="${e}"/>`
+    : mark === "tabby" ? `<path d="M0 -13.4 v5 M-4.8 -12.4 l1.2 4.2 M4.8 -12.4 l-1.2 4.2 M-13.4 -2 h3.6 M13.4 -2 h-3.6" stroke="${e}" stroke-width="1.6" stroke-linecap="round"/>` : "";
+  return `<svg viewBox="-20 -22 40 40" aria-hidden="true"><path d="M-14 -5 L-12 -20 L-2 -12 Z M14 -5 L12 -20 L2 -12 Z" fill="${e}"/><circle r="14" fill="${f}"/>${marks}`
     + `<ellipse cx="-5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><ellipse cx="5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><path d="M-2 5 L2 5 L0 7.6 Z" fill="#c98f8f"/></svg>`;
 }
 function renderSeats(){
@@ -1300,8 +1306,11 @@ function windowMs(){
   return Math.round(Math.min(1500, Math.max(600, m + 250)));
 }
 function botNamesFor(seats){
+  // bots take the five cats in order, skipping any name a person at the table is using;
+  // only if every person took a cat's name do the bots run short and reuse one
   const used = new Set(seats.filter(s => s.name).map(s => s.name.toLowerCase()));
-  return BOTS.concat("Grisou", "Caramel").filter(n => !used.has(n.toLowerCase()));
+  const free = BOTS.filter(n => !used.has(n.toLowerCase()));
+  return free.concat(BOTS.filter(n => !free.includes(n)));
 }
 function syncAway(){ if (O.role === "host") S.players.forEach(p => { p.away = p.remote && !seatOn(p.seat); }); }
 function startOnline(){
