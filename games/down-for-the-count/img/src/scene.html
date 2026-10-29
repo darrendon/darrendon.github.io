@@ -155,9 +155,238 @@
     frame([-12.0, 0, -4.2], [13.0, 1.25, 4.4], 64, 0, 0.97);
   }
 
+  if (SCENE === 'themed') await themed();
+
   renderer.render(scene, camera);
   await new Promise((r) => setTimeout(r, 60)); renderer.render(scene, camera);
+  if (q.get('check')) window.__check = doCheck();
   window.__done = true;
+
+  // ================================================================ ?scene=themed
+  // The box and a run of move cards laid out inside the ring: a canvas mat under an arena spotlight,
+  // a corner post with its turnbuckles and three ropes running off along the back and right side,
+  // the crowd dark beyond the apron, and a championship belt on the mat.
+  // (Everything here is new and only built for this preset; the other scenes are untouched.)
+  async function themed() {
+    const named = (o, n) => { o.name = n; return o; };
+    // what the silhouette check looks at: everything that sits on the mat
+    window.__objs = [];
+    const track = (o, n, env) => { named(o, n); window.__objs.push({ o, env: !!env }); return o; };
+
+    // ---- arena: dark house, a spotlight on the ring
+    table.visible = false;
+    scene.fog = new THREE.Fog(C('#0E1430'), 46, 95);
+    function arenaTexture() {
+      const c = document.createElement('canvas'); c.width = 1600; c.height = 1000; const g = c.getContext('2d');
+      const grd = g.createLinearGradient(0, 0, 0, 1000); grd.addColorStop(0, '#0A0E22'); grd.addColorStop(0.5, '#141C40'); grd.addColorStop(1, '#0E1430');
+      g.fillStyle = grd; g.fillRect(0, 0, 1600, 1000);
+      let s = 11; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+      // crowd: soft out-of-focus camera flashes and phone lights in the stands
+      for (let i = 0; i < 140; i++) {
+        const x = r() * 1600, y = 60 + r() * 380, rad = 4 + r() * 16, hue = r();
+        const col = hue < 0.55 ? '255,240,215' : hue < 0.8 ? '150,180,255' : '255,120,120';
+        const rg = g.createRadialGradient(x, y, 0, x, y, rad); rg.addColorStop(0, 'rgba(' + col + ',' + (0.18 + r() * 0.35) + ')'); rg.addColorStop(1, 'rgba(' + col + ',0)');
+        g.fillStyle = rg; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+      }
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+    }
+    scene.background = arenaTexture();
+
+    // the same key / rim / fill as every other still, a touch lower so the spotlight pool reads
+    key.intensity = 0.26; rim.intensity = 0.22; fill.intensity = 0.06;
+    scene.children.filter((o) => o.isHemisphereLight).forEach((h) => { h.intensity = 0.13; h.color = C('#EEF0FF'); h.groundColor = C('#3A3550'); });
+    const spot = new THREE.SpotLight(0xfff4e0, 1.35, 0, 0.3, 0.65, 1.0);
+    spot.position.set(0.4, 34, 4); spot.target.position.set(0.2, 0, 0.0); scene.add(spot); scene.add(spot.target);
+    const blueWash = new THREE.DirectionalLight(0x7f9cff, 0.12); blueWash.position.set(-12, 6, -14); scene.add(blueWash);
+
+    // ---- the ring: canvas mat over a padded apron
+    const PX = 7.5, PZ = -5.5; // the corner post
+    function canvasTexture() {
+      const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
+      g.fillStyle = '#F1EEE6'; g.fillRect(0, 0, 1024, 1024);
+      let s = 3; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+      for (let i = 0; i < 1024; i += 3) { g.fillStyle = 'rgba(255,255,255,' + (0.03 + r() * 0.03) + ')'; g.fillRect(0, i, 1024, 1); g.fillStyle = 'rgba(40,30,20,' + (0.025 + r() * 0.03) + ')'; g.fillRect(i, 0, 1, 1024); }
+      for (let i = 0; i < 1400; i++) { g.fillStyle = 'rgba(' + (r() < .5 ? '255,255,255' : '50,40,30') + ',' + (0.02 + r() * 0.05) + ')'; g.fillRect(r() * 1024, r() * 1024, 2 + r() * 12, 1 + r() * 2); }
+      // scuffs from boots
+      for (let i = 0; i < 26; i++) { const x = r() * 1024, y = r() * 1024, rad = 20 + r() * 70; const rg = g.createRadialGradient(x, y, 0, x, y, rad); rg.addColorStop(0, 'rgba(90,80,70,0.07)'); rg.addColorStop(1, 'rgba(90,80,70,0)'); g.fillStyle = rg; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); }
+      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 4); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+    }
+    const matW = 80, matD = 80, edge = 1.3;
+    const mat = new THREE.Mesh(new THREE.BoxGeometry(matW, 0.6, matD), [
+      new THREE.MeshStandardMaterial({ color: C('#1E3FA8'), roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: C('#1E3FA8'), roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ map: canvasTexture(), roughness: 0.96, color: C('#C6C3BC') }), new THREE.MeshStandardMaterial({ color: C('#111' ) }),
+      new THREE.MeshStandardMaterial({ color: C('#1E3FA8'), roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: C('#1E3FA8'), roughness: 0.8 })]);
+    mat.position.set(PX + edge - matW / 2, -0.3, PZ - edge + matD / 2); mat.receiveShadow = true; scene.add(mat);
+    // the apron skirt hanging below the mat edge
+    const apron = new THREE.Mesh(new THREE.BoxGeometry(matW, 14, matD), new THREE.MeshStandardMaterial({ color: C('#16307F'), roughness: 0.9 }));
+    apron.position.set(mat.position.x, -7.6, mat.position.z); scene.add(apron);
+
+    // ---- the corner: steel post, three padded turnbuckles, ropes red / white / blue
+    const corner = new THREE.Group();
+    const steel = new THREE.MeshStandardMaterial({ color: C('#3A3F4C'), roughness: 0.35, metalness: 0.75 });
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.28, 4.7, 32), steel); post.position.y = 2.35; post.castShadow = true; corner.add(post);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), steel); cap.position.y = 4.7; corner.add(cap);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.47, 0.16, 32), steel); base.position.y = 0.08; base.castShadow = true; corner.add(base);
+    const ropeH = [1.4, 2.55, 3.7], ropeCol = ['#2F5BE0', '#F4F2EE', '#E8313A'], ropeR = 0.12;
+    function padTexture(col) {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 256; const g = c.getContext('2d');
+      g.fillStyle = col; g.fillRect(0, 0, 256, 256);
+      const grd = g.createLinearGradient(0, 0, 0, 256); grd.addColorStop(0, 'rgba(255,255,255,0.18)'); grd.addColorStop(0.5, 'rgba(255,255,255,0)'); grd.addColorStop(1, 'rgba(0,0,0,0.22)');
+      g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+      // a yellow comic star, like the box
+      g.save(); g.translate(128, 128); g.fillStyle = '#FFD233'; g.strokeStyle = '#1B1A2A'; g.lineWidth = 9; g.beginPath();
+      for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr2 = i % 2 ? 34 : 78; g.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2); }
+      g.closePath(); g.stroke(); g.fill(); g.restore();
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+    }
+    const padTex = padTexture('#E8313A');
+    const padMat = new THREE.MeshStandardMaterial({ map: padTex, roughness: 0.55 });
+    const padSide = new THREE.MeshStandardMaterial({ color: C('#D52A33'), roughness: 0.55 });
+    for (let i = 0; i < 3; i++) {
+      const y = ropeH[i];
+      // the pad wraps the post on the ring side, facing the middle of the ring (toward -x, +z)
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.96, 0.64), [padSide, padSide, padSide, padSide, padMat, padSide]);
+      pad.position.set(-0.31, y, 0.31); pad.rotation.y = -Math.PI / 4; pad.castShadow = true; corner.add(pad);
+      const ropeM = new THREE.MeshStandardMaterial({ color: C(ropeCol[i]), roughness: 0.5 });
+      // along the back edge, off to the left
+      const backRope = new THREE.Mesh(new THREE.CylinderGeometry(ropeR, ropeR, 70, 16), ropeM);
+      backRope.rotation.z = Math.PI / 2; backRope.position.set(-35, y, 0); backRope.castShadow = true; corner.add(backRope);
+      // down the right side, toward the camera
+      const sideRope = new THREE.Mesh(new THREE.CylinderGeometry(ropeR, ropeR, 70, 16), ropeM);
+      sideRope.rotation.x = Math.PI / 2; sideRope.position.set(0, y, 35); sideRope.castShadow = true; corner.add(sideRope);
+    }
+    corner.position.set(PX, 0, PZ); scene.add(corner);
+    track(corner, 'ring corner (post, turnbuckles, ropes)', true);
+
+    // ---- the championship belt, laid flat on the mat
+    function plateTexture() {
+      const c = document.createElement('canvas'); c.width = 1024; c.height = 768; const g = c.getContext('2d');
+      const gold = (y0, y1) => { const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, '#FFE58A'); gr.addColorStop(0.45, '#E8B530'); gr.addColorStop(1, '#A8751A'); return gr; };
+      g.fillStyle = gold(0, 768); g.fillRect(0, 0, 1024, 768);
+      g.strokeStyle = '#8A5E12'; g.lineWidth = 14; g.beginPath(); g.ellipse(512, 384, 470, 340, 0, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = '#FFF2B8'; g.lineWidth = 5; g.beginPath(); g.ellipse(512, 384, 440, 312, 0, 0, Math.PI * 2); g.stroke();
+      // studs round the rim
+      for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2; const x = 512 + Math.cos(a) * 405, y = 384 + Math.sin(a) * 282; g.fillStyle = '#FFF4C4'; g.beginPath(); g.arc(x, y, 9, 0, 7); g.fill(); g.fillStyle = '#9A6A16'; g.beginPath(); g.arc(x + 2, y + 2, 5, 0, 7); g.fill(); }
+      // red banner + text
+      g.fillStyle = '#D9262F'; g.strokeStyle = '#6E1015'; g.lineWidth = 8;
+      g.beginPath(); g.moveTo(170, 430); g.lineTo(854, 430); g.lineTo(820, 490); g.lineTo(854, 550); g.lineTo(170, 550); g.lineTo(204, 490); g.closePath(); g.fill(); g.stroke();
+      g.font = '900 88px Arial Black, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = '#FFF4D0'; g.fillText('CHAMPION', 512, 494);
+      // the big blue gem with a star
+      g.fillStyle = '#2348C8'; g.strokeStyle = '#8A5E12'; g.lineWidth = 12; g.beginPath(); g.ellipse(512, 255, 150, 120, 0, 0, 7); g.fill(); g.stroke();
+      const gg = g.createRadialGradient(470, 210, 10, 512, 255, 150); gg.addColorStop(0, 'rgba(255,255,255,0.55)'); gg.addColorStop(0.5, 'rgba(255,255,255,0.05)'); gg.addColorStop(1, 'rgba(0,0,40,0.25)');
+      g.fillStyle = gg; g.beginPath(); g.ellipse(512, 255, 150, 120, 0, 0, 7); g.fill();
+      g.save(); g.translate(512, 258); g.fillStyle = '#FFD233'; g.strokeStyle = '#7A5210'; g.lineWidth = 6; g.beginPath();
+      for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr2 = i % 2 ? 30 : 72; g.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2); }
+      g.closePath(); g.fill(); g.stroke(); g.restore();
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+    }
+    function sideTexture() {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 256; const g = c.getContext('2d');
+      const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, '#FFE58A'); gr.addColorStop(0.5, '#E2AE2C'); gr.addColorStop(1, '#A8751A');
+      g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = '#8A5E12'; g.lineWidth = 12; g.strokeRect(14, 14, 228, 228);
+      g.fillStyle = '#D9262F'; g.strokeStyle = '#7A5210'; g.lineWidth = 8; g.beginPath(); g.arc(128, 128, 62, 0, 7); g.fill(); g.stroke();
+      const gg = g.createRadialGradient(108, 105, 4, 128, 128, 62); gg.addColorStop(0, 'rgba(255,255,255,0.6)'); gg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gg; g.beginPath(); g.arc(128, 128, 62, 0, 7); g.fill();
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+    }
+    function belt(x, z, yaw) {
+      const g = new THREE.Group();
+      const leather = new THREE.MeshStandardMaterial({ color: C('#1A1720'), roughness: 0.6 });
+      const stitch = new THREE.MeshStandardMaterial({ color: C('#C9A24A'), roughness: 0.6 });
+      // the strap: a gentle arc, bowed toward the camera
+      const R0 = 9.6, ang = 0.62, sw = 0.88, th = 0.1;
+      const sh = new THREE.Shape();
+      sh.absarc(0, 0, R0 + sw / 2, Math.PI / 2 - ang / 2, Math.PI / 2 + ang / 2, false);
+      sh.absarc(0, 0, R0 - sw / 2, Math.PI / 2 + ang / 2, Math.PI / 2 - ang / 2, true);
+      const strapGeo = new THREE.ExtrudeGeometry(sh, { depth: th, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.05, bevelSegments: 2, curveSegments: 48 });
+      const strap = new THREE.Mesh(strapGeo, leather); strap.rotation.x = Math.PI / 2; strap.position.set(0, th + 0.03, -R0); strap.castShadow = true; strap.receiveShadow = true;
+      // after rotation the arc's apex sits at z = 0, its ends curve back (-z): flip so the bow faces the camera
+      const strapG = new THREE.Group(); strapG.add(strap); strapG.rotation.y = Math.PI; g.add(strapG);
+      // gold stitching lines along both edges
+      for (const off of [-sw / 2 + 0.16, sw / 2 - 0.16]) {
+        const curve = new THREE.EllipseCurve(0, 0, R0 + off, R0 + off, Math.PI / 2 - ang / 2 + 0.01, Math.PI / 2 + ang / 2 - 0.01, false);
+        const pts = curve.getPoints(80).map((p) => new THREE.Vector3(p.x, 0, -p.y + R0));
+        const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 120, 0.022, 6), stitch);
+        tube.position.y = th + 0.065; g.add(tube);
+      }
+      // the centre plate
+      const plateGeo = new THREE.CylinderGeometry(1, 1, 0.16, 64); plateGeo.scale(1.32, 1, 1.0);
+      const goldM = new THREE.MeshStandardMaterial({ color: C('#D9A63A'), roughness: 0.3, metalness: 0.8 });
+      const plate = new THREE.Mesh(plateGeo, [goldM, new THREE.MeshStandardMaterial({ map: (() => { const t = plateTexture(); t.center.set(0.5, 0.5); t.rotation = Math.PI / 2; return t; })(), roughness: 0.32, metalness: 0.35 }), goldM]);
+      plate.position.y = th + 0.12; plate.castShadow = true; g.add(plate);
+      // fix the top cap's UVs so the art maps to the ellipse
+      // side plates along the strap
+      const sideM = new THREE.MeshStandardMaterial({ map: sideTexture(), roughness: 0.32, metalness: 0.35 });
+      for (const sgn of [-1, 1]) for (const k of [1, 2]) {
+        const a = sgn * (0.175 + k * 0.088);
+        const sp = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.09, 0.68), [goldM, goldM, sideM, goldM, goldM, goldM]);
+        sp.position.set(Math.sin(a) * R0, th + 0.09, R0 - Math.cos(a) * R0); sp.rotation.y = -a; sp.castShadow = true; g.add(sp);
+      }
+      g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+    }
+
+    // ---- the components
+    track(await box(-4.1, -1.3, 0.2), 'box');
+    for (let k = 0; k < 4; k++) track(await card(4 + k, 1.1 + (k % 2) * P, -3.0 + Math.floor(k / 2) * (CH + GAP), 0), 'card ' + (4 + k));
+    track(belt(-1.5, 3.55, 0), 'belt');
+
+    { // camera: looking slightly down the ring toward the corner
+      const el = +(q.get('el') || 38) * Math.PI / 180, az = +(q.get('az') || -3) * Math.PI / 180, dist = +(q.get('d') || 24.5);
+      const tgt = new THREE.Vector3(+(q.get('tx') || 1.0), 0, +(q.get('tz') || -2.2));
+      camera.position.set(tgt.x + Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, tgt.z + Math.cos(az) * Math.cos(el) * dist);
+      camera.lookAt(tgt); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+    }
+    // a soft vignette, the arena falling off to dark round the spotlight
+    {
+      const c = document.createElement('canvas'); c.width = 512; c.height = 320; const g = c.getContext('2d');
+      const rg = g.createRadialGradient(256, 170, 60, 256, 170, 330); rg.addColorStop(0, 'rgba(6,8,24,0)'); rg.addColorStop(0.55, 'rgba(6,8,24,0.06)'); rg.addColorStop(1, 'rgba(6,8,24,0.5)');
+      g.fillStyle = rg; g.fillRect(0, 0, 512, 320);
+      const vt = new THREE.CanvasTexture(c); vt.encoding = THREE.sRGBEncoding;
+      const hh = 2 * Math.tan(camera.fov * Math.PI / 360);
+      const vig = new THREE.Mesh(new THREE.PlaneGeometry(hh * camera.aspect, hh), new THREE.MeshBasicMaterial({ map: vt, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+      vig.position.z = -1; vig.renderOrder = 999; vig.name = 'vignette'; camera.add(vig); scene.add(camera);
+    }
+  }
+
+  // per-object silhouette check: each tracked object rendered alone as a white mask; pairs compared for
+  // overlap and for coming within 3 px; anything touching the frame edge reported as cut
+  function doCheck() {
+    const gl = renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+    const list = window.__objs || [], all = scene.children.slice(), vis = all.map((o) => o.visible);
+    const bg = scene.background; scene.background = null; scene.overrideMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const buf = new Uint8Array(W * H * 4), masks = [];
+    for (const it of list) {
+      all.forEach((o) => { o.visible = o === it.o; }); // unlit white masks: no lights, no shadow pass
+      renderer.setClearColor(0x000000, 1); renderer.clear(); renderer.render(scene, camera);
+      gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      const m = new Uint8Array(W * H); let n = 0;
+      for (let k = 0; k < W * H; k++) if (buf[k * 4] > 20) { m[k] = 1; n++; } // the canvas has no alpha: white object on black
+      masks.push({ name: it.o.name, env: it.env, m, n });
+    }
+    all.forEach((o, j) => o.visible = vis[j]); scene.overrideMaterial = null; scene.background = bg;
+    const R = 3;
+    function dilate(m) {
+      const a = new Uint8Array(W * H), b = new Uint8Array(W * H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let v = 0; for (let dx = -R; dx <= R && !v; dx++) { const xx = x + dx; if (xx >= 0 && xx < W && m[y * W + xx]) v = 1; } a[y * W + x] = v; }
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let v = 0; for (let dy = -R; dy <= R && !v; dy++) { const yy = y + dy; if (yy >= 0 && yy < H && a[yy * W + x]) v = 1; } b[y * W + x] = v; }
+      return b;
+    }
+    const res = { objects: masks.length, overlap: [], near: [], cut: [], empty: [], env: [] };
+    masks.forEach((o) => { if (!o.n) res.empty.push(o.name); });
+    const dil = masks.map((o) => dilate(o.m));
+    for (let i = 0; i < masks.length; i++) for (let j = i + 1; j < masks.length; j++) {
+      let ov = 0, nr = 0; const A = masks[i].m, B = masks[j].m, DA = dil[i];
+      for (let k = 0; k < W * H; k++) { if (B[k]) { if (A[k]) ov++; else if (DA[k]) nr++; } }
+      if (ov) res.overlap.push([masks[i].name, masks[j].name, ov]); else if (nr) res.near.push([masks[i].name, masks[j].name, nr]);
+    }
+    masks.forEach((o) => { const m = o.m; let c = 0;
+      for (let x = 0; x < W; x++) { if (m[x]) c++; if (m[(H - 1) * W + x]) c++; }
+      for (let y = 0; y < H; y++) { if (m[y * W]) c++; if (m[y * W + W - 1]) c++; }
+      if (c) (o.env ? res.env : res.cut).push(o.name + ' (' + c + ' px)'); });
+    renderer.render(scene, camera);
+    return res;
+  }
 })();
 </script>
 </body></html>

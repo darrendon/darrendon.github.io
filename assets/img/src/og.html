@@ -1,17 +1,18 @@
 <!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/css/fonts.css"><style>
-/* source for /assets/img/og.jpg (1200 x 630): name and credits left, four game renders right */
+/* source for /assets/img/og.jpg (1200 x 630): name and color blocks left, four game renders right */
 html,body{margin:0}
-#og{width:1200px;height:630px;display:grid;grid-template-columns:520px 1fr;background:#ECEEEF;color:#15181D;font-family:"Instrument Sans",Arial,sans-serif}
-.l{padding:0 48px 0 64px;display:flex;flex-direction:column;justify-content:center;gap:18px}
-.k{font:500 17px/1 "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;color:#58606B}
-h1{margin:0;font:900 74px/.9 Archivo,sans-serif;font-stretch:125%;letter-spacing:-.025em;text-transform:uppercase}
-h1 i{font-style:normal;color:#E9A814}
-p{margin:0;font-size:25px;line-height:1.35}
-p b{font-weight:700}
-.r{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;padding:6px;background:#15181D}
+#og{width:1200px;height:630px;display:grid;grid-template-columns:520px 1fr;background:#F3EFE6;color:#2B2F31;font-family:Jost,Arial,sans-serif;position:relative}
+#og::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:linear-gradient(90deg,#B3242C 0 25%,#1F7840 25% 50%,#3A3F42 50% 75%,#F2C811 75%)}
+.l{padding:0 44px 0 60px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+.k{font:600 15px/1 Jost,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#5D6366}
+h1{margin:0;font:600 86px/.92 Jost,sans-serif;letter-spacing:.05em;text-transform:uppercase}
+h1 i{font-style:normal;color:#B3242C}
+p{margin:0;font-size:25px;line-height:1.35;font-weight:400}
+.jp{font:700 15px/1 "Zen Maru Gothic",sans-serif;letter-spacing:.3em;color:#B3242C}
+.r{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;padding:8px 8px 18px 8px}
 .r img{width:100%;height:100%;object-fit:cover;display:block}
 </style></head><body><div id="og">
-<div class="l"><span class="k">Board game designer · Kansas City</span><h1>Darren<br>Don<i>.</i></h1>
-<p>Games signed with <b>Allplay</b>, <b>Bitewing Games</b> and <b>SRG Universe</b>.</p></div>
-<div class="r"><img src="/games/diggers/img/render-hero.webp"><img src="/games/boo-who/img/render-box.webp"><img src="/games/too-many-crooks/img/render-hero.webp"><img src="/games/down-for-the-count/img/render-home.webp"></div>
+<div class="l"><span class="k">Board Game Designer · Kansas City</span><h1>Darren<br>Don<i>.</i></h1>
+<p>High-interaction board games you can play right in your browser.</p><span class="jp">ボードゲームデザイナー</span></div>
+<div class="r"><img src="/games/dim-sum-rush/img/render-scene-800.webp"><img src="/games/boo-who/img/render-box-800.webp"><img src="/games/too-many-crooks/img/render-scene-800.webp"><img src="/games/down-for-the-count/img/render-scene-800.webp"></div>
 </div><script>Promise.all([...document.images].map(i=>i.complete?0:new Promise(r=>i.onload=i.onerror=r))).then(()=>document.fonts.ready).then(()=>window.__done=true)</script></body></html>
