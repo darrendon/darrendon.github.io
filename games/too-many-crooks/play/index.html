@@ -92,23 +92,48 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .sc.turn{outline:2px solid var(--red);outline-offset:1px}
 .sc .lead{color:var(--red);font-size:11px;font-weight:700}
 
-.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:12px}
-.sheet{background:var(--slate);color:var(--cream);border:1.5px solid var(--slate-d);border-radius:5px;padding:8px 10px 10px;position:relative;min-width:0}
-.sheet.me{background:var(--slate-d);grid-column:1/-1}
-.sheet.target{outline:3px dashed var(--red);outline-offset:2px;cursor:pointer}
-.sheet.target:hover{background:#627480}
-.sheet .hd{display:flex;align-items:center;gap:8px;border-bottom:1.5px solid var(--cream);padding-bottom:4px;margin-bottom:8px}
-.sheet .hd .dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)}
-.sheet .hd .nm{font-family:Oswald,sans-serif;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sheet .hd .st{font-family:'Courier Prime',monospace;font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.5px;white-space:nowrap}
-.bands{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.bandcol{min-width:0}
-.bandcol .bl{font-family:Oswald,sans-serif;font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--cream);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bandcol .bn{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:var(--gold);text-align:center;letter-spacing:.5px;margin-bottom:3px}
-.slot{min-height:44px;border:1.5px dashed #BFC8CD;border-radius:5px;background:#6F7E87;display:flex;flex-wrap:wrap;gap:4px;padding:4px;justify-content:center;align-content:flex-start}
-.slot.crew{border-style:solid;border-color:var(--gold)}
-.kept{margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:30px}
+/* crew sheets: the printed card, on screen. Gold = yours, red = paid out. */
+.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:12px}
+.sheet{color:var(--cream);border:1.5px solid #252E34;border-radius:6px;padding:7px 10px 9px;position:relative;min-width:0;
+  background:radial-gradient(90% 80% at 40% 30%,rgba(255,255,255,.07),rgba(255,255,255,0) 70%),radial-gradient(140% 120% at 50% 50%,rgba(0,0,0,0) 55%,rgba(14,16,20,.28) 100%),var(--slate)}
+.sheet.me{grid-column:1/-1;background:radial-gradient(90% 80% at 40% 30%,rgba(255,255,255,.06),rgba(255,255,255,0) 70%),radial-gradient(140% 120% at 50% 50%,rgba(0,0,0,0) 55%,rgba(14,16,20,.3) 100%),var(--slate-d)}
+.sheet.target{outline:3px dashed #F0603F;outline-offset:2px;cursor:pointer}
+.sheet.target:hover{filter:brightness(1.08)}
+.sheet .hd{display:flex;align-items:center;gap:7px;border-bottom:1.5px solid var(--cream);padding-bottom:4px;margin-bottom:6px}
+.sheet .hd .sirens{display:flex;gap:1px}.sheet .hd .sirens svg{width:12px;height:12px;display:block}
+.sheet .hd .dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25);flex:none}
+.sheet .hd .nm{font-family:Oswald,sans-serif;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 0 #0A0C10}
+.sheet .hd .tgt{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;font-family:'Courier Prime',monospace;font-weight:700;font-size:10px;letter-spacing:1px;color:var(--gold);white-space:nowrap;overflow:hidden;min-width:0}
+.sheet .hd .tgt svg{width:12px;height:12px;fill:var(--gold);stroke:var(--gold);flex:none}
+.sheet .hd .st{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:var(--ink);background:var(--gold);border-radius:3px;padding:1px 5px;letter-spacing:.5px;white-space:nowrap}
+.sheet .hd .st:empty{display:none}
+.bands{display:grid;grid-template-columns:16px repeat(3,minmax(0,1fr)) 1px minmax(56px,.75fr);grid-template-rows:auto minmax(48px,auto) minmax(44px,auto);gap:5px 6px}
+.sheet.me .bands{grid-template-rows:auto minmax(58px,auto) minmax(54px,auto)}
+.rh{grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1;min-width:0}
+.rh svg{width:16px;height:16px;fill:var(--cream);stroke:var(--cream);margin-bottom:2px}
+.rh .bl{font-family:Oswald,sans-serif;font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rh .bn{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-top:1px}
+.rh.mine svg{fill:var(--gold);stroke:none}.rh.mine .bl{color:var(--gold)}
+.tab{writing-mode:vertical-rl;transform:rotate(180deg);font-family:Oswald,sans-serif;font-weight:700;font-size:8.5px;letter-spacing:.7px;text-transform:uppercase;
+  border-radius:3px;display:flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap}
+.tab.score{grid-column:1;grid-row:2;background:var(--gold);color:var(--ink)}
+.tab.pay{grid-column:1;grid-row:3;background:#F0603F;color:#FFF6E8}
+.vdiv{grid-column:5;grid-row:1/4;background:repeating-linear-gradient(180deg,#BFC8CD 0 3px,transparent 3px 7px)}
+.slot{border-radius:5px;display:flex;flex-wrap:wrap;gap:4px;padding:4px;justify-content:center;align-content:center;position:relative;min-width:0}
+.slot.gold{grid-row:2;background:#6F7E87;border:1.5px solid var(--gold);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.slot.red{grid-row:3;background:#867475;border:1.5px dashed #F0603F}
+.slot.keep{grid-column:6;grid-row:2/4;background:#6F7670;border:1.5px solid var(--gold)}
+.slot .ghost{font-family:'Courier Prime',monospace;font-weight:700;font-size:9px;letter-spacing:.5px;text-align:center;line-height:1.15;pointer-events:none}
+.slot.gold .ghost svg{width:22px;height:22px;fill:var(--cream);stroke:var(--cream);opacity:.22;display:block}
+.slot.red .ghost{color:#FFD6C8;opacity:.85}
+.slot.keep .ghost{color:var(--gold)}
+.slot.red.drop{cursor:pointer;background:#9A7F7C;box-shadow:0 0 0 2px #F0603F}
+.slot.gold.empty-crew{border-style:dashed;opacity:.8}
+.kept{margin-top:7px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:30px}
 .kept .lbl{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;color:#C9D1D5}
+.sched{margin-top:7px;padding-top:5px;border-top:1px solid #8996A0;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  font-family:'Courier Prime',monospace;font-weight:700;font-size:10px;letter-spacing:.4px;color:#BFC8CD}
+.sched b{color:var(--cream)}.sched .on{color:var(--gold)}.sched .hot{color:#F0603F}
 
 /* dice */
 .die{width:34px;height:34px;border-radius:7px;display:inline-grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
@@ -565,6 +590,24 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const BANDN = ['Inside man', 'Getaway driver', 'The muscle'], BANDS = ['Inside', 'Driver', 'Muscle'], BANDR = ['1 · 2', '3 · 4', '5 · 6'];
+  // icons from the printed crew sheet
+  const ICO = {
+    badge: '<svg viewBox="0 0 24 24"><path d="M9.9 1.4h4.2a.9.9 0 0 1 .9.9v1.5H9V2.3a.9.9 0 0 1 .9-.9z" stroke="none"/><path d="M4.6 4.5h14.8c.9 0 1.6.7 1.6 1.6v14.5c0 .9-.7 1.6-1.6 1.6H4.6c-.9 0-1.6-.7-1.6-1.6V6.1c0-.9.7-1.6 1.6-1.6zm7.4 3.3a2.7 2.7 0 1 0 0 5.4 2.7 2.7 0 0 0 0-5.4zM6.6 18.6h10.8c-.5-2.6-2.7-4-5.4-4s-4.9 1.4-5.4 4z" stroke="none"/></svg>',
+    wheel: '<svg viewBox="0 0 24 24"><path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12S6.2 22.5 12 22.5 22.5 17.8 22.5 12 17.8 1.5 12 1.5zm0 2.4c4.1 0 7.5 3 8.2 6.9H3.8c.7-3.9 4.1-6.9 8.2-6.9zM4.1 13.2h6.7v6.8c-3.4-.5-6.1-3.3-6.7-6.8zm9.1 6.8v-6.8h6.7c-.6 3.5-3.3 6.3-6.7 6.8z" stroke="none"/><circle cx="12" cy="12" r="2.5" stroke="none"/></svg>',
+    arm: '<svg viewBox="0 0 24 24"><path d="M3.0 19.2 H13.2 L16.4 9.6" fill="none" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.4" cy="13.8" r="5.0" stroke="none"/><rect x="12.0" y="2.0" width="9.4" height="7.4" rx="3.1" stroke="none" transform="rotate(16 16.7 5.7)"/></svg>',
+    coin: '<svg viewBox="0 0 24 24"><path d="M12 1.6C6.3 1.6 1.7 6.3 1.7 12S6.3 22.4 12 22.4 22.3 17.7 22.3 12 17.7 1.6 12 1.6zm0 2.4c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8 3.6-8 8-8z"/><path d="M12.9 5.9v1.3c1.2.2 2.1.8 2.6 1.7l-1.9 1.1c-.3-.6-.9-.9-1.7-.9-.8 0-1.2.3-1.2.8 0 .5.5.8 1.8 1.2 1.9.5 3.1 1.2 3.1 2.9 0 1.5-1.1 2.4-2.7 2.7v1.4h-1.8v-1.4c-1.4-.3-2.4-1-2.9-2.1l1.9-1.1c.3.8 1 1.2 2 1.2.9 0 1.4-.3 1.4-.8 0-.5-.5-.8-1.9-1.2-1.8-.5-3-1.3-3-2.9 0-1.4 1.1-2.4 2.5-2.6V5.9z"/></svg>',
+  };
+  const ROLE_ICO = [ICO.badge, ICO.wheel, ICO.arm];
+  const SIREN = (c) => '<svg viewBox="0 0 24 24"><g stroke="' + c + '" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="1.2" x2="12" y2="3.6"/><line x1="3.6" y1="4.4" x2="5.4" y2="6.2"/><line x1="20.4" y1="4.4" x2="18.6" y2="6.2"/></g><path d="M6 17.5V12.5a6 6 0 0 1 12 0v5z" fill="' + c + '"/><rect x="3.5" y="17.5" width="17" height="4" rx="1" fill="#F2ECDA"/></svg>';
+  // each seat's sheet is a different score, as in the box
+  const TARGETS = [
+    ['THE DOCKS', '<svg viewBox="0 0 24 24"><circle cx="12" cy="3.9" r="2.3" fill="none" stroke-width="1.9"/><rect x="10.9" y="5.8" width="2.2" height="15.4" rx="1.1" stroke="none"/><rect x="7.2" y="7.6" width="9.6" height="2.1" rx="1.05" stroke="none"/><path d="M3.3 13.0a1.3 1.3 0 0 1 2.6 0 6.1 6.1 0 0 0 12.2 0 1.3 1.3 0 0 1 2.6 0 8.7 8.7 0 0 1-17.4 0z" stroke="none"/></svg>'],
+    ['THE CASINO', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="17.6" rx="8.6" ry="3.2" stroke="none"/><ellipse cx="12" cy="13.3" rx="8.6" ry="3.2" stroke="none"/><ellipse cx="12" cy="9.0" rx="8.6" ry="3.2" stroke="none"/></svg>'],
+    ['THE NIGHT BANK', '<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.6 3.2h18.8a1.5 1.5 0 0 1 1.5 1.5v14.6a1.5 1.5 0 0 1-1.5 1.5H2.6a1.5 1.5 0 0 1-1.5-1.5V4.7a1.5 1.5 0 0 1 1.5-1.5zm9.4 3.4a5.4 5.4 0 1 0 0 10.8 5.4 5.4 0 0 0 0-10.8z" stroke="none"/><circle cx="12" cy="12" r="2.1" stroke="none"/></svg>'],
+    ['THE PENTHOUSE', '<svg viewBox="0 0 24 24"><rect x="2.2" y="10.2" width="7.2" height="11.8" rx=".7" stroke="none"/><rect x="10.6" y="4.4" width="8.4" height="17.6" rx=".7" stroke="none"/><rect x="13.7" y="1.2" width="2.2" height="3.4" stroke="none"/></svg>'],
+    ['THE MUSEUM', '<svg viewBox="0 0 24 24"><path d="M12 1.7 22.6 7.1v2.1H1.4V7.1z" stroke="none"/><rect x="3.3" y="10.3" width="2.7" height="8.6" stroke="none"/><rect x="8.1" y="10.3" width="2.7" height="8.6" stroke="none"/><rect x="13.2" y="10.3" width="2.7" height="8.6" stroke="none"/><rect x="18.0" y="10.3" width="2.7" height="8.6" stroke="none"/><rect x="1.4" y="19.8" width="21.2" height="2.5" rx=".6" stroke="none"/></svg>'],
+    ['THE ARMORED CAR', '<svg viewBox="0 0 24 24"><rect x="1.2" y="6.2" width="12.6" height="9.4" rx=".8" stroke="none"/><path d="M14.2 8.8h4.3l3.3 3.5v3.3h-7.6z" stroke="none"/><circle cx="6.0" cy="18.0" r="2.6" stroke="none"/><circle cx="18.0" cy="18.0" r="2.6" stroke="none"/></svg>'],
+  ];
   let session = null, view = null, feedMode = 'chat', lastSeq = -1, lastChatLen = 0;
   // local selection state
   let staged = [];        // [{dieId,to}] during my send turn
@@ -705,51 +748,93 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   function sheetHTML(i, mine) {
     const v = view, me = v.me;
     const self = !!(v.selfCrew && v.selfCrew[i]);
-    const k = self ? v.crews[i] : v.kitchens[i], crew = v.crews[i], pays = v.pays[i];
+    const k = self ? v.crews[i] : v.kitchens[i], crew = v.crews[i] || [], pays = v.pays[i];
+    const done = v.phase === 'summary' || v.phase === 'over';
     const stagedHere = staged.filter((s) => s.to === i).length;
     let st = '';
     if (v.phase === 'send' && v.sender === i) st = 'SENDING';
     else if (v.phase === 'crew') st = v.crewDone[i] ? 'CREW SET' : 'CREWING';
     else if (v.phase === 'pay') st = v.payDone[i] ? 'PAID' : 'PAYING';
+    if (stagedHere) st += (st ? ' ' : '') + '+' + stagedHere;
     const target = v.phase === 'send' && v.sender === me && !mine && pickDie;
+    const tg = TARGETS[i % TARGETS.length];
     let out = '<div class="sheet' + (mine ? ' me' : '') + (target ? ' target' : '') + '" data-seat="' + i + '">';
-    out += '<div class="hd"><span class="dot p' + i + '"></span><span class="nm">' + esc(nm(i)) + (mine ? ' — your job' : '') + '</span><span class="st">' + st + (stagedHere ? ' +' + stagedHere : '') + '</span></div>';
+    out += '<div class="hd"><span class="sirens">' + SIREN('#F0603F') + SIREN('#5AA2F0') + '</span><span class="dot p' + i + '"></span><span class="nm">' + esc(nm(i)) + (mine ? ' — your job' : '') + '</span>' +
+      '<span class="tgt">' + tg[1] + tg[0] + '</span><span class="st">' + st + '</span></div>';
+
+    // who gets paid what: my live picks while paying, everyone's at the reveal
+    const assign = (v.phase === 'pay' && mine) ? paySel : (done ? (pays || {}) : {});
+    const keptOf = (id) => (v.kept[i] || []).find((x) => x.id === id);
+    const showCrew = self || v.phase === 'pay' || done || (v.phase === 'crew' && v.crewDone[i] && !mine);
+    const paying = mine && v.phase === 'pay' && !v.payDone[me];
+
     out += '<div class="bands">';
+    // header row: the three kinds, then your cut
+    for (let b = 0; b < 3; b++) out += '<div class="rh" style="grid-column:' + (b + 2) + '">' + ROLE_ICO[b] + '<span class="bl">' + (mine ? BANDN[b] : BANDS[b]) + '</span><span class="bn">' + BANDR[b] + '</span></div>';
+    out += '<span class="vdiv"></span><div class="rh mine" style="grid-column:6">' + ICO.coin + '<span class="bl">Your cut</span><span class="bn">JOBS 1–2</span></div>';
+    out += '<span class="tab score">You score</span><span class="tab pay">You pay</span>';
+
     for (let b = 0; b < 3; b++) {
-      const dice = k.filter((d) => T.band(d.v) === b);
+      const dice = k.filter((d) => T.band(d.v) === b).sort((a, b2) => b2.v - a.v);
       const crewHere = crew.find((d) => T.band(d.v) === b);
-      const showCrew = self || v.phase === 'pay' || v.phase === 'summary' || v.phase === 'over' || (v.phase === 'crew' && v.crewDone[i] && !mine);
-      out += '<div class="bandcol"><div class="bl">' + (mine ? BANDN[b] : BANDS[b]) + '</div><div class="bn">' + BANDR[b] + '</div><div class="slot' + (showCrew && crewHere ? ' crew' : '') + '">';
-      // dice in this band
-      const list = dice.slice().sort((a, b2) => b2.v - a.v);
-      for (const d of list) {
+      // gold: dice sent to this job, in the slot for their kind
+      let g = '';
+      for (const d of dice) {
         let cls = '', extra = '';
-        if (mine && v.phase === 'crew' && !v.crewDone[me]) { cls = 'pick' + (crewSel && crewSel.includes(d.id) ? ' sel' : ' dim'); }
-        else if (showCrew) { const on = crew.some((c) => c.id === d.id); cls = on ? '' : 'dim'; if (on && (v.phase === 'summary' || v.phase === 'over') && v.summary) { const h = v.summary.hosts[i]; const got = h.given[d.owner] || 0; extra = '<span class="pay' + (got ? '' : ' zero') + '">' + (got ? '+' + got : 'nothing') + '</span>'; } }
-        if (mine && v.phase === 'pay' && !v.payDone[me] && crew.some((c) => c.id === d.id)) { cls = 'pick' + (pickKept ? ' sel' : ''); const tot = Object.keys(paySel).filter((kk) => paySel[kk] === d.id).reduce((a, kk) => a + v.kept[me].find((x) => x.id === kk).v, 0); if (tot) extra = '<span class="pay">+' + tot + '</span>'; }
-        out += dieHTML(d, cls, extra);
+        if (mine && v.phase === 'crew' && !v.crewDone[me]) cls = 'pick' + (crewSel && crewSel.includes(d.id) ? ' sel' : ' dim');
+        else if (showCrew) cls = crew.some((c) => c.id === d.id) ? '' : 'dim sm';
+        if (paying && crewHere && d.id === crewHere.id && !self) cls = 'pick' + (pickKept ? ' sel' : '');
+        if (done && crewHere && d.id === crewHere.id && d.owner === i) extra = '<span class="pay zero">own</span>';
+        g += dieHTML(d, cls, extra);
       }
-      // staged sends from me into this kitchen
-      if (!mine && v.phase === 'send' && v.sender === me) for (const s of staged.filter((x) => x.to === i)) { const d = v.hands[me].find((x) => x.id === s.dieId); if (d && T.band(d.v) === b) out += dieHTML(d, 'staged'); }
-      out += '</div></div>';
+      if (!mine && v.phase === 'send' && v.sender === me) for (const s of staged.filter((x) => x.to === i)) { const d = v.hands[me].find((x) => x.id === s.dieId); if (d && T.band(d.v) === b) g += dieHTML(d, 'staged'); }
+      if (!g) g = '<span class="ghost">' + ROLE_ICO[b] + '</span>';
+      out += '<div class="slot gold' + (showCrew && !crewHere ? ' empty-crew' : '') + '" style="grid-column:' + (b + 2) + '">' + g + '</div>';
+
+      // red: the cuts this host hands to the crook above
+      let r = '';
+      if (crewHere && !self) for (const kid of Object.keys(assign)) if (assign[kid] === crewHere.id) { const kd = keptOf(kid); if (kd) r += dieHTML(kd, paying ? 'pick' : ''); }
+      if (!r) {
+        if (done && crewHere && !self) r = '<span class="ghost">NOTHING</span>';
+        else if (v.phase === 'pay' && !mine && v.payDone[i] && crewHere && !self) r = '<span class="ghost">?</span>';
+        else r = '<span class="ghost">↑<br>THEIRS</span>';
+      }
+      const drop = paying && pickKept && crewHere && !self;
+      out += '<div class="slot red' + (drop ? ' drop' : '') + '" style="grid-column:' + (b + 2) + '"' + (crewHere && !self ? ' data-crew="' + crewHere.id + '"' : '') + '>' + r + '</div>';
     }
+
+    // your cut: what's left of the host's kept dice once the cuts are out (jobs 1-2)
+    let keep = '';
+    const spare = v.jobs[v.job].spare;
+    if (spare && (done || paying)) {
+      const left = (v.kept[i] || []).filter((d) => !(d.id in assign) && !(self && crew.some((c) => c.id === d.id)));
+      const need = paying ? v.handOut : 0;
+      if (done) {
+        const own = v.summary && v.summary.hosts[i] ? v.summary.hosts[i].own : 0;
+        const ownDie = own ? left.slice().sort((a, b) => b.v - a.v).find((d) => d.v === own) : null;
+        if (ownDie) keep = dieHTML(ownDie, '');
+      } else if (Object.keys(assign).length === need) keep = left.map((d) => dieHTML(d, '')).join('');
+    }
+    out += '<div class="slot keep">' + (keep || '<span class="ghost">' + (spare ? 'YOU<br>KEEP' : 'NONE ON<br>JOB 3') + '</span>') + '</div>';
     out += '</div>';
+
     // hand line: everyone rolls in the open, so rivals' dice are visible all job
     if (v.phase === 'send') {
       out += '<div class="kept"><span class="lbl">' + (mine ? 'YOUR HAND · ' + v.hands[i].length + ' DICE' : 'THEIR ROLL · ' + v.hands[i].length + ' LEFT') + '</span>';
       if (!mine) for (const d of v.hands[i]) out += dieHTML(d, 'sm');
       out += '</div>';
-    } else {
+    } else if (!done) {
+      // kept dice still to be handed out (placed ones sit in the red row)
+      let left = (v.kept[i] || []).filter((x) => !(x.id in assign) && !(self && crew.some((c) => c.id === x.id)));
+      if (paying && spare && Object.keys(assign).length === v.handOut) left = [];   // the leftover is shown in YOU KEEP
       out += '<div class="kept"><span class="lbl">' + (mine ? 'YOUR HAND' : 'THEIR HAND') + '</span>';
-      const assignedIds = (v.phase === 'pay' && mine) ? paySel : ((v.phase === 'summary' || v.phase === 'over' || (v.phase === 'pay' && v.payDone[i] && pays)) ? (pays || {}) : {});
-      for (const d of (v.kept[i] || []).filter((x) => !self || !crew.some((c) => c.id === x.id))) {
-        const given = assignedIds[d.id];
-        let cls = 'sm';
-        if (mine && v.phase === 'pay' && !v.payDone[me]) cls += ' pick' + (pickKept === d.id ? ' sel' : '') + (given ? ' staged' : '');
-        else if (given) cls += ' dim';
-        out += dieHTML(d, cls);
-      }
+      for (const d of left) out += dieHTML(d, 'sm' + (paying ? ' pick' + (pickKept === d.id ? ' sel' : '') : ''));
       out += '</div>';
+    }
+    if (mine) {
+      const j = v.job;
+      out += '<div class="sched"><span>SEND <b>4</b> EVERY JOB</span><span>ROLL <b class="' + (j === 0 ? 'on' : '') + '">8</b> / <b class="' + (j === 1 ? 'on' : '') + '">7</b> / <b class="' + (j === 2 ? 'on' : '') + '">6</b></span>' +
+        '<span>PAY <b class="' + (j === 0 ? 'on' : '') + '">ALL 3</b> ON JOB 1 · <b class="' + (j > 0 ? 'on' : '') + '">ANY 2</b> AFTER</span><span class="hot">JOB 3 DOUBLES</span></div>';
     }
     out += '</div>';
     return out;
@@ -794,7 +879,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       if (v.payDone[me]) h = '<span class="hint">Cuts handed out. Waiting for the reveal.</span>';
       else {
         const need = v.handOut, have = Object.keys(paySel).length;
-        h = '<span class="hint">Hand out <b>' + need + '</b> of your kept dice: click a die in your hand, then a crew member. <b>' + have + ' of ' + need + '</b> placed' + (need < v.crews[me].length ? ' — someone gets nothing' : '') + '.</span>' +
+        h = '<span class="hint">Hand out <b>' + need + '</b> of your kept dice: click a die in your hand, then the red slot under a crew member. <b>' + have + ' of ' + need + '</b> placed' + (need < v.crews[me].length ? ' — someone gets nothing' : '') + '.</span>' +
             '<button class="btn ghost" id="a-pclear">Clear</button><button class="btn red" id="a-pay"' + (have !== need ? ' disabled' : '') + '>Hand them out</button>';
       }
     } else if (v.phase === 'summary') {
@@ -838,6 +923,10 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       const b = T.band(d.v);
       crewSel = (crewSel || []).filter((cid) => T.band(v.kitchens[me].find((x) => x.id === cid).v) !== b);
       crewSel.push(id); render(); return;
+    }
+    if (v.phase === 'pay' && !v.payDone[me] && !die && pickKept && sheet && +sheet.dataset.seat === me) {
+      const slot = e.target.closest('.slot.red[data-crew]');
+      if (slot) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { toast('That is all ' + v.handOut + '.'); return; } paySel[pickKept] = slot.dataset.crew; pickKept = null; render(); return; }
     }
     if (v.phase === 'pay' && !v.payDone[me] && die && sheet && +sheet.dataset.seat === me) {
       const id = die.dataset.id;
@@ -1034,7 +1123,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       case 'crew': return ['Pick your crew', "Everyone now picks a crew from what they were sent: one of each kind, never two. You have two muscles, so take Vic's " + B('6') + ". Add Dot's " + B('4') + " and Sal's " + B('2') + ". Sal's 5 goes home and earns him nothing. Your crew scores its total: 12."];
       case 'pay': {
         const need = v.handOut || 3, have = Object.keys(paySel).length;
-        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. On job 1 you pay all three of your crew. Click a die from your hand, then a crew member. You can stack two on one person. The die you keep is your own cut. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
+        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. On job 1 you pay all three of your crew. Click a die from your hand, then the red slot under a crew member. You can stack two on one person. The die you keep is your own cut. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
       }
     }
     return ['', ''];
