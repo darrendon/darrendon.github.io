@@ -1,7 +1,7 @@
 """Un, Deux, Trois, Cat! — render the art and the mockups from the site root.
 
 python3 shoot.py art          card faces, card back, box lid/side/end -> tex/ (jpg) and ../ (webp for the page)
-python3 shoot.py scene NAME   a three.js still from scene.html (hero|table|kit|home|og) -> ../render-NAME.webp + sizes
+python3 shoot.py scene NAME   a three.js still from scene.html (hero|table|kit|home|og|cozy) -> ../render-NAME.webp + sizes (cozy -> render-scene)
 python3 shoot.py check NAMES  draws each object's silhouette on its own and reports overlaps, near misses and frame cuts
 python3 shoot.py page URL OUT [W H]   screenshot any page on the local site (used for previews)
 """
@@ -27,11 +27,11 @@ BASE = "http://127.0.0.1:8771"
 GL = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
 
 
-def save_sizes(im, stem, widths):
+def save_sizes(im, stem, widths, q=86):
     im.save(os.path.join(IMG, stem + ".webp"), quality=88, method=6)
     for w in widths:
         h = round(im.height * w / im.width)
-        im.resize((w, h), Image.LANCZOS).save(os.path.join(IMG, f"{stem}-{w}.webp"), quality=86, method=6)
+        im.resize((w, h), Image.LANCZOS).save(os.path.join(IMG, f"{stem}-{w}.webp"), quality=q, method=6)
 
 
 def art(p):
@@ -77,6 +77,8 @@ def scene(p, name, w=1600, h=1000):
         im.save(os.path.join(IMG, "og.jpg"), quality=88)
     elif name == "home":
         save_sizes(im, "render-home", [640, 1200])
+    elif name == "cozy":  # the themed still: a knit blanket in a sunbeam -> render-scene (homepage card and first image on the page)
+        save_sizes(im, "render-scene", [240, 480, 640, 800, 1200], q=84)
     else:
         save_sizes(im, "render-" + name, [240, 480, 800, 640])
     print("saved render", name)

@@ -29,7 +29,7 @@ try {
   const BG = '#E4DCD2';
   scene.background = C(BG); scene.fog = new THREE.Fog(C(BG), 46, 90);
   const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 300);
-  scene.add(new THREE.HemisphereLight(0xfff4e6, 0x8a7458, 0.52));
+  const hemi = new THREE.HemisphereLight(0xfff4e6, 0x8a7458, 0.52); scene.add(hemi);
   const key = new THREE.DirectionalLight(0xfff1dc, 0.86); key.position.set(9, 16, 10); key.castShadow = true;
   key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 80 });
   key.shadow.radius = 6; key.shadow.bias = -0.0004; scene.add(key);
@@ -298,14 +298,133 @@ try {
     frame([-13.6, 0, -6.4], [11.2, 3, 7.8], 52, 0, 0.97);
   }
 
-  renderer.render(scene, camera);
-  await new Promise((r) => setTimeout(r, 80)); renderer.render(scene, camera);
+  if (SCENE === 'cozy') {
+    // at home with the cat: a chunky knit blanket on honey floorboards, an afternoon sunbeam through a four-pane window,
+    // a ball of yarn and a bowl of kibble. The box, the toys, the cat, the deck and two flipped cards sit on the blanket.
+    // (Only this preset touches the lights and floor, so the other stills render exactly as before.)
+    let ws = 11; const wr = () => (ws = (ws * 9301 + 49297) % 233280) / 233280;
+    // floorboards: 5 in boards, 1024 px = 40 in
+    const fc = document.createElement('canvas'); fc.width = fc.height = 1024; const fg = fc.getContext('2d');
+    const tones = ['#B9824F', '#C48D58', '#AE7745', '#C9965F', '#B57D4A', '#BF8852'];
+    for (let row = 0; row < 8; row++) {
+      let x = -wr() * 400; const y = row * 128;
+      while (x < 1024) {
+        const L = 380 + wr() * 420; fg.fillStyle = tones[Math.floor(wr() * tones.length)]; fg.fillRect(x, y, L, 128);
+        for (let k = 0; k < 26; k++) { const gy = y + 6 + wr() * 116, amp = 2 + wr() * 5, ph = wr() * 6;
+          fg.strokeStyle = wr() < .6 ? 'rgba(90,50,20,' + (0.08 + wr() * 0.12) + ')' : 'rgba(255,225,180,' + (0.06 + wr() * 0.08) + ')'; fg.lineWidth = 0.8 + wr() * 1.6;
+          fg.beginPath(); for (let t = 0; t <= L; t += 16) fg.lineTo(x + t, gy + Math.sin(t / 90 + ph) * amp); fg.stroke(); }
+        fg.fillStyle = 'rgba(60,32,12,.55)'; fg.fillRect(x, y, 3, 128); x += L;
+      }
+      fg.fillStyle = 'rgba(55,30,12,.6)'; fg.fillRect(0, y, 1024, 3); fg.fillStyle = 'rgba(255,220,170,.12)'; fg.fillRect(0, y + 3, 1024, 2);
+    }
+    const ft = new THREE.CanvasTexture(fc); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(5, 5); ft.encoding = THREE.sRGBEncoding; ft.anisotropy = 16;
+    table.material = new THREE.MeshStandardMaterial({ map: ft, roughness: 0.62, color: C('#A88E7A') });
+    table.rotation.z = 0.06;
+
+    // the blanket: stockinette knit, 1 in stitches, a soft oatmeal
+    const kc = document.createElement('canvas'); kc.width = kc.height = 512; const kg = kc.getContext('2d');
+    const bc = document.createElement('canvas'); bc.width = bc.height = 512; const bg = bc.getContext('2d');
+    kg.fillStyle = '#D2BC98'; kg.fillRect(0, 0, 512, 512); bg.fillStyle = '#000'; bg.fillRect(0, 0, 512, 512);
+    const SW = 32, SH = 28; // 16 x ~18 stitches per tile
+    for (let r = -1; r < 512 / SH + 1; r++) for (let c = 0; c < 512 / SW; c++) {
+      const cx = c * SW + SW / 2, cy = r * SH + SH / 2, tone = 0.92 + wr() * 0.1;
+      for (const sx of [-1, 1]) {
+        const gx = cx + sx * SW * 0.22, gr = kg.createRadialGradient(gx - sx * 2, cy - 4, 1, gx, cy, SW * 0.42);
+        gr.addColorStop(0, `rgb(${Math.round(252 * tone)},${Math.round(240 * tone)},${Math.round(218 * tone)})`); gr.addColorStop(0.7, `rgb(${Math.round(232 * tone)},${Math.round(212 * tone)},${Math.round(180 * tone)})`); gr.addColorStop(1, 'rgb(200,178,144)');
+        for (const [ctx, fill] of [[kg, gr], [bg, null]]) {
+          ctx.save(); ctx.translate(gx, cy); ctx.rotate(sx * -0.62); ctx.beginPath(); ctx.ellipse(0, 0, SW * 0.27, SH * 0.7, 0, 0, Math.PI * 2);
+          if (fill) ctx.fillStyle = fill; else { const b = ctx.createRadialGradient(0, 0, 1, 0, 0, SH * 0.66); b.addColorStop(0, '#fff'); b.addColorStop(1, '#222'); ctx.fillStyle = b; }
+          ctx.fill(); ctx.restore();
+        }
+      }
+    }
+    for (let i = 0; i < 2600; i++) { const x = wr() * 512, y = wr() * 512, a = wr() * Math.PI; kg.strokeStyle = wr() < .5 ? 'rgba(255,255,255,.12)' : 'rgba(110,85,60,.1)'; kg.lineWidth = .7; kg.beginPath(); kg.moveTo(x, y); kg.lineTo(x + Math.cos(a) * 4, y + Math.sin(a) * 4); kg.stroke(); }
+    const kt = new THREE.CanvasTexture(kc), kb = new THREE.CanvasTexture(bc);
+    for (const t of [kt, kb]) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 16; } kt.encoding = THREE.sRGBEncoding;
+    const KW = 40, KD = 26, KT = 0.35;
+    const kgeo = new THREE.ExtrudeGeometry(rr(KW, KD, 2.2), { depth: KT, bevelEnabled: true, bevelThickness: 0.18, bevelSize: 0.3, bevelSegments: 4, curveSegments: 16 });
+    { const p = kgeo.attributes.position, uv = kgeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 16, p.getY(i) / 15.75); }
+    const blanket = new THREE.Mesh(kgeo, new THREE.MeshStandardMaterial({ map: kt, bumpMap: kb, bumpScale: 0.035, roughness: 1, color: C('#F4ECE0') }));
+    blanket.rotation.x = -Math.PI / 2; blanket.rotation.z = 0.035; blanket.position.set(0.6, -0.17, 0.4); blanket.receiveShadow = true; scene.add(blanket);
+    const LIFT = KT + 0.18 - 0.17; // the blanket's top surface: everything on it sits this high
+
+    // light: a warm afternoon sun through a sash window off to the left, the rest of the room in soft bounce light
+    scene.background = C('#5E4430'); scene.fog = new THREE.Fog(C('#6E4E36'), 60, 120);
+    hemi.color = new THREE.Color(0xfff0dc); hemi.groundColor = new THREE.Color(0x9a7650); hemi.intensity = 0.8;
+    rim.intensity = 0.22; fill.color = new THREE.Color(0xfff2e2); fill.intensity = 0.36;
+    const sunDir = new THREE.Vector3(-0.8, 0.6, -0.08).normalize(), aim = new THREE.Vector3(-1.1, 0, 0.6);
+    const WIN = { cols: 1, rows: 2, pw: 15.5, ph: 8.0, mu: 0.6, dist: 60 };
+    key.color = new THREE.Color(0xffd29a); key.intensity = 1.0; key.position.copy(aim).addScaledVector(sunDir, 70); key.target.position.copy(aim); scene.add(key.target);
+    Object.assign(key.shadow.camera, { left: -70, right: 70, top: 70, bottom: -70, near: 1, far: 140 }); key.shadow.camera.updateProjectionMatrix(); key.shadow.radius = 8;
+    // the window: a vertical wall with a two-pane sash window cut in it, invisible to the camera but casting the sunbeam's shadow
+    const wall = new THREE.Shape(); wall.moveTo(-90, -40); wall.lineTo(90, -40); wall.lineTo(90, 60); wall.lineTo(-90, 60); wall.lineTo(-90, -40);
+    const PW = WIN.pw, PH = WIN.ph, MU = WIN.mu;
+    const TW = WIN.cols * PW + (WIN.cols - 1) * MU, TH = WIN.rows * PH + (WIN.rows - 1) * MU;
+    for (let cx = 0; cx < WIN.cols; cx++) for (let cy = 0; cy < WIN.rows; cy++) { const h = new THREE.Path(), x0 = -TW / 2 + cx * (PW + MU), y0 = -TH / 2 + cy * (PH + MU);
+      h.moveTo(x0, y0); h.lineTo(x0, y0 + PH); h.lineTo(x0 + PW, y0 + PH); h.lineTo(x0 + PW, y0); h.lineTo(x0, y0); wall.holes.push(h); }
+    const occ = new THREE.Mesh(new THREE.ShapeGeometry(wall), new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false, side: THREE.DoubleSide }));
+    const winC = aim.clone().addScaledVector(sunDir, WIN.dist), az = new THREE.Vector3(sunDir.x, 0, sunDir.z).normalize();
+    occ.castShadow = true; occ.position.copy(winC); occ.lookAt(winC.clone().sub(az)); scene.add(occ);
+    window.__surfaces = [blanket, occ];
+
+    const onBlanket = (o) => { o.position.y += LIFT; return o; };
+    // a ball of yarn, rust red, with a loose end trailing across the blanket
+    function yarn() {
+      const R = 1.15, g = new THREE.Group();
+      const yt = canvasTex(512, 256, (cg, w, h) => { cg.fillStyle = '#A2482F'; cg.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 4) { cg.strokeStyle = y % 8 ? 'rgba(60,18,8,.35)' : 'rgba(255,190,160,.18)'; cg.lineWidth = 1.6; cg.beginPath(); for (let x = 0; x <= w; x += 8) cg.lineTo(x, y + Math.sin(x / 40 + y) * 3); cg.stroke(); } });
+      const core = new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32), new THREE.MeshStandardMaterial({ map: yt, roughness: 1 })); core.position.y = R; g.add(core);
+      const ym = new THREE.MeshStandardMaterial({ color: C('#B4533A'), roughness: .95 });
+      let s2 = 21; const r2 = () => (s2 = (s2 * 9301 + 49297) % 233280) / 233280;
+      for (let k = 0; k < 16; k++) { const ax = new THREE.Vector3(r2() - .5, r2() - .5, r2() - .5).normalize(), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), ax);
+        const pts = []; for (let i = 0; i <= 64; i++) { const a = i / 64 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * (R + .03), 0, Math.sin(a) * (R + .03)).applyQuaternion(q).add(new THREE.Vector3(0, R, 0))); }
+        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 96, .045, 8, true), ym)); }
+      const tail = new THREE.CatmullRomCurve3([new THREE.Vector3(.5, .12, .95), new THREE.Vector3(1.2, .05, 1.5), new THREE.Vector3(2.3, .05, 1.6), new THREE.Vector3(3.0, .05, 1.1), new THREE.Vector3(3.6, .05, 1.5)]);
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(tail, 80, .065, 8, false), ym));
+      return g;
+    }
+    // the cat's bowl: pale blue glaze, a cream rim, heaped with kibble
+    function kibbleBowl() {
+      const g = new THREE.Group();
+      const prof = [[0, 0], [1.05, 0], [1.12, .05], [1.55, .55], [1.72, .82], [1.74, .9], [1.66, .92], [1.5, .66], [1.0, .22], [0, .2]].map(([x, y]) => new THREE.Vector2(x, y));
+      g.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 72), new THREE.MeshStandardMaterial({ color: C('#9DBCCD'), roughness: .28, side: THREE.DoubleSide })));
+      const rimL = new THREE.Mesh(new THREE.TorusGeometry(1.7, .045, 10, 96), new THREE.MeshStandardMaterial({ color: C('#F3ECDD'), roughness: .3 })); rimL.rotation.x = Math.PI / 2; rimL.position.y = .91; g.add(rimL);
+      const km = ['#8A5528', '#9E6534', '#734420', '#A8723F'].map((h) => new THREE.MeshStandardMaterial({ color: C(h), roughness: .7 }));
+      const kgm = new THREE.SphereGeometry(.15, 12, 8);
+      let s3 = 31; const r3 = () => (s3 = (s3 * 9301 + 49297) % 233280) / 233280;
+      for (let i = 0; i < 170; i++) { const a = r3() * Math.PI * 2, y = .32 + r3() * .6, rr2 = Math.sqrt(r3()) * Math.min(1.0 + (y - .22) / .44 * .5, 1.58) - .16;
+        const k = new THREE.Mesh(kgm, km[i % 4]); k.scale.set(1, .62, 1 + r3() * .3); k.position.set(Math.cos(a) * rr2, y, Math.sin(a) * rr2); k.rotation.set(r3() * 3, r3() * 3, r3() * 3); g.add(k); }
+      return g;
+    }
+
+    const bx = await box(-6.6, -1.4, 0.2); onBlanket(bx);
+    for (const [n, x, z, yaw] of [['cat', 5.6, -4.6, -0.35], ['bird', 1.6, -4.4, -0.5], ['fly', 9.7, -3.4, 0.25], ['ball', 1.4, 0.9, 0], ['fish', 5.4, 0.9, 0.25], ['mouse', 9.7, 1.4, 2.75]]) onBlanket(toy(n, x, z, yaw));
+    onBlanket(await backs(0.6, 6.0, 18, -0.08));
+    onBlanket(await face('fish', 'green', 3.9, 6.2, 0.04));
+    onBlanket(await face('bird', 'blue', 7.2, 6.0, -0.06));
+    onBlanket(add('yarn', yarn())).position.set(-10.0, LIFT, 6.0);
+    onBlanket(add('bowl', kibbleBowl())).position.set(11.2, LIFT, 6.4);
+    frame([-12.4, 0, -6.6], [13.0, 3.2, 8.2], 42, 4, 0.96);
+  }
+
+  // a soft photographic vignette over the cozy still (drawn on top; the checker renders without it)
+  let vignette = null;
+  if (SCENE === 'cozy') {
+    const vc = document.createElement('canvas'); vc.width = 800; vc.height = 500; const vg = vc.getContext('2d');
+    vg.setTransform(1, 0, 0, 500 / 800, 0, 0); const grd = vg.createRadialGradient(400, 440, 200, 400, 420, 600);
+    grd.addColorStop(0, 'rgba(40,22,10,0)'); grd.addColorStop(1, 'rgba(36,20,8,0.62)'); vg.fillStyle = grd; vg.fillRect(0, 0, 800, 800);
+    const vt = new THREE.CanvasTexture(vc); vt.encoding = THREE.sRGBEncoding;
+    const vs = new THREE.Scene(); vs.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: vt, transparent: true, depthTest: false, depthWrite: false })));
+    const vcam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    vignette = () => { renderer.autoClear = false; renderer.render(vs, vcam); renderer.autoClear = true; };
+  }
+  renderer.render(scene, camera); if (vignette) vignette();
+  await new Promise((r) => setTimeout(r, 80)); renderer.render(scene, camera); if (vignette) vignette();
 
   if (CHECK) {
     // draw each object alone in white on black; compare masks
     const gl = renderer.getContext(); const wM = W, hM = H;
     const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const keepBg = scene.background, keepFog = scene.fog; scene.background = new THREE.Color(0); scene.fog = null; table.visible = false;
+    const keepBg = scene.background, keepFog = scene.fog; scene.background = new THREE.Color(0); scene.fog = null; table.visible = false; (window.__surfaces || []).forEach((s) => { s.visible = false; });
     scene.overrideMaterial = white;
     const masks = [];
     for (const [name, o] of objects) {
