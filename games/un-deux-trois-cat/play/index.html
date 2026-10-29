@@ -30,7 +30,7 @@
 html,body{height:100%}
 body{margin:0;background:var(--felt);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:1000px;margin:0 auto;padding-block:16px 32px;display:flex;flex-direction:column;gap:16px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:16px 32px;display:flex;flex-direction:column;gap:16px}
 h1,h2{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
 button{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:10px}
@@ -45,63 +45,78 @@ button{font:inherit;color:inherit}
 .btn.primary{background:var(--gold);color:#2a1d31;border-color:var(--gold);font-weight:800;font-size:17px;padding:12px 26px}
 .btn.primary:hover{filter:brightness(1.06)}
 
-/* seats */
-.seats{display:flex;flex-wrap:wrap;gap:8px}
-.seat{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:12px;background:var(--felt-2);border:2px solid transparent;font-variant-numeric:tabular-nums}
-.seat.you{border-color:var(--gold)}
-.seat .nm{font-weight:800}
-.seat .vp{color:var(--gold);font-weight:800}
-.seat .left{color:var(--muted);font-size:12px}
-.seat .flag{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--bad)}
-.seat.dim{opacity:.45}
+/* the table: players sit around the edge with their pile and flipped card in front of them,
+   and the five toys and the cat sit in the middle where everyone can reach. place() lays it all out. */
+.play{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
+@media (max-width:900px){.play{grid-template-columns:minmax(0,1fr)}}
+.board{position:relative;width:100%;height:clamp(440px,calc(100vh - 120px),780px);--cw:80px;--ch:112px;--t:84px;touch-action:manipulation}
+@media (min-width:901px){.board{height:auto;aspect-ratio:1.15;min-height:440px;max-height:calc(100vh - 110px)}}
+@media (max-width:900px){.board{height:clamp(460px,calc(100vh - 230px),680px)}body.tut .board{height:clamp(440px,calc(100vh - 330px),620px)}}
+.felt{position:absolute;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 42%,#5d4569 0%,#47334f 58%,#3a2945 100%);
+  box-shadow:0 0 0 9px #7a5236,0 0 0 12px #5a3b26,0 22px 44px rgba(0,0,0,.5),inset 0 0 40px rgba(0,0,0,.35)}
+.layer{position:absolute;inset:0}
+#table,#seats{pointer-events:none}
 
-/* table */
-.table{position:relative;min-height:220px;border-radius:22px;padding:20px 14px;
-  background:radial-gradient(ellipse at 50% 40%,var(--felt-3) 0%,var(--felt-2) 55%,var(--felt) 100%);
-  display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:16px}
-.slot{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
-.slot .cards{display:flex;gap:8px}
-.slot .who{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em}
-.slot.you .who{color:var(--gold)}
-.card{width:clamp(66px,17vw,94px);aspect-ratio:5/7;max-width:100%;border-radius:9px;background:var(--grain),var(--paper);
-  display:grid;place-items:center;box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.seat{position:absolute;transform:translate(-50%,-50%);z-index:1;display:flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px;
+  background:var(--felt-2);border:2px solid var(--felt-3);box-shadow:0 6px 14px rgba(0,0,0,.4);white-space:nowrap;font-variant-numeric:tabular-nums;font-size:13px;line-height:1.15}
+.seat .ava{width:30px;height:30px;border-radius:50%;background:#e9dfcf;display:grid;place-items:center;flex:none}
+.seat .ava svg{width:28px;height:28px}
+.seat .txt{display:flex;flex-direction:column}
+.seat .nm{font-weight:800}
+.seat .sub{display:flex;gap:6px;align-items:baseline}
+.seat .vp{color:var(--gold);font-weight:800}
+.seat .left{color:var(--muted);font-size:11.5px}
+.seat .flag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--bad)}
+.seat.you{border-color:var(--gold)}
+.seat.dim{opacity:.45}
+@media (max-width:560px){.seat{font-size:12px;gap:6px;padding:3px 9px 3px 3px}.seat .ava{width:24px;height:24px}.seat .ava svg{width:22px;height:22px}}
+.board.compact .seat{padding:3px 10px;font-size:11.5px}
+.board.compact .seat .ava,.board.compact .seat .left{display:none}
+
+.pile{position:absolute;width:var(--cw);height:var(--ch);transform:translate(-50%,-50%);z-index:1;border-radius:8px;
+  background:radial-gradient(circle at 50% 50%,var(--gold) 0 1.6px,transparent 2px) 0 0/11px 11px,linear-gradient(var(--felt-3),var(--felt-3));border:3px solid var(--paper)}
+.pile.empty{background:none;border:2px dashed rgba(255,255,255,.16);box-shadow:none}
+.faces{position:absolute;transform:translate(-50%,-50%);z-index:1;display:flex;gap:6px;perspective:600px}
+.card{width:var(--cw);height:var(--ch);border-radius:8px;background:var(--grain),var(--paper);display:grid;place-items:center;box-shadow:0 6px 14px rgba(0,0,0,.4)}
 .card svg{width:98%;height:auto}
-.card.back{background:
-  radial-gradient(circle at 50% 50%,var(--gold) 0 2px,transparent 2.5px) 0 0/14px 14px,
-  linear-gradient(var(--felt-3),var(--felt-3));
-  border:3px solid var(--paper)}
-.card.flip{animation:flip .22s ease-out}
-@keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
-.chant{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
-  font-family:var(--display);font-size:clamp(40px,11vw,84px);color:var(--gold);text-shadow:0 4px 0 #1a1020}
+.card.spotmark{background:none;border:2px dashed rgba(255,255,255,.14);box-shadow:none}
+.card.flip{animation:deal .34s ease-out both}
+@keyframes deal{from{transform:translate(var(--fx,0),var(--fy,0)) rotateY(90deg) scale(.9)}to{transform:none}}
+.chant{position:absolute;inset:0;z-index:4;display:grid;place-items:center;pointer-events:none;
+  font-family:var(--display);font-size:clamp(40px,10vw,84px);color:var(--gold);text-shadow:0 4px 0 #1a1020,0 0 24px rgba(0,0,0,.5)}
 .chant span{animation:pop .38s ease-out}
 @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
-.caption{width:100%;text-align:center;color:var(--muted);font-size:13px}
 
-/* toys you grab */
-.grab{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-@media (max-width:560px){.grab{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.toy{background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+/* toys you grab, in the middle of the table */
+.toy{position:absolute;width:var(--t);height:var(--t);transform:translate(-50%,-50%);z-index:2;background:none;border:0;padding:0;cursor:pointer}
 .toy:disabled{cursor:default}
-.coaster{width:100%;max-width:104px;aspect-ratio:1;border-radius:50%;background:var(--grain),var(--paper);display:grid;place-items:center;
-  border:4px solid var(--felt-3);transition:transform .08s ease,border-color .15s ease;box-shadow:0 6px 0 #1a1020}
+.coaster{width:100%;height:100%;border-radius:50%;background:var(--grain),var(--paper);display:grid;place-items:center;
+  border:4px solid #2a1d31;transition:transform .1s ease,border-color .15s ease,box-shadow .15s ease;box-shadow:0 6px 0 #1a1020,0 10px 18px rgba(0,0,0,.35)}
 .coaster svg{width:82%;height:auto}
 .toy:not(:disabled):hover .coaster{transform:translateY(-3px);border-color:var(--muted)}
 .toy:not(:disabled):active .coaster{transform:translateY(3px);box-shadow:0 2px 0 #1a1020}
 .toy.cat .coaster{border-color:var(--gold)}
-.toy .lbl{font-size:13px;font-weight:600}
-.toy .key{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.toy .key{position:absolute;right:-4px;top:-4px;min-width:20px;padding:1px 6px;border-radius:999px;background:var(--felt);border:1px solid var(--felt-3);
+  font-size:11px;font-weight:700;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
 @media (pointer:coarse){.toy .key{display:none}}
 .toy.legal .coaster{border-color:var(--good)}
-.toy.won .coaster{border-color:var(--gold);transform:scale(1.07)}
+.toy.won .coaster{border-color:var(--gold);transform:translateY(-6px) scale(1.1);box-shadow:0 14px 0 rgba(26,16,32,.55),0 18px 24px rgba(0,0,0,.45)}
 .toy.miss .coaster{border-color:var(--bad);animation:shake .3s}
 @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.tags{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;min-height:20px}
-.tag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--gold);color:#2a1d31}
+.tags{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;white-space:nowrap;pointer-events:none}
+.tag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--gold);color:#2a1d31;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .tag.bad{background:var(--bad)}
+.board.compact .tag .tm{display:none}
+
+/* beside the table: the coach, the round result and the keys */
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.keys{margin:0;font-size:13px;color:var(--muted)}
+@media (pointer:coarse){.keys{display:none}}
 
 /* banner */
-.banner{min-height:3.4em;text-align:center;font-size:16px;display:grid;place-items:center}
+.banner{min-height:3.4em;font-size:16px;display:grid;align-items:center;padding:12px 16px;border-radius:14px;background:var(--felt-2)}
+.banner:empty{display:none}
 .banner b{color:var(--gold)}
 .banner .sub{display:block;color:var(--muted);font-size:13px;margin-top:2px}
 
@@ -140,8 +155,8 @@ button{font:inherit;color:inherit}
 .coach .btn.primary{font-size:15px;padding:9px 20px}
 .coach.nudge{animation:nudge .35s}
 @keyframes nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.spot{border-radius:18px;box-shadow:0 0 0 3px var(--gold);animation:spot 1.4s ease-in-out infinite}
-@keyframes spot{50%{box-shadow:0 0 0 8px rgba(255,201,74,.3)}}
+#grab.spot .coaster{border-color:var(--gold);animation:spot 1.4s ease-in-out infinite}
+@keyframes spot{50%{box-shadow:0 0 0 9px rgba(255,201,74,.35),0 6px 0 #1a1020}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -208,7 +223,6 @@ button{font:inherit;color:inherit}
     <div class="go">
       <button class="btn primary" id="startBtn" type="button">Start game</button>
       <button class="btn" id="learnBtn" type="button">Learn to play</button>
-      <span class="hint">Click a toy, or press 1–5 for the toys and 6 for the cat.</span>
     </div>
   </section>
 
@@ -223,11 +237,19 @@ button{font:inherit;color:inherit}
     </div>
   </section>
 
-  <div class="seats" id="seats" hidden></div>
-  <div class="table" id="table"></div>
-  <div class="coach" id="coach" role="status" aria-live="polite" hidden></div>
-  <div class="grab" id="grab"></div>
-  <div class="banner" id="banner"></div>
+  <div class="play">
+    <div class="board" id="board">
+      <div class="felt" id="felt"></div>
+      <div class="layer" id="grab"></div>
+      <div class="layer" id="table"></div>
+      <div class="layer" id="seats"></div>
+    </div>
+    <aside class="side">
+      <div class="coach" id="coach" role="status" aria-live="polite" hidden></div>
+      <div class="banner" id="banner" aria-live="polite"></div>
+      <p class="keys">Click a toy, or press 1–5 for the toys and 6 for the cat.</p>
+    </aside>
+  </div>
 </div>
 
 <script>
@@ -383,18 +405,18 @@ function syncSetup(){
   $("oppHint").textContent = `${P} players · ${per} cards each · ${per/f} rounds${f===2 ? " · everyone flips 2 cards" : ""}`;
   $("diffHint").textContent = S.diff === "easy" ? "Bots take around two seconds and misgrab often." : "Bots grab in about a second and rarely slip.";
 }
-$("oppSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.opp = +b.dataset.v; save("udtc-opp", S.opp); syncSetup(); });
+$("oppSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.opp = +b.dataset.v; save("udtc-opp", S.opp); syncSetup(); if (!S.live) showExample(); });
 $("diffSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.diff = b.dataset.v; save("udtc-diff", S.diff); syncSetup(); });
 
 /* ---------- rendering ---------- */
 function renderToys(){
   $("grab").innerHTML = [...OBJ, "cat"].map((o,i) => `
-    <button class="toy${o==="cat"?" cat":""}" type="button" id="toy-${o}" data-t="${o}" aria-label="Grab the ${NAME[o].toLowerCase()}">
+    <button class="toy${o==="cat"?" cat":""}" type="button" id="toy-${o}" data-t="${o}" aria-label="Grab the ${NAME[o].toLowerCase()}" title="${NAME[o]} (${i+1})">
       <span class="coaster">${draw(o, CORRECT[o])}</span>
-      <span class="lbl">${NAME[o]}</span>
       <span class="key">${i+1}</span>
       <span class="tags"></span>
     </button>`).join("");
+  place();
 }
 function resetToys(enabled){
   document.querySelectorAll(".toy").forEach(t => { t.classList.remove("legal","won","miss"); t.querySelector(".tags").innerHTML = ""; t.disabled = !enabled; });
@@ -404,25 +426,121 @@ function tagToy(o, text, bad){
   const t = $("toy-"+o); if (!t) return;
   t.querySelector(".tags").insertAdjacentHTML("beforeend", `<span class="tag${bad?" bad":""}">${text}</span>`);
 }
+/* each player is a cat; their face sits on their seat label (fur, ears, eyes) */
+const FUR = {You:["#8a827c","#5d5652","#2a2421"], Minou:["#2e292b","#151213","#ffc94a"], Pompon:["#f6f1ea","#d9cfc2","#2a2421"],
+  Biscotte:["#b98a5e","#7a5636","#2a2421"], Chaussette:["#3a3431","#1f1b1a","#9ad1c8"], Moustache:["#e8d9bf","#5a4436","#3f6fb0"]};
+function avatar(name){
+  const [f, e, y] = FUR[name] || FUR.You;
+  return `<svg viewBox="-20 -22 40 40" aria-hidden="true"><path d="M-14 -5 L-12 -20 L-2 -12 Z M14 -5 L12 -20 L2 -12 Z" fill="${e}"/><circle r="14" fill="${f}"/>`
+    + `<ellipse cx="-5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><ellipse cx="5.5" cy="-1" rx="2.2" ry="3.2" fill="${y}"/><path d="M-2 5 L2 5 L0 7.6 Z" fill="#c98f8f"/></svg>`;
+}
 function renderSeats(){
-  $("seats").innerHTML = S.players.map(p => {
+  $("seats").innerHTML = S.players.map((p,i) => {
     const dim = S.sudden && !S.eligible.includes(p);
     const flag = !S.resolved && S.out.has(p) ? `<span class="flag">Out</span>` : "";
-    return `<div class="seat${p.human?" you":""}${dim?" dim":""}">
-      <span class="nm">${p.name}</span><span class="vp">★ ${p.vp.length}</span>
-      <span class="left">${p.deck.length} left</span>${flag}</div>`;
+    return `<div class="seat${p.human?" you":""}${dim?" dim":""}" data-seat="${i}"><span class="ava">${avatar(p.name)}</span>
+      <span class="txt"><span class="nm">${p.name}</span><span class="sub"><span class="vp">★ ${p.vp.length}</span><span class="left">${p.deck.length} left</span>${flag}</span></span></div>`;
   }).join("");
+  place();
 }
 function renderTable(mode){
-  const slots = S.players.map(p => {
-    let cards = "";
-    if (mode === "backs") cards = Array.from({length: S.sudden ? 1 : S.flips}, () => `<div class="card back"></div>`).join("");
-    else cards = p.flipped.map(c => `<div class="card flip"${isCorrect(c) ? ' data-ok="1"' : ""} role="img" aria-label="${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
-    return `<div class="slot${p.human?" you":""}"><div class="cards">${cards}</div><div class="who">${p.name}</div></div>`;
+  const html = S.players.map((p,i) => {
+    const n = p.deck.length, layers = Math.min(6, Math.ceil(n / 3));
+    const stack = Array.from({length: layers}, (_, k) => `${(k+1)*1.5}px ${(k+1)*1.5}px 0 ${k % 2 ? "#e9e1d4" : "#2a1d31"}`).concat("0 8px 16px rgba(0,0,0,.4)").join(",");
+    const pile = n ? `<div class="pile" data-seat="${i}" style="box-shadow:${stack}" role="img" aria-label="${p.name}: ${n} cards left"></div>` : `<div class="pile empty" data-seat="${i}"></div>`;
+    const faces = mode === "backs"
+      ? Array.from({length: S.sudden ? 1 : S.flips}, () => `<div class="card spotmark"></div>`).join("")
+      : p.flipped.map(c => `<div class="card flip"${isCorrect(c) ? ' data-ok="1"' : ""} role="img" aria-label="${p.name} flipped a ${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
+    return pile + `<div class="faces" data-seat="${i}">${faces}</div>`;
   }).join("");
-  $("table").innerHTML = slots + `<div class="chant" id="chant"></div>`;
+  $("table").innerHTML = html + `<div class="chant" id="chant"></div>`;
+  place();
 }
-function banner(html){ $("banner").innerHTML = html; }
+
+/* ---------- table layout ----------
+   Wide screens: an oval table, players spaced evenly around it, you at the bottom.
+   Narrow screens: a long table, players along the top and bottom edges.
+   Each player's flipped card sits in front of their seat with their pile to their right; the toys ring the cat in
+   the middle. Sizes start large and shrink until nothing overlaps anything else or leaves the board. */
+const sepAlong = (ux, uy, hx, hy) => Math.min(Math.abs(ux) > 1e-6 ? hx / Math.abs(ux) : Infinity, Math.abs(uy) > 1e-6 ? hy / Math.abs(uy) : Infinity);
+// rectangles {x, y, w, h} (centres) and circles {.., r}: do they come within m px of each other?
+function clash(A, B, m){
+  if (A.r && B.r) return Math.hypot(A.x - B.x, A.y - B.y) < A.r + B.r + m;
+  if (A.r || B.r){
+    const c = A.r ? A : B, q = A.r ? B : A;
+    const nx = Math.max(q.x - q.w / 2, Math.min(c.x, q.x + q.w / 2)), ny = Math.max(q.y - q.h / 2, Math.min(c.y, q.y + q.h / 2));
+    return Math.hypot(c.x - nx, c.y - ny) < c.r + m;
+  }
+  return Math.abs(A.x - B.x) < (A.w + B.w) / 2 + m && Math.abs(A.y - B.y) < (A.h + B.h) / 2 + m;
+}
+function longRows(P){
+  // seat indices along the bottom and top edges, clockwise from you
+  if (P <= 4) return {bottom: [0], top: Array.from({length: P - 1}, (_, k) => k + 1)};
+  if (P === 5) return {bottom: [0, 4], top: [1, 2, 3]};
+  return {bottom: [1, 0, 5], top: [2, 3, 4]};
+}
+function place(){
+  const b = $("board"), P = S.players.length;
+  if (!b || !P) return;
+  const W = b.clientWidth, H = b.clientHeight;
+  if (!W || !H) return;
+  const F = S.sudden ? 1 : S.flips;
+  b.classList.toggle("compact", W < 440);
+  const labels = [...$("seats").children];
+  const lw = S.players.map((_, k) => labels[k] ? labels[k].offsetWidth : 120), lh = S.players.map((_, k) => labels[k] ? labels[k].offsetHeight : 36);
+  const LH = Math.max(30, ...lh), LW = Math.max(60, ...lw);
+  const long = W / H < 0.95, cx = W / 2, cy = H / 2, felt = $("felt");
+  const ex = long ? W / 2 - 8 : W / 2 - Math.min(LW / 2, W * 0.07) - 8, ey = H / 2 - LH / 2 - 6;
+  Object.assign(felt.style, {left: cx - ex + "px", top: cy - ey + "px", width: 2 * ex + "px", height: 2 * ey + "px", borderRadius: long ? Math.min(ex, 110) + "px" : "50%"});
+  let seats;
+  if (long){
+    const rows = longRows(P); seats = new Array(P);
+    rows.bottom.forEach((k, j, a) => { seats[k] = {x: W * (j + .5) / a.length, y: H - lh[k] / 2 - 2, ux: 0, uy: 1}; });
+    rows.top.forEach((k, j, a) => { seats[k] = {x: W * (j + .5) / a.length, y: lh[k] / 2 + 2, ux: 0, uy: -1}; });
+  } else {
+    seats = S.players.map((_, k) => {
+      const th = (90 + k * 360 / P) * Math.PI / 180, ux = Math.cos(th), uy = Math.sin(th);
+      const R = 1 / Math.sqrt((ux / ex) ** 2 + (uy / ey) ** 2);
+      return {x: Math.min(W - lw[k] / 2 - 2, Math.max(lw[k] / 2 + 2, cx + ux * R)), y: Math.min(H - lh[k] / 2 - 2, Math.max(lh[k] / 2 + 2, cy + uy * R)), ux, uy};
+    });
+  }
+  const s0 = Math.min(W, H);
+  let sol = null;
+  for (let sc = 1; sc > 0.3; sc *= 0.95){
+    const t = Math.min(104, long ? Math.min(W * 0.25, H * 0.15) : s0 * 0.17) * sc, cw = Math.min(96, s0 * 0.15) * sc, ch = cw * 1.4, gap = 5 + 5 * sc;
+    const ring = t * 1.2, toyPos = {cat: {x: cx, y: cy}};
+    OBJ.forEach((o, i) => { const a = (-90 + i * 72) * Math.PI / 180; toyPos[o] = {x: cx + Math.cos(a) * ring, y: cy + Math.sin(a) * ring}; });
+    const items = Object.values(toyPos).map(q => ({x: q.x, y: q.y, w: t, h: t, r: t / 2}));
+    const fw = F * cw + (F - 1) * 6;
+    const seatPos = seats.map((s, k) => {
+      const L = {x: s.x, y: s.y, w: lw[k], h: lh[k]}, px = s.uy, py = -s.ux;   // (px, py) points to the player's right
+      const dp = sepAlong(px, py, (fw + cw) / 2 + gap, ch + gap);
+      let d = sepAlong(s.ux, s.uy, (lw[k] + fw) / 2 + gap, (lh[k] + ch) / 2 + gap), face, pile;
+      for (let n = 0; n < 120; n++, d += 2){                                     // step in from the seat until card and pile clear the label
+        const bx = s.x - s.ux * d, by = s.y - s.uy * d;
+        face = {x: bx - px * dp / 2, y: by - py * dp / 2}; pile = {x: bx + px * dp / 2, y: by + py * dp / 2};
+        if (!clash(L, {...face, w: fw, h: ch}, gap) && !clash(L, {...pile, w: cw, h: ch}, gap)) break;
+      }
+      return {label: s, face, pile};
+    });
+    seatPos.forEach((q, k) => items.push({x: q.label.x, y: q.label.y, w: lw[k], h: lh[k]}, {x: q.face.x, y: q.face.y, w: fw, h: ch}, {x: q.pile.x, y: q.pile.y, w: cw, h: ch}));
+    let ok = items.every(r => r.x - r.w / 2 >= 0 && r.x + r.w / 2 <= W && r.y - r.h / 2 >= 0 && r.y + r.h / 2 <= H);
+    for (let i = 0; ok && i < items.length; i++) for (let j = i + 1; j < items.length; j++){
+      if (clash(items[i], items[j], 3)){ ok = false; break; }
+    }
+    sol = {t, cw, ch, toyPos, seatPos, ok};
+    if (ok) break;
+  }
+  S.layoutOk = sol.ok;
+  b.style.setProperty("--t", sol.t.toFixed(1) + "px"); b.style.setProperty("--cw", sol.cw.toFixed(1) + "px"); b.style.setProperty("--ch", sol.ch.toFixed(1) + "px");
+  for (const o in sol.toyPos){ const el = $("toy-" + o); if (el){ el.style.left = sol.toyPos[o].x + "px"; el.style.top = sol.toyPos[o].y + "px"; } }
+  labels.forEach((el, k) => { const q = sol.seatPos[k]; if (q){ el.style.left = q.label.x + "px"; el.style.top = q.label.y + "px"; } });
+  $("table").querySelectorAll(".pile").forEach(el => { const q = sol.seatPos[+el.dataset.seat]; if (!q) return; el.style.left = q.pile.x + "px"; el.style.top = q.pile.y + "px"; });
+  $("table").querySelectorAll(".faces").forEach(el => { const q = sol.seatPos[+el.dataset.seat]; if (!q) return;
+    el.style.left = q.face.x + "px"; el.style.top = q.face.y + "px";
+    el.style.setProperty("--fx", (q.pile.x - q.face.x).toFixed(1) + "px"); el.style.setProperty("--fy", (q.pile.y - q.face.y).toFixed(1) + "px"); });
+}
+function banner(html){ $("banner").innerHTML = html === "&nbsp;" ? "" : html; }
 function updatePill(){
   $("roundPill").textContent = S.tut ? `Learn to play · ${Math.max(1, S.round)} of ${S.rounds}` : S.sudden ? "Sudden death" : `Round ${S.round} / ${S.rounds}`;
   $("modePill").textContent = DIFF[S.diff].label;
@@ -431,12 +549,17 @@ function updatePill(){
 
 /* ---------- example table on the setup screen ---------- */
 function showExample(){
-  const ex = [{obj:"bird",color:"pink"},{obj:"fish",color:"green"},{obj:"fly",color:"blue"},{obj:"mouse",color:"yellow"}];
-  $("table").innerHTML = ex.map(c => `<div class="slot"><div class="cards"><div class="card" role="img" aria-label="${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj,c.color)}</div></div></div>`).join("")
-    + `<div class="caption">Example: only the fish is shown in its own color (green), so grab the fish.</div>`;
-  resetToys(false);
+  // the table you picked, mid-round: only the green fish (on the next player's card) is in its own color
+  const P = S.opp + 1, F = P <= 3 ? 2 : 1;
+  const decoys = [["bird","pink"],["fly","blue"],["mouse","yellow"],["ball","orange"],["bird","blue"],["fish","pink"],["ball","yellow"],["mouse","green"],["fly","green"],["bird","orange"],["mouse","blue"]];
+  let k = 0;
+  S.flips = F; S.sudden = false; S.resolved = true; S.out = new Set();
+  S.players = ["You", ...BOTS.slice(0, S.opp)].map((name, i) => ({name, human: i === 0, vp: [], deck: new Array(60 / P - F).fill(0),
+    flipped: Array.from({length: F}, (_, j) => i === 1 && j === 0 ? {obj: "fish", color: "green"} : {obj: decoys[k][0], color: decoys[k++][1]})}));
+  S.eligible = S.players;
+  resetToys(false); renderSeats(); renderTable("faces");
   $("toy-fish").classList.add("legal");
-  banner("");
+  banner(`<span>Example: only the <b>fish</b> is shown in its own color (green), so you’d grab the fish.</span>`);
 }
 
 /* ---------- game flow ---------- */
@@ -445,13 +568,13 @@ function startGame(){
   const P = S.opp + 1;
   S.flips = P <= 3 ? 2 : 1;
   const deck = buildDeck(), per = 60 / P;
-  const names = shuffle([...BOTS]).slice(0, S.opp);
+  const names = BOTS.slice(0, S.opp);
   S.players = [{name:"You", human:true}, ...names.map(n => ({name:n, human:false}))]
     .map((p,i) => Object.assign(p, {deck: deck.slice(i*per, (i+1)*per), vp: [], flipped: []}));
   S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players;
   S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
   $("pauseBtn").textContent = "Pause";
-  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false; $("seats").hidden = false;
+  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false;
   resetToys(false); renderSeats(); renderTable("backs"); updatePill();
   banner("Get ready…");
   later(nextRound, 700);
@@ -515,14 +638,14 @@ function grab(p, target){
   const t = (performance.now() - S.t0) / 1000;
   if (S.tut && p.human && !S.legal.has(target) && !TUT.rounds[S.tut.i].live){
     const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss");
-    later(() => el.classList.remove("miss"), 600);
+    setTimeout(() => el.classList.remove("miss"), 600);   // not later(): it must survive the round ending
     return tutHint(target);
   }
   if (S.legal.has(target)){
     S.taken.set(target, p); S.done.add(p); S.scorers.push({p, target, t});
     if (S.tut && p.human) tutYouGrabbed();
     $("toy-"+target).classList.add("won");
-    tagToy(target, `${p.name} · ${t.toFixed(2)}s`, false);
+    tagToy(target, `${p.name}<span class="tm"> · ${t.toFixed(2)}s</span>`, false);
     if (S.sudden) return resolve();
     const open = [...S.legal].filter(o => !S.taken.has(o));
     if (!open.length || S.eligible.every(q => S.out.has(q) || S.done.has(q))) return resolve();
@@ -559,7 +682,7 @@ function resolve(){
   let head;
   if (!scorers.length) head = "Nobody grabbed a correct toy. Nobody scores this round.";
   else if (scorers.length === 1) head = `${who(scorers[0])} scored.`;
-  else head = `${scorers.map(who).join(" and ")} ${scorers.length === 2 ? "both" : "all"} scored.`;
+  else head = `${scorers.slice(0, -1).map(who).join(", ")} and ${who(scorers[scorers.length - 1])} ${scorers.length === 2 ? "both" : "all"} scored.`;
   const sub = [ansText, notes.join(" · ")].filter(Boolean).join(" ");
   banner(`<span>${head}${sub ? `<span class="sub">${sub}</span>` : ""}</span>`);
   renderSeats();
@@ -610,7 +733,7 @@ function finish(winner){
 }
 function toSetup(){
   S.live = false; clearTimers(); S.resolved = true; endTutorial();
-  $("end").hidden = true; $("setup").hidden = false; $("meta").hidden = true; $("seats").hidden = true;
+  $("end").hidden = true; $("setup").hidden = false; $("meta").hidden = true;
   showExample();
 }
 
@@ -623,7 +746,7 @@ const TUT = {
       cards: [["bird","pink"],["fish","green"],["fly","blue"],["mouse","yellow"]],
       pre: "Everyone chants <b>“un, deux, trois, cat!”</b> and flips their top card at the same moment. Nobody knows what’s coming, not even you.",
       prompt: "Look at <b>every</b> card on the table, not just yours. Is any toy shown in its own color? Grab that toy.",
-      hint: "Not that one. Check each card against the toys below: Minou flipped a <b>green fish</b>, and green is the fish’s own color.",
+      hint: "Not that one. Check each card against the toys in the middle: Minou flipped a <b>green fish</b>, and green is the fish’s own color.",
       after: "That’s the whole idea. The green fish was on <b>Minou’s</b> card, not yours, and it still counts. Grab a correct toy and you keep the card you flipped: that’s a point."
     },
     { // nothing in its own color: the cat
@@ -674,8 +797,8 @@ function startTutorial(){
     .map((p,i) => Object.assign(p, {deck: R.map(r => ({obj: r.cards[i][0], color: r.cards[i][1]})), vp: [], flipped: []}));
   S.flips = 1; S.discard = []; S.round = 0; S.rounds = R.length; S.sudden = false; S.eligible = S.players;
   S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
-  S.tut = {i: -1};
-  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false; $("seats").hidden = false;
+  S.tut = {i: -1}; document.body.classList.add("tut");
+  $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false;
   $("pauseBtn").hidden = true; $("quitBtn").textContent = "Skip tutorial";
   resetToys(false); renderSeats(); renderTable("backs"); updatePill(); banner("&nbsp;");
   coach([
@@ -685,7 +808,7 @@ function startTutorial(){
 }
 function endTutorial(){
   if (!S.tut) return;
-  S.tut = null;
+  S.tut = null; document.body.classList.remove("tut");
   $("coach").hidden = true; $("grab").classList.remove("spot");
   $("pauseBtn").hidden = false; $("quitBtn").textContent = "Quit"; $("modePill").hidden = false;
 }
@@ -757,6 +880,8 @@ $("pauseBtn").addEventListener("click", () => {
 if (![1,2,3,4,5].includes(S.opp)) S.opp = 3;
 if (!DIFF[S.diff]) S.diff = "easy";
 renderToys(); syncSetup(); showExample();
+if (window.ResizeObserver) new ResizeObserver(() => place()).observe($("board")); else window.addEventListener("resize", place);
+if (document.fonts) document.fonts.ready.then(place);
 if (/[?&#]tutorial\b/.test(location.search + location.hash)) startTutorial();
 })();
 </script>
