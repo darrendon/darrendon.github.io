@@ -408,3 +408,8 @@ a.chip:hover{border-color:var(--orange)}
 .brand b{letter-spacing:.05em}
 .mast h1{letter-spacing:.03em;line-height:.92}
 .page-hero h1,.contact-hero h1{letter-spacing:.03em}
+
+/* Game cards, matched: one card style on the site's own surface; each title keeps its game's color, set in Jost */
+.game-grid .feature.feature{--g-bg:var(--surface);--g-ink:var(--ink);--g-muted:var(--muted);--g-line:var(--line);background:var(--surface);border-color:var(--line)}
+.game-grid .feature.feature h3{font-family:var(--display);font-weight:600;font-style:normal;font-stretch:100%;text-transform:none;text-shadow:none;letter-spacing:-.005em;font-size:clamp(26px,2.4vw,31px);line-height:1.05;color:var(--g-red)}
+.game-grid .feature.feature .go{color:var(--g-red)}
