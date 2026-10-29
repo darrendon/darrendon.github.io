@@ -3,7 +3,8 @@
 Portfolio site for Darren Don, a board game designer in Kansas City. Published with GitHub Pages.
 
 ## Pages
-- `/` — home: games, how I work with publishers, about
+- `/` — home: intro, games, about (design principles), let's meet (conventions), contact band
+- `/games/` — every game plus the signed titles (publisher, Title TBA, player count and genre only, until each publisher announces)
 - `/contact/` — contact details and quick-request email links
 - `/games/dim-sum-rush/` — sell sheet, 3D component mockups, the playable build (embedded from the `dim-sum-rush` repo's Pages site at `/dim-sum-rush/`) and rules in brief
 - `/games/boo-who/` — rendered mockups, the playable build with a tutorial (hosted in this repo at `/games/boo-who/play/`), sell sheet, print-and-play PDF and rules in brief
@@ -47,7 +48,13 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - `robots.txt`, `sitemap.xml` (update `lastmod` and add new game pages), canonical and Open Graph tags on every page use `https://darrendon.com`
 - Analytics: GoatCounter, off until `<meta name="goatcounter" content="">` on each page holds the account code. `assets/js/site.js` then loads the counter and records PDF downloads, email clicks and the first click into a playable build. Add `?ref=<publisher>` to links in pitch emails to see who opened them
 
+## Look
+- Palette (`assets/css/site.css` tokens): 茜色 red #B3242C, 常磐色 green #1F7840, 石板色 slate #3A3F42, 黄色 yellow #F2C811 on warm paper #F3EFE6, with dark-mode equivalents. Game pages keep their own palettes.
+- Type: Jost for everything Latin and Zen Maru Gothic for the small Japanese accents (subset to the characters used; re-subset `assets/fonts/zen-maru-gothic-*.woff` with pyftsubset `--text` when adding new Japanese). `assets/css/type.css`, loaded last on game pages, applies the site type to every heading, label and button; each game keeps only its logotype (hero h1 and homepage card title) in its own face.
+- Genres and other tag-style labels are Title Case without the word "game" ("Partnership Climbing", "Dexterity").
+- Print-and-play kits are on request: the PDFs stay in the repo, but pages link a "Request the kit" email instead of the file.
+
 ## Adding a game
-Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, add a card to the Games section of `index.html`, add the page to `sitemap.xml`, add it to every game page's "More games" row, give its build a `?tutorial` deep link, and regenerate `assets/css/home-games.css`.
+Copy `games/dim-sum-rush/` to `games/<new-game>/`, update the copy and images, add its card to both `index.html` and `games/index.html`, add the page to `sitemap.xml`, add it to every game page's "More games" row, give its build a `?tutorial` deep link, and regenerate `assets/css/home-games.css`.
 
 Game-page images over ~2x their display size have `-240/-480/-800/-1200` copies served through `srcset`; regenerate those copies whenever the full-size image changes.

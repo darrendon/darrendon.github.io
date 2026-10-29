@@ -2,19 +2,23 @@
    Layout: an expanded, box-lid masthead; spec rows in mono that read like a publisher's sell sheet;
    each game page wears its own palette inside the site's neutral frame. */
 :root{
-  --paper:#ECEEEF; --surface:#FFFFFF; --ink:#15181D; --muted:#58606B; --line:#D0D5DA; --line-strong:#B5BCC4;
-  --accent:#E9A814; --accent-soft:#FBEFCF; --on-accent:#15181D;
-  --display:"Archivo","Arial Narrow",Arial,sans-serif;
-  --body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  /* Palette from a Japanese color book: 茜色 red, 常磐色 green, 石板色 slate, 黄色 yellow, on warm paper */
+  --paper:#F3EFE6; --surface:#FBF9F4; --ink:#2B2F31; --muted:#5D6366; --line:#DAD4C8; --line-strong:#BEB6A7;
+  --red:#B3242C; --green:#1F7840; --slate:#3A3F42; --yellow:#F2C811;
+  --accent:#B3242C; --accent-soft:#F6E2DF; --on-accent:#FFFFFF;
+  --display:"Jost","Futura","Century Gothic","Avenir Next",Arial,sans-serif;
+  --body:"Jost","Futura","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --mono:"Jost","Futura","Avenir Next",Arial,sans-serif;
+  --jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;
   --max:1200px; --r:14px;
   --gutter:max(20px, env(safe-area-inset-left, 0px));
   --gutter-r:max(20px, env(safe-area-inset-right, 0px));
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
-  :root{--paper:#0F1113; --surface:#171A1E; --ink:#ECEEF1; --muted:#9BA3AE; --line:#29303A; --line-strong:#3A424D;
-    --accent:#F2B730; --accent-soft:#2A2312; --on-accent:#15181D; color-scheme:dark}
+  :root{--paper:#181A1B; --surface:#212426; --ink:#EFEBE3; --muted:#A8A39A; --line:#33373A; --line-strong:#474C50;
+    --red:#E2585E; --green:#5DBB80; --slate:#8E979C; --yellow:#F2C811;
+    --accent:#E2585E; --accent-soft:#3A2224; --on-accent:#181A1B; color-scheme:dark}
 }
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:84px}
@@ -168,3 +172,160 @@ p{margin:0}
 /* home: the games section sits right under the masthead so box art shows on the first screen */
 #games.section{padding-top:clamp(28px,3.6vw,44px)}
 #games .section-head{margin-bottom:clamp(16px,2vw,24px)}
+
+/* ============================================================
+   2026 redesign: city-pop type (Jost + Zen Maru Gothic) and the
+   four-color palette. This layer overrides the rules above.
+   ============================================================ */
+body{font-family:var(--body);font-size:17.5px;letter-spacing:.004em;font-stretch:100%}
+h1,h2,h3{font-family:var(--display);font-stretch:100%;font-weight:600;letter-spacing:-.008em;line-height:1.05}
+.label{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.jp{font-family:var(--jp);font-weight:700;letter-spacing:.12em;text-transform:none}
+.label .jp{margin-left:.9em;color:var(--red);font-size:11.5px;letter-spacing:.14em}
+:focus-visible{outline:3px solid var(--red)}
+a{text-decoration-thickness:1.5px;text-underline-offset:3px}
+
+/* four-color stripe, used on the header, CTA band and footer */
+.stripe{display:grid;grid-template-columns:repeat(4,1fr);height:5px}
+.stripe i{display:block}
+.stripe i:nth-child(1){background:var(--red)}.stripe i:nth-child(2){background:var(--green)}
+.stripe i:nth-child(3){background:var(--slate)}.stripe i:nth-child(4){background:var(--yellow)}
+
+/* header */
+.site-head{background:color-mix(in srgb,var(--paper) 90%,transparent)}
+.brand svg{width:30px;height:30px;border-radius:0}
+.brand b{font-family:var(--display);font-stretch:100%;font-weight:600;font-size:18px;letter-spacing:.06em;text-transform:uppercase}
+.brand span{font-family:var(--jp);font-weight:700;font-size:10.5px;letter-spacing:.2em;text-transform:none;color:var(--muted);margin-top:2px}
+.nav a{font-family:var(--display);font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;padding:9px 13px}
+.nav a:hover{background:transparent;color:var(--red)}
+.nav a[aria-current="page"]{background:transparent;color:var(--ink);box-shadow:inset 0 -3px 0 var(--yellow);border-radius:0}
+@media (max-width:560px){.nav a{font-size:12px;letter-spacing:.1em;padding:8px 7px}}
+@media (max-width:420px){.nav a{font-size:11.5px;letter-spacing:.06em;padding:8px 5px}.brand b{font-size:15px;letter-spacing:.04em}}
+
+/* buttons */
+.btn{font:600 14px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;padding:15px 22px;border-width:2px}
+.btn.solid{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.btn.accent{background:var(--red);border-color:var(--red);color:var(--on-accent)}
+.btn.yellow{background:var(--yellow);border-color:var(--yellow);color:#2B2F31}
+
+/* home masthead: copy beside a color-block composition */
+.mast{padding-block:clamp(30px,5vw,64px) clamp(30px,4.5vw,56px)}
+.mast-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
+.mast h1{font-family:var(--display);font-stretch:100%;font-weight:600;text-transform:uppercase;letter-spacing:.05em;line-height:.95;font-size:clamp(50px,7.4vw,98px);margin-top:16px}
+.mast h1 .dot{color:var(--red)}
+.mast .lede{font-size:clamp(19px,1.75vw,22px);line-height:1.5;max-width:40ch;margin-top:clamp(18px,2.4vw,28px)}
+.mast .lede b{font-weight:600}
+.mast .lede .also{display:block;margin-top:14px;font-size:.88em;color:var(--muted)}
+.mast .actions{margin-top:26px}
+.mast .signed{margin-top:clamp(26px,3.4vw,38px);border-left:0;padding:16px 0 0;border-top:1px solid var(--line)}
+.signed-list{gap:6px 20px;margin-top:8px}
+.signed-list a{font-family:var(--display);font-stretch:100%;font-weight:600;font-size:clamp(18px,1.7vw,21px);letter-spacing:.02em;border-bottom:3px solid var(--yellow)}
+.signed .tba{font-size:14px;margin-top:8px}
+.signed .tba a{color:var(--ink);font-weight:600}
+.blocks{position:relative;aspect-ratio:5/6;width:100%;max-width:440px;justify-self:end}
+.blocks .blk{position:absolute;display:block}
+.blocks .blk::after{content:"";position:absolute;inset:7px;border:1px solid rgba(255,255,255,.28)}
+.blocks .r{left:22%;width:56%;top:0;height:30%;background:var(--red)}
+.blocks .g{left:4%;width:46%;top:31%;height:24%;background:var(--green)}
+.blocks .s{left:50%;width:46%;top:31%;height:24%;background:var(--slate)}
+.blocks .y{left:22%;width:56%;top:56%;height:30%;background:var(--yellow)}
+.blocks .y::after{border-color:rgba(255,255,255,.45)}
+.blocks .vert{position:absolute;left:-2%;top:62%;writing-mode:vertical-rl;font-family:var(--jp);font-weight:700;font-size:13px;letter-spacing:.42em;color:var(--slate)}
+.blocks .cap{position:absolute;right:4%;top:90%;font-family:var(--display);font-weight:500;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.7}
+@media (prefers-color-scheme: dark){.blocks .vert{color:var(--muted)}}
+@media (max-width:820px){.mast-grid{grid-template-columns:1fr}.blocks{order:-1;max-width:none;aspect-ratio:auto;height:150px;justify-self:stretch}
+  .blocks .r{left:0;width:24%;top:0;height:100%}.blocks .g{left:25%;width:24%;top:0;height:100%}.blocks .s{left:50%;width:24%;top:0;height:100%}.blocks .y{left:75%;width:25%;top:0;height:100%}
+  .blocks .vert,.blocks .cap{display:none}}
+
+/* sections */
+.section-head h2,.about h2,.band h2{font-weight:600;letter-spacing:-.01em}
+.section-head h2{font-size:clamp(32px,4.4vw,54px)}
+.rule-top::before{border-top:1px solid var(--line)}
+.section-head .more{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+.section-head .more:hover{text-decoration:underline}
+
+/* game cards */
+.feature{border-radius:10px}
+.feature-art{border-bottom:1px solid var(--g-line)}
+.feature p{font-size:16.5px}
+.feature .comps{font-size:14.5px}
+.feature .meta{font-family:var(--display);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;gap:6px 16px}
+.feature .meta li:last-child{font-weight:600}
+.feature .go{font-family:var(--display);font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+
+/* about */
+.about .copy{font-size:clamp(17px,1.5vw,18.5px)}
+.about h2{font-size:clamp(34px,4.4vw,54px)}
+.about .copy a{text-decoration-color:var(--yellow);text-decoration-thickness:3px}
+.portrait img{border-radius:6px}
+.principles{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:16px}
+.principles li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
+.principles .n{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:18px;color:#fff}
+.principles li:nth-child(1) .n{background:var(--red)}.principles li:nth-child(2) .n{background:var(--green)}.principles li:nth-child(3) .n{background:var(--yellow);color:#2B2F31}
+.principles b{display:block;font-family:var(--display);font-weight:600;font-size:19px;line-height:1.25;margin-bottom:3px}
+.principles p{color:var(--muted);font-size:16.5px;line-height:1.5}
+.chips{gap:8px}
+.chip{font-family:var(--display);font-size:14px;font-weight:500;letter-spacing:.03em;border-radius:999px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:7px;padding:7px 14px;transition:border-color .15s,color .15s}
+a.chip:hover{border-color:var(--red);color:var(--red)}
+.chip svg{width:12px;height:12px;opacity:.6}
+
+/* let's meet */
+.points{grid-template-columns:repeat(3,minmax(0,1fr))}
+.point{border-top:4px solid var(--ink)}
+.point:nth-child(1){border-top-color:var(--red)}.point:nth-child(2){border-top-color:var(--green)}.point:nth-child(3){border-top-color:var(--yellow)}
+.point h3{font-family:var(--display);font-weight:600;font-stretch:100%;font-size:21px}
+.meet{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+.meet .points{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:1060px){.meet{grid-template-columns:1fr}}
+@media (max-width:860px){.meet .points{grid-template-columns:1fr}}
+.cons{border-radius:8px}
+.con-year b{font-family:var(--display);font-stretch:100%;font-weight:600;font-size:21px}
+.con-year a b{text-decoration-color:var(--yellow);text-decoration-thickness:3px}
+
+/* CTA band and footer */
+.band{background:var(--slate);color:#F3EFE6;border-radius:8px;position:relative;overflow:hidden}
+@media (prefers-color-scheme: dark){.band{background:#2A2E30}}
+.band::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--red) 0 25%,var(--green) 25% 50%,var(--yellow) 50% 75%,#F3EFE6 75%)}
+.band h2{color:#F3EFE6}
+.band p{color:rgba(243,239,230,.78)}
+.band .btn{border-color:#F3EFE6;color:#F3EFE6}
+.band .btn.yellow,.band .btn.accent{background:var(--yellow);border-color:var(--yellow);color:#2B2F31}
+.site-foot{border-top:0;position:relative}
+.site-foot::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--red) 0 25%,var(--green) 25% 50%,var(--slate) 50% 75%,var(--yellow) 75%)}
+.site-foot{font-family:var(--display);font-size:14px;letter-spacing:.04em}
+
+/* contact page */
+.contact-hero h1{font-family:var(--display);font-stretch:100%;font-weight:600;letter-spacing:.04em}
+.email{font-family:var(--display);font-weight:500;letter-spacing:.02em}
+.card{border-radius:8px}
+.requests a{font-family:var(--display);font-weight:500;letter-spacing:.02em}
+.spec dt{font-family:var(--display);font-weight:600;font-size:11.5px;letter-spacing:.18em}
+.pill{font-family:var(--display);font-weight:600;font-size:11.5px;letter-spacing:.18em}
+
+/* games page */
+.page-hero{padding-block:clamp(36px,6vw,80px) clamp(18px,3vw,32px)}
+.page-hero h1{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:clamp(46px,7vw,90px);line-height:.95;margin-top:14px}
+.page-hero .lede{margin-top:20px;max-width:56ch}
+.signed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2vw,24px)}
+.signed-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.signed-card .bar{height:10px}
+.signed-card:nth-child(1) .bar{background:var(--red)}.signed-card:nth-child(2) .bar{background:var(--green)}.signed-card:nth-child(3) .bar{background:var(--yellow)}
+.signed-card .in{padding:22px 24px 24px;display:flex;flex-direction:column;gap:10px;flex:1}
+.signed-card .pub{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.01em}
+.signed-card .pub a{color:inherit;text-decoration:none}
+.signed-card .pub a:hover{text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px}
+.signed-card .tba{font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--red)}
+.signed-card p{color:var(--muted);font-size:16.5px}
+.signed-card .meta{list-style:none;margin:auto 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px 16px;font-family:var(--display);font-weight:600;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:900px){.signed-grid{grid-template-columns:1fr}}
+.game-grid .feature,.game-grid .feature:nth-child(n+4){grid-column:span 2}
+@media (max-width:960px){.game-grid .feature,.game-grid .feature:nth-child(n+4){grid-column:span 1}}
+@media (max-width:600px){.game-grid .feature:last-child:nth-child(odd){grid-column:auto}}
+.section-head .more svg{width:18px;height:18px;flex:none}
+.band::before{background:linear-gradient(90deg,var(--red) 0 25%,var(--green) 25% 50%,var(--yellow) 50% 75%,#8E979C 75%)}
+.meet{grid-template-columns:1fr;gap:clamp(28px,4vw,44px)}
+.cons{display:grid;grid-template-columns:auto 1fr 1fr;gap:12px clamp(20px,4vw,48px);align-items:start}
+.cons>.label{grid-column:1/-1}
+.cons .con-year{border-top:1px solid var(--line)}
+.cons .note{grid-column:1/-1}
+@media (max-width:760px){.cons{grid-template-columns:1fr}}

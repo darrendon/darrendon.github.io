@@ -1,0 +1,25 @@
+/* Site typography on game pages (loaded last). Each game keeps its own palette and its
+   logotype (the hero h1, matching the box art); every other heading, label and button
+   uses the site's city-pop pairing: Jost with Zen Maru Gothic for the Japanese accents. */
+.game .g-sec h2,.game .g-sec h3,.game .g-cta h2,.game .more-games h2,
+.game .set h3,.game .rule h3,.game .mode b,.game .comp li b,.game .quarries h3,.game .copy h2{
+  font-family:var(--display)!important;font-weight:600;font-style:normal;font-stretch:100%;
+  letter-spacing:-.006em;text-transform:none;text-shadow:none;line-height:1.08}
+.game .g-sec h2,.game .g-cta h2{font-size:clamp(30px,4vw,48px)}
+.game .rule h3,.game .set h3{font-size:19px}
+.game .label,.game .crumbs,.game .pill{font-family:var(--display)!important;font-weight:600;font-style:normal;
+  letter-spacing:.2em;text-transform:uppercase;font-size:12px;text-shadow:none}
+.game .label .jp{font-family:var(--jp)!important;letter-spacing:.12em;text-transform:none;margin-left:.8em}
+.game .pill{font-size:11.5px}
+.game .crumbs{font-size:11.5px;letter-spacing:.18em}
+.game .btn{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:13.5px}
+.game .views button{font-family:var(--display);font-weight:600;letter-spacing:.06em}
+.game .viewer .hint{font-family:var(--display);font-weight:600;letter-spacing:.2em}
+.game .subnav a{font-family:var(--display);font-weight:500;letter-spacing:.12em;text-transform:uppercase;font-size:12.5px}
+.game .spec dt{font-family:var(--display);font-weight:600;letter-spacing:.18em;font-size:11.5px}
+.game .spec dd{font-family:var(--body);font-weight:500}
+.game .tag,.game .pitch .big,.game .lede{font-family:var(--body);font-weight:400}
+.game .band-key span,.game .comp li b,.game .mode b{font-family:var(--display)!important}
+.more-games .head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
+.more-card b{font-family:var(--display);font-weight:600;letter-spacing:.01em}
+.more-card>span:last-child{font-family:var(--display);font-weight:600;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}

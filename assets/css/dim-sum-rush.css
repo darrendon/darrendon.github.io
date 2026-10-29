@@ -156,3 +156,6 @@
 
 .g-dsr .renders{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:520px){.g-dsr .renders{grid-template-columns:1fr}}
+/* Dim Sum Rush viewer: still renders like the other games (no 3D) */
+.g-dsr .viewer .stage{aspect-ratio:16/10}
+.g-dsr .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
