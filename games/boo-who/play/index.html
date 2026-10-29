@@ -80,7 +80,7 @@ h1 { font: 700 clamp(2.2rem, 6vw, 3rem)/1 var(--font-display); margin: 0; letter
 .card.flip { animation: flip .5s ease; }
 @keyframes flip { 0% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
 .boos { display: flex; flex-wrap: wrap; gap: 4px; min-height: 32px; align-items: center; }
-/* Two-sided Boo tokens: number side is cream with the owner's colour; BOO! side is the owner's colour with a little ghost */
+/* Two-sided Boo tokens: number side is cream with the owner's color; BOO! side is the owner's color with a little ghost */
 .boo { --c: #888; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #fbf5e8; color: var(--c); font: 700 1.05rem/1 var(--font-display); box-shadow: inset 0 0 0 3px var(--c), 0 1px 2px rgba(0,0,0,.25); font-variant-numeric: tabular-nums; }
 .boo.down { background: var(--c); color: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,.55), 0 1px 2px rgba(0,0,0,.25); }
 .boo.down svg { width: 58%; height: auto; }
@@ -143,6 +143,38 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
 .intro .cards img { width: 84px; border-radius: 7px; box-shadow: 0 2px 6px rgba(20,14,40,.3); }
 .byround { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .boo, .boo.turn, .card.flip, .seat.spot { animation: none; } }
+/* online tables */
+.intro .netcard { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 28px; align-items: start; }
+.nethead, .netforms { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.intro .choice-card.focus { border-color: var(--ghost); box-shadow: 0 0 0 3px var(--ghost-soft); }
+.boorow { align-items: center; flex-wrap: wrap; }
+label.field { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+.netcard input, .panel input { font: inherit; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); min-width: 0; }
+#joinCode { width: 8.5em; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+.netmsg { font-size: .9rem; color: var(--muted); min-height: 1.4em; }
+.netmsg.err { color: var(--bad); }
+.banner { padding: 10px 14px; border-radius: 12px; background: var(--living-soft); border: 1px solid var(--living); color: var(--ink); font-size: .92rem; }
+.codebox { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 16px; border-radius: 14px; background: var(--ghost-soft); border: 2px dashed var(--ghost); }
+.codebox .lbl { font: .95rem var(--font-caps); letter-spacing: .05em; color: var(--muted); }
+.codebox .code { font: 700 clamp(2rem, 9vw, 2.6rem)/1.1 var(--font-display); letter-spacing: .16em; color: var(--ghost); }
+.share { display: flex; flex-wrap: wrap; gap: 8px; }
+.share input { flex: 1 1 220px; font-size: .9rem; color: var(--muted); }
+.lseats { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.lseats li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.lseats .seatno { font: .92rem var(--font-caps); letter-spacing: .05em; color: var(--muted); }
+.lseats .who { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
+.tagbot { font-size: .7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); flex: none; }
+.lock { font-size: .78rem; font-weight: 700; justify-self: start; }
+.lock.in { color: var(--good); }
+.lock.in::before { content: "\2713  "; }
+.lock.wait { color: var(--muted); font-weight: 400; font-style: italic; }
+.boo.pending { opacity: .6; outline: 2px dashed var(--c); outline-offset: 2px; }
+.waiting { display: flex; gap: 10px; align-items: baseline; font-weight: 700; }
+.spin { width: 10px; height: 10px; border-radius: 50%; background: var(--candle); flex: none; animation: candle 1.2s ease-in-out infinite; }
+@keyframes candle { 50% { opacity: .3; transform: scale(.7); } }
+.tablerow { border-top: 1px dashed var(--line); padding-top: 10px; }
+.tablepill { color: var(--ink); border-color: var(--ghost); }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 </style>
 </head>
 <body>
@@ -177,6 +209,315 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
   <div class="log"><h3>What happened</h3><ol id="log"></ol></div>
 </div>
 
+<script>
+/* ============================================================ NET (same relay pattern as Dim Sum Rush and Too Many Crooks) */
+// Sessions: Host (this browser runs the game for the whole table; bots fill the empty seats) and
+// Guest (thin client: sends its choices, gets back only its own view of the table).
+(function (root) {
+  'use strict';
+  const QS = new URLSearchParams(location.search);
+  const LOCAL = QS.get('relay') === 'local';   // test transport: BroadcastChannel between pages of one browser
+
+  // ---------------- Relay transport (MQTT over WebSockets, public brokers) ----------------
+  // Every message goes through a broker, so no peer-to-peer connection is needed and NAT/firewalls don't matter.
+  const BROKERS = LOCAL ? [{ key: 'L', local: true, name: 'local test' }] : [
+    { key: 'E', url: 'wss://broker.emqx.io:8084/mqtt', name: 'EMQX' },
+    { key: 'H', url: 'wss://broker.hivemq.com:8884/mqtt', name: 'HiveMQ' },
+    { key: 'M', url: 'wss://test.mosquitto.org:8081', name: 'Mosquitto' },
+  ];
+  const TOPIC_ROOT = 'whatsgood/boowho/v1/';
+  const SANDBOXED = /claude/i.test(location.hostname) || /claudeusercontent|anthropic/i.test(location.hostname);
+  const LIB_SOURCES = [
+    'https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js',
+  ];
+  let libLoad = null;
+  function loadLib() {
+    if (LOCAL) return Promise.resolve(null);
+    if (root.mqtt) return Promise.resolve(root.mqtt);
+    if (libLoad) return libLoad;
+    libLoad = new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= LIB_SOURCES.length) { libLoad = null; reject(new Error('Could not load the networking library. Check your connection or ad blocker.')); return; }
+        const s = document.createElement('script'); s.src = LIB_SOURCES[i++];
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; s.remove(); tryNext(); } }, 9000);
+        s.onload = () => { if (done) return; done = true; clearTimeout(t); if (root.mqtt) resolve(root.mqtt); else { s.remove(); tryNext(); } };
+        s.onerror = () => { if (done) return; done = true; clearTimeout(t); s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+    return libLoad;
+  }
+  const makeCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; let c = ''; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; };
+  const cleanId = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+  const cleanName = (s, d) => String(s || '').replace(/[<>&"`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16) || d;
+  const store = (kind) => ({
+    get(k) { try { return JSON.parse(root[kind].getItem(k)); } catch (e) { return null; } },
+    set(k, v) { try { root[kind].setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del(k) { try { root[kind].removeItem(k); } catch (e) {} },
+  });
+  const ss = store('sessionStorage'), ls = store('localStorage');
+  // A seat token per table: sessionStorage keeps it across a refresh of this tab; localStorage lets the same
+  // person (same name) get their seat back after closing the tab, without two tabs of one browser colliding.
+  function seatToken(code, name) {
+    const key = 'boo-seat-' + code;
+    let t = ss.get(key);
+    if (!t) { const saved = ls.get(key); if (saved && saved.name === name) t = saved.token; }
+    if (!t) t = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+    ss.set(key, t); ls.set(key, { token: t, name });
+    return cleanId(t);
+  }
+
+  // Test relay: the same client API the MQTT path uses (on/once/subscribe/publish/end), over a BroadcastChannel.
+  function localClient(opts) {
+    const ch = new BroadcastChannel('whatsgood-boowho-relay'), subs = new Set(), ev = {};
+    let closed = false;
+    const emit = (k, ...a) => (ev[k] || []).slice().forEach((f) => { try { f(...a); } catch (e) { setTimeout(() => { throw e; }); } });
+    ch.onmessage = (e) => { const d = e.data; if (!closed && d && subs.has(d.topic)) emit('message', d.topic, d.payload); };
+    const client = {
+      on(k, f) { (ev[k] = ev[k] || []).push(f); return client; },
+      once(k, f) { const g = (...a) => { client.off(k, g); f(...a); }; return client.on(k, g); },
+      off(k, f) { ev[k] = (ev[k] || []).filter((x) => x !== f); return client; },
+      subscribe(t, o, cb) { subs.add(t); const done = typeof o === 'function' ? o : cb; setTimeout(() => done && done(null), 0); },
+      publish(t, p) { if (closed) return; try { ch.postMessage({ topic: t, payload: String(p) }); } catch (e) {} },
+      end() { if (closed) return; closed = true; try { ch.close(); } catch (e) {} },
+    };
+    // like an MQTT last will: tell the table we've gone when the page goes away
+    const will = opts && opts.will;
+    if (will) root.addEventListener('pagehide', () => { client.publish(will.topic, will.payload); client.end(); });
+    setTimeout(() => emit('connect'), 30);
+    return client;
+  }
+
+  // Connect to one broker; resolves the client or rejects after a timeout.
+  function connectBroker(mqtt, broker, opts) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const client = broker.local ? localClient(opts)
+        : mqtt.connect(broker.url, Object.assign({ clean: true, connectTimeout: 7000, reconnectPeriod: 2000, keepalive: 30, clientId: 'boo_' + Math.random().toString(16).slice(2, 12) }, opts || {}));
+      const to = setTimeout(() => { if (!done) { done = true; try { client.end(true); } catch (e) {} reject(new Error('timeout')); } }, 8000);
+      client.once('connect', () => { if (!done) { done = true; clearTimeout(to); resolve(client); } });
+      const fail = (e) => { if (!done) { done = true; clearTimeout(to); try { client.end(true); } catch (e2) {} reject(e || new Error('connection closed')); } };
+      client.on('error', fail);
+      client.on('close', () => fail(new Error('connection refused')));
+      client.on('offline', () => fail(new Error('offline')));
+    });
+  }
+  async function connectAny(mqtt, list, optsFor) {
+    let last = null;
+    for (const b of list) {
+      try { const c = await connectBroker(mqtt, b, optsFor ? optsFor(b) : null); return { client: c, broker: b }; }
+      catch (e) { last = e; }
+    }
+    throw new Error('Could not reach any relay server' + (last ? ' (' + (last.message || last) + ')' : '') + (SANDBOXED ? '. This page is running inside claude.ai, which blocks outside connections; use the copy hosted on the website for online play.' : '. Try again, or try a different network.'));
+  }
+  const parse = (p) => { try { return JSON.parse(p.toString()); } catch (e) { return null; } };
+  const isHuman = (s) => s.kind === 'host' || s.kind === 'guest';
+
+  // ---------------- Host ----------------
+  // The engine (passed in by the game) holds the whole table; guests only ever receive E.view(G, theirSeat).
+  class HostSession {
+    constructor(E, N, name) {
+      this.kind = 'host'; this.E = E; this.N = N; this.name = cleanName(name, 'Host');
+      this.seats = [{ kind: 'host', name: this.name, connected: true }];
+      for (let i = 1; i < N; i++) this.seats.push({ kind: 'open' });
+      this.started = false; this.G = null; this.code = null;
+    }
+    // After the host refreshes, pick the table back up from this tab's sessionStorage (same code, same seats, same game).
+    static resume(E) {
+      const s = ss.get('boo-host');
+      if (!s || !s.code || s.local !== LOCAL) return null;
+      const h = new HostSession(E, s.N, s.name);
+      h.seats = s.seats; h.started = s.started; h.G = s.G; h.code = s.code;
+      h.seats.forEach((x) => { if (x.kind === 'guest') x.connected = false; });
+      return h;
+    }
+    save() { ss.set('boo-host', { local: LOCAL, code: this.code, N: this.N, name: this.name, seats: this.seats, started: this.started, G: this.G }); }
+    get seat() { return this.seats.findIndex((s) => s.kind === 'host'); }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    onStatus(cb) { this.statusCb = cb; }
+    async open() {
+      const mqtt = await loadLib();
+      const list = this.code ? BROKERS.filter((b) => b.key === this.code[0]) : BROKERS;
+      if (!list.length) throw new Error('That table was opened on a different relay.');
+      const { client, broker } = await connectAny(mqtt, list);
+      this.client = client; this.broker = broker;
+      if (!this.code) this.code = broker.key + makeCode();
+      this.topic = TOPIC_ROOT + this.code;
+      await new Promise((res, rej) => client.subscribe(this.topic + '/h', { qos: 1 }, (e) => (e ? rej(e) : res())));
+      client.on('message', (t, p) => { if (t === this.topic + '/h') this.onMessage(parse(p)); });
+      client.on('offline', () => this.statusCb && this.statusCb('Relay connection lost; reconnecting…'));
+      client.on('connect', () => { this.statusCb && this.statusCb(''); this.pushLobby(); if (this.started) this.broadcastViews(); });
+      this.presenceTimer = setInterval(() => this.checkPresence(), 10000);
+      this.save(); this.pushLobby();
+      if (this.started) this.broadcastViews();
+      return this.code;
+    }
+    sendTo(i, m) { const s = this.seats[i]; if (!s || s.kind !== 'guest' || !s.token) return; this.replyRaw(s.token, m); }
+    replyRaw(tok, m) { try { this.client.publish(this.topic + '/g/' + tok, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    checkPresence() {
+      const now = Date.now(); let ch = false;
+      for (const s of this.seats) if (s.kind === 'guest' && s.connected && now - (s.last || 0) > 45000) { s.connected = false; ch = true; }
+      if (ch) this.refresh();
+    }
+    onMessage(m) {
+      if (!m || typeof m !== 'object' || !m.from) return;
+      const tok = cleanId(m.from);
+      let seat = this.seats.findIndex((s) => s.kind === 'guest' && s.token === tok);
+      if (m.t === 'hello') {
+        const name = cleanName(m.name, 'Guest');
+        if (seat < 0) {
+          if (this.started) { this.replyRaw(tok, { t: 'rejected', reason: 'The game has already started. Ask the host to start a new one, or rejoin from the device you were playing on.' }); return; }
+          seat = this.seats.findIndex((s) => s.kind === 'open');
+          if (seat < 0) { this.replyRaw(tok, { t: 'rejected', reason: 'The table is full.' }); return; }
+          this.seats[seat] = { kind: 'guest', name, token: tok, connected: true, last: Date.now() };
+        } else {
+          Object.assign(this.seats[seat], { connected: true, last: Date.now() });
+          if (!this.started) this.seats[seat].name = name;
+        }
+        this.sendTo(seat, { t: 'welcome', seat, code: this.code });
+        this.save(); this.pushLobby();
+        if (this.started) this.sendView(seat);
+        return;
+      }
+      if (seat < 0) return;
+      const s = this.seats[seat];
+      s.last = Date.now();
+      if (!s.connected) { s.connected = true; this.refresh(); }
+      if (m.t === 'ping') { this.sendTo(seat, { t: 'pong' }); if (this.started && m.needView) this.sendView(seat); return; }
+      if (m.t === 'bye') { s.connected = false; this.refresh(); return; }
+      if (m.t === 'sit') { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].kind === 'open') this.swap(seat, to); return; }
+      if (m.t === 'act') {
+        const r = this.started ? this.E.act(this.G, seat, m.a || {}, false) : { ok: false, error: 'The game has not started yet.' };
+        if (r.ok) this.changed(); else this.sendTo(seat, { t: 'err', msg: r.error });
+      }
+    }
+    // the host's own moves, and the host-only buttons (next round, play again, let a bot choose for an away player)
+    act(a) {
+      if (!this.started) return { ok: false, error: 'The game has not started yet.' };
+      if (a && a.type === 'again') { this.G = this.E.newGame(this.players()); this.changed(); return { ok: true }; }
+      const r = this.E.act(this.G, this.seat, a || {}, true);
+      if (r.ok) this.changed();
+      return r;
+    }
+    changed() { this.G.seq = (this.G.seq || 0) + 1; this.save(); this.broadcastViews(); this.cb && this.cb(); }
+    refresh() { this.save(); this.pushLobby(); if (this.started) { this.broadcastViews(); this.cb && this.cb(); } }
+    tableInfo() { return { code: this.code, relay: this.broker && this.broker.name, hostSeat: this.seat, away: this.seats.map((s) => s.kind === 'guest' && !s.connected) }; }
+    viewFor(i) { const v = this.E.view(this.G, i); v.table = this.tableInfo(); return v; }
+    sendView(i) { this.sendTo(i, { t: 'view', view: this.viewFor(i) }); }
+    broadcastViews() { this.seats.forEach((s, i) => { if (s.kind === 'guest') this.sendView(i); }); }
+    view() { return this.G ? this.viewFor(this.seat) : null; }
+    swap(a, b) { const x = this.seats[a]; this.seats[a] = this.seats[b]; this.seats[b] = x; this.save(); this.pushLobby(); }
+    // Lobby controls. `val` is 'open', 'bot', or the index of a seat whose person should move here.
+    setSeat(i, val) {
+      if (this.started || !this.seats[i]) return;
+      if (val === 'open' || val === 'bot') {
+        if (isHuman(this.seats[i])) {
+          const j = this.seats.findIndex((s) => !isHuman(s));
+          if (j < 0) { this.pushLobby(); return; }
+          this.swap(i, j);
+        }
+        this.seats[i] = { kind: val };
+      } else { const from = val | 0; if (this.seats[from] && from !== i) { this.swap(from, i); return; } }
+      this.save(); this.pushLobby();
+    }
+    setN(n) {
+      if (this.started) return;
+      n = Math.max(4, Math.min(8, n | 0), this.seats.filter(isHuman).length);
+      while (this.seats.length > n) { let k = -1; this.seats.forEach((s, i) => { if (!isHuman(s)) k = i; }); this.seats.splice(k, 1); }
+      while (this.seats.length < n) this.seats.push({ kind: 'open' });
+      this.N = n; this.save(); this.pushLobby();
+    }
+    lobbyState() {
+      return { code: this.code, N: this.N, started: this.started, relay: this.broker && this.broker.name,
+        seats: this.seats.map((s) => ({ kind: s.kind, name: isHuman(s) ? s.name : null, connected: s.kind === 'host' || !!s.connected })) };
+    }
+    pushLobby() {
+      if (!this.client) return;
+      const st = this.lobbyState();
+      this.seats.forEach((s, i) => this.sendTo(i, { t: 'lobby', state: st, seat: i }));
+      this.lobbyCb && this.lobbyCb(st);
+    }
+    players() { return this.seats.map((s) => (isHuman(s) ? { name: s.name, bot: false } : { name: null, bot: true })); }
+    startGame() {
+      if (this.started) return;
+      this.seats = this.seats.map((s) => (isHuman(s) ? s : { kind: 'bot' }));
+      this.started = true;
+      this.G = this.E.newGame(this.players());
+      this.pushLobby();
+      this.changed();
+    }
+    leave() {
+      clearInterval(this.presenceTimer); ss.del('boo-host');
+      try { this.seats.forEach((s, i) => this.sendTo(i, { t: 'closed' })); } catch (e) {}
+      const c = this.client; this.client = null;
+      setTimeout(() => { try { c && c.end(); } catch (e) {} }, 300);
+    }
+  }
+
+  // ---------------- Guest ----------------
+  class GuestSession {
+    constructor(code, name) { this.kind = 'guest'; this.code = String(code).toUpperCase().replace(/[^A-Z]/g, ''); this.name = cleanName(name, 'Guest'); this.seat = null; this._view = null; this.heard = Date.now(); }
+    static saved() { const s = ss.get('boo-guest'); return s && s.local === LOCAL ? s : null; }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    onError(cb) { this.errCb = cb; }
+    onStatus(cb) { this.statusCb = cb; }
+    async connect() {
+      const broker = BROKERS.find((b) => b.key === this.code[0]);
+      if (this.code.length !== 5) throw new Error('That does not look like a table code (5 letters).');
+      if (!broker) throw new Error(LOCAL ? 'That table is on a public relay; open this page without ?relay=local to join it.' : 'That does not look like a table code. Check the letters with your host.');
+      const mqtt = await loadLib();
+      this.token = seatToken(this.code, this.name);
+      this.topic = TOPIC_ROOT + this.code;
+      const my = this.topic + '/g/' + this.token;
+      const { client } = await connectAny(mqtt, [broker], () => ({ will: { topic: this.topic + '/h', payload: JSON.stringify({ t: 'bye', from: this.token }), qos: 1 } }));
+      this.client = client;
+      await new Promise((res, rej) => client.subscribe(my, { qos: 1 }, (e) => (e ? rej(e) : res())));
+      const hello = () => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'hello', name: this.name, from: this.token }), { qos: 1 }); } catch (e) {} };
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table answered with that code. Check the code and that the host still has the page open.')); } }, 12000);
+        client.on('message', (t, p) => {
+          if (t !== my) return;
+          const m = parse(p); if (!m) return;
+          this.heard = Date.now();
+          if (m.t === 'welcome') { this.seat = m.seat; ss.set('boo-guest', { local: LOCAL, code: this.code, name: this.name }); if (!settled) { settled = true; clearTimeout(to); resolve(); } }
+          else if (m.t === 'rejected') { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.lobbyCb && this.lobbyCb({ error: m.reason }); }
+          else if (m.t === 'lobby') { this.lobby = m.state; this.seat = m.seat; this.lobbyCb && this.lobbyCb(m.state); }
+          else if (m.t === 'view') { this._view = m.view; this.cb && this.cb(); }
+          else if (m.t === 'err') { this.errCb && this.errCb(m.msg); }
+          else if (m.t === 'closed') { ss.del('boo-guest'); this.lobbyCb && this.lobbyCb({ error: 'The host closed the table.', closed: true }); }
+          if (this.quiet) { this.quiet = false; this.statusCb && this.statusCb(''); }
+        });
+        hello();
+      });
+      client.on('connect', () => { this.statusCb && this.statusCb(''); hello(); }); // after an automatic reconnect, re-register
+      client.on('offline', () => this.statusCb && this.statusCb('Connection lost; reconnecting…'));
+      this.pingTimer = setInterval(() => {
+        try { client.publish(this.topic + '/h', JSON.stringify({ t: 'ping', from: this.token, needView: !this._view }), { qos: 0 }); } catch (e) {}
+        if (Date.now() - this.heard > 40000 && !this.quiet) { this.quiet = true; this.statusCb && this.statusCb('The host has gone quiet. If they refreshed, the table picks up where it left off when their page is back.'); }
+      }, 15000);
+    }
+    sit(seat) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'sit', seat, from: this.token }), { qos: 1 }); } catch (e) {} }
+    view() { return this._view; }
+    act(a) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'act', a, from: this.token }), { qos: 1 }); } catch (e) { return { ok: false, error: 'Not connected' }; } return { ok: true, pending: true }; }
+    leave() {
+      clearInterval(this.pingTimer); ss.del('boo-guest');
+      try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'bye', from: this.token }), { qos: 1 }); } catch (e) {}
+      const c = this.client; this.client = null;
+      setTimeout(() => { try { c && c.end(); } catch (e) {} }, 300);
+    }
+  }
+
+  root.BooNet = { HostSession, GuestSession, SANDBOXED, LOCAL };
+})(window);
+</script>
 <script>
 (() => {
   const COLORS = [["You", "#D7263D"], ["Agnes", "#2E5EAA"], ["Bram", "#2E9E5B"], ["Cleo", "#E0619E"],
@@ -409,7 +750,8 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
           <h3>Play the whole night</h3><p>Dusk, Midnight and the Witching Hour against bots that read the table.</p>
           <div class="row"><select id="pc3" aria-label="Number of players">${[4,5,6,7,8].map(k => `<option ${k === 5 ? "selected" : ""} value="${k}">${k} players</option>`).join("")}</select>
           <button class="btn warm" id="play">Play a game</button></div></div>
-      </div></div>`;
+      </div>
+      ${netCardHTML()}</div>`;
   }
   function render(flip) {
     if (S.phase === "intro" || S.phase === "tutdone") {
@@ -419,6 +761,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
         <div class="row"><button class="btn warm" id="play">Play a game</button><button class="btn" id="learn">Replay the tutorial</button></div></div>`;
       const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
       on("learn", startTutorial); on("play", () => newGame(+($("pc3") ? $("pc3").value : 5)));
+      if (S.phase === "intro") wireNetIntro();
       $("log").innerHTML = (S.log || []).slice(-40).map(l => `<li>${l}</li>`).join("");
       return;
     }
@@ -502,10 +845,420 @@ details.rules ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px
     S.fresh = null;
   }
 
+  // ================= Online tables =================
+  // The host's browser runs this engine for every seat. Each person (the host included) only ever sees
+  // netView(G, theirSeat): never their own card, never a face-down number that isn't theirs, never anyone's
+  // locked-in choice until the whole table has locked in and the host resolves it.
+  const NET = window.BooNet;
+  const BOTN = ["Agnes", "Bram", "Cleo", "Dmitri", "Edie", "Felix", "Gus", "Hattie"];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // the bots' brains read the global S; point it at the online table for the length of one call
+  const withS = (g, f) => { const keep = S; S = g; try { return f(); } finally { S = keep; } };
+  const valsN = (n) => (n === 4 ? [3, 2] : [3, 2, 1]);
+
+  function netNewGame(seats) {
+    const n = seats.length, taken = new Set(seats.filter(s => !s.bot).map(s => s.name.toLowerCase()));
+    const bots = BOTN.filter(b => !taken.has(b.toLowerCase()));
+    const G = { n, round: 0, phase: "boo", seq: 0, log: [], fresh: 0,
+      players: seats.map((s, i) => ({ name: s.bot ? bots.shift() : s.name, color: COLORS[i][1], bot: !!s.bot, score: 0, role: null,
+        ran: null, result: null, gained: 0, byRound: [], noise: s.bot ? 0.06 + Math.random() * 0.1 : 0.1, left: [], used: [] })) };
+    netStartRound(G);
+    return G;
+  }
+  function netStartRound(G) {
+    G.round++;
+    const deck = shuffle([...Array(G.n).fill("L"), ...Array(GHOSTS[G.n]).fill("G")]);
+    G.players.forEach((p, i) => { p.role = deck[i]; p.ran = null; p.result = null; p.gained = 0; p.left = valsN(G.n); p.used = []; });
+    G.boos = G.players.map(() => []);
+    G.plans = G.players.map(() => []);
+    G.botPlans = G.players.map((p, i) => p.bot ? withS(G, () => planFor(i)) : null);
+    G.beat = 1; G.phase = "boo"; G.fresh = 0;
+    G.log.push({ k: "round", round: G.round });
+    netBotsLock(G);
+  }
+  // bots lock in at once; their choices stay on the host like everyone else's until the table resolves
+  function netBotsLock(G) {
+    G.pend = G.players.map((p, i) => !p.bot ? null : G.phase === "boo" ? G.botPlans[i][G.beat - 1] : withS(G, () => botRuns(i)));
+  }
+  // a stand-in choice for a person who has stepped away (host's button); same reasoning as a bot
+  function netCover(G, i) {
+    const p = G.players[i];
+    if (G.phase === "decide") return withS(G, () => botRuns(i));
+    const v = Math.max(...p.left), c = G.players.map((_, j) => j).filter(j => j !== i && !p.used.includes(j));
+    const side = Math.random() < XMIX[G.n][v] ? "L" : "G", pool = c.filter(j => G.players[j].role === side);
+    return [rand(pool.length ? pool : c), v];
+  }
+  function netAct(G, seat, a, isHost) {
+    const p = G.players[seat], t = a && a.type;
+    if (!p || p.bot) return { ok: false, error: "That seat isn't yours." };
+    if (t === "boo") {
+      if (G.phase !== "boo") return { ok: false, error: "It's not time to place a Boo." };
+      if (G.pend[seat] !== null) return { ok: false, error: "You've already locked in this Boo." };
+      const tg = a.t, v = a.v;
+      if (!Number.isInteger(tg) || tg < 0 || tg >= G.n || tg === seat) return { ok: false, error: "Pick another player." };
+      if (p.used.includes(tg)) return { ok: false, error: "You've already booed that player this round." };
+      if (!p.left.includes(v)) return { ok: false, error: "You don't have that Boo left." };
+      G.pend[seat] = [tg, v];
+    } else if (t === "call") {
+      if (G.phase !== "decide") return { ok: false, error: "It's not time to run or stay." };
+      if (G.pend[seat] !== null) return { ok: false, error: "You've already locked in." };
+      G.pend[seat] = !!a.run;
+    } else if (t === "undo") {
+      if (G.phase !== "boo" && G.phase !== "decide") return { ok: false, error: "Too late: everyone had locked in." };
+      if (G.pend[seat] === null) return { ok: false, error: "Nothing to change." };
+      G.pend[seat] = null;
+      return { ok: true };
+    } else if (t === "cover" && isHost) {
+      const i = a.seat;
+      if ((G.phase !== "boo" && G.phase !== "decide") || !G.players[i] || G.players[i].bot || G.pend[i] !== null) return { ok: false, error: "Nothing to choose for them." };
+      G.pend[i] = netCover(G, i);
+      G.log.push({ k: "text", s: `A bot chose for ${G.players[i].name} this time.` });
+    } else if (t === "next" && isHost) {
+      if (G.phase !== "reveal") return { ok: false, error: "The round isn't over yet." };
+      if (G.round >= ROUNDS) G.phase = "over"; else netStartRound(G);
+      return { ok: true };
+    } else return { ok: false, error: t === "next" || t === "cover" ? "Only the host can do that." : "Unknown action." };
+    netResolve(G);
+    return { ok: true };
+  }
+  // Once everyone has locked in, everything happens at once, as at the table.
+  function netResolve(G) {
+    if (G.pend.some(x => x === null)) return;
+    if (G.phase === "boo") {
+      G.pend.forEach(([tg, v], i) => {
+        G.boos[tg].push({ o: i, v, b: G.beat }); G.plans[i].push([tg, v]);
+        const p = G.players[i]; p.used.push(tg); p.left.splice(p.left.indexOf(v), 1);
+      });
+      G.log.push({ k: "boo", round: G.round, beat: G.beat, moves: G.pend.map(m => m.slice()) });
+      G.fresh = G.beat;
+      if (G.beat < valsN(G.n).length) G.beat++; else G.phase = "decide";
+      netBotsLock(G);
+      return;
+    }
+    const x = ARC[G.round - 1].x;
+    G.players.forEach((p, i) => { p.ran = G.pend[i]; });
+    G.players.forEach((p, i) => {
+      const living = p.role === "L", on = G.boos[i];
+      if (p.ran === living) { p.score += on.length * x; p.gained += on.length * x; p.result = living ? ["Escaped", "esc"] : ["Haunting", "haunt"]; }
+      else { on.forEach(({ o, v }) => { G.players[o].score += v * x; G.players[o].gained += v * x; }); p.result = living ? ["Scared to death", "dead"] : ["Spooked", "spook"]; }
+    });
+    G.players.forEach(p => p.byRound.push(p.gained));
+    G.log.push({ k: "score", round: G.round, roles: G.players.map(p => p.role), ran: G.players.map(p => p.ran),
+      boos: G.boos.map(l => l.map(({ o, v }) => ({ o, v }))), plans: G.plans.map(pl => pl.map(m => m.slice())) });
+    G.phase = "reveal"; G.pend = G.players.map(() => null); G.fresh = 0;
+  }
+  // The round's results, told from one seat's point of view (same wording as the bot game).
+  function netScoreLines(G, e, me) {
+    const x = ARC[e.round - 1].x, nm = (i, cap) => i === me ? (cap ? "You" : "you") : G.players[i].name, lines = [];
+    e.roles.forEach((role, i) => {
+      const living = role === "L";
+      if (e.ran[i] === living) return;
+      const pay = e.boos[i].map(({ o, v }) => `${nm(o)} +${v * x}`).join(", "), were = i === me ? "were" : "was";
+      lines.push(living ? `${nm(i, 1)} stayed and ${were} Living: scared to death!${pay ? ` (${pay})` : ""}`
+                        : `${nm(i, 1)} ran but ${were} a Ghost: spooked!${pay ? ` (${pay})` : ""}`);
+    });
+    const liv = e.roles.map((r, i) => r === "L" ? nm(i) : null).filter(Boolean);
+    lines.unshift(liv.length ? `Living tonight: ${liv.join(", ")}.` : "Nobody was Living tonight. Ghosts all the way down.");
+    if (ARC[e.round - 1].hidden) lines.unshift("Midnight's over: every Boo flips face up. " + e.plans.map((pl, o) => `${G.players[o].name}: ` + pl.map(([t, v]) => `${v} on ${G.players[t].name}`).join(", ")).join("; ") + ".");
+    if (x > 1) lines.unshift("Witching Hour: every point below is already doubled.");
+    return lines;
+  }
+  function netView(G, me) {
+    const open = G.phase === "reveal" || G.phase === "over", hid = ARC[G.round - 1].hidden && !open;
+    const nm = (i) => i === me ? "You" : G.players[i].name;
+    const log = G.log.slice(-40).map(e => {
+      if (e.k === "round") { const r = ARC[e.round - 1]; return `${r.name} (round ${e.round} of ${ROUNDS}): ${r.blurb} ${G.n} cards dealt from ${G.n} Living and ${GHOSTS[G.n]} Ghosts.`; }
+      if (e.k === "boo") { const h = ARC[e.round - 1].hidden; return `Boo ${e.beat}: ` + e.moves.map(([t, v], i) => `${nm(i)} → ${nm(t)}${h && i !== me ? " (face down)" : ` (${v})`}`).join(", "); }
+      if (e.k === "score") return netScoreLines(G, e, me).join(" ");
+      return e.s;
+    });
+    const last = [...G.log].reverse().find(e => e.k === "score");
+    return {
+      n: G.n, round: G.round, phase: G.phase, beat: G.beat, me, seq: G.seq, fresh: G.fresh, log,
+      players: G.players.map((p, i) => ({ name: p.name, color: p.color, bot: p.bot, score: p.score, byRound: p.byRound.slice(),
+        role: i === me && !open ? null : p.role,
+        ran: open ? p.ran : null, result: open ? p.result : null, gained: open ? p.gained : 0,
+        locked: !open && G.pend[i] !== null })),
+      boos: G.boos.map(l => l.map(b => ({ o: b.o, b: b.b, v: hid && b.o !== me ? null : b.v }))),
+      left: G.players[me].left.slice(), used: G.players[me].used.slice(),
+      mine: open ? null : G.pend[me],
+      summary: open && last && last.round === G.round ? netScoreLines(G, last, me) : null,
+    };
+  }
+  const NETENGINE = { newGame: netNewGame, act: netAct, view: netView };
+
+  // ---- online UI: the same table, drawn from a view ----
+  let NS = null, NV = null;                 // session, current view
+  const NU = { sel: 3, showOdds: false, seq: -1, phase: "", fresh: "", err: "", status: "", busy: false, msg: "" };
+  const savedName = () => { try { return localStorage.getItem("boo-name") || ""; } catch (e) { return ""; } };
+  const keepName = (n) => { try { localStorage.setItem("boo-name", n); } catch (e) {} };
+  const shareLink = (code) => location.origin + location.pathname + "?table=" + code + (NET.LOCAL ? "&relay=local" : "");
+  function netCardHTML() {
+    const chip = (c, v) => `<span class="boo big" style="--c:${c}">${v}</span>`;
+    const q = new URLSearchParams(location.search).get("table") || "";
+    return `<div class="choice-card netcard" id="netcard">
+      <div class="nethead"><div class="cards boorow" aria-hidden="true">${chip(COLORS[1][1], 3)}${chip(COLORS[3][1], 2)}<span class="boo big down" style="--c:${COLORS[2][1]};color:${COLORS[2][1]}">${MINI_GHOST}</span>${chip(COLORS[5][1], 1)}</div>
+        <h3>Play online with friends</h3><p>Host a table and share its code or link. Everyone plays on their own device and sees only what they'd see at a real table; bots fill any empty seats.</p>
+        ${NET.SANDBOXED ? `<p class="netmsg err">Online play needs the copy of this page on the website: inside claude.ai the page can't reach the relay.</p>` : ""}</div>
+      <div class="netforms">
+      <label class="field"><span>Your name</span><input id="netName" maxlength="16" autocomplete="nickname" value="${esc(savedName())}" placeholder="Name"></label>
+      <div class="row"><select id="netN" aria-label="Number of players">${[4,5,6,7,8].map(k => `<option ${k === 5 ? "selected" : ""} value="${k}">${k} players</option>`).join("")}</select>
+        <button class="btn primary" id="hostBtn">Host an online table</button></div>
+      <div class="row"><input id="joinCode" maxlength="5" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Table code" aria-label="Table code" value="${esc(q.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5))}">
+        <button class="btn warm" id="joinBtn">Join a table</button></div>
+      <p class="netmsg" id="netMsg" role="status">${esc(NU.msg)}</p></div></div>`;
+  }
+  function wireNetIntro() {
+    const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
+    const name = () => { const n = ($("netName").value || "").trim().slice(0, 16); keepName(n); return n; };
+    const say = (m, err) => { NU.msg = m; const el = $("netMsg"); if (el) { el.textContent = m; el.classList.toggle("err", !!err); } };
+    on("hostBtn", async () => {
+      const n = name(); if (!n) { say("Type your name first, so your friends know who's hosting.", true); $("netName").focus(); return; }
+      $("hostBtn").disabled = true; say("Opening a table…");
+      try { await netHost(new NET.HostSession(NETENGINE, +$("netN").value, n)); NU.msg = ""; }
+      catch (e) { netDrop(); say(e.message, true); const b = $("hostBtn"); if (b) b.disabled = false; }
+    });
+    on("joinBtn", async () => {
+      const code = ($("joinCode").value || "").trim().toUpperCase(), n = name();
+      if (!n) { say("Type your name first.", true); $("netName").focus(); return; }
+      if (code.length !== 5) { say("Enter the 5-letter table code.", true); $("joinCode").focus(); return; }
+      $("joinBtn").disabled = true; say("Looking for table " + code + "…");
+      try { await netJoin(code, n); NU.msg = ""; }
+      catch (e) { netDrop(); say(e.message, true); const b = $("joinBtn"); if (b) b.disabled = false; }
+    });
+    const jc = $("joinCode");
+    if (jc) { jc.addEventListener("input", () => { jc.value = jc.value.toUpperCase().replace(/[^A-Z]/g, ""); }); jc.addEventListener("keydown", (e) => { if (e.key === "Enter") $("joinBtn").click(); }); }
+  }
+  function netBind(s) {
+    NS = s; NV = null; S = { phase: "online", log: [] };
+    s.onUpdate(() => { NV = s.view(); NU.busy = false; if (NV && NS === s) renderNet(); });
+    s.onLobby((st) => {
+      if (NS !== s) return;
+      if (st.error) { if (st.closed) { netDrop(); netNotice(st.error); } else { NU.err = st.error; netPaint(); } return; }
+      NS.lobby = st; if (!NV) renderLobby();
+    });
+    s.onStatus((m) => { NU.status = m; netPaint(); });
+    if (s.onError) s.onError((m) => { NU.err = m; NU.busy = false; netPaint(); });
+  }
+  async function netHost(s) {
+    netBind(s);
+    await s.open();
+    NV = s.view();
+    netPaint();
+  }
+  async function netJoin(code, name) {
+    const s = new NET.GuestSession(code, name);
+    netBind(s);
+    await s.connect();
+    NV = s.view();
+    netPaint();
+  }
+  function netDrop() { if (NS) { try { NS.leave(); } catch (e) {} } NS = null; NV = null; NU.err = ""; NU.status = ""; }
+  function netLeave() {
+    if (NS && NV && NV.phase !== "over" && !confirm(NS.kind === "host" ? "Close the table for everyone?" : "Leave the table?")) return;
+    netDrop(); S = { phase: "intro", log: [] }; render();
+    try { if (new URLSearchParams(location.search).get("table")) history.replaceState(null, "", location.pathname + (NET.LOCAL ? "?relay=local" : "")); } catch (e) {}
+  }
+  function netNotice(msg) {
+    S = { phase: "intro", log: [] }; render();
+    $("panel").insertAdjacentHTML("afterbegin", `<div class="banner" role="alert">${esc(msg)}</div>`);
+  }
+  const netPaint = () => { if (!NS) return; if (NV) renderNet(); else renderLobby(); };
+  function copyText(text, btn) {
+    const done = () => { if (btn) { const t = btn.textContent; btn.textContent = "Copied"; setTimeout(() => { btn.textContent = t; }, 1400); } };
+    const fallback = () => { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0;top:0;left:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} ta.remove(); };
+    try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback(); } catch (e) { fallback(); }
+  }
+  function codeBoxHTML(code) {
+    return `<div class="codebox"><div><div class="lbl">Table code</div><div class="code" id="tableCode">${esc(code)}</div></div><button class="btn" id="copyCode">Copy code</button></div>
+      <div class="share"><input id="shareLink" readonly value="${esc(shareLink(code))}" aria-label="Link to this table"><button class="btn" id="copyLink">Copy link</button></div>`;
+  }
+  function wireCodeBox(code) {
+    const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
+    on("copyCode", (e) => copyText(code, e.currentTarget)); on("copyLink", (e) => copyText(shareLink(code), e.currentTarget));
+    const sl = $("shareLink"); if (sl) sl.addEventListener("focus", () => sl.select());
+  }
+  function renderLobby() {
+    const s = NS, st = s.lobby || (s.lobbyState ? s.lobbyState() : null);
+    $("steps").innerHTML = ""; $("seats").innerHTML = ""; $("log").innerHTML = "";
+    $("meta").innerHTML = `<span class="pill">Online table</span>` + (st ? `<span class="pill">${st.N} players</span>` : "");
+    if (!st) { $("panel").innerHTML = `<h2>Joining table ${esc(s.code)}…</h2>`; return; }
+    const host = s.kind === "host", me = s.seat, humans = st.seats.map((x, i) => [x, i]).filter(([x]) => x.kind === "host" || x.kind === "guest");
+    const rows = st.seats.map((x, i) => {
+      const human = x.kind === "host" || x.kind === "guest";
+      const who = human ? `<b>${esc(x.name)}</b>${i === me ? " (you)" : ""}${x.kind === "host" ? ` <span class="tagbot">host</span>` : ""}${x.connected ? "" : ` <span class="odds">· reconnecting…</span>`}`
+        : x.kind === "bot" ? `<span class="odds">A bot plays this seat</span>` : `<span class="odds">Open: a friend can sit here, or a bot plays it</span>`;
+      let ctl = "";
+      if (host) ctl = `<select data-seatsel="${i}" aria-label="Who sits in seat ${i + 1}"><option value="open" ${x.kind === "open" ? "selected" : ""}>Open for a friend</option><option value="bot" ${x.kind === "bot" ? "selected" : ""}>Bot</option>${humans.map(([h, k]) => `<option value="${k}" ${k === i ? "selected" : ""}>${esc(h.name)}</option>`).join("")}</select>`;
+      else if (x.kind === "open") ctl = `<button class="btn" data-sit="${i}">Sit here</button>`;
+      return `<li><span class="dot" style="background:${COLORS[i][1]}"></span><span class="seatno">Seat ${i + 1}</span><span class="who">${who}</span>${ctl}</li>`;
+    }).join("");
+    const nh = humans.length, open = st.seats.filter(x => x.kind === "open").length;
+    $("panel").innerHTML = `${NU.status ? `<div class="banner" role="status">${esc(NU.status)}</div>` : ""}${NU.err ? `<div class="banner" role="alert">${esc(NU.err)}</div>` : ""}
+      <h2>${host ? "Your table is open" : `You're at ${esc(st.seats[st.seats.findIndex(x => x.kind === "host")]?.name || "the host")}'s table`}</h2>
+      ${codeBoxHTML(st.code)}
+      <p class="odds">${host ? "Friends open the link, or choose <b>Join a table</b> and type the code. " : ""}${st.relay ? `Connected through the ${esc(st.relay)} relay.` : ""}</p>
+      ${host ? `<div class="row"><label for="lobbyN">Players</label><select id="lobbyN">${[4,5,6,7,8].filter(k => k >= nh).map(k => `<option ${k === st.N ? "selected" : ""} value="${k}">${k}</option>`).join("")}</select>
+        <span class="odds">Deck: ${st.N} Living, ${GHOSTS[st.N]} Ghosts</span></div>` : ""}
+      <ul class="lseats">${rows}</ul>
+      ${host ? `<p class="odds">${nh} ${nh === 1 ? "person" : "people"} seated${open ? `; ${open} open seat${open === 1 ? "" : "s"} will be played by bots if nobody takes ${open === 1 ? "it" : "them"}` : ""}. If someone refreshes, they get their own seat back.</p>
+        <div class="row"><button class="btn warm" id="netStart">Start the night</button><button class="btn" id="netLeave">Close the table</button></div>`
+      : `<p><b>Waiting for the host to start the night.</b> Seats without a person are played by bots.</p><div class="row"><button class="btn" id="netLeave">Leave the table</button></div>`}`;
+    wireCodeBox(st.code);
+    const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
+    on("netStart", () => { NU.err = ""; s.startGame(); });
+    on("netLeave", netLeave);
+    const ln = $("lobbyN"); if (ln) ln.addEventListener("change", () => s.setN(+ln.value));
+    document.querySelectorAll("[data-seatsel]").forEach(el => el.addEventListener("change", () => s.setSeat(+el.dataset.seatsel, el.value === "open" || el.value === "bot" ? el.value : +el.value)));
+    document.querySelectorAll("[data-sit]").forEach(el => el.addEventListener("click", () => s.sit(+el.dataset.sit)));
+  }
+  function netSend(a) {
+    if (!NS || NU.busy) return;
+    NU.err = "";
+    const r = NS.act(a);
+    if (r && r.pending) { NU.busy = true; setTimeout(() => { if (NU.busy) { NU.busy = false; netPaint(); } }, 6000); }
+    else if (r && !r.ok) { NU.err = r.error; netPaint(); }
+  }
+  function renderNet() {
+    const v = NV, host = NS.kind === "host", T = v.table || {}, me = v.players[v.me], R1 = ARC[v.round - 1], nb = valsN(v.n).length;
+    const open = v.phase === "reveal" || v.phase === "over";
+    const flip = v.phase === "reveal" && NU.phase !== "reveal";
+    const freshKey = v.round + "-" + v.fresh, fresh = v.fresh && freshKey !== NU.fresh ? v.fresh : 0;
+    if (v.phase === "boo" && !v.left.includes(NU.sel)) NU.sel = v.left[0];
+    if (v.round + v.phase !== NU.rp) { NU.err = ""; NU.rp = v.round + v.phase; }
+    NU.phase = v.phase; NU.fresh = freshKey; NU.seq = v.seq;
+    const name = (i) => i === v.me ? "You" : esc(v.players[i].name);
+    const waitingOn = v.players.map((p, i) => [p, i]).filter(([p]) => !p.locked && !open);
+
+    $("meta").innerHTML = `<div class="arc" aria-label="The night so far">${ARC.map((r, k) => `<span class="${k === v.round - 1 ? "on " + r.cls : k < v.round - 1 ? "done" : ""}">${r.name}</span>`).join("")}</div>` +
+      `<span class="pill">${v.n} players</span><span class="pill">Deck: ${v.n} Living, ${GHOSTS[v.n]} Ghosts</span><span class="pill tablepill">Table ${esc(T.code || "")}</span>`;
+    const steps = [...valsN(v.n).map((_, k) => [`boo${k + 1}`, `Boo ${k + 1}`]), ["decide", "Run or stay"], ["reveal", "Reveal"]];
+    const cur = v.phase === "boo" ? `boo${v.beat}` : v.phase;
+    $("steps").innerHTML = steps.map(([k, l]) => `<span class="step${cur === k ? " on" : ""}">${l}</span>`).join("");
+
+    const picking = v.phase === "boo" && v.mine === null && !NU.busy;
+    const order = v.players.map((_, k) => (v.me + k) % v.n);    // you first, then round the table
+    const chip = (o, val, big, isNew, down, turn, extra) => {
+      const p = v.players[o], cls = `boo${big ? " big" : ""}${isNew ? " new" : ""}${down ? " down" : ""}${turn ? " turn" : ""}${extra ? " " + extra : ""}`;
+      if (down) return `<span class="${cls}" style="--c:${p.color};color:${p.color}" title="${esc(p.name)}'s Boo, face down" aria-label="${esc(p.name)}'s Boo, face down">${MINI_GHOST}</span>`;
+      return `<span class="${cls}" style="--c:${p.color}" title="${o === v.me ? "Your" : esc(p.name) + "'s"} ${val}" aria-label="${o === v.me ? "Your" : esc(p.name) + "'s"} Boo worth ${val}">${val}</span>`;
+    };
+    $("seats").innerHTML = order.map((i) => {
+      const p = v.players[i], mine = i === v.me;
+      const pickable = picking && !mine && !v.used.includes(i);
+      const cls = ["seat", mine ? "me" : "", pickable ? "pickable" : "", picking && !pickable && !mine ? "disabled" : ""].join(" ");
+      const card = p.role === null
+        ? `<div class="card hidden"><img src="${ART.back}" alt="Your card, facing away from you"><span class="q">?</span><span class="veil">Your card faces the table</span></div>`
+        : `<div class="card${flip && mine ? " flip" : ""}"><img src="${ART[p.role]}" alt="${p.role === "G" ? "Ghost card: a glowing bedsheet ghost" : "Living card: a kid in a bedsheet costume"}"></div>`;
+      const on = v.boos[i], n = on.length, hidAny = on.some(b => b.v === null), tot = on.reduce((s, b) => s + (b.v || 0), 0);
+      const pend = v.phase === "boo" && Array.isArray(v.mine) && v.mine[0] === i ? chip(v.me, v.mine[1], false, false, false, false, "pending") : "";
+      let st = "";
+      if (open && p.result) st = `<span class="badge ${p.result[1]}">${p.result[0]}</span><span class="choice">${p.ran ? "Ran" : "Stayed"}${p.gained ? ` · +${p.gained} this round` : ""}</span>`;
+      else if (!open) st = p.locked ? `<span class="lock in">Locked in</span>` : `<span class="lock wait">${T.away && T.away[i] ? "Away" : v.phase === "decide" ? "Deciding…" : "Choosing…"}</span>`;
+      const tag = pickable ? "button" : "div";
+      return `<${tag} class="${cls}" ${pickable ? `data-nt="${i}" aria-label="Put your ${NU.sel} on ${esc(p.name)}"` : ""}>
+        <div class="seat-top"><span class="dot" style="background:${p.color}"></span><span class="name">${mine ? `${esc(p.name)} (you)` : esc(p.name)}</span>${p.bot ? `<span class="tagbot">bot</span>` : ""}<span class="score">${p.score}</span></div>
+        ${card}
+        <div class="boos">${on.map(b => chip(b.o, b.v, false, fresh && b.b === fresh, b.v === null, flip && R1.hidden)).join("")}${pend}</div>
+        <span class="boocount">${n} Boo${n === 1 ? "" : "s"}${n && !hidAny ? ` · worth ${tot}` : ""}</span>
+        ${st}
+      </${tag}>`;
+    }).join("");
+    document.querySelectorAll("[data-nt]").forEach(b => b.addEventListener("click", () => netSend({ type: "boo", t: +b.dataset.nt, v: NU.sel })));
+
+    const twist = `<div class="twist ${R1.cls}"><b>${R1.name}</b><span>${R1.blurb}</span></div>`;
+    const vis = v.players.filter((p, j) => j !== v.me && p.role === "L").length, uns = v.n + GHOSTS[v.n] - (v.n - 1);
+    const odds = `<label class="toggle"><input type="checkbox" id="oddsToggle" ${NU.showOdds ? "checked" : ""}> Show my odds from the cards</label>` +
+      (NU.showOdds ? `<p class="odds">From the cards alone: <b>${Math.round((v.n - vis) / uns * 100)}%</b> chance you're Living. You see ${vis} Living; ${v.n - vis} more Living cards are among the ${uns} you can't see, yours included. The Boos are yours to read.</p>` : "");
+    const waitLine = () => {
+      const w = waitingOn.map(([p, i]) => esc(p.name) + (T.away && T.away[i] ? " (away)" : ""));
+      const names = w.length <= 2 ? w.join(" and ") : w.slice(0, -1).join(", ") + " and " + w.at(-1);
+      return `<p class="waiting"><span class="spin" aria-hidden="true"></span>Waiting for ${w.length} player${w.length === 1 ? "" : "s"}: ${names}. Nothing is revealed until everyone has locked in.</p>`;
+    };
+    // the host can stand a bot in for anyone who has wandered off, for this one choice
+    const covers = () => host ? waitingOn.map(([p, i]) => `<button class="btn" data-cover="${i}">Let a bot choose for ${esc(p.name)}</button>`).join("") : "";
+    let html = "";
+    if (v.phase === "boo") {
+      if (Array.isArray(v.mine)) {
+        html = `${twist}<h2>Boo ${v.beat} of ${nb}: locked in</h2>
+          <p>Your ${v.mine[1]} is going on <b>${esc(v.players[v.mine[0]].name)}</b>. Everyone's Boos land at the same moment.</p>
+          ${waitLine()}<div class="row"><button class="btn" id="netUndo">Change my Boo</button>${covers()}</div>`;
+      } else {
+        const chips = v.left.map(val => `<button class="pickboo" data-nv="${val}" aria-pressed="${val === NU.sel}" aria-label="Use your ${val}">${chip(v.me, val, true)}</button>`).join("");
+        html = `${twist}<h2>Boo ${v.beat} of ${nb}: pick a Boo, then a player</h2>
+          <div class="row">${chips}</div>
+          <p>Everyone places one Boo at the same moment. Each of your Boos goes to a different player.${v.used.length ? ` You've already booed ${v.used.map(t => esc(v.players[t].name)).join(" and ")}.` : ""} A Boo can mean “I think you're Living” or “I hope you panic and run.” If they make the right call, it's ${R1.x > 1 ? "2 points" : "a point"} for them.${R1.hidden ? " Tonight your Boo lands face down, so nobody else sees its number." : ""}</p>
+          ${odds}`;
+      }
+    } else if (v.phase === "decide") {
+      const on = v.boos[v.me], x = R1.x, hid = R1.hidden;
+      if (v.mine !== null) {
+        html = `${twist}<h2>You're ${v.mine ? "running" : "staying"}. Locked in.</h2>${waitLine()}
+          <div class="row"><button class="btn" id="netUndo">Change my mind</button>${covers()}</div>`;
+      } else {
+        const list = on.map(b => b.v === null ? `${esc(v.players[b.o].name)}'s` : `${esc(v.players[b.o].name)}'s ${b.v}`).join(", ");
+        const lose = hid ? "the booers score their hidden numbers" : `the booers score ${on.reduce((s, b) => s + b.v, 0) * x} between them`;
+        html = `${twist}<h2>Boo who? Run, or stay?</h2>
+          <p>${on.length ? `<b>${on.length} Boo${on.length === 1 ? " is" : "s are"} on you</b>: ${list}${hid ? ", all face down" : ""}.` : "No Boos on you. Nothing to win or lose this round."}
+          Right call: you score ${on.length * x} (${x > 1 ? "2" : "1"} per Boo). Wrong call: you score nothing and ${lose}${x > 1 && !hid ? ", already doubled" : ""}.</p>
+          <div class="row"><button class="btn warm" id="netRun">Run! (I'm Living)</button><button class="btn primary" id="netStay">Stay (I'm a Ghost)</button></div>
+          <p class="odds">Everyone answers at once: nobody sees your call until the whole table has locked in.</p>
+          ${odds}`;
+      }
+    } else if (v.phase === "reveal") {
+      const verdict = me.role === "L" ? (me.ran ? "You were Living, and you escaped." : "You were Living. Scared to death!")
+        : (me.ran ? "You were a Ghost all along. Spooked!" : "You were a Ghost, and you stayed. Well read.");
+      const hostName = esc(v.players[T.hostSeat] ? v.players[T.hostSeat].name : "the host");
+      html = `<h2>${verdict}</h2>
+        <ul class="results">${(v.summary || []).map(l => `<li>${esc(l)}</li>`).join("")}<li>You scored ${me.gained} this round.</li></ul>
+        ${host ? `<div class="row"><button class="btn primary" id="netNext">${v.round >= ROUNDS ? "See who won" : "Next round"}</button></div>`
+               : `<p class="waiting"><span class="spin" aria-hidden="true"></span>Waiting for ${hostName} to ${v.round >= ROUNDS ? "reveal the winner" : "deal the next round"}.</p>`}`;
+    } else if (v.phase === "over") {
+      const top = Math.max(...v.players.map(p => p.score)), w = v.players.map((p, i) => [p, i]).filter(([p]) => p.score === top);
+      const names = w.map(([, i]) => name(i)), youWin = w.length === 1 && w[0][1] === v.me;
+      const head = w.length === 1 ? `${names[0]} win${youWin ? "" : "s"} with ${top} points!` : `${names.slice(0, -1).join(", ")} and ${names.at(-1)} share the victory with ${top} points!`;
+      html = `<h2>${head}</h2>
+        <ul class="results">${[...v.players].sort((a, b) => b.score - a.score).map(p => `<li><b>${esc(p.name)}: ${p.score}</b> <span class="byround">(${ARC.map((r, k) => `${r.name} ${p.byRound[k] ?? 0}`).join(" · ")})</span></li>`).join("")}</ul>
+        ${host ? `<div class="row"><button class="btn primary" id="netAgain">Play again at this table</button></div>` : `<p class="odds">The host can start another night at this table.</p>`}`;
+    }
+    const banners = (NU.status ? `<div class="banner" role="status">${esc(NU.status)}</div>` : "") + (NU.err ? `<div class="banner" role="alert">${esc(NU.err)}</div>` : "");
+    $("panel").innerHTML = banners + html + `<div class="row tablerow"><span class="odds">Table <b>${esc(T.code || "")}</b>${host ? " · you're hosting" : ""}</span>${host ? `<button class="btn" id="netCopy">Copy invite link</button>` : ""}<button class="btn" id="netLeave">${host ? "Close the table" : "Leave the table"}</button></div>`;
+    const on = (id, f) => { const el = $(id); if (el) el.addEventListener("click", f); };
+    on("netRun", () => netSend({ type: "call", run: true })); on("netStay", () => netSend({ type: "call", run: false }));
+    on("netUndo", () => netSend({ type: "undo" })); on("netNext", () => netSend({ type: "next" })); on("netAgain", () => netSend({ type: "again" }));
+    on("netLeave", netLeave); on("netCopy", (e) => copyText(shareLink(T.code), e.currentTarget));
+    document.querySelectorAll("[data-cover]").forEach(b => b.addEventListener("click", () => netSend({ type: "cover", seat: +b.dataset.cover })));
+    document.querySelectorAll("[data-nv]").forEach(b => b.addEventListener("click", () => { NU.sel = +b.dataset.nv; renderNet(); }));
+    const t = $("oddsToggle"); if (t) t.addEventListener("change", () => { NU.showOdds = t.checked; renderNet(); });
+    $("log").innerHTML = v.log.map(l => `<li>${esc(l)}</li>`).join("");
+    const lg = $("log"); lg.scrollTop = lg.scrollHeight;
+  }
+  // Pick a table back up after a refresh (host: same code, same game; guest: same seat), or open straight into joining from ?table=CODE.
+  async function netAutoStart() {
+    const host = NET.HostSession.resume(NETENGINE);
+    if (host) {
+      $("panel").innerHTML = `<h2>Reopening your table ${esc(host.code)}…</h2>`;
+      try { await netHost(host); return true; } catch (e) { netDrop(); try { sessionStorage.removeItem("boo-host"); } catch (e2) {} netNotice("Couldn't reopen your table: " + e.message); return true; }
+    }
+    const q = (new URLSearchParams(location.search).get("table") || "").toUpperCase().replace(/[^A-Z]/g, "");
+    const g = NET.GuestSession.saved();
+    if (g && (!q || q === g.code)) {
+      $("panel").innerHTML = `<h2>Rejoining table ${esc(g.code)}…</h2>`;
+      try { await netJoin(g.code, g.name); return true; } catch (e) { netDrop(); try { sessionStorage.removeItem("boo-guest"); } catch (e2) {} netNotice(e.message); return true; }
+    }
+    if (q) {
+      const card = $("netcard");
+      if (card) { card.classList.add("focus"); card.scrollIntoView({ block: "center" }); const nm = $("netName"); (nm && !nm.value ? nm : $("joinBtn")).focus(); }
+      return true;
+    }
+    return false;
+  }
+
   function start(data) {
     if (data && data.state && (data.state.boos || data.state.phase === "intro")) { S = data.state; render(); }
     else { S = { phase: "intro", log: [] }; render(); }
     if (/[?&#]tutorial\b/.test(location.search + location.hash) && S.phase === "intro") startTutorial();
+    else if (S.phase === "intro") netAutoStart();
   }
   window.claude?.hot?.snapshot?.(() => ({ state: S }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
