@@ -236,6 +236,45 @@ body { background-color: var(--rock); }
   .site.v .who { font-size: 10px; letter-spacing: .03em; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
   .site.v .meld { max-width: 44px; }
 }
+
+/* ---- online tables: lobby, table code, seats ---- */
+.note { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 64ch; }
+.note.warn, .netmsg { color: var(--p1); }
+.netmsg { margin: 0; font-size: 14px; font-weight: 600; }
+.field { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-caps); font-size: 14px; letter-spacing: .04em; color: var(--muted); max-width: 320px; }
+.field input, .joinrow input, .linkrow input { font-family: var(--font-body); font-size: 16px; letter-spacing: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); min-width: 0; }
+.field input:focus-visible, .joinrow input:focus-visible, .linkrow input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.online-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.online .opt { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; padding: 12px; border: 1px dashed var(--line); border-radius: 3px; }
+.joinrow { display: flex; gap: 8px; }
+.joinrow input { width: 8.5ch; font-family: var(--font-num); text-transform: uppercase; letter-spacing: .12em; }
+.codebox { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.codebox .code { font-family: var(--font-num); font-size: 46px; line-height: 1; letter-spacing: .14em; color: var(--accent); }
+.linkrow { display: flex; gap: 8px; }
+.linkrow input { flex: 1; font-size: 13.5px; color: var(--muted); }
+.lseats { display: flex; flex-direction: column; gap: 6px; }
+.lseat { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--pc); border-radius: 2px; }
+.lseat .who { flex: 1; min-width: 0; }
+.lseat .who b { font-family: var(--font-display); font-weight: 400; font-size: 17px; }
+.lseat .who b.open { color: var(--muted); font-style: italic; }
+.lseat .meta { font-size: 12.5px; color: var(--muted); }
+.lseat button { padding: 6px 10px; font-size: 13px; flex-shrink: 0; }
+.away { color: var(--p1); font-weight: 600; }
+.netbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--sheet); border: 1px solid var(--line); border-radius: 2px; padding: 8px 12px; box-shadow: var(--lift); }
+.netbar .code { font-family: var(--font-num); font-weight: 400; font-size: 21px; letter-spacing: .12em; color: var(--accent); margin-right: 4px; }
+button.mini { padding: 5px 9px; font-size: 12.5px; }
+.netbar .netstate { font-size: 13px; color: var(--muted); margin-left: auto; text-align: right; }
+.netbar .netstate.warn { color: var(--p1); font-weight: 600; }
+.modal .actions + p, .modal p + .actions { margin-top: -2px; }
+button:disabled { opacity: .55; cursor: default; }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); max-width: calc(100% - 32px); background: var(--ink); color: var(--sheet); padding: 9px 14px; border-radius: 3px; font-size: 14px; z-index: 40; opacity: 0; transition: opacity .2s; pointer-events: none; box-shadow: var(--lift); }
+.toast.on { opacity: 1; }
+@media (max-width: 460px) {
+  .online-grid { grid-template-columns: 1fr; }
+  .codebox .code { font-size: 38px; }
+  .netbar .netstate { margin-left: 0; width: 100%; text-align: left; }
+  .lseat { flex-wrap: wrap; } .lseat button { margin-left: 19px; }
+}
 </style>
 
 </head>
@@ -755,7 +794,7 @@ function describe(cards) {
 function myLanes(G, p) { return G.lanes.map((l, i) => i).filter(i => G.lanes[i].a === p || G.lanes[i].b === p); }
 function neighbor(G, i, p) { const l = G.lanes[i]; return l.a === p ? l.b : l.a; }
 function canPlayOn(G, lane, inf) { const m = G.lanes[lane].meld; return m.length === 0 || cmp(inf, meldInfo(m)) > 0; }
-function obj(G, i) { return i === 0 ? "you" : G.players[i].name; }
+function obj(G, i) { return i === 0 && !G.online ? "you" : G.players[i].name; }
 
 function newGame(n, humanSeats) {
   const cfg = CONFIG[n];
@@ -791,7 +830,7 @@ function doPlay(G, p, lane, s, e) {
   const L = G.lanes[lane];
   const took = L.owner !== null && L.owner !== p;
   const site = laneName(G, lane);
-  const verb = L.meld.length ? (took ? `took ${site} from ${obj(G, L.owner)}` : `strengthened ${p === 0 ? "your" : "their"} hold on ${site}`) : `staked ${site}`;
+  const verb = L.meld.length ? (took ? `took ${site} from ${obj(G, L.owner)}` : `strengthened ${p === 0 && !G.online ? "your" : "their"} hold on ${site}`) : `staked ${site}`;
   L.meld = cards; L.owner = p;
   G.last = { lane };
   addLog(G, `<b>${G.players[p].name}</b> unearthed ${describe(cards)} and ${verb}.`);
@@ -807,7 +846,10 @@ function scoutTake(G, p, lane, left) {
 }
 function makeOffer(G, from, lane, takenCard, offered) {
   const to = neighbor(G, lane, from);
-  addLog(G, `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)} and sent the ${cardName(offered)} to ${obj(G, to)}.`);
+  const full = `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)} and sent the ${cardName(offered)} to ${obj(G, to)}.`;
+  // online, the specimen sent across stays between the two diggers; everyone else only sees that a fossil changed hands
+  if (G.online) addLog(G, { t: `<b>${G.players[from].name}</b> poached the ${cardName(takenCard)} from ${laneName(G, lane)} and sent a fossil to ${obj(G, to)}.`, p: full, s: [from, to] });
+  else addLog(G, full);
   if (G.players[to].human) { G.phase = "offer"; G.offer = { from, to, card: offered }; return; }
   const h = G.players[to].hand;
   if (tut) { h.splice(h.indexOf(TUT_KEEP_AFTER) + 1, 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
@@ -846,7 +888,86 @@ function standings(G) {
   const tiedOnPoints = order.filter(i => G.players[i].score === top.score).length > 1;
   return { order, winners, tiedOnPoints };
 }
-function laneName(G, i) { return SITES[i]; }
+function laneName(G, i) { const L = G.lanes[i]; return SITES[L && L.site != null ? L.site : i]; }
+// a log line is public text, or (online) { t: public text, p: private text, s: seats who see the private text }
+function logFor(l, seat) { return typeof l === "string" ? l : (l.s.includes(seat) ? l.p : l.t); }
+
+// What one seat may see of an online dig, turned so that seat sits at index 0 (the bottom camp), exactly
+// as the bot game draws it. Rivals' rock faces become a count; the specimen in flight is shown only to
+// its sender and receiver; private log lines are resolved for this seat. Sites keep their real names.
+function viewFor(G, seat) {
+  const n = G.n, real = j => (j + seat) % n, rot = i => (i - seat + n) % n;
+  const laneOf = j => n === 2 ? j : (j + seat) % n; // 3-4 diggers: site i lies between camps i and i+1
+  return {
+    online: true, you: seat, ver: G.ver, gid: G.gid, n, cfg: G.cfg, round: G.round, turnCount: G.turnCount, phase: G.phase,
+    turn: rot(G.turn), first: rot(G.first),
+    players: Array.from({ length: n }, (_, j) => {
+      const p = G.players[real(j)];
+      return { name: p.name, title: p.title, human: p.human, bot: !!p.bot, score: p.score, sheds: p.sheds, r3: p.r3, roundPts: p.roundPts.slice(),
+        hand: j === 0 ? p.hand.slice() : [], count: p.hand.length };
+    }),
+    lanes: Array.from({ length: G.lanes.length }, (_, j) => {
+      const L = G.lanes[laneOf(j)];
+      return { a: rot(L.a), b: rot(L.b), meld: L.meld.slice(), owner: L.owner === null ? null : rot(L.owner), site: laneOf(j) };
+    }),
+    offer: G.offer ? { from: rot(G.offer.from), to: rot(G.offer.to), card: G.offer.to === seat || G.offer.from === seat ? G.offer.card : null } : null,
+    roundResult: G.roundResult ? { round: G.roundResult.round, value: G.roundResult.value, shedder: G.roundResult.shedder === null ? null : rot(G.roundResult.shedder),
+      held: Array.from({ length: n }, (_, j) => G.roundResult.held[real(j)]) } : null,
+    ready: (G.ready || []).map(rot),
+    log: G.log.map(l => logFor(l, seat)),
+    last: null,
+  };
+}
+function handCount(p) { return p.count != null && !p.hand.length ? p.count : p.hand.length; }
+
+// Check and apply one move sent by an online guest with the same rules the bot game uses.
+// Guests send site indexes from their own (turned) view; hand positions are the same in both.
+function hostApply(G, seat, a) {
+  const no = error => ({ ok: false, error });
+  if (!a || typeof a !== "object") return no("That move didn't arrive whole.");
+  const n = G.n, laneOf = j => n === 2 ? j : (j + seat) % n;
+  const int = (x, lo, hi) => Number.isInteger(x) && x >= lo && x <= hi;
+  const h = G.players[seat].hand;
+  if (a.type === "play" || a.type === "poach") {
+    if (G.phase !== "play" || G.turn !== seat) return no("It isn't your turn to dig.");
+    if (!int(a.lane, 0, G.lanes.length - 1)) return no("There's no such site.");
+    const lane = laneOf(a.lane);
+    if (!myLanes(G, seat).includes(lane)) return no("That site isn't beside your camp.");
+    if (a.type === "play") {
+      if (!int(a.s, 0, h.length - 1) || !int(a.e, a.s + 1, Math.min(h.length, a.s + CAP))) return no("Those fossils aren't side by side in your rock face.");
+      const inf = meldInfo(h.slice(a.s, a.e));
+      if (!inf) return no("Those bones don't make a find.");
+      if (!canPlayOn(G, lane, inf)) return no("That find doesn't outshine the one already there.");
+      doPlay(G, seat, lane, a.s, a.e); return { ok: true };
+    }
+    if (!G.lanes[lane].meld.length) return no("There's nothing at that site to poach.");
+    if (!int(a.pos, 0, h.length) || !int(a.oi, 0, h.length)) return no("That spot isn't in your rock face.");
+    const card = scoutTake(G, seat, lane, !!a.left);
+    h.splice(a.pos, 0, card);
+    const offered = h.splice(a.oi, 1)[0];
+    makeOffer(G, seat, lane, card, offered); return { ok: true };
+  }
+  if (a.type === "keep" || a.type === "reject") {
+    if (G.phase !== "offer" || !G.offer || G.offer.to !== seat) return no("There's no fossil waiting for you.");
+    if (a.type === "keep" && !int(a.pos, 0, h.length)) return no("That spot isn't in your rock face.");
+    resolveOffer(G, a.type === "keep", a.pos); return { ok: true };
+  }
+  if (a.type === "ready") {
+    if (G.phase !== "roundEnd") return no("The season hasn't closed yet.");
+    G.ready = G.ready || []; if (!G.ready.includes(seat)) G.ready.push(seat); return { ok: true };
+  }
+  return no("Unknown move.");
+}
+// A stand-in for a guest who has dropped off: a bot makes the one decision that's holding up the table.
+function standIn(G, seat) {
+  const who = G.players[seat].name;
+  if (G.phase === "offer" && G.offer && G.offer.to === seat) {
+    const h = G.players[seat].hand, card = G.offer.card, keep = botAccepts(h, card);
+    addLog(G, `<b>${who}</b> was away, so a bot decided for them.`);
+    return resolveOffer(G, keep, keep ? bestInsert(h, card) : 0);
+  }
+  if (G.phase === "play" && G.turn === seat) { addLog(G, `<b>${who}</b> was away, so a bot dug in their place.`); return botTurn(G); }
+}
 
 // ===================== BOT =====================
 function botBestPlay(G, p) {
@@ -1037,17 +1158,21 @@ function applyDigSite() {
 
 // ===================== UI =====================
 let G = null;
+let net = null; // an online table: NETX.HostSession or NETX.GuestSession
 let ui = { sel: [], mode: null, scout: null, setupN: 3, open: {} };
 let botTimer = null;
 const root = typeof document !== "undefined" ? document.getElementById("root") : null;
 const PCOL = ["var(--p0)", "var(--p1)", "var(--p2)", "var(--p3)"];
+// online, each camp keeps its table color on every screen, even though every digger sees their own camp at the bottom
+function pcol(i) { return PCOL[(i + ((G && G.you) || 0)) % ((G && G.n) || 4)]; }
 
-function resetUi() { ui.sel = []; ui.mode = null; ui.scout = null; }
-function humanTurn() { return G && G.phase === "play" && G.players[G.turn].human && !ui.mode; }
+function resetUi() { ui.sel = []; ui.mode = null; ui.scout = null; ui.pending = 0; }
+function humanTurn() { return G && G.phase === "play" && G.turn === 0 && G.players[0].human && !ui.mode && !ui.pending; }
 function fullName(i) { const p = G.players[i]; return p.title ? `${p.title} ${p.name}` : p.name; }
+function whom(i) { return i === 0 ? "you" : fullName(i); }
 
 function scheduleBot() {
-  if (!G || botTimer) return;
+  if (!G || botTimer || (net && net.kind === "guest")) return;
   if (G.phase === "play" && !G.players[G.turn].human) {
     botTimer = setTimeout(() => { botTimer = null; botTurn(G); render(); scheduleBot(); }, 700);
   }
@@ -1076,10 +1201,10 @@ function buildFaces() {
 function seatHtml(i, wide = false) {
   const p = G.players[i];
   const turn = (G.phase === "play" || G.phase === "offer") && G.turn === i;
-  return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${PCOL[i]}">
+  return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${pcol(i)}">
     <div class="name"><span class="dot"></span>${fullName(i)}${turn ? `<span class="turnflag">digging</span>` : ""}</div>
     <div class="score">${p.score}<span class="meta"> prestige</span></div>
-    <div class="meta">${p.hand.length} fossil${p.hand.length === 1 ? "" : "s"} in the rock</div>
+    <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"} in the rock${seatTags(i)}</div>
   </div>`;
 }
 
@@ -1108,15 +1233,15 @@ function laneHtml(i) {
     const held = L.owner === q;
     const name = q === 0 ? "You" : G.players[q].name;
     const who = `<span class="full">${q === 0 ? "Your side" : `${name}'s side`}${held ? " · holds it" : ""}</span><span class="short">${name}</span>`;
-    return `<div class="side ${pos} ${held ? "held" : ""}" style="--pc:${PCOL[q]}">
+    return `<div class="side ${pos} ${held ? "held" : ""}" style="--pc:${pcol(q)}">
       <span class="who">${who}</span>
       ${held ? `<div class="meld">${cards}</div><span class="what">${describe(L.meld)}</span>` : ""}
     </div>`;
   };
   const empty = L.owner === null ? `<span class="untouched">untouched ground</span>` : "";
-  return `<div class="cell site ${dir} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${SITES[i]}"` : ""}>
+  return `<div class="cell site ${dir} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
     ${side(pa, "a")}
-    <div class="board"><b>${SITES[i]}</b>${mine ? empty : `<span class="untouched farnote">not beside you</span>`}</div>
+    <div class="board"><b>${laneName(G, i)}</b>${mine ? empty : `<span class="untouched farnote">not beside you</span>`}</div>
     ${side(pb, "b")}
   </div>`;
 }
@@ -1144,11 +1269,17 @@ function statusHtml() {
   if (G.phase === "offer" && G.offer && G.offer.to === 0) {
     who = `${fullName(G.offer.from)} sends you the ${cardName(G.offer.card)}`;
     hint = ui.mode === "placeReceived" ? "Tap a gap in your rock face to set it there." : "Keep it in your rock face, or turn it away and it is out of the dig this season.";
+  } else if (G.phase === "offer" && G.offer) {
+    who = `${fullName(G.offer.to)} is deciding on the fossil ${whom(G.offer.from)} sent`;
+    hint = seatAway(G.offer.to) ? `${fullName(G.offer.to)} has dropped off the table. If they don't come back soon, a bot decides for them.` : "They keep it or turn it away.";
   } else if (G.phase !== "play") {
     who = "The season has closed";
-  } else if (!G.players[G.turn].human) {
-    who = `${fullName(G.turn)} is surveying…`;
-    hint = "Keep an eye on the sites beside your camp.";
+  } else if (G.turn !== 0) {
+    who = `${fullName(G.turn)} is ${G.players[G.turn].bot === false ? "digging" : "surveying"}…`;
+    hint = seatAway(G.turn) ? `${fullName(G.turn)} has dropped off the table. If they don't come back soon, a bot digs for them.` : "Keep an eye on the sites beside your camp.";
+  } else if (ui.pending) {
+    who = "Sending your move to the table…";
+    hint = "The host's browser checks every move before it lands.";
   } else if (ui.mode === "placeScout") {
     who = `Set the poached ${cardName(ui.scout.card)}`;
     hint = "Tap a gap in your rock face to place it.";
@@ -1184,7 +1315,7 @@ function handHtml() {
       clickable ? `data-act="${ui.mode === "chooseOffer" ? "offer" : "pick"}" data-i="${k}" role="button" tabindex="0" aria-label="${cardName(v)}"` : "")).join("");
   }
   let actions = "";
-  if (G.phase === "offer" && G.offer && G.offer.to === 0 && !ui.mode) {
+  if (G.phase === "offer" && G.offer && G.offer.to === 0 && !ui.mode && !ui.pending) {
     actions = `<button class="primary" data-act="accept">Keep the ${V(G.offer.card)}</button><button data-act="reject">Turn it away</button>`;
   } else if (ui.sel.length) {
     actions = `<button data-act="clear">Clear selection</button>`;
@@ -1198,7 +1329,7 @@ function handHtml() {
 function overlayHtml() {
   if (G.phase !== "roundEnd" && G.phase !== "matchEnd") return "";
   const r = G.roundResult;
-  const rows = G.players.map((p, i) => `<tr><td><span class="dot" style="--pc:${PCOL[i]}"></span> ${fullName(i)}</td>
+  const rows = G.players.map((p, i) => `<tr><td><span class="dot" style="--pc:${pcol(i)}"></span> ${fullName(i)}${G.online && i === 0 ? " (you)" : ""}</td>
     <td class="num">${r.held[i]}</td><td class="num">+${r.held[i] * r.value}</td><td class="num"><b>${p.score}</b></td></tr>`).join("");
   const head = `<table class="scores"><thead><tr><th>Digger</th><th class="num">Sites</th><th class="num">Season</th><th class="num">Prestige</th></tr></thead><tbody>${rows}</tbody></table>`;
   const shed = r.shedder === null ? "The season was called off." : (r.shedder === 0 ? "You finished your dig first." : `${fullName(r.shedder)} finished the dig first.`);
@@ -1206,7 +1337,7 @@ function overlayHtml() {
     return `<div class="overlay"><div class="modal" role="dialog" aria-label="Season results">
       <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}${tut ? `<p class="tut-note"><b>Field lesson complete.</b> You hold all three sites, so you bank 3 prestige. From here the deal is random and Ashworth plays for real, with sites worth 2 and then 4. Watch the sites beside you, and think twice about what you send him.</p>` : ""}
       <p>Every site is cleared and each camp gets a fresh rock face of ${G.cfg.hand}. Next season, sites are worth ${ROUND_VALUES[r.round + 1]} prestige.</p>
-      <button class="primary" data-act="nextround">Open season ${r.round + 2}</button></div></div>`;
+      ${net ? netRoundButtons(r) : `<button class="primary" data-act="nextround">Open season ${r.round + 2}</button>`}</div></div>`;
   }
   const st = standings(G);
   const names = st.winners.map(i => fullName(i));
@@ -1214,11 +1345,11 @@ function overlayHtml() {
   const tb = st.tiedOnPoints ? `<p>Tied on prestige, so the tiebreaker applied: most seasons closed by finishing your dig, then most prestige in the final season.</p>` : "";
   return `<div class="overlay"><div class="modal" role="dialog" aria-label="Final results">
     <div class="eyebrow">Three seasons complete</div><h2>${title}</h2>${head}${tb}
-    <div class="actions"><button class="primary" data-act="again">Dig again</button><button data-act="setup">Change rivals</button></div></div></div>`;
+    ${net ? netMatchButtons() : `<div class="actions"><button class="primary" data-act="again">Dig again</button><button data-act="setup">Change rivals</button></div>`}</div></div>`;
 }
 
 function logHtml() {
-  return `<div class="log"><div class="eyebrow">Field notes</div>${G.log.slice(0, 7).map(l => `<div class="row">${l}</div>`).join("")}</div>`;
+  return `<div class="log"><div class="eyebrow">Field notes</div>${G.log.slice(0, 7).map(l => `<div class="row">${logFor(l, 0)}</div>`).join("")}</div>`;
 }
 
 function rulesHtml() {
@@ -1253,19 +1384,22 @@ function setupHtml() {
     <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can be up to 4 cards.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
     <div class="actions"><button class="primary" data-act="start">Open the first season</button><button class="tutbtn" data-act="tutorial">New here? Take the 2-minute field lesson</button></div>
-  </div>${rulesHtml()}${catalogueHtml()}`;
+  </div>${onlinePanelHtml()}${rulesHtml()}${catalogueHtml()}`;
 }
 
 function render() {
   if (!root) return;
-  if (!G) { root.innerHTML = setupHtml(); return; }
-  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : `${G.n} diggers`}</div><h1>Diggers</h1></div>
-    <button data-act="setup">New expedition</button></div>
-    ${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
+  if (!G) { root.innerHTML = net ? lobbyHtml() : ui.invite ? inviteHtml() : setupHtml(); return; }
+  root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}</div><h1>Diggers</h1></div>
+    <button data-act="setup">${net ? "Leave the table" : "New expedition"}</button></div>
+    ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
+  if (net && net.kind === "host") net.sync();
 }
 
 function onAct(t) {
   const act = t.dataset.act;
+  if (netOnAct(act, t)) return;
+  const guest = net && net.kind === "guest";
   if (act === "pickn") { ui.setupN = +t.dataset.n; return render(); }
   if (act === "start" || act === "again") { tut = null; G = newGame(act === "again" ? G.n : ui.setupN, [0]); resetUi(); render(); return scheduleBot(); }
   if (act === "tutorial") { clearTimeout(botTimer); botTimer = null; startTutorial(); resetUi(); render(); return window.scrollTo(0, 0); }
@@ -1286,37 +1420,527 @@ function onAct(t) {
   if (act === "clear") { ui.sel = []; return render(); }
   if (act === "playlane" && humanTurn()) {
     const lane = +t.dataset.lane; const s = ui.sel[0], e = ui.sel[ui.sel.length - 1] + 1;
-    ui.sel = []; doPlay(G, 0, lane, s, e); if (tut) tut.step++; render(); return scheduleBot();
+    ui.sel = [];
+    if (guest) { netSend({ type: "play", lane, s, e }); return render(); }
+    doPlay(G, 0, lane, s, e); if (tut) tut.step++; render(); return scheduleBot();
   }
   if (act === "scout" && humanTurn()) {
     const lane = +t.dataset.lane; const left = t.dataset.left === "1";
     const card = scoutTake(G, 0, lane, left);
     if (tut) tut.poached = card;
-    ui.scout = { lane, card, to: neighbor(G, lane, 0) }; ui.mode = "placeScout"; return render();
+    ui.scout = { lane, left, card, to: neighbor(G, lane, 0) }; ui.mode = "placeScout"; return render();
   }
   if (act === "slot") {
     const pos = +t.dataset.pos;
     if (ui.mode === "placeScout") { me.hand.splice(pos, 0, ui.scout.card); ui.scout.pos = pos; ui.mode = "chooseOffer"; return render(); }
+    if (ui.mode === "placeReceived" && guest) { ui.mode = null; netSend({ type: "keep", pos }); return render(); }
     if (ui.mode === "placeReceived") { ui.mode = null; resolveOffer(G, true, pos); render(); return scheduleBot(); }
   }
   if (act === "offer" && ui.mode === "chooseOffer") {
     const i = +t.dataset.i;
     if (tutStep() && me.hand[i] !== tutStep().send) return;
     if (tut) tut.step++;
+    if (guest) { const sc = ui.scout; resetUi(); netSend({ type: "poach", lane: sc.lane, left: sc.left, pos: sc.pos, oi: i }); return render(); }
     const offered = me.hand.splice(i, 1)[0];
     const sc = ui.scout; resetUi();
     makeOffer(G, 0, sc.lane, sc.card, offered); render(); return scheduleBot();
   }
   if (act === "accept" && G.phase === "offer") { ui.mode = "placeReceived"; return render(); }
+  if (act === "reject" && G.phase === "offer" && guest) { netSend({ type: "reject" }); return render(); }
   if (act === "reject" && G.phase === "offer") { resolveOffer(G, false); render(); return scheduleBot(); }
+}
+
+// ===================== ONLINE TABLES =====================
+// Same relay pattern as Too Many Crooks and Dim Sum Rush: MQTT over WebSockets through public brokers.
+// The host's browser runs the dig and the bots; guests are thin clients that send moves and get back
+// only their own view (viewFor above), so a rival's rock face never leaves the host's page.
+// ?relay=local swaps the brokers for a BroadcastChannel relay so tabs in one browser can share a table (for testing).
+const NETX = (() => {
+  if (typeof window === "undefined") return null;
+  const LOCAL = /[?&]relay=local(&|$)/.test(location.search);
+  // ---------------- Relay transport (MQTT over WebSockets, public brokers) ----------------
+  const BROKERS = LOCAL ? [{ key: "L", url: "local", name: "this browser (test relay)" }] : [
+    { key: "E", url: "wss://broker.emqx.io:8084/mqtt", name: "EMQX" },
+    { key: "H", url: "wss://broker.hivemq.com:8884/mqtt", name: "HiveMQ" },
+    { key: "M", url: "wss://test.mosquitto.org:8081", name: "Mosquitto" },
+  ];
+  const TOPIC_ROOT = "whatsgood/diggers/v1/";
+  const SANDBOXED = /claude/i.test(location.hostname) || /claudeusercontent|anthropic/i.test(location.hostname);
+  const LIB_SOURCES = [
+    "https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js",
+    "https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js",
+  ];
+  // A BroadcastChannel stand-in with the slice of the mqtt.js client API used below.
+  class LocalClient {
+    constructor(opts) {
+      this.subs = new Set(); this.h = {}; this.will = opts && opts.will;
+      this.bc = new BroadcastChannel("whatsgood-local-relay");
+      this.bc.onmessage = e => { const d = e.data || {}; if (this.subs.has(d.topic)) this.emit("message", d.topic, d.payload); };
+      this.onHide = () => { if (this.will) this.publish(this.will.topic, this.will.payload); };
+      window.addEventListener("pagehide", this.onHide);
+      setTimeout(() => this.emit("connect"), 30);
+    }
+    on(ev, cb) { (this.h[ev] = this.h[ev] || []).push(cb); return this; }
+    once(ev, cb) { const f = (...a) => { this.h[ev] = this.h[ev].filter(x => x !== f); cb(...a); }; return this.on(ev, f); }
+    emit(ev, ...a) { (this.h[ev] || []).slice().forEach(f => f(...a)); }
+    subscribe(t, o, cb) { this.subs.add(t); if (cb) setTimeout(() => cb(null), 0); }
+    publish(t, p) { try { this.bc.postMessage({ topic: t, payload: String(p) }); } catch (e) {} }
+    end() { window.removeEventListener("pagehide", this.onHide); try { this.bc.close(); } catch (e) {} }
+  }
+  let libLoad = null;
+  function loadLib() {
+    if (LOCAL) return typeof BroadcastChannel === "undefined" ? Promise.reject(new Error("This browser has no BroadcastChannel, so the local test relay can't run.")) : Promise.resolve({ connect: (url, opts) => new LocalClient(opts) });
+    if (window.mqtt) return Promise.resolve(window.mqtt);
+    if (libLoad) return libLoad;
+    libLoad = new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= LIB_SOURCES.length) { libLoad = null; reject(new Error("Could not load the networking library. Check your connection or ad blocker.")); return; }
+        const s = document.createElement("script"); s.src = LIB_SOURCES[i++];
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; s.remove(); tryNext(); } }, 9000);
+        s.onload = () => { if (done) return; done = true; clearTimeout(t); if (window.mqtt) resolve(window.mqtt); else { s.remove(); tryNext(); } };
+        s.onerror = () => { if (done) return; done = true; clearTimeout(t); s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+    return libLoad;
+  }
+  function makeCode() { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ"; let c = ""; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; }
+  function cleanId(s) { return String(s).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40); }
+  function connectBroker(mqtt, broker, opts) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const client = mqtt.connect(broker.url, Object.assign({ clean: true, connectTimeout: 7000, reconnectPeriod: 2000, keepalive: 30, clientId: "dig_" + Math.random().toString(16).slice(2, 12) }, opts || {}));
+      const to = setTimeout(() => { if (!done) { done = true; try { client.end(true); } catch (e) {} reject(new Error("timeout")); } }, 8000);
+      client.once("connect", () => { if (!done) { done = true; clearTimeout(to); resolve(client); } });
+      const fail = (e) => { if (!done) { done = true; clearTimeout(to); try { client.end(true); } catch (e2) {} reject(e || new Error("connection closed")); } };
+      client.on("error", fail);
+      client.on("close", () => fail(new Error("connection refused")));
+      client.on("offline", () => fail(new Error("offline")));
+    });
+  }
+  async function connectAny(mqtt, list, optsFor) {
+    let last = null;
+    for (const b of list) {
+      try { const c = await connectBroker(mqtt, b, optsFor ? optsFor(b) : null); return { client: c, broker: b }; }
+      catch (e) { last = e; }
+    }
+    throw new Error("Could not reach any relay server" + (last ? " (" + (last.message || last) + ")" : "") + (SANDBOXED ? ". This page is running inside claude.ai, which blocks outside connections; use the copy on the website for online play." : ". Try again, or try a different network. Playing against bots still works."));
+  }
+  function parse(payload) { try { return JSON.parse(payload.toString()); } catch (e) { return null; } }
+  const store = (kind, key, val) => { try { const S = kind === "s" ? sessionStorage : localStorage; if (val === undefined) { const v = S.getItem(key); return v ? JSON.parse(v) : null; } if (val === null) S.removeItem(key); else S.setItem(key, JSON.stringify(val)); } catch (e) { return null; } };
+  const AWAY_AFTER = 70000;   // no word from a guest for this long: they've dropped off
+  const AWAY_GRACE = 25000;   // then a bot makes any decision that is waiting on them after this long
+
+  // ---------------- Host ----------------
+  // Seats: kind "host" (seat 0, always), "guest", "open" (a friend may sit; a bot takes it at the start), "bot".
+  class HostSession {
+    constructor(n, name) {
+      this.kind = "host"; this.n = n; this.name = name; this.started = false; this.lastSnap = ""; this.lastBeat = 0;
+      this.seats = [{ kind: "host", name, token: "host", connected: true }];
+      for (let i = 1; i < n; i++) this.seats.push({ kind: "open" });
+    }
+    async open(resume) {
+      const mqtt = await loadLib();
+      const same = resume ? BROKERS.filter(b => b.key === resume.code[0]) : [];
+      const { client, broker } = await connectAny(mqtt, same.length ? same : BROKERS);
+      this.client = client; this.broker = broker;
+      this.code = same.length ? resume.code : broker.key + makeCode();
+      this.topic = TOPIC_ROOT + this.code;
+      await new Promise((res, rej) => client.subscribe(this.topic + "/h", { qos: 1 }, (e) => e ? rej(e) : res()));
+      client.on("message", (t, payload) => { if (t === this.topic + "/h") this.onMessage(parse(payload)); });
+      client.on("offline", () => { this.relayLost = true; if (net === this) render(); });
+      client.on("connect", () => { this.relayLost = false; this.pushLobby(); if (this.started) this.broadcastViews(); });
+      this.timer = setInterval(() => this.tick(), 2000);
+      this.pushLobby(); if (this.started) this.broadcastViews();
+      return this.code;
+    }
+    link() { return location.origin + location.pathname + "?table=" + this.code + (LOCAL ? "&relay=local" : ""); }
+    sendTo(i, m) { const s = this.seats[i]; if (s && s.kind === "guest" && s.token) this.replyRaw(s.token, m); }
+    replyRaw(tok, m) { try { this.client && this.client.publish(this.topic + "/g/" + tok, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    sendView(i, extra) { if (this.started && G) this.sendTo(i, Object.assign({ t: "view", view: viewFor(G, i) }, extra || {})); }
+    broadcastViews() { this.seats.forEach((s, i) => { if (s.kind === "guest") this.sendView(i); }); }
+    uniqueName(name, tok) {
+      let out = name, k = 2;
+      while (this.seats.some(s => s.name && s.token !== tok && s.name.toLowerCase() === out.toLowerCase())) out = name.slice(0, 14) + " " + k++;
+      return out;
+    }
+    onMessage(m) {
+      if (!m || typeof m !== "object" || !m.from) return;
+      const tok = cleanId(m.from), now = Date.now();
+      let seat = this.seats.findIndex(s => s.kind === "guest" && s.token === tok);
+      if (m.t === "hello") {
+        const name = cleanName(m.name) || "Guest";
+        if (seat < 0) {
+          if (this.started) {
+            // a guest on a new device (or with a cleared tab) can reclaim their own seat by name while it stands empty
+            seat = this.seats.findIndex(s => s.kind === "guest" && !s.connected && s.name.toLowerCase() === name.toLowerCase());
+            if (seat < 0) { this.replyRaw(tok, { t: "rejected", reason: "This dig has already started. Ask the host to open a new table for the next one." }); return; }
+            this.seats[seat].token = tok;
+          } else {
+            seat = this.seats.findIndex(s => s.kind === "open");
+            if (seat < 0) { this.replyRaw(tok, { t: "rejected", reason: "That table is full." }); return; }
+            this.seats[seat] = { kind: "guest", name: this.uniqueName(name, tok), token: tok };
+          }
+        } else if (!this.started) this.seats[seat].name = this.uniqueName(name, tok);
+        Object.assign(this.seats[seat], { connected: true, last: now });
+        this.sendTo(seat, { t: "welcome", seat, code: this.code });
+        this.pushLobby();
+        this.sendView(seat);
+        return;
+      }
+      if (seat < 0) return;
+      const s = this.seats[seat];
+      s.last = now;
+      if (m.t === "bye") { s.connected = false; s.awaySince = now; this.pushLobby(); return; }
+      if (!s.connected) { s.connected = true; this.pushLobby(); }
+      if (m.t === "ping") { if (m.needView) this.sendView(seat); return; }
+      if (m.t === "sit") { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].kind === "open") { this.seats[to] = s; this.seats[seat] = { kind: "open" }; this.pushLobby(); } return; }
+      if (m.t === "act") {
+        if (!this.started || !G) { this.sendTo(seat, { t: "err", msg: "The dig hasn't started yet." }); return; }
+        if (ui.mode === "placeScout" || ui.mode === "chooseOffer") { this.sendTo(seat, { t: "err", msg: "Hold on: the host is mid-move." }); this.sendView(seat); return; }
+        const r = hostApply(G, seat, m.a);
+        if (!r.ok) { this.sendTo(seat, { t: "err", msg: r.error }); this.sendView(seat, { force: true }); return; }
+        render(); scheduleBot();
+      }
+    }
+    tick() {
+      const now = Date.now(); let ch = false;
+      for (const s of this.seats) if (s.kind === "guest" && s.connected && now - (s.last || 0) > AWAY_AFTER) { s.connected = false; s.awaySince = now; ch = true; }
+      if (ch || now - this.lastBeat > 20000) this.pushLobby(); // doubles as a heartbeat so guests can tell the host is still here
+      if (!this.started || !G || ui.mode) return;
+      const who = G.phase === "play" ? G.turn : G.phase === "offer" && G.offer ? G.offer.to : -1;
+      const s = this.seats[who];
+      if (s && s.kind === "guest" && !s.connected && now - Math.max(s.awaySince || 0, this.decisionAt || 0) > AWAY_GRACE) { standIn(G, who); render(); scheduleBot(); }
+    }
+    lobbyState() {
+      return { code: this.code, n: this.n, started: this.started, relay: this.broker && this.broker.name,
+        seats: this.seats.map(s => ({ kind: s.kind, name: s.kind === "host" || s.kind === "guest" ? s.name : null, connected: s.kind === "host" || !!s.connected })) };
+    }
+    pushLobby() {
+      this.lastBeat = Date.now();
+      const st = this.lobbyState();
+      this.seats.forEach((s, i) => { if (s.kind === "guest") this.sendTo(i, { t: "lobby", state: st, seat: i }); });
+      this.save();
+      if (net === this) render();
+    }
+    // after every change the host's page draws, send each guest their own fresh view
+    sync() {
+      if (!this.started || !G || ui.mode === "placeScout" || ui.mode === "chooseOffer") return;
+      const snap = JSON.stringify(G);
+      if (snap === this.lastSnap) return;
+      G.ver = (G.ver || 0) + 1; this.lastSnap = JSON.stringify(G);
+      const key = [G.round, G.phase, G.turn, G.turnCount, G.offer ? G.offer.to : ""].join("|");
+      if (key !== this.decKey) { this.decKey = key; this.decisionAt = Date.now(); }
+      this.broadcastViews(); this.save();
+    }
+    save() { if (this.code) store("s", "diggers-host", { code: this.code, n: this.n, name: this.name, seats: this.seats, started: this.started, G: this.started ? G : null, ts: Date.now() }); }
+    setN(n) {
+      if (this.started || !CONFIG[n] || n === this.n) return;
+      const people = this.seats.filter(s => s.kind === "guest"), keep = people.slice(0, n - 1);
+      people.slice(n - 1).forEach(s => this.replyRaw(s.token, { t: "rejected", reason: "The host made the table smaller, so your seat went away." }));
+      const old = this.seats; this.n = n; this.seats = [old[0]];
+      for (let i = 1; i < n; i++) { const p = old[i]; this.seats.push(p && (keep.includes(p) || p.kind === "bot") ? p : { kind: "open" }); }
+      for (const g of keep) if (!this.seats.includes(g)) this.seats[this.seats.findIndex(s => s.kind === "open" || s.kind === "bot")] = g;
+      ui.setupN = n; this.pushLobby();
+    }
+    toggleSeat(i) { const s = this.seats[i]; if (this.started || !s) return; if (s.kind === "guest") this.replyRaw(s.token, { t: "rejected", reason: "The host gave your seat to a bot." }); this.seats[i] = { kind: s.kind === "open" ? "bot" : s.kind === "guest" ? "bot" : "open" }; this.pushLobby(); }
+    startGame() {
+      const humans = this.seats.map((s, i) => s.kind === "host" || s.kind === "guest" ? i : -1).filter(i => i >= 0);
+      tut = null; G = newGame(this.n, humans);
+      G.online = true; G.ver = 0; G.ready = []; G.gid = Math.random().toString(36).slice(2, 8);
+      this.seats.forEach((s, i) => {
+        const p = G.players[i];
+        if (s.kind === "host" || s.kind === "guest") { p.name = s.name; p.title = ""; p.bot = false; }
+        else { s.kind = "bot"; p.name = NAMES[i]; p.title = TITLES[i]; p.bot = true; }
+      });
+      this.started = true; this.lastSnap = "";
+      resetUi(); this.pushLobby(); render(); scheduleBot();
+    }
+    leave() { clearInterval(this.timer); store("s", "diggers-host", null); this.seats.forEach((s, i) => this.sendTo(i, { t: "closed" })); try { this.client && this.client.end(); } catch (e) {} }
+  }
+
+  // ---------------- Guest ----------------
+  class GuestSession {
+    constructor(code, name) { this.kind = "guest"; this.code = normCode(code); this.name = name || "Guest"; this.seat = null; this.lobby = null; this.lastHost = Date.now(); }
+    link() { return location.origin + location.pathname + "?table=" + this.code + (LOCAL ? "&relay=local" : ""); }
+    async connect() {
+      const broker = BROKERS.find(b => b.key === this.code[0]);
+      if (!broker || this.code.length !== 5) throw new Error(LOCAL && this.code.length === 5 ? "That code belongs to a table on the public relays; open the page without ?relay=local to join it." : "That does not look like a table code (5 letters).");
+      const mqtt = await loadLib();
+      const saved = store("s", "diggers-seat-" + this.code);
+      this.token = (saved && saved.token) || cleanId(Math.random().toString(36).slice(2) + Date.now().toString(36));
+      this.topic = TOPIC_ROOT + this.code;
+      const my = this.topic + "/g/" + this.token;
+      const { client } = await connectAny(mqtt, [broker], () => ({ will: { topic: this.topic + "/h", payload: JSON.stringify({ t: "bye", from: this.token }), qos: 1 } }));
+      this.client = client;
+      await new Promise((res, rej) => client.subscribe(my, { qos: 1 }, (e) => e ? rej(e) : res()));
+      const hello = () => this.send({ t: "hello", name: this.name });
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error("No table answered with that code. Check the code and that the host still has the page open.")); } }, 12000);
+        client.on("message", (t, payload) => {
+          if (t !== my) return;
+          const m = parse(payload); if (!m) return;
+          this.lastHost = Date.now(); if (this.hostStale) { this.hostStale = false; this.refresh(); }
+          if (m.t === "welcome") { this.seat = m.seat; store("s", "diggers-seat-" + this.code, { token: this.token, name: this.name }); if (!settled) { settled = true; clearTimeout(to); resolve(); } }
+          else if (m.t === "rejected") { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.closed(m.reason); }
+          else if (m.t === "lobby") { this.lobby = m.state; this.seat = m.seat; this.refresh(); }
+          else if (m.t === "view") this.applyView(m.view, m.force);
+          else if (m.t === "err") { ui.pending = 0; toast(m.msg); }
+          else if (m.t === "closed") this.closed("The host closed the table.");
+        });
+        hello();
+      });
+      client.on("connect", () => { this.relayLost = false; hello(); this.refresh(); }); // after an automatic reconnect, re-register
+      client.on("offline", () => { this.relayLost = true; this.refresh(); });
+      this.pingTimer = setInterval(() => {
+        this.send({ t: "ping", needView: !!(this.lobby && this.lobby.started && !G) }, 0);
+        if (!this.hostStale && Date.now() - this.lastHost > 50000) { this.hostStale = true; this.refresh(); }
+      }, 15000);
+    }
+    send(m, qos = 1) { try { this.client.publish(this.topic + "/h", JSON.stringify(Object.assign({ from: this.token }, m)), { qos }); return true; } catch (e) { return false; } }
+    applyView(v, force) {
+      this.view = v;
+      if (net !== this) return;
+      if (!force && G && G.gid === v.gid && G.ver === v.ver) return;
+      G = v; CAP = ROUND_CAPS[G.round] || CAP; resetUi(); render();
+    }
+    refresh() { if (net === this) render(); }
+    closed(reason) {
+      if (net !== this) return;
+      this.leave(); net = null; G = null; resetUi(); ui.invite = null; ui.netMsg = reason; setUrlTable(null); render();
+    }
+    act(a) { if (!this.send({ t: "act", a })) toast("Not connected to the table."); }
+    sit(i) { this.send({ t: "sit", seat: i }); }
+    leave() { clearInterval(this.pingTimer); store("s", "diggers-seat-" + this.code, null); this.send({ t: "bye" }); try { this.client && this.client.end(); } catch (e) {} }
+  }
+  return { HostSession, GuestSession, LOCAL, SANDBOXED, store };
+})();
+
+function cleanName(s) { return String(s || "").replace(/[<>&"'`\\]/g, "").replace(/\s+/g, " ").trim().slice(0, 16); }
+function normCode(s) { return String(s || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function toast(msg) {
+  let t = document.getElementById("toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600);
+}
+function copyText(txt, what) {
+  const done = ok => toast(ok ? `${what} copied` : `Couldn't reach the clipboard; select the ${what.toLowerCase()} and copy it`);
+  const fallback = () => { const ta = document.createElement("textarea"); ta.value = txt; ta.style.cssText = "position:fixed;top:0;left:0;opacity:0"; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (e) {} ta.remove(); done(ok); };
+  try { navigator.clipboard.writeText(txt).then(() => done(true), fallback); } catch (e) { fallback(); }
+}
+function setUrlTable(code) {
+  try { const u = new URL(location.href); if (code) u.searchParams.set("table", code); else u.searchParams.delete("table"); history.replaceState(null, "", u); } catch (e) {}
+}
+function getName() { const n = cleanName(ui.name); NETX.store("l", "diggers-name", n); return n; }
+function netSend(a) { ui.pending = Date.now(); net.act(a); }
+// seat i of the current view: is a person meant to sit there but not connected?
+function seatAway(i) {
+  if (!net || !G) return false;
+  const st = net.kind === "host" ? net.lobbyState() : net.lobby; if (!st || !st.seats) return false;
+  const s = st.seats[(i + (G.you || 0)) % G.n];
+  if (s && s.kind === "host" && net.kind === "guest") return !!net.hostStale;
+  return !!s && s.kind === "guest" && !s.connected;
+}
+function seatTags(i) {
+  if (!G || !G.online) return "";
+  if (G.players[i].bot) return " · bot";
+  if (seatAway(i)) return ` · <b class="away">away</b>`;
+  return i === 0 ? " · you" : "";
+}
+
+async function startHost() {
+  const name = getName();
+  if (!name) { ui.netMsg = "Add your name first, so friends know whose table it is."; return render(); }
+  if (ui.busy) return;
+  ui.busy = true; ui.netMsg = "Connecting to a relay…"; render();
+  const h = new NETX.HostSession(ui.setupN, name);
+  try { await h.open(); net = h; ui.netMsg = ""; }
+  catch (e) { ui.netMsg = e.message; }
+  ui.busy = false; render();
+}
+async function startGuest(code) {
+  code = normCode(code);
+  const name = getName();
+  if (code.length !== 5) { ui.netMsg = "Enter the 5-letter table code."; return render(); }
+  if (!name) { ui.netMsg = "Add your name first, so the table knows who you are."; return render(); }
+  if (ui.busy) return;
+  ui.busy = true; ui.netMsg = `Looking for table ${code}…`; render();
+  const g = new NETX.GuestSession(code, name);
+  try {
+    await g.connect(); net = g; ui.netMsg = ""; ui.invite = null; setUrlTable(code);
+    if (g.view) { G = g.view; CAP = ROUND_CAPS[G.round] || CAP; resetUi(); }
+  } catch (e) { ui.netMsg = e.message; try { g.leave(); } catch (e2) {} }
+  ui.busy = false; render();
+}
+async function resumeHost(saved) {
+  const h = new NETX.HostSession(saved.n, saved.name);
+  const now = Date.now();
+  h.seats = saved.seats.map(s => s.kind === "guest" ? Object.assign({}, s, { connected: false, awaySince: now, last: now }) : s);
+  h.started = !!(saved.started && saved.G); h.code = saved.code;
+  net = h; ui.setupN = saved.n;
+  if (h.started) { G = saved.G; CAP = ROUND_CAPS[G.round] || CAP; }
+  h.resuming = true; render();
+  try { await h.open(saved); }
+  catch (e) { h.relayError = e.message; }
+  h.resuming = false; render(); scheduleBot();
+}
+function leaveNet() {
+  clearTimeout(botTimer); botTimer = null;
+  if (net) net.leave();
+  net = null; G = null; tut = null; resetUi(); ui.netMsg = ""; ui.invite = null; setUrlTable(null); render();
+}
+
+// returns true when it handled the action
+function netOnAct(act, t) {
+  if (act === "host") { startHost(); return true; }
+  if (act === "join") { startGuest(ui.code); return true; }
+  if (act === "joininvite") { startGuest(ui.invite); return true; }
+  if (act === "noinvite") { ui.invite = null; ui.netMsg = ""; setUrlTable(null); render(); return true; }
+  if (!net) return false;
+  const host = net.kind === "host";
+  if (act === "copycode") { copyText(net.code, "Code"); return true; }
+  if (act === "copylink") { copyText(net.link(), "Link"); return true; }
+  if (act === "leave" || act === "setup") {
+    const live = G && G.phase !== "matchEnd";
+    if (live && !confirm(host ? "Leave the table? The dig ends for everyone." : "Leave the table? A bot will dig in your place.")) return true;
+    leaveNet(); return true;
+  }
+  if (act === "netn" && host) { net.setN(+t.dataset.n); return true; }
+  if (act === "seatkind" && host) { net.toggleSeat(+t.dataset.i); return true; }
+  if (act === "sit" && !host) { net.sit(+t.dataset.i); return true; }
+  if (act === "netstart" && host) { net.startGame(); window.scrollTo(0, 0); return true; }
+  if (act === "again") { if (host) net.startGame(); return true; }
+  if (act === "nextround") {
+    if (!G || G.phase !== "roundEnd") return true;
+    if (host) { nextRound(G); G.ready = []; resetUi(); render(); scheduleBot(); }
+    else netSend({ type: "ready" });
+    return true;
+  }
+  return ["start", "tutorial", "tutnext", "tutskip", "pickn"].includes(act);
+}
+
+function hostIndex() { return G ? (G.n - (G.you || 0)) % G.n : 0; }
+function netRoundButtons(r) {
+  const next = r.round + 2;
+  if (net.kind === "host") {
+    const others = G.players.map((p, i) => i).filter(i => i !== 0 && G.players[i].bot === false);
+    const notes = others.map(i => `${esc(fullName(i))} ${(G.ready || []).includes(i) ? "is ready" : seatAway(i) ? "is away" : "is still reading"}`);
+    return `<div class="actions"><button class="primary" data-act="nextround">Open season ${next}</button></div>${notes.length ? `<p>${notes.join(" · ")}.</p>` : ""}`;
+  }
+  const hn = esc(fullName(hostIndex()));
+  return (G.ready || []).includes(0) ? `<p><b>You're ready.</b> Waiting for ${hn} to open season ${next}.</p>`
+    : `<div class="actions"><button class="primary" data-act="nextround" ${ui.pending ? "disabled" : ""}>I'm ready for season ${next}</button></div><p>${hn} opens the next season for everyone.</p>`;
+}
+function netMatchButtons() {
+  if (net.kind === "host") return `<div class="actions"><button class="primary" data-act="again">Dig again at this table</button><button data-act="leave">Leave the table</button></div>`;
+  return `<p>${esc(fullName(hostIndex()))} can start another dig at this table.</p><div class="actions"><button data-act="leave">Leave the table</button></div>`;
+}
+function netStateText() {
+  if (net.kind === "host") {
+    if (net.relayError) return [`Couldn't reconnect: ${net.relayError}`, true];
+    if (net.resuming) return ["Reopening your table…", true];
+    if (net.relayLost) return ["Relay connection lost; reconnecting…", true];
+    return [`Hosting through ${net.broker ? net.broker.name : "the relay"}`, false];
+  }
+  if (net.relayLost) return ["Relay connection lost; reconnecting…", true];
+  if (net.hostStale) return ["The host's page isn't answering. Your seat is safe; the dig carries on when they're back.", true];
+  return [`Camp ${(net.seat || 0) + 1} at this table`, false];
+}
+function netBarHtml() {
+  const [txt, warn] = netStateText();
+  return `<div class="netbar"><span class="eyebrow">Table</span><b class="code">${esc(net.code || "")}</b>
+    <button class="mini" data-act="copycode">Copy code</button><button class="mini" data-act="copylink">Copy link</button>
+    <span class="netstate ${warn ? "warn" : ""}">${esc(txt)}</span></div>`;
+}
+function choicesHtml(act, n) {
+  const desc = { 2: "One rival · three sites between your camps · three species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · four species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all five species · 10 in your rock face" };
+  return `<div class="choices">${[2,3,4].map(k => `<button class="choice ${n === k ? "on" : ""}" data-act="${act}" data-n="${k}" aria-pressed="${n === k}"><span class="n">${k}</span><span class="d">${desc[k]}</span></button>`).join("")}</div>`;
+}
+function onlinePanelHtml() {
+  const busy = ui.busy ? "disabled" : "";
+  return `<div class="setup online">
+    <div><div class="eyebrow">Play with friends online</div><p class="note">One digger hosts a table and shares its code or link; friends join from their own devices. Bots take any seat nobody sits in, and each digger sees only their own rock face.</p></div>
+    ${NETX.SANDBOXED ? `<p class="note warn">Inside claude.ai this page can't open outside connections, so online tables won't connect here. Bots and the field lesson work fine.</p>` : ""}
+    <label class="field"><span>Your name</span><input data-key="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name || "")}" placeholder="How rivals will see you"></label>
+    <div class="online-grid">
+      <div class="opt"><button class="primary" data-act="host" ${busy}>Host an online table</button><span class="note">For ${ui.setupN} diggers, as picked above. You can change it in the lobby.</span></div>
+      <div class="opt"><div class="joinrow"><input data-key="code" maxlength="5" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${esc(ui.code || "")}" placeholder="CODE" aria-label="Table code"><button data-act="join" ${busy}>Join a table</button></div><span class="note">Type the 5-letter code from the host.</span></div>
+    </div>
+    ${ui.netMsg ? `<p class="netmsg" role="status">${esc(ui.netMsg)}</p>` : ""}
+  </div>`;
+}
+function inviteHtml() {
+  return `<div class="top"><div><div class="eyebrow">An invitation to dig</div><h1>Diggers</h1>
+    <p class="sub">A shedding lane battler. You've been asked to join an online table: rival paleontologists fight over the dig sites between their camps.</p></div></div>
+  <div class="setup online">
+    <div class="codebox"><div><div class="eyebrow">Table code</div><div class="code">${esc(ui.invite)}</div></div></div>
+    <label class="field"><span>Your name</span><input data-key="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name || "")}" placeholder="How rivals will see you"></label>
+    <div class="actions"><button class="primary" data-act="joininvite" ${ui.busy ? "disabled" : ""}>Join the dig</button><button data-act="noinvite">Play against bots instead</button></div>
+    ${ui.netMsg ? `<p class="netmsg" role="status">${esc(ui.netMsg)}</p>` : ""}
+  </div>${rulesHtml()}`;
+}
+function lobbyHtml() {
+  const host = net.kind === "host", st = host ? net.lobbyState() : net.lobby;
+  const head = `<div class="top"><div><div class="eyebrow">Online table</div><h1>Diggers</h1></div><button data-act="leave">Leave the table</button></div>`;
+  if (!st) return `${head}<div class="setup"><p class="note">Joining table ${esc(net.code)}…</p></div>`;
+  ui.setupN = st.n;
+  const me = host ? 0 : net.seat;
+  const hostName = (st.seats[0] && st.seats[0].name) || "The host";
+  const rows = st.seats.map((s, i) => {
+    const person = s.kind === "host" || s.kind === "guest";
+    const label = person ? `<b>${esc(s.name)}</b>` : s.kind === "bot" ? `<b>${NAMES[i] && i ? `${TITLES[i]} ${NAMES[i]}` : "A bot"}</b>` : `<b class="open">Open seat</b>`;
+    const tags = [i === me ? "you" : "", s.kind === "host" ? "host" : "", s.kind === "bot" ? "bot" : "", person && !s.connected ? `<b class="away">away</b>` : ""].filter(Boolean).join(" · ");
+    const meta = s.kind === "open" ? "A friend can sit here; a bot takes it if nobody does." : `Camp ${i + 1}${i === 0 ? " · digs first" : ""}`;
+    let ctl = "";
+    if (host && i > 0) ctl = s.kind === "guest" ? `<button data-act="seatkind" data-i="${i}">Give to a bot</button>` : `<button data-act="seatkind" data-i="${i}">${s.kind === "open" ? "Make it a bot" : "Open for a friend"}</button>`;
+    else if (!host && s.kind === "open") ctl = `<button data-act="sit" data-i="${i}">Sit here</button>`;
+    return `<div class="lseat" style="--pc:${PCOL[i]}"><span class="dot"></span><div class="who">${label}${tags ? ` <span class="meta">· ${tags}</span>` : ""}<div class="meta">${meta}</div></div>${ctl}</div>`;
+  }).join("");
+  const [txt, warn] = netStateText();
+  return `${head}
+  <div class="setup">
+    <div class="codebox"><div><div class="eyebrow">Table code</div><div class="code">${esc(st.code)}</div></div><button data-act="copycode">Copy code</button></div>
+    <div class="linkrow"><input readonly value="${esc(net.link())}" aria-label="Link to this table" onfocus="this.select()"><button data-act="copylink">Copy link</button></div>
+    <p class="note ${warn ? "warn" : ""}">${host ? "Send friends the link, or have them choose Join a table and type the code. " : ""}${esc(txt)}.</p>
+  </div>
+  <div class="setup">
+    <div><div class="eyebrow">Diggers at the table</div><p class="note">${host ? "Pick how many dig, and which seats are kept for friends. Seats go around the table in turn order, and each site lies between two neighboring camps." : `${esc(hostName)} picks how many dig and who sits where.`}</p></div>
+    ${host ? choicesHtml("netn", st.n) : ""}
+    <div class="lseats">${rows}</div>
+    <div class="actions">${host ? `<button class="primary" data-act="netstart">Open the first season</button>` : `<p class="note">Waiting for ${esc(hostName)} to open the first season.</p>`}</div>
+  </div>${rulesHtml()}`;
+}
+function netBoot() {
+  ui.name = ui.name || (NETX.store("l", "diggers-name") || "");
+  const code = normCode(new URLSearchParams(location.search).get("table"));
+  const saved = NETX.store("s", "diggers-host");
+  if (saved && saved.code && Date.now() - saved.ts < 3 * 3600 * 1000 && !code) { resumeHost(saved); return true; }
+  if (code.length !== 5) return false;
+  ui.invite = code;
+  const seat = NETX.store("s", "diggers-seat-" + code);
+  if (seat && seat.name) { ui.name = seat.name; startGuest(code); } else render();
+  return true;
 }
 
 if (root) {
   root.addEventListener("click", e => { const t = e.target.closest("[data-act]"); if (t) onAct(t); });
   root.addEventListener("toggle", e => { const k = e.target.dataset && e.target.dataset.key; if (k) ui.open[k] = e.target.open; }, true);
   root.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-act]:not(button)")) { e.preventDefault(); onAct(e.target); } });
+  root.addEventListener("input", e => { const k = e.target.dataset && e.target.dataset.key; if (k === "name") ui.name = e.target.value; else if (k === "code") ui.code = e.target.value; });
+  root.addEventListener("keydown", e => {
+    if (e.key !== "Enter" || !e.target.matches("input[data-key]")) return;
+    const act = ui.invite ? "joininvite" : e.target.dataset.key === "code" ? "join" : null;
+    if (act) { e.preventDefault(); onAct({ dataset: { act } }); }
+  });
   const start = data => {
     if (data && data.G && data.G.players && data.G.players[0].title !== undefined) { G = data.G; ui.setupN = data.setupN || 3; CAP = ROUND_CAPS[G.round]; }
+    if (!G && NETX) netBoot();
     render(); scheduleBot();
     // carve the fossil faces after first paint, then redraw with them
     setTimeout(() => { buildFaces(); render(); }, 30);
@@ -1327,7 +1951,7 @@ if (root) {
   window.claude?.hot?.snapshot?.(() => ({ G, setupN: ui.setupN }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 }
-if (typeof module !== "undefined") module.exports = { newGame, botTurn, nextRound, standings, meldInfo, cmp, describe, V, SP, cardName };
+if (typeof module !== "undefined") module.exports = { newGame, botTurn, nextRound, standings, meldInfo, cmp, describe, V, SP, cardName, viewFor, logFor, makeOffer, resolveOffer, doPlay, scoutTake, myLanes, canPlayOn, botAccepts, bestInsert, hostApply, standIn };
 </script>
 </body>
 </html>
