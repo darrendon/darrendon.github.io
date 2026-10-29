@@ -4,7 +4,7 @@
 <script src="/assets/vendor/three.r128.min.js"></script>
 </head><body>
 <script>
-/* Diggers — still renders. Units are inches. ?scene=hero|table|kit  &w=1600&h=1000
+/* Diggers — still renders. Units are inches. ?scene=hero|table|kit|lanes|themed  &w=1600&h=1000
    Nothing in any scene touches or overlaps anything else, on the table or on screen: every card, strip and box has clear table around it. */
 (async function () {
   const q = new URLSearchParams(location.search);
@@ -162,6 +162,156 @@
     for (let i = 0; i < 4; i++) await makeCard('ref.jpg', -13.0 + (i % 2) * 2.8, -1.4 + Math.floor(i / 2) * 3.8, 0);
     for (let i = 0; i < 4; i++) await marker(-11.6, 6.7 + i * 1.3, 0, i);
     frame([-14.6, 0, -11.6], [20.0, 1.25, 11.6], 64, 0, 0.97);
+  }
+
+  if (SCENE === 'themed') {
+    // the hero kit out at the dig: on the dusty sandstone of a Wyoming quarry in late-afternoon sun, beside a pointing trowel and the field book.
+    // Only this branch changes the environment; every other scene keeps the oak desk above.
+    const LAY = { box: [-3.8, 2.2, -0.2], slab: [2.6, -1.3], strip: [2.6, 5.25, 0.02], trowel: [8.9, -2.6, -0.32], book: [-4.1, -4.1, 0.1] };
+    const CX = 1.8, CZ = -0.6; // centre of the sunlit patch (table coordinates)
+    let seed = 1877; const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    for (const l of scene.children.filter((o) => o.isLight)) scene.remove(l);
+    const dusk = '#22170F';
+    scene.background = C(dusk); scene.fog = new THREE.Fog(C(dusk), 46, 90);
+    scene.add(new THREE.HemisphereLight(0xf3e2cc, 0x5e3e26, 0.42));
+    const sun = new THREE.DirectionalLight(0xffc98e, 1.02); sun.position.set(-14, 10.5, 7); sun.target.position.set(CX, 0, CZ); scene.add(sun.target);
+    sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096); Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, near: 1, far: 70 });
+    sun.shadow.radius = 4; sun.shadow.bias = -0.0005; scene.add(sun);
+    const sky = new THREE.DirectionalLight(0xc4d4ff, 0.13); sky.position.set(9, 8, -6); scene.add(sky);
+    const bounce = new THREE.DirectionalLight(0xffc89a, 0.12); bounce.position.set(4, 3, 12); scene.add(bounce);
+
+    // ground: pale dusty sandstone grit with pebbles, falling off into shade around the edges (one non-repeating sheet)
+    const GS = 56, GP = 4096, PPI = GP / GS;
+    const P = (v) => (v / GS + 0.5) * GP; // table inches -> sheet px
+    const gc = document.createElement('canvas'); gc.width = gc.height = GP; const g = gc.getContext('2d');
+    g.fillStyle = '#BE9B74'; g.fillRect(0, 0, GP, GP);
+    for (let i = 0; i < 700; i++) { // broad mottling
+      const x = rnd() * GP, y = rnd() * GP, r = 60 + rnd() * 320, a = 0.05 + rnd() * 0.07;
+      const tone = ['140,104,74', '206,180,146', '170,120,84', '190,160,128'][i % 4];
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(' + tone + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + tone + ',0)');
+      g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+    for (let i = 0; i < 46; i++) { // faint bedding in the sandstone
+      g.strokeStyle = 'rgba(' + (rnd() < 0.5 ? '128,92,62' : '214,190,156') + ',' + (0.05 + rnd() * 0.06) + ')'; g.lineWidth = 3 + rnd() * 10;
+      const y = rnd() * GP; g.beginPath(); g.moveTo(0, y);
+      for (let x = 0; x <= GP; x += 128) g.lineTo(x, y + Math.sin(x / 900 + i * 1.7) * 40 + Math.sin(x / 210 + i) * 6); g.stroke();
+    }
+    for (let i = 0; i < 9000; i++) { // clods and scuffs, a fifth of an inch to an inch across
+      const x = rnd() * GP, y = rnd() * GP, r = (0.1 + rnd() * 0.5) * PPI, dark = rnd() < 0.55;
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); const tone = dark ? '120,86,58' : '214,190,158'; const a = 0.06 + rnd() * 0.1;
+      gr.addColorStop(0, 'rgba(' + tone + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + tone + ',0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+    { // grit, straight into the pixels
+      const id = g.getImageData(0, 0, GP, GP), d = id.data;
+      for (let k = 0; k < d.length; k += 4) { const n = (rnd() - 0.5) * 34; d[k] += n; d[k + 1] += n * 0.95; d[k + 2] += n * 0.85; }
+      for (let i = 0; i < 520000; i++) {
+        const k = ((rnd() * GP | 0) + (rnd() * GP | 0) * GP) * 4, v = rnd(), a = 0.25 + rnd() * 0.4;
+        const c = v < 0.45 ? [92, 64, 42] : v < 0.85 ? [232, 212, 182] : [150, 82, 52];
+        for (let j = 0; j < 3; j++) d[k + j] = d[k + j] * (1 - a) + c[j] * a;
+      }
+      g.putImageData(id, 0, 0);
+    }
+    for (let i = 0; i < 2600; i++) { // pebbles, lit from the sun's side
+      const x = rnd() * GP, y = rnd() * GP, r = 1.4 + Math.pow(rnd(), 4) * 9, ry = r * (0.6 + rnd() * 0.35), rot = rnd() * Math.PI;
+      const base = [[150, 118, 88], [178, 150, 118], [122, 90, 66], [196, 172, 140], [140, 100, 74], [112, 98, 86]][i % 6];
+      g.save(); g.translate(x, y); g.rotate(rot);
+      g.fillStyle = 'rgba(64,42,26,0.3)'; g.beginPath(); g.ellipse(r * 0.3, r * 0.15, r, ry, 0, 0, 7); g.fill();
+      const pg = g.createRadialGradient(-r * 0.35, -ry * 0.3, r * 0.1, 0, 0, r);
+      pg.addColorStop(0, 'rgb(' + base.map((c) => Math.min(255, c + 40)).join(',') + ')'); pg.addColorStop(1, 'rgb(' + base.map((c) => c - 26).join(',') + ')');
+      g.fillStyle = pg; g.beginPath(); g.ellipse(0, 0, r, ry, 0, 0, 7); g.fill(); g.restore();
+    }
+    for (let i = 0; i < 30; i++) { // hairline cracks
+      let x = rnd() * GP, y = rnd() * GP, a = rnd() * 7; g.strokeStyle = 'rgba(84,58,38,0.2)'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 16; k++) { a += (rnd() - 0.5) * 0.9; x += Math.cos(a) * 20; y += Math.sin(a) * 20; g.lineTo(x, y); } g.stroke();
+    }
+    // the sunlit patch: shade towards the edges, reaching the background colour before the sheet ends
+    g.save(); g.translate(P(CX), P(CZ)); g.scale(1.25, 1);
+    const vg = g.createRadialGradient(0, 0, 3 * PPI, 0, 0, 19 * PPI);
+    vg.addColorStop(0, 'rgba(34,23,15,0)'); vg.addColorStop(0.3, 'rgba(34,23,15,0.3)'); vg.addColorStop(0.6, 'rgba(34,23,15,0.75)'); vg.addColorStop(1, 'rgba(34,23,15,1)');
+    g.fillStyle = vg; g.fillRect(-GP, -GP, 2 * GP, 2 * GP); g.restore();
+    const gt = new THREE.CanvasTexture(gc); gt.encoding = THREE.sRGBEncoding; gt.anisotropy = 16;
+    const hc = document.createElement('canvas'); hc.width = hc.height = 1024; const h = hc.getContext('2d');
+    { const id = h.createImageData(1024, 1024), d = id.data; for (let k = 0; k < d.length; k += 4) { const v = 128 + (rnd() - 0.5) * 120; d[k] = d[k + 1] = d[k + 2] = v; d[k + 3] = 255; } h.putImageData(id, 0, 0); }
+    const ht = new THREE.CanvasTexture(hc); ht.wrapS = ht.wrapT = THREE.RepeatWrapping; ht.repeat.set(9, 9);
+    table.geometry = new THREE.PlaneGeometry(GS, GS);
+    table.material = new THREE.MeshStandardMaterial({ map: gt, bumpMap: ht, bumpScale: 0.01, roughness: 0.97, metalness: 0 });
+    // beyond the sheet: plain shade (a child of the ground, so the overlap check hides it with the ground)
+    const outer = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshBasicMaterial({ color: C(dusk) }));
+    outer.position.set(0, 0, -0.01); table.add(outer);
+
+    // ---- props
+    const canvasTex = (w, hh, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = hh; draw(c.getContext('2d'), w, hh); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+    // a 4-inch pointing trowel, worn bright at the edges: the blade lies flat, the bent shank lifts the handle off the ground
+    function trowel(x, z, yaw) {
+      const t = new THREE.Group();
+      const L = 4.2, Wd = 2.4, bl = new THREE.Shape(); // blade in the xy-plane, heel at y=0, point at y=L
+      bl.moveTo(-Wd / 2, 0.18); bl.quadraticCurveTo(-Wd / 2, 0, -Wd / 2 + 0.18, 0); bl.lineTo(Wd / 2 - 0.18, 0); bl.quadraticCurveTo(Wd / 2, 0, Wd / 2, 0.18);
+      bl.quadraticCurveTo(Wd / 2 - 0.12, L * 0.55, 0.035, L); bl.lineTo(-0.035, L); bl.quadraticCurveTo(-Wd / 2 + 0.12, L * 0.55, -Wd / 2, 0.18);
+      const bt = canvasTex(512, 512, (c, w, hh) => {
+        const gr = c.createLinearGradient(0, 0, w, hh); gr.addColorStop(0, '#8E8C88'); gr.addColorStop(0.5, '#B4B1AA'); gr.addColorStop(1, '#7E7B76'); c.fillStyle = gr; c.fillRect(0, 0, w, hh);
+        for (let i = 0; i < 260; i++) { c.strokeStyle = 'rgba(' + (rnd() < 0.5 ? '230,228,222' : '70,66,62') + ',' + (0.08 + rnd() * 0.12) + ')'; c.lineWidth = 0.6 + rnd(); const x0 = rnd() * w, y0 = rnd() * hh, a = rnd() * 0.6 - 0.3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0 + Math.cos(a) * 60, y0 + Math.sin(a) * 60); c.stroke(); }
+        // dust caked near the point (the top of the uv square)
+        for (let i = 0; i < 1600; i++) { const yy = Math.pow(rnd(), 2.2) * hh * 0.5; c.fillStyle = 'rgba(176,140,104,' + (0.12 + rnd() * 0.3) + ')'; c.fillRect(rnd() * w, yy, 2 + rnd() * 4, 2 + rnd() * 3); }
+      });
+      const bg = new THREE.ExtrudeGeometry(bl, { depth: 0.035, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.02, bevelSegments: 1, curveSegments: 18 });
+      const uv = bg.attributes.uv, pos = bg.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + Wd / 2) / Wd, pos.getY(i) / L);
+      const blade = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: bt, metalness: 0.45, roughness: 0.42 }));
+      blade.rotation.x = -Math.PI / 2; blade.position.y = 0.008; blade.castShadow = true; blade.receiveShadow = true; t.add(blade); // point runs towards -z
+      const steel = new THREE.MeshStandardMaterial({ color: C('#6F6C68'), metalness: 0.5, roughness: 0.45 });
+      const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.075, 0.64, 10), steel); sh.position.set(0, 0.32, 0.06); sh.rotation.x = 0.38; sh.castShadow = true; t.add(sh);
+      const sh2 = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.46, 10), steel); sh2.rotation.x = Math.PI / 2; sh2.position.set(0, 0.6, 0.38); sh2.castShadow = true; t.add(sh2);
+      const fe = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.27, 0.38, 28), new THREE.MeshStandardMaterial({ color: C('#A57A3A'), metalness: 0.55, roughness: 0.4 }));
+      fe.rotation.x = Math.PI / 2; fe.position.set(0, 0.6, 0.76); fe.castShadow = true; t.add(fe);
+      const wt = canvasTex(256, 512, (c, w, hh) => {
+        c.fillStyle = '#7A4A28'; c.fillRect(0, 0, w, hh);
+        for (let i = 0; i < 140; i++) { c.strokeStyle = 'rgba(' + (rnd() < 0.5 ? '52,28,14' : '150,98,60') + ',' + (0.12 + rnd() * 0.2) + ')'; c.lineWidth = 1 + rnd() * 3; const x0 = rnd() * w; c.beginPath(); c.moveTo(x0, 0); c.bezierCurveTo(x0 + (rnd() - 0.5) * 30, hh * 0.3, x0 + (rnd() - 0.5) * 30, hh * 0.7, x0 + (rnd() - 0.5) * 20, hh); c.stroke(); }
+      });
+      const prof = [[0, 0], [0.22, 0], [0.26, 0.15], [0.33, 1.2], [0.4, 2.7], [0.41, 3.35], [0.36, 3.8], [0.22, 4.02], [0, 4.06]].map((p) => new THREE.Vector2(p[0], p[1]));
+      const hd = new THREE.Mesh(new THREE.LatheGeometry(prof, 36), new THREE.MeshStandardMaterial({ map: wt, roughness: 0.48 }));
+      hd.rotation.x = Math.PI / 2 - 0.04; hd.position.set(0, 0.6, 0.95); hd.castShadow = true; hd.receiveShadow = true; t.add(hd);
+      t.position.set(x, 0, z); t.rotation.y = yaw; t.name = 'trowel'; add(t); return t;
+    }
+    // the digger's field book: a leather-bound notebook, shut with a strap
+    function fieldBook(x, z, yaw) {
+      const b = new THREE.Group();
+      const W = 3.15, D = 4.9, T = 0.44, ct = 0.05;
+      const cover = canvasTex(740, 1180, (c, w, hh) => {
+        c.fillStyle = '#5A3520'; c.fillRect(0, 0, w, hh);
+        for (let i = 0; i < 9000; i++) { c.fillStyle = 'rgba(' + (rnd() < 0.5 ? '32,18,10' : '132,90,60') + ',' + (0.06 + rnd() * 0.12) + ')'; c.fillRect(rnd() * w, rnd() * hh, 1 + rnd() * 3, 1 + rnd() * 3); }
+        const sc = c.createRadialGradient(w * 0.55, hh * 0.45, 40, w * 0.55, hh * 0.45, w * 0.9); sc.addColorStop(0, 'rgba(150,104,70,0.18)'); sc.addColorStop(1, 'rgba(20,10,4,0.25)'); c.fillStyle = sc; c.fillRect(0, 0, w, hh);
+        c.strokeStyle = 'rgba(28,14,6,0.55)'; c.lineWidth = 4; c.strokeRect(34, 34, w - 68, hh - 68);
+        c.strokeStyle = 'rgba(188,150,96,0.5)'; c.lineWidth = 2; c.strokeRect(46, 46, w - 92, hh - 92);
+        c.fillStyle = 'rgba(204,166,104,0.82)'; c.textAlign = 'center';
+        c.font = 'bold 60px Georgia, "Times New Roman", serif'; c.fillText('FIELD BOOK', w / 2, hh * 0.3);
+        c.font = 'italic 40px Georgia, "Times New Roman", serif'; c.fillText('Como Bluff', w / 2, hh * 0.3 + 70);
+        c.font = '34px Georgia, "Times New Roman", serif'; c.fillText('Wyoming Territory · 1877', w / 2, hh * 0.3 + 124);
+      });
+      const leather = new THREE.MeshStandardMaterial({ color: C('#4E2E1B'), roughness: 0.7 });
+      const coverMat = new THREE.MeshStandardMaterial({ map: cover, roughness: 0.62 });
+      const pages = canvasTex(64, 256, (c, w, hh) => { c.fillStyle = '#E3D6B8'; c.fillRect(0, 0, w, hh); for (let y = 0; y < hh; y += 3) { c.fillStyle = 'rgba(140,120,90,' + (0.15 + rnd() * 0.25) + ')'; c.fillRect(0, y, w, 1); } });
+      pages.wrapS = pages.wrapT = THREE.RepeatWrapping;
+      const pageMat = new THREE.MeshStandardMaterial({ map: pages, roughness: 0.85 });
+      const pgW = W - 0.12, pgD = D - 0.14, pgT = T - 2 * ct;
+      const block = new THREE.Mesh(new THREE.BoxGeometry(pgW, pgT, pgD), [pageMat, leather, pageMat, pageMat, pageMat, pageMat]);
+      // page-edge uv: lines run along the edge
+      block.position.set(0.04, ct + pgT / 2, 0); block.castShadow = true; block.receiveShadow = true; b.add(block);
+      const bottom = new THREE.Mesh(new THREE.BoxGeometry(W, ct, D), leather); bottom.position.y = ct / 2; bottom.castShadow = true; bottom.receiveShadow = true; b.add(bottom);
+      const top = new THREE.Mesh(new THREE.BoxGeometry(W, ct, D), [leather, leather, coverMat, leather, leather, leather]); top.position.y = T - ct / 2; top.castShadow = true; top.receiveShadow = true; b.add(top);
+      const spine = new THREE.Mesh(new THREE.CylinderGeometry(T / 2, T / 2, D, 20, 1, false, Math.PI, Math.PI), leather); spine.rotation.x = Math.PI / 2; spine.position.set(-W / 2, T / 2, 0); spine.castShadow = true; b.add(spine);
+      // an elastic band round the book, top to bottom, near the fore-edge
+      const band = new THREE.MeshStandardMaterial({ color: C('#1E1510'), roughness: 0.55 });
+      const bt1 = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.012, D + 0.02), band); bt1.position.set(W / 2 - 0.42, T + 0.006, 0); b.add(bt1);
+      for (const e of [-1, 1]) { const be = new THREE.Mesh(new THREE.BoxGeometry(0.13, T + 0.012, 0.012), band); be.position.set(W / 2 - 0.42, T / 2 + 0.003, e * (D / 2 + 0.006)); b.add(be); }
+      b.position.set(x, 0, z); b.rotation.y = yaw; b.name = 'fieldbook'; add(b); return b;
+    }
+
+    // ---- layout: the box and Como Bluff on the left, the whole Stegosaurus slab on the right, the tools around them
+    await box(LAY.box[0], LAY.box[1], LAY.box[2]);
+    await slab(2, LAY.slab[0], LAY.slab[1]);
+    await marker(LAY.strip[0], LAY.strip[1], LAY.strip[2], 0);
+    trowel(...LAY.trowel);
+    fieldBook(...LAY.book);
+    frame([-6.3, 0, -6.4], [10.5, 0.3, 6.1], 48, 0, 0.92);
   }
 
   renderer.render(scene, camera);
