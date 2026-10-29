@@ -401,3 +401,10 @@ a.chip:hover{border-color:var(--orange)}
 .band .btn.yellow,.band .btn.accent{background:var(--orange);border-color:var(--orange);color:#1F2230}
 @media (prefers-color-scheme: dark){.band{background:#5F6584;color:#F5F3EE}.band h2{color:#F5F3EE}.band p{color:rgba(245,243,238,.82)}.band .btn{border-color:#F5F3EE;color:#F5F3EE}.band .btn.yellow,.band .btn.accent{color:#1A1B20}}
 @media (prefers-color-scheme: dark){.hero-dice .dice rect[fill="#3A3F42"]{stroke:none}}
+
+/* Wordmark: Righteous for the name and the big page titles */
+:root{--wordmark:"Righteous","Jost",Arial,sans-serif}
+.brand b,.mast h1,.page-hero h1,.contact-hero h1{font-family:var(--wordmark);font-weight:400;font-stretch:100%;font-synthesis:none}
+.brand b{letter-spacing:.05em}
+.mast h1{letter-spacing:.03em;line-height:.92}
+.page-hero h1,.contact-hero h1{letter-spacing:.03em}

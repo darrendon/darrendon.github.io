@@ -49,6 +49,7 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 - Analytics: GoatCounter, off until `<meta name="goatcounter" content="">` on each page holds the account code. `assets/js/site.js` then loads the counter and records PDF downloads, email clicks and the first click into a playable build. Add `?ref=<publisher>` to links in pitch emails to see who opened them
 
 ## Look
+- Wordmark: Righteous (`assets/fonts/righteous.woff`, OFL) for the name in the header and the big page titles; everything else is Jost.
 - Palette (`assets/css/site.css` tokens, "Palette v2" block): orange #E18C0A, periwinkle #898FA9, sand #C9B88E, olive #949015 and pink #CD9993 on warm paper #F5F3EE with ink #25272E; darker orange #A35F05 and olive #6B680E for text on paper, plus dark-mode equivalents. Game pages keep their own palettes.
 - Type: Jost everywhere. `assets/css/type.css`, loaded last on game pages, applies the site type to every heading, label and button; each game keeps only its logotype (hero h1 and homepage card title) in its own face.
 - Genres and other tag-style labels are Title Case without the word "game" ("Partnership Climbing", "Dexterity").
