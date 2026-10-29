@@ -598,6 +598,16 @@ async function build() {
     face([0, h / 2, d / 2], [w / 2, 0, 0], [0, h / 2, 0], [0, 0, 1], T.boxEnd);
     face([0, h / 2, -d / 2], [-w / 2, 0, 0], [0, h / 2, 0], [0, 0, -1], T.boxEnd);
   }
+  function tuckBoxStanding(x, z, rot) {   // the same box stood up on its bottom end, cover facing +z, like on a shelf
+    grp("box");
+    const w = 70 * K, d = 98 * K, h = 20 * K, m = M.chain(M.T(x, 0, z), M.RY(rot));
+    const face = (c, U, V, n, tex, col) => { const g = G(); quad(g, c, U, V, n); add(upload(g), m, MAT(tex ? { tex, shin: 22, spec: 0.05 } : { color: col, shin: 22, spec: 0.05 })); };
+    face([0, d / 2, h / 2], [w / 2, 0, 0], [0, d / 2, 0], [0, 0, 1], T.boxTop);                // cover
+    face([0, d / 2, -h / 2], [-w / 2, 0, 0], [0, d / 2, 0], [0, 0, -1], null, [0.16, 0.14, 0.32]);   // back
+    face([w / 2, d / 2, 0], [0, d / 2, 0], [0, 0, h / 2], [1, 0, 0], T.boxSide);              // spines
+    face([-w / 2, d / 2, 0], [0, -d / 2, 0], [0, 0, h / 2], [-1, 0, 0], T.boxSide);
+    face([0, d, 0], [w / 2, 0, 0], [0, 0, -h / 2], [0, 1, 0], T.boxEnd);                      // top end, reading the right way up from the front
+  }
   function flatPieces(x, z, rot, hex, colour, opts = {}) {   // one player's board, punched out and laid flat, every piece clear of the next
     const base = M.chain(M.T(x, 0, z), M.RY(rot));
     grp("panel " + colour); piecePanel(M.chain(base, M.T(0, TT / 2 * K, 0.42), M.S(K, K, K), M.RX(Math.PI / 2), M.RZ(Math.PI)), hex);
@@ -724,19 +734,19 @@ async function build() {
   }
   let glow = true;
   if (SCENE === "c_box") {           // hero: the box, a Ghost and a Living in their stands, one player's Boos
-    tuckBox(-1.68, 0.3, 0.2);
+    tuckBoxStanding(-1.72, -0.2, 0.22);
     easel(M.chain(M.T(-0.3, 0, -0.35), M.RY(0.1)), COLORS.blue, T.ghost);
     easel(M.chain(M.T(1.15, 0, -0.35), M.RY(-0.1)), COLORS.orange, T.living);
-    [["blue", 3, 1], ["blue", 2, 1], ["blue", 1, 1], ["pink", 2, 0], ["green", 1, 0]].forEach(([c, v, up], i) => chipToken(c, v, -0.4 + i * 0.44, 1.22, 0, { up }));
-    flame = candle(2.45, -0.75, 0.85);
-    cam = [0.25, 3.05, 6.0]; look = [0.2, 0.5, -0.15]; fov = 32;
+    [["blue", 3, 1], ["blue", 2, 1], ["blue", 1, 1], ["pink", 2, 0], ["green", 1, 0]].forEach(([c, v, up], i) => chipToken(c, v, -0.9 + i * 0.44, 1.22, 0, { up }));
+    flame = [1.6, 2.4, 0.4]; glow = false;     // no candle: a warm lamp off camera instead
+    cam = [-0.2, 3.05, 6.0]; look = [-0.25, 0.5, -0.15]; fov = 32;
   } else if (SCENE === "c_kit") {    // everything in the box, laid out flat
-    tuckBox(-3.75, 0.05, 0);
+    tuckBoxStanding(-3.75, 0.0, 0.12);
     deck(-2.35, -0.85, 0, 9, T.ghost); deck(-2.35, 1.05, 0, 8, T.living);
     const cols = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink"];
     cols.forEach((c, i) => flatPieces(-0.75 + (i % 4) * 1.22, i < 4 ? -1.75 : 0.42, 0, COLORS[c], c, { up: [1, 1, 0] }));
     flame = [-5, 3.5, -4]; glow = false;
-    cam = [-0.3, 8.6, 2.2]; look = [-0.3, 0, 0.12]; fov = 36;
+    cam = [-0.3, 7.0, 6.4]; look = [-0.3, 0, -0.25]; fov = 36;
   } else if (SCENE === "c_table" || SCENE === "c_deluxe") {   // five players, seen from above so nothing hides anything
     const deluxe = SCENE === "c_deluxe", N = 5, RF = deluxe ? 3.4 : 2.75, RP = deluxe ? 1.95 : 1.8;
     const roles = ["ghost", "ghost", "living", "ghost", "living"], seat = ["orange", "blue", "red", "green", "pink"];
@@ -751,7 +761,7 @@ async function build() {
         else chipToken(col, v, RP * Math.sin(a) + tx * sp, RP * Math.cos(a) + tz * sp, a, { up: 1 });
       });
     }
-    flame = candle(0, 0, deluxe ? 1.0 : 0.8);
+    flame = [0, 2.6, 0]; glow = false;          // no candle: the warm light hangs over the middle of the table
     cam = deluxe ? [0, 9.6, 8.6] : [0, 7.0, 7.2]; look = [0, 0.3, 0.1]; fov = deluxe ? 38 : 37;
   }
   light = SCENE === "midnight"

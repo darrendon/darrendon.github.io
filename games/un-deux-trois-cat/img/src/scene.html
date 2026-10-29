@@ -217,15 +217,19 @@ try {
   const face = (o, c, x, z, yaw, n = 1) => stack('face-' + o + '-' + c + '.jpg', x, z, n, yaw);
   const backs = (x, z, n, yaw) => stack('back.jpg', x, z, n, yaw);
 
-  // ---- the box: 8 x 8 x 3, two-piece, lid on
+  // ---- the box: 8 x 8 x 3, two-piece, lid on, standing upright on its bottom edge with the lid (cover) facing +z
   const BW = 8, BH = 3, BD = 8;
   async function box(x, z, yaw = 0) {
     const tTop = await tex('box-top.jpg'), tSide = await tex('box-side.jpg'), tEnd = await tex('box-end.jpg');
     const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 });
-    const mats = [M(tEnd), M(tEnd), M(tTop), new THREE.MeshStandardMaterial({ color: C('#2a1d31'), roughness: 0.8 }), M(tSide), M(tSide)];
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.position.y = BH / 2; g.add(body);
-    const seam = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.014, 0.03, BD + 0.014), new THREE.MeshStandardMaterial({ color: C('#1c1322'), roughness: 0.9 })); seam.position.y = BH * 0.6; g.add(seam);
+    const tSideUp = tSide.clone(); tSideUp.center.set(0.5, 0.5); tSideUp.rotation = Math.PI; tSideUp.needsUpdate = true; // the side that ends up on top, turned to read from the front
+    const mats = [M(tEnd), M(tEnd), M(tTop), new THREE.MeshStandardMaterial({ color: C('#2a1d31'), roughness: 0.8 }), M(tSide), M(tSideUp)];
+    const g = new THREE.Group(), inner = new THREE.Group();
+    inner.add(new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats));
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.014, 0.03, BD + 0.014), new THREE.MeshStandardMaterial({ color: C('#1c1322'), roughness: 0.9 })); seam.position.y = BH * 0.1; inner.add(seam);
+    inner.rotation.x = Math.PI / 2;           // lid turns to face the camera, its top edge pointing up
+    inner.position.y = BD / 2;                // resting on the cloth: 8 wide, 8 tall, 3 deep
+    g.add(inner);
     g.position.set(x, 0, z); g.rotation.y = yaw; return add('box', g);
   }
 
@@ -256,7 +260,7 @@ try {
     toy('mouse', 7.0, -0.6, 0.35);
     const round = [['bird', 'pink'], ['fish', 'green'], ['fly', 'blue'], ['mouse', 'yellow']];
     for (let k = 0; k < 4; k++) await face(round[k][0], round[k][1], -1.4 + k * PS, 4.4, 0);
-    frame([-12.6, 0, -7.0], [10.2, 3, 6.4], 40, 4, SCENE === 'og' ? 0.97 : 0.98);
+    frame([-12.6, 0, -7.0], [10.2, 8, 6.4], 40, 4, SCENE === 'og' ? 0.95 : 0.98);
   }
 
   if (SCENE === 'home') {
@@ -268,7 +272,7 @@ try {
     toy('fish', 3.9, 1.1, 0.25);
     toy('fly', 8.6, 0.6, 0.15);
     toy('mouse', 10.2, -3.2, 2.9);
-    frame([-10.0, 0, -6.4], [12.4, 3, 3.6], 44, 4, 0.8);
+    frame([-10.0, 0, -6.4], [12.4, 8, 3.6], 44, 4, 0.8);
   }
 
   if (SCENE === 'table') {
@@ -295,12 +299,12 @@ try {
     const back = [['bird', -0.6, -0.4], ['cat', 4.4, 0], ['fly', 9.0, 0.15]], front = [['ball', -1.0, 0], ['fish', 3.8, 0.2], ['mouse', 8.8, 0.5]];
     back.forEach(([n, x, y]) => toy(n, x, -4.4, y)); front.forEach(([n, x, y]) => toy(n, x, 0.2, y));
     for (let i = 0; i < 5; i++) await face(T.OBJ[i], T.CORRECT[T.OBJ[i]], -11.6 + i * 4.3, 5.9, 0, 12);
-    frame([-13.6, 0, -6.4], [11.2, 3, 7.8], 52, 0, 0.97);
+    frame([-13.6, 0, -6.4], [11.2, 8, 7.8], 52, 0, 0.97);
   }
 
   if (SCENE === 'cozy') {
     // the themed still, kept quiet: a plain plum felt cloth from the box's own palette, one soft overhead pool of light
-    // with a gentle vignette, the box, the six felt toys, two flipped cards and one small ball of cream yarn.
+    // with a gentle vignette, the box standing up, the six felt toys and two flipped cards.
     // (Only this preset touches the lights and the cloth, so the other stills render exactly as before.)
     let ws = 11; const wr = () => (ws = (ws * 9301 + 49297) % 233280) / 233280;
     const fc = document.createElement('canvas'); fc.width = fc.height = 1024; const fg = fc.getContext('2d');
@@ -321,25 +325,11 @@ try {
     pool.castShadow = true; pool.shadow.mapSize.set(4096, 4096); pool.shadow.radius = 7; pool.shadow.bias = -0.0003;
     Object.assign(pool.shadow.camera, { near: 10, far: 60 }); scene.add(pool);
 
-    // a small ball of yarn, oatmeal cream, its loose end tucked behind it
-    function yarn() {
-      const R = 0.78, g = new THREE.Group();
-      const yt = canvasTex(512, 256, (cg, w, h) => { cg.fillStyle = '#E3D3B8'; cg.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 4) { cg.strokeStyle = y % 8 ? 'rgba(110,80,50,.28)' : 'rgba(255,250,240,.25)'; cg.lineWidth = 1.6; cg.beginPath(); for (let x = 0; x <= w; x += 8) cg.lineTo(x, y + Math.sin(x / 40 + y) * 3); cg.stroke(); } });
-      const core = new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32), new THREE.MeshStandardMaterial({ map: yt, roughness: 1 })); core.position.y = R; g.add(core);
-      const ym = new THREE.MeshStandardMaterial({ color: C('#E8DAC1'), roughness: .95 });
-      let s2 = 21; const r2 = () => (s2 = (s2 * 9301 + 49297) % 233280) / 233280;
-      for (let k = 0; k < 14; k++) { const ax = new THREE.Vector3(r2() - .5, r2() - .5, r2() - .5).normalize(), qq = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), ax);
-        const pts = []; for (let i = 0; i <= 64; i++) { const a = i / 64 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * (R + .025), 0, Math.sin(a) * (R + .025)).applyQuaternion(qq).add(new THREE.Vector3(0, R, 0))); }
-        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 96, .035, 8, true), ym)); }
-      return g;
-    }
-
     await box(-6.0, -1.0, 0.22);
     for (const [n, x, z, yaw] of [['bird', 1.0, -3.9, -0.5], ['cat', 5.4, -3.7, -0.35], ['mouse', 10.0, -3.0, 2.9], ['ball', 0.0, 1.0, 0], ['fish', 3.9, 1.2, 0.25], ['fly', 8.6, 0.8, 0.15]]) toy(n, x, z, yaw);
     await face('fish', 'green', 1.6, 5.4, 0.04);
     await face('bird', 'blue', 4.9, 5.4, -0.04);
-    add('yarn', yarn()).position.set(8.8, 0, 5.2);
-    frame([-10.0, 0, -6.0], [11.6, 3, 7.4], 42, 4, 0.86);
+    frame([-10.0, 0, -6.0], [11.6, 8, 7.4], 42, 4, 0.86);
   }
 
   // a soft photographic vignette over the themed still (drawn on top; the checker renders without it)

@@ -5,7 +5,8 @@
 </head><body>
 <script>
 /* Too Many Crooks! — still renders. Units are inches. ?scene=hero|table|kit|themed  &w=1600&h=1000
-   themed = quiet card table (green felt, soft overhead pool, vignette, one small cash bundle). &check=1 runs the per-object overlap check -> window.__check */
+   themed = quiet card table (green felt, soft overhead pool, vignette). The box always stands upright, cover to camera; no props.
+   &check=1 runs the per-object overlap check (every scene) -> window.__check */
 (async function () {
   const q = new URLSearchParams(location.search);
   const SCENE = q.get('scene') || 'hero', W = +q.get('w') || 1600, H = +q.get('h') || 1000;
@@ -38,9 +39,9 @@
     const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
     g.fillStyle = '#2B231C'; g.fillRect(0, 0, 1024, 1024);
     for (let i = 0; i < 520; i++) { g.strokeStyle = 'rgba(' + (i % 2 ? '66,50,38' : '22,16,12') + ',' + (0.04 + Math.random() * 0.08) + ')'; g.lineWidth = 1 + Math.random() * 3; g.beginPath(); const y = Math.random() * 1024; g.moveTo(0, y); g.bezierCurveTo(300, y + (Math.random() - .5) * 30, 700, y + (Math.random() - .5) * 30, 1024, y + (Math.random() - .5) * 14); g.stroke(); }
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 4); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(12, 12); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
   }
-  const table = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.82, metalness: 0.02 }));
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.82, metalness: 0.02 }));
   table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
 
   // ---- dice: a real rounded cube (3 boxes + 12 edge cylinders + 8 corner spheres) with pip decals
@@ -118,6 +119,21 @@
     return g;
   }
 
+  // the box standing on its long bottom edge, cover facing +z; footprint x in [-BW/2, BW/2], z in [-BH/2, BH/2], height BD
+  function makeStandingBox() {
+    const outer = new THREE.Group(), g = makeBox();
+    // the long side that ends up on top would read upside down from the front: turn its print round
+    const up = tSide.clone(); up.center.set(0.5, 0.5); up.rotation = Math.PI; up.needsUpdate = true;
+    g.children[0].material[5] = new THREE.MeshStandardMaterial({ map: up, roughness: 0.55 });
+    g.rotation.x = Math.PI / 2; g.position.set(0, BD / 2, -BH / 2); outer.add(g); return outer;
+  }
+  // a point in front of a standing box: t along its width from its left edge, off = distance out from its cover
+  const frontOf = (box, t, off) => { const c = Math.cos(box.rotation.y), sn = Math.sin(box.rotation.y), lx = -BW / 2 + t, lz = BH / 2 + off;
+    return [box.position.x + lx * c + lz * sn, box.position.z - lx * sn + lz * c]; };
+  // every object that sits on the table, for the overlap check
+  const objs = [];
+  const add = (o, name) => { o.name = name; scene.add(o); objs.push(o); return o; };
+
   const rnd = (seed) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
 
 
@@ -139,25 +155,21 @@
 
   // ================================================================ scenes
   if (SCENE === 'hero') {
-    const box = makeBox(); box.position.set(-2.2, 0, -1.6); box.rotation.y = 0.36; scene.add(box);
-    // one crew sheet mid-job, front right
-    const s = makeSheet(2); s.position.set(2.7, 0, 1.3); s.rotation.y = -0.16; scene.add(s);
+    // the box standing at the back left, a crew sheet mid-job front right, five loose dice in a row before the box
+    const box = add(makeStandingBox(), 'box'); box.position.set(-2.6, 0, -2.2); box.rotation.y = 0.3;
+    const s = add(makeSheet(2), 'crew sheet'); s.position.set(3.4, 0, 1.6); s.rotation.y = -0.16;
     dieOnSheet(s, 1, 2, CREW_X[0], CREW_Z, 0); dieOnSheet(s, 2, 4, CREW_X[1], CREW_Z, 0); dieOnSheet(s, 3, 6, CREW_X[2], CREW_Z, 0);
     // cut slots stay empty: dice in back-to-back slots read as touching from any table-height camera
     dieOnSheet(s, 0, 2, OWN[0], OWN[1], 0);
-    // a few loose dice on the table in front of the box, spaced so nothing touches
     const r = rnd(7);
-    // five dice in a loose row parallel to the box's front edge, well clear of it so nothing reads as touching from the camera
-    const ca = Math.cos(0.36), sa = Math.sin(0.36);
-    const edge = (t, off) => [-2.2 - 3.5 * ca + 2.5 * sa + t * ca + off * sa, -1.6 + 3.5 * sa + 2.5 * ca - t * sa + off * ca];
-    const loose = [[0.4, 2.0, 4, 6], [1.3, 1.85, 5, 2], [2.2, 2.0, 3, 5], [3.1, 1.85, 1, 1], [4.0, 2.0, 0, 4]];
-    for (const [t, off, c, v] of loose) { const [x, z] = edge(t, off); const d = makeDie(c, v, 0.36 + (r() - 0.5) * 0.5); d.position.set(x, DIE / 2, z); scene.add(d); }
-    frame([-6.4, 0, -4.2], [4.7, 1.6, 3.6], 46, 9, 0.96);
+    [[0.9, 4, 6], [2.2, 5, 2], [3.5, 3, 5], [4.8, 1, 1], [6.1, 0, 4]].forEach(([t, c, v], k) => {
+      const [x, z] = frontOf(box, t, 1.7); const d = add(makeDie(c, v, 0.3 + (r() - 0.5) * 0.5), 'die ' + (k + 1)); d.position.set(x, DIE / 2, z); });
+    frame([-6.4, 0, -3.4], [5.4, 5.0, 3.2], 30, 9, 0.95);
   }
 
   if (SCENE === 'table') {
-    // four crews around the table, sheets facing inward; box parked at the back
-    const box = makeBox(); box.position.set(-0.6, 0, -8.6); box.rotation.y = 0.12; scene.add(box);
+    // four crews around the table, sheets facing inward; the box stands at the far end, cover to camera
+    const box = add(makeStandingBox(), 'box'); box.position.set(0, 0, -9.4); box.rotation.y = 0;
     const seats = [
       { pos: [0, 0, 3.4], rot: 0, me: 0 },
       { pos: [4.7, 0, -0.2], rot: Math.PI / 2, me: 1 },
@@ -167,27 +179,27 @@
     const r = rnd(3);
     const crewsFor = [[[1, 1], [3, 4], [2, 5]], [[0, 2], [2, 3], [3, 6]], [[3, 2], [1, 4], [0, 6]], [[2, 1], [0, 3], [1, 5]]];
     seats.forEach((st, k) => {
-      const s = makeSheet([0, 1, 4, 5][k]); s.position.set(st.pos[0], 0, st.pos[2]); s.rotation.y = st.rot; scene.add(s);
+      const s = add(makeSheet([0, 1, 4, 5][k]), 'crew ' + (k + 1)); s.position.set(st.pos[0], 0, st.pos[2]); s.rotation.y = st.rot;
       crewsFor[k].forEach(([c, v], i) => dieOnSheet(s, c, v, CREW_X[i], CREW_Z, 0));
       dieOnSheet(s, st.me, 2, OWN[0], OWN[1], 0);
       // the rest of this player's hand in a row beside the sheet (local coords, clear of the card edge)
       [[2.35, -1.0], [2.35, -0.05], [2.35, 0.9]].forEach(([lx, lz], j) => dieOnSheet(s, st.me, [6, 5, 1][j], lx, lz, (r() - .5) * .24));
     });
-    frame([-6.2, 0, -11.3], [6.2, 1.6, 5.2], 84, 0, 0.95);
+    frame([-6.4, 0, -10.2], [6.4, 5.0, 5.4], 56, 0, 0.95);
   }
 
   if (SCENE === 'kit') {
-    // what's in the box: lid top-left, six sheets in a 3x2 grid, six rows of eight dice
-    const box = makeBox(); box.position.set(-4.6, 0, -4.4); scene.add(box);
-    for (let i = 0; i < 6; i++) { const s = makeSheet(i); s.position.set(1.3 + (i % 3) * 3.8, 0, -5.6 + Math.floor(i / 3) * 2.85); scene.add(s); }
-    for (let c = 0; c < 6; c++) for (let k = 0; k < 8; k++) { const d = makeDie(c, ((c * 3 + k) % 6) + 1, 0); d.position.set(-1.6 + k * 0.86, DIE / 2, -0.6 + c * 0.9); scene.add(d); }
-    frame([-8.2, 0, -7.0], [9.0, 1.6, 4.4], 56, 0, 0.97);
+    // what's in the box: the box standing at the left, six sheets in a 3x2 grid, six rows of eight dice
+    const box = add(makeStandingBox(), 'box'); box.position.set(-5.4, 0, -3.6); box.rotation.y = 0.12;
+    for (let i = 0; i < 6; i++) { const s = add(makeSheet(i), 'sheet ' + (i + 1)); s.position.set(1.9 + (i % 3) * 3.8, 0, -5.6 + Math.floor(i / 3) * 2.85); }
+    for (let c = 0; c < 6; c++) for (let k = 0; k < 8; k++) { const d = add(makeDie(c, ((c * 3 + k) % 6) + 1, 0), 'die ' + c + '-' + k); d.position.set(-1.3 + k * 1.0, DIE / 2, -0.2 + c * 1.25); }
+    frame([-9.0, 0, -7.0], [9.6, 5.0, 6.4], 46, 0, 0.97);
   }
 
   let checkObjs = null, checkHide = [];
   let vignette = null;
   if (SCENE === 'themed') {
-    // ---- a quiet card table: deep green felt, one soft overhead pool of light, a gentle vignette, one small cash bundle
+    // ---- a quiet card table: deep green felt, one soft overhead pool of light, a gentle vignette
     scene.remove(table); scene.fog = null; scene.background = C('#0B1611');
     hemi.color = C('#FFF1DC'); hemi.groundColor = C('#2A3A30'); hemi.intensity = 0.1;
     key.intensity = 0.22; key.position.set(4, 10, 12); rim.intensity = 0.1; fill.intensity = 0.2; fill.position.set(-3, 5, 12);
@@ -206,56 +218,19 @@
           const gr = g.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, 'rgba(' + col + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + col + ',0)'); g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); } }
       // fine fibres
       for (let i = 0; i < 140000; i++) { g.fillStyle = 'rgba(' + (r() < 0.4 ? '120,190,150' : '0,14,8') + ',' + (0.02 + r() * 0.035) + ')'; const x = r() * N, y = r() * N, a = r() * Math.PI; g.save(); g.translate(x, y); g.rotate(a); g.fillRect(0, 0, 2 + r() * 5, 1); g.restore(); }
-      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 4); t.encoding = THREE.sRGBEncoding; t.anisotropy = 16; return t;
+      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(12, 12); t.encoding = THREE.sRGBEncoding; t.anisotropy = 16; return t;
     }
-    const felt = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshLambertMaterial({ map: feltTexture() }));
+    const felt = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), new THREE.MeshLambertMaterial({ map: feltTexture() }));
     felt.rotation.x = -Math.PI / 2; felt.receiveShadow = true; scene.add(felt); checkHide.push(felt);
 
-    // ---- the one prop: a single banded bundle of hundreds
-    function billTex() {
-      const c = document.createElement('canvas'); c.width = 1024; c.height = 446; const g = c.getContext('2d');
-      g.fillStyle = '#D8DCC2'; g.fillRect(0, 0, 1024, 446);
-      g.strokeStyle = '#4E6A4C'; g.lineWidth = 10; g.strokeRect(24, 24, 976, 398); g.lineWidth = 3; g.strokeRect(44, 44, 936, 358);
-      g.strokeStyle = 'rgba(78,106,76,0.35)'; g.lineWidth = 1.5;
-      for (let k = 0; k < 40; k++) { g.beginPath(); g.ellipse(512, 223, 140 + k * 2.2, 150 - k * 1.2, k * 0.08, 0, Math.PI * 2); g.stroke(); }
-      g.fillStyle = '#E4E6D2'; g.beginPath(); g.ellipse(512, 223, 118, 140, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#4E6A4C';
-      g.beginPath(); g.ellipse(512, 210, 46, 54, 0, 0, Math.PI * 2); g.fill();
-      g.fillRect(430, 152, 164, 14); g.beginPath(); g.moveTo(462, 154); g.lineTo(472, 104); g.lineTo(552, 104); g.lineTo(562, 154); g.fill();
-      g.beginPath(); g.moveTo(420, 352); g.quadraticCurveTo(430, 268, 512, 262); g.quadraticCurveTo(594, 268, 604, 352); g.fill();
-      g.font = 'bold 74px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      for (const [x, y] of [[130, 108], [894, 108], [130, 340], [894, 340]]) g.fillText('100', x, y);
-      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
-    }
-    function edgeTex(rows) {
-      const c = document.createElement('canvas'); c.width = 256; c.height = 64; const g = c.getContext('2d');
-      g.fillStyle = '#C9CEB2'; g.fillRect(0, 0, 256, 64);
-      for (let i = 0; i < rows; i++) { g.fillStyle = i % 2 ? 'rgba(70,90,66,0.35)' : 'rgba(255,255,240,0.3)'; g.fillRect(0, i * 64 / rows, 256, 64 / rows * 0.5); }
-      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
-    }
-    const BL = 3.1, BWD = 1.32, BT = 0.3;
-    function makeCash() {
-      const g = new THREE.Group();
-      const billMat = new THREE.MeshStandardMaterial({ map: billTex(), roughness: 0.85 }), edgeMat = new THREE.MeshStandardMaterial({ map: edgeTex(22), roughness: 0.9 });
-      const bandMat = new THREE.MeshStandardMaterial({ color: C('#B89650'), roughness: 0.7 });
-      const m = new THREE.Mesh(new THREE.BoxGeometry(BL, BT, BWD), [edgeMat, edgeMat, billMat, billMat, edgeMat, edgeMat]); m.castShadow = true; m.receiveShadow = true; m.position.y = BT / 2; g.add(m);
-      const band = new THREE.Mesh(new THREE.BoxGeometry(0.5, BT + 0.014, BWD + 0.014), bandMat); band.castShadow = true; band.position.y = BT / 2; g.add(band);
-      g.scale.setScalar(0.82); return g;
-    }
-
-    const objs = [];
-    const add = (o, name) => { o.name = name; scene.add(o); objs.push(o); return o; };
-    const box = add(makeBox(), 'box'); box.position.set(-2.7, 0, -1.6); box.rotation.y = 0.24;
-    const s = add(makeSheet(2), 'crew sheet'); s.position.set(4.3, 0, 1.75); s.rotation.y = -0.14;
-    const cash = add(makeCash(), 'cash'); cash.position.set(4.6, 0, -2.4); cash.rotation.y = -0.32;
+    const box = add(makeStandingBox(), 'box'); box.position.set(-2.4, 0, -1.6); box.rotation.y = 0.2;
+    const s = add(makeSheet(2), 'crew sheet'); s.position.set(4.6, 0, 1.2); s.rotation.y = -0.14;
     // six crooks' dice in an even row in front of the box
-    const r = rnd(5), ca = Math.cos(0.24), sa = Math.sin(0.24);
-    const edge = (t, off) => [-2.7 - 3.5 * ca + 2.5 * sa + t * ca + off * sa, -1.6 + 3.5 * sa + 2.5 * ca - t * sa + off * ca];
-    [[0.9, 2.1, 4, 6], [2.05, 2.1, 5, 2], [3.2, 2.1, 3, 5], [4.35, 2.1, 1, 1], [5.5, 2.1, 0, 4], [6.65, 2.1, 2, 3]].forEach(([t, off, c, v], i) => {
-      const [x, z] = edge(t, off); const d = add(makeDie(c, v, 0.24 + (r() - 0.5) * 0.4), 'die ' + (i + 1)); d.position.set(x, DIE / 2, z);
+    const r = rnd(5);
+    [[0.6, 4, 6], [1.75, 5, 2], [2.9, 3, 5], [4.05, 1, 1], [5.2, 0, 4], [6.35, 2, 3]].forEach(([t, c, v], i) => {
+      const [x, z] = frontOf(box, t, 1.8); const d = add(makeDie(c, v, 0.2 + (r() - 0.5) * 0.4), 'die ' + (i + 1)); d.position.set(x, DIE / 2, z);
     });
-    frame([-6.6, 0, -3.4], [6.2, 1.6, 3.4], 40, 4, 0.97);
-    checkObjs = objs;
+    frame([-6.2, 0, -2.6], [6.6, 5.0, 2.8], 28, 4, 0.95);
 
     // gentle screen-space vignette (drawn over the final frame only; not part of the overlap check)
     const vc = document.createElement('canvas'); vc.width = 512; vc.height = 320; const vg = vc.getContext('2d');
@@ -267,8 +242,9 @@
   }
   const draw = () => { renderer.autoClear = true; renderer.render(scene, camera); if (vignette) { renderer.autoClear = false; renderer.render(vignette.scene, vignette.cam); renderer.autoClear = true; } };
 
+  checkObjs = objs; if (SCENE !== 'themed') checkHide.push(table);
   draw();
-  if (checkObjs && q.get('check')) {
+  if (checkObjs.length && q.get('check')) {
     // per-object silhouettes: render each object alone in flat white, then compare masks pairwise
     const gl = renderer.getContext(), PW = gl.drawingBufferWidth, PH = gl.drawingBufferHeight;
     const bg = scene.background; scene.background = new THREE.Color(0x000000);
@@ -277,22 +253,28 @@
     for (let i = 0; i < checkObjs.length; i++) {
       checkObjs.forEach((o, j) => (o.visible = j === i)); renderer.render(scene, camera);
       gl.readPixels(0, 0, PW, PH, gl.RGBA, gl.UNSIGNED_BYTE, buf);
-      const m = new Uint8Array(PW * PH); let n = 0; for (let k = 0; k < PW * PH; k++) if (buf[k * 4] > 20) { m[k] = 1; n++; }
-      masks.push({ name: checkObjs[i].name, m, n });
+      const m = new Uint8Array(PW * PH); let n = 0, x0 = PW, x1 = -1, y0 = PH, y1 = -1;
+      for (let k = 0; k < PW * PH; k++) if (buf[k * 4] > 20) { m[k] = 1; n++; const x = k % PW, y = (k / PW) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      masks.push({ name: checkObjs[i].name, m, n, bb: [x0, x1, y0, y1] });
     }
     checkObjs.forEach((o) => (o.visible = true)); checkHide.forEach((o) => (o.visible = true)); scene.overrideMaterial = null; scene.background = bg;
     const RD = 3;
-    const dilate = (m) => { const a = new Uint8Array(PW * PH), b = new Uint8Array(PW * PH);
-      for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) { let v = 0; for (let dx = -RD; dx <= RD && !v; dx++) { const xx = x + dx; if (xx >= 0 && xx < PW && m[y * PW + xx]) v = 1; } a[y * PW + x] = v; }
-      for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) { let v = 0; for (let dy = -RD; dy <= RD && !v; dy++) { const yy = y + dy; if (yy >= 0 && yy < PH && a[yy * PW + x]) v = 1; } b[y * PW + x] = v; }
+    // masks and their 3 px dilations are only ever read inside bounding boxes, so this stays quick with many objects
+    const dilate = (o) => { const [bx0, bx1, by0, by1] = o.bb, m = o.m, a = new Uint8Array(PW * PH), b = new Uint8Array(PW * PH);
+      const X0 = Math.max(0, bx0 - RD), X1 = Math.min(PW - 1, bx1 + RD), Y0 = Math.max(0, by0 - RD), Y1 = Math.min(PH - 1, by1 + RD);
+      for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) { let v = 0; for (let dx = -RD; dx <= RD && !v; dx++) { const xx = x + dx; if (xx >= 0 && xx < PW && m[y * PW + xx]) v = 1; } a[y * PW + x] = v; }
+      for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) { let v = 0; for (let dy = -RD; dy <= RD && !v; dy++) { const yy = y + dy; if (yy >= 0 && yy < PH && a[yy * PW + x]) v = 1; } b[y * PW + x] = v; }
       return b; };
-    const res = { objects: masks.length, names: masks.map((o) => o.name), overlap: [], near: [], cut: [], empty: [] };
+    const res = { objects: masks.length, names: masks.map((o) => o.name), overlap: [], near: [], cut: [], empty: [], gaps: {} };
     masks.forEach((o) => { if (!o.n) res.empty.push(o.name); });
-    const dil = masks.map((o) => dilate(o.m));
+    const dil = masks.map((o) => (o.n ? dilate(o) : null));
     for (let i = 0; i < masks.length; i++) for (let j = i + 1; j < masks.length; j++) {
-      let ov = 0, nr = 0; const A = masks[i].m, B = masks[j].m, DA = dil[i];
-      for (let k = 0; k < PW * PH; k++) if (B[k]) { if (A[k]) ov++; else if (DA[k]) nr++; }
-      if (ov) res.overlap.push([masks[i].name, masks[j].name, ov]); else if (nr) res.near.push([masks[i].name, masks[j].name, nr]);
+      const A = masks[i], B = masks[j]; if (!A.n || !B.n) continue;
+      const X0 = Math.max(A.bb[0] - RD, B.bb[0]), X1 = Math.min(A.bb[1] + RD, B.bb[1]), Y0 = Math.max(A.bb[2] - RD, B.bb[2]), Y1 = Math.min(A.bb[3] + RD, B.bb[3]);
+      if (X0 > X1 || Y0 > Y1) continue;
+      let ov = 0, nr = 0; const DA = dil[i];
+      for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) { const k = y * PW + x; if (B.m[k]) { if (A.m[k]) ov++; else if (DA[k]) nr++; } }
+      if (ov) res.overlap.push([A.name, B.name, ov]); else if (nr) res.near.push([A.name, B.name, nr]);
     }
     masks.forEach((o) => { const m = o.m; let c = 0;
       for (let x = 0; x < PW; x++) { if (m[x]) c++; if (m[(PH - 1) * PW + x]) c++; }

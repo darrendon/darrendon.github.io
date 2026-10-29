@@ -79,7 +79,7 @@
     g.position.set(x, 0, z); g.rotation.y = yaw; g.name = 'deck'; add(g); return g;
   }
   // a species laid out as its 3x3 slab, cards in reading order, with a small gap so no card touches another
-  const GAP = 0.09, PX = CW + GAP, PZ = CH + GAP;
+  const GAP = 0.16, PX = CW + GAP, PZ = CH + GAP;
   async function slab(sp, cx, cz) { for (let v = 1; v <= 9; v++) await card(sp * 10 + v, cx + ((v - 1) % 3 - 1) * PX, cz + (Math.floor((v - 1) / 3) - 1) * PZ, 0); }
 
   // ---- dig-site card: half a poker card cut top to bottom, 88 x 31.5 mm, on card stock with rounded corners; side 'fx' is the advanced effect face
@@ -94,18 +94,23 @@
     g.position.set(x, 0, z); g.rotation.y = yaw; g.name = 'strip-' + i; add(g); return g;
   }
 
-  // ---- the box: a poker-card tuck box, 66 x 92 x 32 mm, lying on its back with the lid end away from the camera
-  const BW = 66 / 25.4, BH = 32 / 25.4, BD = 92 / 25.4;
+  // ---- the box: a poker-card tuck box, 66 x 92 x 32 mm, standing upright on its bottom end, front cover to the camera, lid end on top
+  const BW = 66 / 25.4, BH = 32 / 25.4, BD = 92 / 25.4, BOXH = BD;
   async function box(x, z, yaw = 0) {
     const tTop = await tex('box-top.jpg'), tSide = await tex('box-side.jpg'), tEnd = await tex('box-end.jpg');
     const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 });
-    const mats = [M(tSide), M(tSide), M(tTop), new THREE.MeshStandardMaterial({ color: C('#24180E'), roughness: 0.8 }), M(tEnd), M(tEnd)];
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.castShadow = true; body.receiveShadow = true; body.position.y = BH / 2; g.add(body);
+    // the lid end ends up on top, so its art is turned half a turn to read the right way up from the front
+    const tLid = tEnd.clone(); tLid.center.set(0.5, 0.5); tLid.rotation = Math.PI; tLid.needsUpdate = true;
+    const mats = [M(tSide), M(tSide), M(tTop), new THREE.MeshStandardMaterial({ color: C('#24180E'), roughness: 0.8 }), M(tEnd), M(tLid)];
+    // built lying on its back (front cover up, lid end towards -z), then stood up: a quarter turn about x brings the front to +z and the lid end to the top
+    const inner = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.castShadow = true; body.receiveShadow = true; inner.add(body);
     // the lid end: the slit where the tuck flap goes in under the front panel, and the fold at the back
     const dark = new THREE.MeshStandardMaterial({ color: C('#0E0905'), roughness: 0.9 });
-    const slit = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.05, 0.016, 0.006), dark); slit.position.set(0, BH - 0.03, -BD / 2 - 0.002); g.add(slit);
-    const fold = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.05, 0.010, 0.006), dark); fold.position.set(0, 0.03, -BD / 2 - 0.002); g.add(fold);
+    const slit = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.05, 0.016, 0.006), dark); slit.position.set(0, BH / 2 - 0.03, -BD / 2 - 0.002); inner.add(slit);
+    const fold = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.05, 0.010, 0.006), dark); fold.position.set(0, -BH / 2 + 0.03, -BD / 2 - 0.002); inner.add(fold);
+    inner.rotation.x = Math.PI / 2; inner.position.y = BD / 2;
+    const g = new THREE.Group(); g.add(inner);
     g.position.set(x, 0, z); g.rotation.y = yaw; g.name = 'box'; add(g); return g;
   }
 
@@ -132,7 +137,7 @@
     await marker(-6.0, 2.0, 0, 0);
     // a suited Brontosaurus run 4-5-6 on the near side of Como Bluff
     await card(34, -8.6, 4.9); await card(35, -6.0, 4.9); await card(36, -3.4, 4.9);
-    frame([-9.9, 0, -6.8], [6.5, 1.26, 6.7], 50, 3, 0.99);
+    frame([-9.9, 0, -6.8], [6.5, 3.65, 6.7], 42, 3, 0.99);
   }
 
   if (SCENE === 'table' || SCENE === 'lanes') {
@@ -140,18 +145,18 @@
     const sites = [-7.2, 0, 7.2];
     for (const [k, x] of sites.entries()) await marker(x, 0, 0, k);
     // Como Bluff: a run 3-4-5-6, held by the far camp
-    for (const [k, id] of [3, 14, 25, 6].entries()) await card(id, sites[0] - 3.9 + k * 2.6, -2.7);
+    for (const [k, id] of [3, 14, 25, 6].entries()) await card(id, sites[0] - 3.975 + k * 2.65, -2.7);
     // Garden Park: a suited Triceratops run 6-7-8, held by the near camp
-    for (const [k, id] of [16, 17, 18].entries()) await card(id, sites[1] - 2.6 + k * 2.6, 2.7);
+    for (const [k, id] of [16, 17, 18].entries()) await card(id, sites[1] - 2.65 + k * 2.65, 2.7);
     // Morrison: a set of two 9s, held by the far camp
-    for (const [k, id] of [9, 29].entries()) await card(id, sites[2] - 1.3 + k * 2.6, -2.7);
+    for (const [k, id] of [9, 29].entries()) await card(id, sites[2] - 1.325 + k * 2.65, -2.7);
     if (SCENE === 'lanes') frame([-12.7, 0, -4.8], [10.9, 0.2, 4.8], 74, 0, 0.97);
     else {
       // each camp keeps a field guide; the deck and the box wait at the side
       await makeCard('ref.jpg', -11.6, 6.6, 0); await makeCard('ref.jpg', 11.6, -6.6, Math.PI);
       await deck(12.6, 2.4, 24, 0.04);
       await box(-15.6, -4.5, -0.12);
-      frame([-18.2, 0, -8.4], [14.0, 1.25, 8.4], 62, 0, 0.99);
+      frame([-18.2, 0, -8.4], [14.0, 3.65, 8.4], 56, 0, 0.99);
     }
   }
 
@@ -161,13 +166,13 @@
     await box(-11.6, -8.2, 0);
     for (let i = 0; i < 4; i++) await makeCard('ref.jpg', -13.0 + (i % 2) * 2.8, -1.4 + Math.floor(i / 2) * 3.8, 0);
     for (let i = 0; i < 6; i++) await marker(-13.2 + (i % 2) * 3.75, 5.3 + Math.floor(i / 2) * 1.55, 0, i, i % 2 ? 'fx' : '');
-    frame([-15.3, 0, -11.6], [20.0, 1.25, 11.6], 64, 0, 0.97);
+    frame([-15.3, 0, -11.6], [20.0, 3.65, 11.6], 64, 0, 0.97);
   }
 
   if (SCENE === 'themed') {
-    // the hero kit laid out quietly on a deep rust linen cloth (the red sandstone of the box), under one soft overhead pool of light, with a small dusting brush.
+    // the hero kit laid out quietly on a deep rust linen cloth (the red sandstone of the box), under one soft overhead pool of light. No props.
     // Only this branch changes the environment; every other scene keeps the oak desk above.
-    const LAY = { box: [-4.9, -1.3, -0.16], slab: [1.2, -0.6], strip: [-4.9, 3.0, -0.05], brush: [6.9, 1.5, 0.45] };
+    const LAY = { box: [-3.9, -1.6, 0.12], slab: [3.6, -0.4], strip: [-4.3, 2.6, 0.05] };
     const CX = 0.8, CZ = -0.8; // centre of the pool of light (table coordinates)
     let seed = 1877; const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
     for (const l of scene.children.filter((o) => o.isLight)) scene.remove(l);
@@ -214,44 +219,11 @@
     const outer = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshBasicMaterial({ color: C(shade) }));
     outer.position.set(0, 0, -0.01); table.add(outer);
 
-    // ---- the one prop: a small soft dusting brush, lying flat, bristles towards -x
-    function brush(x, z, yaw) {
-      const t = new THREE.Group();
-      const canvasTex = (w, hh, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = hh; draw(c.getContext('2d'), w, hh); const tt = new THREE.CanvasTexture(c); tt.encoding = THREE.sRGBEncoding; tt.anisotropy = 8; return tt; };
-      const wt = canvasTex(256, 512, (c, w, hh) => {
-        c.fillStyle = '#A9784A'; c.fillRect(0, 0, w, hh);
-        for (let i = 0; i < 120; i++) { c.strokeStyle = 'rgba(' + (rnd() < 0.5 ? '84,52,26' : '196,152,104') + ',' + (0.1 + rnd() * 0.16) + ')'; c.lineWidth = 1 + rnd() * 3; const x0 = rnd() * w; c.beginPath(); c.moveTo(x0, 0); c.bezierCurveTo(x0 + (rnd() - 0.5) * 30, hh * 0.3, x0 + (rnd() - 0.5) * 30, hh * 0.7, x0 + (rnd() - 0.5) * 20, hh); c.stroke(); }
-      });
-      // a 4.5-inch flat dusting brush: turned wooden handle, brass ferrule, a wide pale tuft of hog bristle.
-      // Built standing on its axis (+y = handle end, -y = bristle tip, local x = the flat thickness), then laid down: handle towards +x, bristles towards -x, flat side up.
-      const b = new THREE.Group();
-      const prof = [[0, 0], [0.13, 0], [0.17, 0.12], [0.2, 0.6], [0.2, 1.8], [0.16, 2.35], [0.12, 2.52], [0, 2.54]].map((p) => new THREE.Vector2(p[0], p[1]));
-      const hd = new THREE.Mesh(new THREE.LatheGeometry(prof, 32), new THREE.MeshStandardMaterial({ map: wt, roughness: 0.5 }));
-      hd.castShadow = true; hd.receiveShadow = true; b.add(hd); // y 0 .. 2.54
-      // ferrule: round where it grips the handle, pinched flat and wide where the bristles come out
-      const FL = 0.62, fg = new THREE.CylinderGeometry(1, 1, FL, 40, 8, true), fp = fg.attributes.position;
-      for (let i = 0; i < fp.count; i++) { const k = 0.5 - fp.getY(i) / FL; /* 0 at the handle, 1 at the bristles */ fp.setX(i, fp.getX(i) * (0.205 - 0.08 * k)); fp.setZ(i, fp.getZ(i) * (0.205 + 0.17 * k)); }
-      fg.computeVertexNormals();
-      const fe = new THREE.Mesh(fg, new THREE.MeshStandardMaterial({ color: C('#B89050'), metalness: 0.6, roughness: 0.36, side: THREE.DoubleSide }));
-      fe.position.y = -FL / 2 + 0.04; fe.castShadow = true; fe.receiveShadow = true; b.add(fe);
-      // the tuft: a flat block of bristle, fanning slightly and thinning to a soft tip
-      const bt = canvasTex(256, 256, (c, w, hh) => { c.fillStyle = '#D6C098'; c.fillRect(0, 0, w, hh); for (let i = 0; i < 1400; i++) { c.strokeStyle = 'rgba(' + (rnd() < 0.5 ? '150,120,80' : '240,226,196') + ',' + (0.2 + rnd() * 0.35) + ')'; c.lineWidth = 1; const x0 = rnd() * w; c.beginPath(); c.moveTo(x0, 0); c.lineTo(x0 + (rnd() - 0.5) * 6, hh); c.stroke(); } });
-      const TL = 0.78, tg = new THREE.BoxGeometry(0.24, TL, 0.74, 2, 8, 8), tp = tg.attributes.position;
-      for (let i = 0; i < tp.count; i++) { const k = 0.5 - tp.getY(i) / TL; tp.setZ(i, tp.getZ(i) * (1 + 0.16 * k)); tp.setX(i, tp.getX(i) * (1 - 0.3 * k)); if (k > 0.99) tp.setY(i, tp.getY(i) - 0.04 * (1 - Math.pow(tp.getZ(i) / 0.43, 2))); }
-      tg.computeVertexNormals();
-      const tuft = new THREE.Mesh(tg, new THREE.MeshStandardMaterial({ map: bt, roughness: 0.92 }));
-      tuft.position.y = -FL + 0.06 - TL / 2; tuft.castShadow = true; tuft.receiveShadow = true; b.add(tuft);
-      // lay it down: +y -> +x, local x (the flat thickness) -> -y; tip slightly lowered so the bristles rest on the cloth and the handle end rests on its widest point
-      b.rotation.z = -Math.PI / 2 + 0.059; b.position.set(0, 0.166, 0); t.add(b);
-      t.position.set(x, 0, z); t.rotation.y = yaw; t.name = 'brush'; add(t); return t;
-    }
-
-    // ---- layout: the box with Como Bluff below it on the left, the whole Stegosaurus slab in the middle, the brush on the right
+    // ---- layout: the standing box with Como Bluff in front of it on the left, the whole Stegosaurus slab on the right
     await box(LAY.box[0], LAY.box[1], LAY.box[2]);
     await slab(2, LAY.slab[0], LAY.slab[1]);
     await marker(LAY.strip[0], LAY.strip[1], LAY.strip[2], 0);
-    brush(...LAY.brush);
-    frame([-6.9, 0, -5.6], [8.6, 0.4, 5.9], 50, 0, 0.92);
+    frame([-6.4, 0, -5.4], [7.6, 3.65, 5.4], 40, 0, 0.92);
   }
 
   renderer.render(scene, camera);

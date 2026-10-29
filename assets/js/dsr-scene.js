@@ -10,20 +10,20 @@
 
   // Camera presets: target, distance, yaw (theta), pitch from vertical (phi)
   const VIEWS = {
-    all:   { t: [1.15, 0.6, 0.75], d: 14.2, th: 0.0,  ph: 1.02 },
-    box:   { t: [-2.4, 0.6, -1.8], d: 9.8, th: -0.12, ph: 0.8 },
+    all:   { t: [1.15, 1.1, 0.55], d: 16.4, th: 0.0,  ph: 1.08 },
+    box:   { t: [0.0, 2.1, 0.0], d: 11.6, th: -0.18, ph: 1.32 },   // the box on its own, standing
     tiles: { t: [-1.6, 0.3, 3.5],  d: 6.9,  th: 0.0,  ph: 0.5 },
     bag:   { t: [5.3, 0.9, 0.3],   d: 7.9,  th: -0.18, ph: 1.0 },
     // the card edition: its own little table (card box, a cart, a played combination, backs)
     cards: { t: [0.0, 0.0, 0.0], d: 12.7, th: 0.0,  ph: 0.68 },
-    // the hero still: the tile edition on a plain deep-jade tablecloth under a soft overhead light
-    scene: { t: [0.15, 0.2, -0.2], d: 17.3, th: 0.0,  ph: 0.9 },
+    // the hero still: the tile edition on a plain deep-jade tablecloth under a soft overhead light, box standing
+    scene: { t: [-0.3, 1.0, 0.1], d: 17.6, th: 0.0,  ph: 0.9 },
   };
   const CARD_TEX = '/games/dim-sum-rush/img/src/tex/';
 
   // Card edition table: x right, z toward the camera; card(rank, x, z, faceUp, yaw)
   function cardLayout(card, box) {
-    box.position.set(-3.0, 0, -2.5); box.rotation.y = -0.16;                // the card box
+    box.rotation.set(Math.PI / 2, -0.12, 0, 'YXZ'); box.position.set(-3.0, 1.63 / 2, -3.0); // the card box, standing
     [1, 8, 10].forEach((r, i) => card(r, -0.15 + i * 1.7, -2.6, false, [-0.03, 0.02, -0.025][i])); // face down: steamer, bowl, dessert-tray backs
     [4, 5, 6].forEach((r, i) => card(r, -1.6 + i * 1.6, -0.25, true, 0));    // a played combination: the run 4 5 6
     [2, 9, 7, 11, 3].forEach((r, i) => card(r, -3.2 + i * 1.6, 2.1, true, 0)); // a cart, in dealt order
@@ -135,8 +135,17 @@
       new THREE.MeshStandardMaterial({ map: side, roughness: 0.55 }),
     ];
     const box = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), boxMats);
+    // Standing up, the lid art faces the camera and the back side panel becomes the top edge; that panel's
+    // texture is turned 180 degrees so its title still reads the right way up from the front.
+    const sideUp = tex('box-side'); sideUp.center.set(0.5, 0.5); sideUp.rotation = Math.PI;
+    const standMats = boxMats.slice(); standMats[5] = new THREE.MeshStandardMaterial({ map: sideUp, roughness: 0.55 });
+    function standBox(x, z, yaw) { // upright on its long bottom edge, front cover toward +z
+      const m = new THREE.Mesh(box.geometry, standMats); m.name = 'box'; m.castShadow = m.receiveShadow = true;
+      m.rotation.set(Math.PI / 2, yaw || 0, 0, 'YXZ'); m.position.set(x, BD / 2, z); return m;
+    }
     box.castShadow = box.receiveShadow = true; box.name = 'box';
-    box.position.set(-2.4, BH / 2, -2.4); box.rotation.y = 0.16;
+    box.rotation.set(Math.PI / 2, 0.16, 0, 'YXZ'); box.material = standMats;
+    box.position.set(-2.4, BD / 2, -2.6);
     stage.add(box);
 
     // Tile bag (lathe + cloth folds)
@@ -171,6 +180,15 @@
     [12, 12, 12, 12].forEach((r, i) => faceUp(r, -1.9 + i * 0.9, 3.8, 0));
     faceDown(1, 3.65, 1.35, 0.12); faceDown(9, 4.7, 1.4, -0.1); faceDown(5, 5.75, 1.35, 0.12);
     faceUp(6, 6.8, 1.45, -0.12);
+
+    // Box on its own (view 'box'): the tile-edition box standing, nothing else in frame.
+    let boxSolo = null;
+    function boxSet() {
+      if (boxSolo) return boxSolo;
+      boxSolo = new THREE.Group(); boxSolo.visible = false; scene.add(boxSolo);
+      boxSolo.add(standBox(0, -BH / 2, 0));
+      return boxSolo;
+    }
 
     // Card edition (view 'cards'): built on first use in its own group, shown instead of the tile set.
     // Poker-size cards (63.5 × 88.9 mm) at the tiles' scale; faces and backs follow the print-and-play kit:
@@ -223,13 +241,14 @@
       const LW = 2.21, LD = 1.63, LH = 0.64, LIP = 0.06;
       const cside = new THREE.TextureLoader(manager), ctex = (n) => { const t = cside.load(CARD_TEX + n + '.webp'); t.encoding = THREE.sRGBEncoding; t.anisotropy = Math.min(8, maxAniso); return t; };
       const lsd = ctex('card-box-side'), lend = ctex('card-box-end');
+      const lsdUp = ctex('card-box-side'); lsdUp.center.set(0.5, 0.5); lsdUp.rotation = Math.PI; // the top edge once the box stands
       const lidMats = [
         new THREE.MeshStandardMaterial({ map: lend, roughness: 0.55 }),
         new THREE.MeshStandardMaterial({ map: lend, roughness: 0.55 }),
         new THREE.MeshStandardMaterial({ map: ctex('card-box-top'), roughness: 0.5 }),
         new THREE.MeshStandardMaterial({ color: C('#6E120D'), roughness: 0.8 }),
         new THREE.MeshStandardMaterial({ map: lsd, roughness: 0.55 }),
-        new THREE.MeshStandardMaterial({ map: lsd, roughness: 0.55 }),
+        new THREE.MeshStandardMaterial({ map: lsdUp, roughness: 0.55 }),
       ];
       const cbox = new THREE.Group(); cbox.name = 'card box';
       const lid = new THREE.Mesh(new THREE.BoxGeometry(LW, LH, LD), lidMats); lid.position.y = LIP + LH / 2; lid.castShadow = lid.receiveShadow = true; cbox.add(lid);
@@ -241,8 +260,8 @@
     }
 
     // Tablecloth scene (view 'scene'): the tile edition on a plain deep-jade tablecloth (the jade of the box's
-    // dessert band) under one soft overhead pool of light that falls off to a gentle vignette, with a single
-    // small cup of tea. Built on first use; `set` holds the objects (box, bag, tiles, cup), `env` the cloth and
+    // dessert band) under one soft overhead pool of light that falls off to a gentle vignette. No props: the
+    // standing box, the bag and tiles only. Built on first use; `set` holds the objects, `env` the cloth and
     // lights, so the per-object overlap check can hide the environment.
     function canvasTex(w, h, draw, repeat) {
       const cv = document.createElement('canvas'); cv.width = w; cv.height = h; draw(cv.getContext('2d'), w, h);
@@ -288,20 +307,10 @@
       const fill = new THREE.DirectionalLight(0xffeedd, 0.22); fill.position.set(-2, 9, 14); env.add(fill);
 
       // --- components: the tile-version box, the cloth bag, a dealt cart and a played combination
-      const box2 = new THREE.Mesh(box.geometry, boxMats); box2.name = 'box'; box2.castShadow = box2.receiveShadow = true;
-      box2.position.set(-3.0, BH / 2, -1.5); box2.rotation.y = 0.12; set.add(box2);
-      const bag2 = bag.clone(); bag2.name = 'bag'; bag2.position.set(3.7, 0, -1.5); bag2.rotation.y = -0.5; set.add(bag2);
+      set.add(standBox(-2.6, -1.3, 0.1));
+      const bag2 = bag.clone(); bag2.name = 'bag'; bag2.position.set(3.7, 0, -1.2); bag2.rotation.y = -0.5; set.add(bag2);
       [2, 3, 5, 7, 8, 11].forEach((r, i) => standing(r, -5.0 + i * 0.95, 2.5, 0, 0.1, set));
       [4, 5, 6].forEach((r, i) => faceUp(r, 1.2 + i * 0.95, 2.75, 0, set));
-
-      // --- the one prop: a small plain cup of tea
-      const lathe = (pts, seg) => new THREE.LatheGeometry(new THREE.SplineCurve(pts.map((p) => new THREE.Vector2(p[0], p[1]))).getPoints(48), seg || 72);
-      const porcelain = new THREE.MeshStandardMaterial({ color: C('#f4eee2'), roughness: 0.2, side: THREE.DoubleSide });
-      const cup = new THREE.Group(); cup.name = 'teacup';
-      const cupB = new THREE.Mesh(lathe([[0, 0], [0.32, 0], [0.36, 0.06], [0.5, 0.3], [0.62, 0.62], [0.66, 0.78]]), porcelain); cupB.castShadow = cupB.receiveShadow = true; cup.add(cupB);
-      const tea = new THREE.Mesh(new THREE.CircleGeometry(0.6, 48), new THREE.MeshStandardMaterial({ color: C('#7a3d12'), roughness: 0.1 }));
-      tea.rotation.x = -Math.PI / 2; tea.position.y = 0.62; cup.add(tea);
-      cup.scale.setScalar(0.85); cup.position.set(5.05, 0, 2.45); set.add(cup);
 
       clothScene = { set, env, bg: new THREE.Color(CLOTH_FAR).convertSRGBToLinear() };
       return clothScene;
@@ -311,7 +320,7 @@
     const cur = { t: new THREE.Vector3(), d: 0, th: 0, ph: 0 }, goal = { t: new THREE.Vector3(), d: 0, th: 0, ph: 0 };
     function setGoal(name, instant) {
       const p = VIEWS[name] || VIEWS.all;
-      showSet(name === 'cards' ? cardSet() : name === 'scene' ? clothSet().set : stage);
+      showSet(name === 'cards' ? cardSet() : name === 'scene' ? clothSet().set : name === 'box' ? boxSet() : stage);
       goal.t.set(p.t[0], p.t[1], p.t[2]); goal.d = p.d; goal.th = p.th; goal.ph = p.ph;
       if (instant || reduce) { cur.t.copy(goal.t); cur.d = goal.d; cur.th = goal.th; cur.ph = goal.ph; }
       sway0 = goal.th;

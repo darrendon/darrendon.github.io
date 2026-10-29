@@ -66,7 +66,7 @@
     const g = new THREE.Group();
     const e = new THREE.Mesh(cardEdge, edgeMat); e.rotation.x = -Math.PI / 2; e.castShadow = true; e.receiveShadow = true; g.add(e);
     const f = new THREE.Mesh(cardCap, await faceMat(texName)); f.rotation.x = -Math.PI / 2; f.position.y = CT + 0.002; f.receiveShadow = true; g.add(f);
-    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return track(g, texName.replace('.jpg', '') + ' @' + x.toFixed(1) + ',' + z.toFixed(1));
   }
   const card = (r, x, z, yaw) => makeCard('face-' + r + '.jpg', x, z, yaw);
   const back = (x, z, yaw) => makeCard('back.jpg', x, z, yaw);
@@ -75,7 +75,7 @@
     const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(CW, CH, CR), { depth: h, bevelEnabled: false, curveSegments: 8 }), new THREE.MeshStandardMaterial({ color: C('#EDE8DC'), roughness: 0.85 }));
     body.rotation.x = -Math.PI / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
     const f = new THREE.Mesh(cardCap, await faceMat('back.jpg')); f.rotation.x = -Math.PI / 2; f.position.y = h + 0.002; g.add(f);
-    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return track(g, 'deck @' + x.toFixed(1));
   }
   // a face-up pile: n cards of one rank stacked square, its top card showing
   async function pile(texName, x, z, n, yaw = 0) {
@@ -83,30 +83,41 @@
     const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(CW, CH, CR), { depth: h, bevelEnabled: false, curveSegments: 8 }), new THREE.MeshStandardMaterial({ color: C('#EDE8DC'), roughness: 0.85 }));
     body.rotation.x = -Math.PI / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
     const f = new THREE.Mesh(cardCap, await faceMat(texName)); f.rotation.x = -Math.PI / 2; f.position.y = h + 0.002; g.add(f);
-    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return track(g, texName.replace('.jpg', '') + ' pile');
   }
   const GAP = 0.12;
 
-  // ---- the box: 4 x 5 x 1.25, two-piece, lid on
-  const BW = 4, BH = 1.25, BD = 5;
+  // ---- the box: 4 x 5 x 1.25, two-piece, lid on, standing upright on its bottom edge with the cover facing +z
+  const BW = 4, BH = 1.25, BD = 5, BOX_TOP = BD;
   async function box(x, z, yaw = 0) {
     const tTop = await tex('box-top.jpg'), tSide = await tex('box-side.jpg'), tEnd = await tex('box-end.jpg');
     const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.45 });
     const sideL = tSide.clone(), sideR = tSide.clone(); sideL.needsUpdate = sideR.needsUpdate = true;
     sideL.center.set(0.5, 0.5); sideR.center.set(0.5, 0.5);
-    const mats = [M(sideR), M(sideL), M(tTop), new THREE.MeshStandardMaterial({ color: C('#1C1530'), roughness: 0.8 }), M(tEnd), M(tEnd)];
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.castShadow = true; body.receiveShadow = true; body.position.y = BH / 2; g.add(body);
-    const seam = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.012, 0.018, BD + 0.012), new THREE.MeshStandardMaterial({ color: C('#1C1530'), roughness: 0.9 })); seam.position.y = BH * 0.62; g.add(seam);
-    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); return g;
+    const endUp = tEnd.clone(); endUp.center.set(0.5, 0.5); endUp.rotation = Math.PI; endUp.needsUpdate = true; // the end that faces up, read from the front
+    const mats = [M(sideR), M(sideL), M(tTop), new THREE.MeshStandardMaterial({ color: C('#1C1530'), roughness: 0.8 }), M(tEnd), M(endUp)];
+    const inner = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BH, BD), mats); body.castShadow = true; body.receiveShadow = true; inner.add(body);
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.012, 0.018, BD + 0.012), new THREE.MeshStandardMaterial({ color: C('#1C1530'), roughness: 0.9 })); seam.position.y = BH * 0.12; inner.add(seam);
+    // tip the lying box up onto its bottom edge: the cover (+y) turns to face +z, its top edge goes up
+    inner.rotation.x = Math.PI / 2; inner.position.y = BD / 2;
+    const g = new THREE.Group(); g.add(inner);
+    g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g); track(g, 'box'); return g;
   }
+  // every component the silhouette check looks at
+  window.__objs = [];
+  let nObj = 0;
+  function track(o, n, env) { o.name = n || ('piece ' + (++nObj)); window.__objs.push({ o, env: !!env }); return o; }
 
   function frame(min, max, elevDeg, azimDeg, margin) {
     const c = new THREE.Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
     const el = elevDeg * Math.PI / 180, az = azimDeg * Math.PI / 180;
     const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    // fit the real pieces: the corners of each tracked object's own bounds (the standing box is the only tall one)
     const corners = [];
-    for (const x of [min[0], max[0]]) for (const y of [min[1], max[1]]) for (const z of [min[2], max[2]]) corners.push(new THREE.Vector3(x, y, z));
+    for (const it of (window.__objs || [])) { const bb = new THREE.Box3().setFromObject(it.o);
+      for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]) corners.push(new THREE.Vector3(x, y, z)); }
+    if (!corners.length) for (const x of [min[0], max[0]]) for (const y of [min[1], max[1]]) for (const z of [min[2], max[2]]) corners.push(new THREE.Vector3(x, y, z));
     let dist = 5;
     for (let it = 0; it < 80; it++) {
       camera.position.copy(c).addScaledVector(dir, dist); camera.lookAt(c); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
@@ -114,23 +125,37 @@
       for (const p of corners) { const v = p.clone().project(camera); if (Math.abs(v.x) > margin || Math.abs(v.y) > margin) { ok = false; break; } }
       if (ok) break; dist *= 1.05;
     }
+    // the standing box makes the bounds tall, so pan until the projected bounds sit centred in the frame
+    const right = new THREE.Vector3(), up = new THREE.Vector3();
+    for (let it = 0; it < 8; it++) {
+      let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
+      for (const p of corners) { const v = p.clone().project(camera); x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x); y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y); }
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, span = Math.max((x1 - x0) / 2, (y1 - y0) / 2);
+      const hh = Math.tan(camera.fov * Math.PI / 360) * camera.position.distanceTo(c);
+      right.setFromMatrixColumn(camera.matrixWorld, 0); up.setFromMatrixColumn(camera.matrixWorld, 1);
+      const shift = right.multiplyScalar(mx * hh * camera.aspect).add(up.multiplyScalar(my * hh));
+      c.add(shift); camera.position.add(shift);
+      if (span > margin) camera.position.addScaledVector(dir, camera.position.distanceTo(c) * (span / margin - 1));
+      else if (span < margin * 0.97) camera.position.addScaledVector(dir, -camera.position.distanceTo(c) * (1 - span / margin) * 0.9);
+      camera.lookAt(c); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+    }
   }
 
   // ================================================================ scenes
   const P = CW + GAP;
   if (SCENE === 'hero') {
     // the box beside a 4-card run on the mat, and a wrestler's three face-down count cards in front
-    await box(-5.2, -0.6, 0.2);
+    await box(-5.0, -1.4, 0.12);
     for (let k = 0; k < 4; k++) await card(4 + k, 0.4 + k * P, -1.6, 0);
     for (let k = 0; k < 3; k++) await back(1.7 + k * P, 2.7, 0);
-    frame([-7.5, 0, -3.6], [9.0, 1.25, 4.6], 48, 2, 0.99);
+    frame([-7.3, 0, -3.6], [9.0, BOX_TOP, 4.6], 40, 2, 0.88);
   }
 
   if (SCENE === 'home') {
     // the home page card crops the middle of the frame, so the box and run sit close together, centred
-    await box(-3.6, -0.4, 0.2);
+    await box(-3.5, -1.2, 0.12);
     for (let k = 0; k < 4; k++) await card(4 + k, 0.4 + (k % 2) * P, -2.2 + Math.floor(k / 2) * (CH + GAP), 0);
-    frame([-5.9, 0, -4.2], [5.4, 1.25, 3.6], 50, 2, 0.74);
+    frame([-5.8, 0, -4.2], [5.4, BOX_TOP, 3.6], 40, 2, 0.74);
   }
 
   if (SCENE === 'table') {
@@ -143,16 +168,16 @@
       const ax = Math.cos(yaw), az = -Math.sin(yaw);
       for (let k = 0; k < cnt; k++) { const o = (k - (cnt - 1) / 2) * P; await back(x + ax * o, z + az * o, yaw); }
     }
-    await box(11.2, -8.4, -0.22);
-    frame([-13.0, 0, -11.2], [13.6, 1.25, 9.4], 58, 0, 0.99);
+    await box(10.8, -9.0, -0.18);
+    frame([-13.0, 0, -11.2], [13.6, BOX_TOP, 9.4], 52, 0, 0.9);
   }
 
   if (SCENE === 'kit') {
     // everything in the box: sixty cards as ten piles of six, one per rank, and the box
     for (let r = 1; r <= 10; r++) await pile('face-' + r + '.jpg', -3.9 + ((r - 1) % 5) * (CW + 0.5), -2.0 + Math.floor((r - 1) / 5) * (CH + 0.6), 6, 0);
     await back(-3.9 + 5 * (CW + 0.5), -2.0, 0);
-    await box(-9.6, -0.2, 0);
-    frame([-12.0, 0, -4.2], [13.0, 1.25, 4.4], 64, 0, 0.97);
+    await box(-9.4, -1.2, 0.08);
+    frame([-11.8, 0, -4.2], [13.0, BOX_TOP, 4.4], 50, 0, 0.88);
   }
 
   if (SCENE === 'themed') await themed();
@@ -169,8 +194,6 @@
   async function themed() {
     const named = (o, n) => { o.name = n; return o; };
     // what the silhouette check looks at: everything that sits on the cloth
-    window.__objs = [];
-    const track = (o, n, env) => { named(o, n); window.__objs.push({ o, env: !!env }); return o; };
 
     // ---- the cloth: deep royal blue with a fine, even weave
     function clothTexture() {
@@ -200,12 +223,12 @@
     scene.add(spot); scene.add(spot.target);
 
     // ---- the components, with clear cloth between them
-    track(await box(-3.9, 0.3, 0.16), 'box');
-    for (let k = 0; k < 4; k++) track(await card(4 + k, 1.25 + (k % 2) * (P + 0.2), -1.75 + Math.floor(k / 2) * (CH + GAP + 0.2), 0), 'card ' + (4 + k));
+    await box(-3.9, -1.0, 0.14);
+    for (let k = 0; k < 4; k++) await card(4 + k, 1.25 + (k % 2) * (P + 0.2), -1.75 + Math.floor(k / 2) * (CH + GAP + 0.2), 0);
 
     { // camera
-      const el = +(q.get('el') || 34) * Math.PI / 180, az = +(q.get('az') || -2) * Math.PI / 180, dist = +(q.get('d') || 20.5);
-      const tgt = new THREE.Vector3(+(q.get('tx') || -0.25), 0, +(q.get('tz') || -0.9));
+      const el = +(q.get('el') || 34) * Math.PI / 180, az = +(q.get('az') || -2) * Math.PI / 180, dist = +(q.get('d') || 22.5);
+      const tgt = new THREE.Vector3(+(q.get('tx') || -0.4), +(q.get('ty') || 0.9), +(q.get('tz') || -1.1));
       camera.position.set(tgt.x + Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, tgt.z + Math.cos(az) * Math.cos(el) * dist);
       camera.lookAt(tgt); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
     }
