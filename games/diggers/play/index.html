@@ -138,12 +138,12 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-dire
 @media (max-width: 460px) {
   h1 { font-size: 34px; }
   .choices { grid-template-columns: 1fr; }
-  .card { width: 19px; height: 27px; border-radius: 3px; }
-  .card .ix { min-width: 9px; } .card .ix.tl { left: 2px; top: 1px; } .card .ix b { font-size: 10px; } .card .ix svg { display: none; }
-  .hand .card { width: 40px; height: 56px; }
+  .card { width: 24px; height: 34px; border-radius: 3px; }
+  .card .ix { min-width: 10px; } .card .ix.tl { left: 2px; top: 1px; } .card .ix b { font-size: 12px; } .card .ix svg { display: none; }
+  .hand .card { width: 44px; height: 62px; }
   .hand .card .ix { min-width: 12px; } .hand .card .ix.tl { left: 2px; top: 2px; }
   .hand .card .ix b { font-size: 13px; } .hand .card .ix svg { display: block; width: 10px; height: 10px; }
-  .slot { height: 56px; }
+  .slot { height: 62px; }
   .seat { padding: 6px 7px; }
   .seat .name { font-size: 15px; }
   .seat .score { font-size: 19px; }
@@ -247,7 +247,7 @@ body { background-color: var(--rock); }
   .site .who .full { display: none; } .site .who .short { display: inline; }
   .site.v .what { display: none; }
   .site.v .who { font-size: 10px; letter-spacing: .03em; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
-  .site.v .meld { max-width: 44px; }
+  .site.v .meld { max-width: 54px; }
 }
 
 /* ---- online tables: lobby, table code, seats ---- */
@@ -287,6 +287,60 @@ button:disabled { opacity: .55; cursor: default; }
   .codebox .code { font-size: 38px; }
   .netbar .netstate { margin-left: 0; width: 100%; text-align: left; }
   .lseat { flex-wrap: wrap; } .lseat button { margin-left: 19px; }
+}
+
+/* ---- a fossil coming in (sent to you, or just poached) is held face up beside the rock face until it's set ---- */
+.hand .incoming { display: flex; flex-direction: column; align-items: center; gap: 3px; margin-right: 10px; padding-right: 12px; border-right: 2px dashed var(--line); align-self: stretch; justify-content: flex-end; }
+.hand .incoming .lab { font-family: var(--font-caps); font-size: 12px; letter-spacing: .04em; color: var(--accent); white-space: nowrap; }
+.hand .incoming .card { cursor: default; outline: 3px solid var(--glow); outline-offset: 2px; box-shadow: 0 4px 14px rgba(0, 0, 0, .35); }
+.hand .incoming .card .ix { display: flex; }
+.card.arrive { animation: arrive .45s ease-out; }
+@keyframes arrive { from { transform: translateY(-18px) rotate(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .card.arrive { animation: none; } }
+@media (max-width: 460px) {
+  .hand .incoming { flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; margin: 0 0 4px; padding: 0 0 8px; border-right: 0; border-bottom: 2px dashed var(--line); align-self: auto; }
+}
+
+/* ---- bigger screens: the table spreads out and the fossils grow so the cards read at a glance ---- */
+@media (min-width: 760px) {
+  .wrap { max-width: 1240px; padding-inline: 24px; gap: 16px; }
+  .status .who { font-size: 22px; } .status .hint { font-size: 15px; }
+  .table { gap: 12px; }
+  .seat { padding: 10px 14px; } .seat .name { font-size: 20px; } .seat .meta { font-size: 14px; } .seat .score { font-size: 26px; }
+  .center .big { font-size: 58px; } .center .small { font-size: 14px; } .seasons span { font-size: 13px; padding: 2px 9px; }
+  .card { width: 56px; height: 78px; border-radius: 5px; }
+  .card .ix { min-width: 16px; } .card .ix b { font-size: 17px; } .card .ix svg { width: 12px; height: 12px; }
+  .meld { gap: 3px; }
+  .site { min-height: 230px; }
+  .site .side { gap: 5px; padding: 10px 8px; min-height: 96px; }
+  .site .who { font-size: 13.5px; } .site .what { font-size: 13.5px; }
+  .site .board { padding: 7px 14px; } .site .board b { font-size: 17px; } .site .board .fxtag { font-size: 13px; padding: 2px 8px 1px; } .site .board .untouched { font-size: 12.5px; }
+  .site.v .board { padding: 16px 7px; }
+  .site.v .meld { max-width: 118px; }
+  .hand-wrap { padding: 12px 16px 18px; gap: 10px; }
+  .hand { gap: 5px; padding-top: 14px; min-height: 130px; }
+  .hand .card { width: 76px; height: 106px; border-radius: 7px; }
+  .hand .card .ix { min-width: 20px; } .hand .card .ix b { font-size: 23px; } .hand .card .ix svg { width: 16px; height: 16px; }
+  .hand .card.sel { transform: translateY(-12px); }
+  .slot { width: 12px; height: 106px; }
+  .hand .incoming .lab { font-size: 13.5px; }
+  .fxlegend div, .log { font-size: 14.5px; } .fxlegend b { font-size: 17.5px; }
+}
+@media (min-width: 760px) and (min-height: 640px) {
+  /* the rock face stays docked at the bottom of the screen while the table scrolls above it */
+  .hand-wrap { position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6px 18px rgba(30, 18, 8, .35); }
+}
+@media (min-width: 1100px) {
+  .wrap { max-width: 1440px; }
+  .card { width: 72px; height: 101px; border-radius: 7px; }
+  .card .ix { min-width: 20px; } .card .ix b { font-size: 22px; } .card .ix svg { width: 15px; height: 15px; }
+  .site { min-height: 270px; }
+  .site .side { min-height: 118px; }
+  .site.v .meld { max-width: 150px; }
+  .hand { gap: 4px; min-height: 160px; }
+  .hand .card { width: 96px; height: 134px; border-radius: 8px; }
+  .hand .card .ix { min-width: 25px; } .hand .card .ix b { font-size: 29px; } .hand .card .ix svg { width: 20px; height: 20px; }
+  .slot { width: 11px; height: 134px; }
 }
 </style>
 
@@ -1358,6 +1412,10 @@ function handHtml() {
   const me = G.players[0];
   const placing = ui.mode === "placeScout" || ui.mode === "placeReceived";
   let inner = "";
+  // a fossil that's coming in (sent to you, or just poached) is held face up at the left of the rock face until it's set
+  const incoming = G.phase === "offer" && G.offer && G.offer.to === 0 ? { card: G.offer.card, lab: `From ${G.players[G.offer.from].name}` }
+    : ui.mode === "placeScout" && ui.scout ? { card: ui.scout.card, lab: "Poached" } : null;
+  ui.shownNow = incoming ? incoming.card : null;
   if (placing) {
     for (let k = 0; k <= me.hand.length; k++) {
       const T = tutStep(), ok = !T || ui.mode !== "placeScout" || T.place === k;
@@ -1377,7 +1435,7 @@ function handHtml() {
   }
   return `<div class="hand-wrap ${tutStep() && tutStep().focus === "hand" ? "tut-focus" : ""}">
     <div class="hand-head"><span class="eyebrow">Your rock face · locked strata · ${me.hand.length} fossils</span><div class="actions">${actions}</div></div>
-    <div class="hand">${inner || `<span class="empty-note">The rock face is clear.</span>`}</div>
+    <div class="hand">${incoming ? `<div class="incoming"><span class="lab">${incoming.lab}</span>${cardHtml(incoming.card, ui.lastShown === incoming.card ? "" : "arrive", `role="img" aria-label="${cardName(incoming.card)}"`)}</div>` : ""}${inner || (incoming ? "" : `<span class="empty-note">The rock face is clear.</span>`)}</div>
   </div>`;
 }
 
@@ -1450,6 +1508,7 @@ function render() {
   root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}${G.adv ? " · site effects" : ""}</div><h1>Diggers</h1></div>
     <button data-act="setup">${net ? "Leave the table" : "New expedition"}</button></div>
     ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${fxLegendHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
+  ui.lastShown = ui.shownNow; ui.shownNow = null; // the face-up card only slides in the first time it appears
   if (net && net.kind === "host") net.sync();
 }
 
