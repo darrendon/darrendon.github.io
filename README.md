@@ -50,8 +50,10 @@ Portfolio site for Darren Don, a board game designer in Kansas City. Published w
 
 ## Look
 - Palette (`assets/css/site.css` tokens): 茜色 red #B3242C, 常磐色 green #1F7840, 石板色 slate #3A3F42, 黄色 yellow #F2C811 on warm paper #F3EFE6, with dark-mode equivalents. Game pages keep their own palettes.
-- Type: Jost for everything Latin and Zen Maru Gothic for the small Japanese accents (subset to the characters used; re-subset `assets/fonts/zen-maru-gothic-*.woff` with pyftsubset `--text` when adding new Japanese). `assets/css/type.css`, loaded last on game pages, applies the site type to every heading, label and button; each game keeps only its logotype (hero h1 and homepage card title) in its own face.
+- Type: Jost everywhere. `assets/css/type.css`, loaded last on game pages, applies the site type to every heading, label and button; each game keeps only its logotype (hero h1 and homepage card title) in its own face.
 - Genres and other tag-style labels are Title Case without the word "game" ("Partnership Climbing", "Dexterity").
+- Logo: four dice showing 1–4, one in each palette color (`assets/img/favicon.svg`, also inlined in every page's header).
+- Game cards (home and /games/) share one layout: art, title, a two-sentence blurb, a Players / Time / Genre row, comps and the link; CSS subgrid lines the rows up across each row of cards.
 - Print-and-play kits are on request: the PDFs stay in the repo, but pages link a "Request the kit" email instead of the file.
 
 ## Adding a game

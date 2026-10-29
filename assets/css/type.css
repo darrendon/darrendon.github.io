@@ -1,6 +1,6 @@
 /* Site typography on game pages (loaded last). Each game keeps its own palette and its
    logotype (the hero h1, matching the box art); every other heading, label and button
-   uses the site's city-pop pairing: Jost with Zen Maru Gothic for the Japanese accents. */
+   uses the site's city-pop type, Jost. */
 .game .g-sec h2,.game .g-sec h3,.game .g-cta h2,.game .more-games h2,
 .game .set h3,.game .rule h3,.game .mode b,.game .comp li b,.game .quarries h3,.game .copy h2{
   font-family:var(--display)!important;font-weight:600;font-style:normal;font-stretch:100%;
@@ -9,7 +9,6 @@
 .game .rule h3,.game .set h3{font-size:19px}
 .game .label,.game .crumbs,.game .pill{font-family:var(--display)!important;font-weight:600;font-style:normal;
   letter-spacing:.2em;text-transform:uppercase;font-size:12px;text-shadow:none}
-.game .label .jp{font-family:var(--jp)!important;letter-spacing:.12em;text-transform:none;margin-left:.8em}
 .game .pill{font-size:11.5px}
 .game .crumbs{font-size:11.5px;letter-spacing:.18em}
 .game .btn{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:13.5px}

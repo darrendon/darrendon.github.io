@@ -9,7 +9,6 @@
   --display:"Jost","Futura","Century Gothic","Avenir Next",Arial,sans-serif;
   --body:"Jost","Futura","Avenir Next","Helvetica Neue",Arial,sans-serif;
   --mono:"Jost","Futura","Avenir Next",Arial,sans-serif;
-  --jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;
   --max:1200px; --r:14px;
   --gutter:max(20px, env(safe-area-inset-left, 0px));
   --gutter-r:max(20px, env(safe-area-inset-right, 0px));
@@ -174,14 +173,12 @@ p{margin:0}
 #games .section-head{margin-bottom:clamp(16px,2vw,24px)}
 
 /* ============================================================
-   2026 redesign: city-pop type (Jost + Zen Maru Gothic) and the
+   2026 redesign: city-pop type (Jost) and the
    four-color palette. This layer overrides the rules above.
    ============================================================ */
 body{font-family:var(--body);font-size:17.5px;letter-spacing:.004em;font-stretch:100%}
 h1,h2,h3{font-family:var(--display);font-stretch:100%;font-weight:600;letter-spacing:-.008em;line-height:1.05}
 .label{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
-.jp{font-family:var(--jp);font-weight:700;letter-spacing:.12em;text-transform:none}
-.label .jp{margin-left:.9em;color:var(--red);font-size:11.5px;letter-spacing:.14em}
 :focus-visible{outline:3px solid var(--red)}
 a{text-decoration-thickness:1.5px;text-underline-offset:3px}
 
@@ -193,9 +190,9 @@ a{text-decoration-thickness:1.5px;text-underline-offset:3px}
 
 /* header */
 .site-head{background:color-mix(in srgb,var(--paper) 90%,transparent)}
-.brand svg{width:30px;height:30px;border-radius:0}
+.brand svg{width:32px;height:32px;border-radius:0}
 .brand b{font-family:var(--display);font-stretch:100%;font-weight:600;font-size:18px;letter-spacing:.06em;text-transform:uppercase}
-.brand span{font-family:var(--jp);font-weight:700;font-size:10.5px;letter-spacing:.2em;text-transform:none;color:var(--muted);margin-top:2px}
+.brand span{font-family:var(--display);font-weight:500;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .nav a{font-family:var(--display);font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;padding:9px 13px}
 .nav a:hover{background:transparent;color:var(--red)}
 .nav a[aria-current="page"]{background:transparent;color:var(--ink);box-shadow:inset 0 -3px 0 var(--yellow);border-radius:0}
@@ -230,12 +227,10 @@ a{text-decoration-thickness:1.5px;text-underline-offset:3px}
 .blocks .s{left:50%;width:46%;top:31%;height:24%;background:var(--slate)}
 .blocks .y{left:22%;width:56%;top:56%;height:30%;background:var(--yellow)}
 .blocks .y::after{border-color:rgba(255,255,255,.45)}
-.blocks .vert{position:absolute;left:-2%;top:62%;writing-mode:vertical-rl;font-family:var(--jp);font-weight:700;font-size:13px;letter-spacing:.42em;color:var(--slate)}
 .blocks .cap{position:absolute;right:4%;top:90%;font-family:var(--display);font-weight:500;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.7}
-@media (prefers-color-scheme: dark){.blocks .vert{color:var(--muted)}}
 @media (max-width:820px){.mast-grid{grid-template-columns:1fr}.blocks{order:-1;max-width:none;aspect-ratio:auto;height:150px;justify-self:stretch}
   .blocks .r{left:0;width:24%;top:0;height:100%}.blocks .g{left:25%;width:24%;top:0;height:100%}.blocks .s{left:50%;width:24%;top:0;height:100%}.blocks .y{left:75%;width:25%;top:0;height:100%}
-  .blocks .vert,.blocks .cap{display:none}}
+  .blocks .cap{display:none}}
 
 /* sections */
 .section-head h2,.about h2,.band h2{font-weight:600;letter-spacing:-.01em}
@@ -332,3 +327,28 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
 /* every card shows its themed render edge to edge */
 .feature .feature-art{padding:0}
 .feature .feature-art img{width:100%;height:100%;object-fit:cover}
+
+/* underlines: one continuous line under every word, clear of the descenders */
+:root{text-decoration-skip-ink:none}
+.con-year a b,.about .copy a,.signed .tba a{text-decoration-line:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px;text-underline-offset:.3em;text-decoration-skip-ink:none}
+.signed-list a{border-bottom:0;text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px;text-underline-offset:.28em;text-decoration-skip-ink:none}
+.con-year ul{gap:14px}
+
+/* game cards: one standard layout, rows lined up across each row of cards */
+.game-grid{row-gap:clamp(18px,2.4vw,28px)}
+.game-grid .feature{display:grid;grid-template-rows:subgrid;grid-row:span 6;row-gap:0;padding:0 0 26px}
+.feature .feature-art{grid-row:1}
+.feature h3{padding:24px 26px 0;margin:0}
+.feature .blurb{padding:10px 26px 0;margin:0;font-size:16.5px;line-height:1.5;color:var(--g-ink)}
+.feature .specs{margin:18px 26px 0;padding:14px 0;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:4px 22px;border-top:1px solid var(--g-line);border-bottom:1px solid var(--g-line);align-self:start}
+.feature .specs div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.feature .specs dt{font-family:var(--display);font-weight:600;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-muted)}
+.feature .specs dd{margin:0;font-family:var(--display);font-weight:600;font-size:16px;line-height:1.25;color:var(--g-ink)}
+.feature .comps{padding:12px 26px 0;margin:0;font-size:14.5px;color:var(--g-muted);align-self:start}
+.feature .comps b{color:var(--g-ink);font-weight:600}
+.feature .go{padding:18px 26px 0;margin:0;align-self:end}
+@supports not (grid-template-rows:subgrid){.game-grid .feature{display:flex;flex-direction:column}.feature .go{margin-top:auto}}
+@media (max-width:600px){.game-grid .feature{grid-row:auto;display:flex;flex-direction:column}.feature .go{margin-top:auto}}
+.about .copy a.chip{text-decoration:none}
+@media (max-width:600px){.feature .go{align-self:flex-start}}
+@supports not (grid-template-rows:subgrid){.feature .go{align-self:flex-start}}
