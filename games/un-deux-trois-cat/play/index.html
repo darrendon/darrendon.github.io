@@ -77,12 +77,12 @@ button{font:inherit;color:inherit}
 .pile{position:absolute;width:var(--cw);height:var(--ch);transform:translate(-50%,-50%);z-index:1;border-radius:8px;
   background:radial-gradient(circle at 50% 50%,var(--gold) 0 1.6px,transparent 2px) 0 0/11px 11px,linear-gradient(var(--felt-3),var(--felt-3));border:3px solid var(--paper)}
 .pile.empty{background:none;border:2px dashed rgba(255,255,255,.16);box-shadow:none}
-.faces{position:absolute;transform:translate(-50%,-50%);z-index:1;display:flex;gap:6px;perspective:600px}
+.faces{position:absolute;transform:translate(-50%,-50%);z-index:1;display:flex;gap:6px}
 .card{width:var(--cw);height:var(--ch);border-radius:8px;background:var(--grain),var(--paper);display:grid;place-items:center;box-shadow:0 6px 14px rgba(0,0,0,.4)}
-.card svg{width:98%;height:auto}
+.card img{width:98%;height:auto;aspect-ratio:132/128;display:block}
 .card.spotmark{background:none;border:2px dashed rgba(255,255,255,.14);box-shadow:none}
 .card.flip{animation:deal .34s ease-out both}
-@keyframes deal{from{transform:translate(var(--fx,0),var(--fy,0)) rotateY(90deg) scale(.9)}to{transform:none}}
+@keyframes deal{from{transform:translate(var(--fx,0),var(--fy,0)) scale(.06,.9)}to{transform:none}}
 .chant{position:absolute;inset:0;z-index:4;display:grid;place-items:center;pointer-events:none;
   font-family:var(--display);font-size:clamp(40px,10vw,84px);color:var(--gold);text-shadow:0 4px 0 #1a1020,0 0 24px rgba(0,0,0,.5)}
 .chant span{animation:pop .38s ease-out}
@@ -93,7 +93,7 @@ button{font:inherit;color:inherit}
 .toy:disabled{cursor:default}
 .coaster{width:100%;height:100%;border-radius:50%;background:var(--grain),var(--paper);display:grid;place-items:center;
   border:4px solid #2a1d31;transition:transform .1s ease,border-color .15s ease,box-shadow .15s ease;box-shadow:0 6px 0 #1a1020,0 10px 18px rgba(0,0,0,.35)}
-.coaster svg{width:82%;height:auto}
+.coaster img{width:82%;height:auto;aspect-ratio:132/128;display:block}
 .toy:not(:disabled):hover .coaster{transform:translateY(-3px);border-color:var(--muted)}
 .toy:not(:disabled):active .coaster{transform:translateY(3px);box-shadow:0 2px 0 #1a1020}
 .toy.cat .coaster{border-color:var(--gold)}
@@ -739,6 +739,13 @@ function draw(obj, color){
   }
   return `<svg viewBox="-66 -64 132 128" aria-hidden="true"><defs>${defs}</defs><g filter="url(#paint)">${g}</g></svg>`;
 }
+/* The game shows these drawings as images painted ahead of time from draw() (img/src/shoot.py playart):
+   Safari left the live filtered SVG cards blank, and images are lighter for every browser anyway. */
+const ART = "/games/un-deux-trois-cat/play/art/";
+const pic = (obj, color) => `<img src="${ART}${obj === "cat" ? "cat" : obj + "-" + color}.webp" alt="" draggable="false" decoding="async">`;
+window.UDTC_ART = {draw, OBJ, COLORS};
+// fetch all 26 now so a flipped card never shows up empty
+for (const o of OBJ) for (const c of COLORS) new Image().src = `${ART}${o}-${c}.webp`;
 
 /* ---------- storage (convenience only) ---------- */
 function load(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
@@ -792,7 +799,7 @@ $("diffSeg").addEventListener("click", e => { const b = e.target.closest("button
 function renderToys(){
   $("grab").innerHTML = [...OBJ, "cat"].map((o,i) => `
     <button class="toy${o==="cat"?" cat":""}" type="button" id="toy-${o}" data-t="${o}" aria-label="Grab the ${NAME[o].toLowerCase()}" title="${NAME[o]} (${i+1})">
-      <span class="coaster">${draw(o, CORRECT[o])}</span>
+      <span class="coaster">${pic(o, CORRECT[o])}</span>
       <span class="key">${i+1}</span>
       <span class="tags"></span>
     </button>`).join("");
@@ -840,7 +847,7 @@ function renderTable(mode){
     const pile = n ? `<div class="pile" data-seat="${i}" style="box-shadow:${stack}" role="img" aria-label="${p.name}: ${n} cards in hand"></div>` : `<div class="pile empty" data-seat="${i}"></div>`;
     const faces = mode === "backs"
       ? Array.from({length: S.sudden ? 1 : S.flips}, () => `<div class="card spotmark"></div>`).join("")
-      : p.flipped.map(c => `<div class="card flip"${isCorrect(c) ? ' data-ok="1"' : ""} role="img" aria-label="${p.name} flipped a ${c.color} ${NAME[c.obj].toLowerCase()}">${draw(c.obj, c.color)}</div>`).join("");
+      : p.flipped.map(c => `<div class="card flip"${isCorrect(c) ? ' data-ok="1"' : ""} role="img" aria-label="${p.name} flipped a ${c.color} ${NAME[c.obj].toLowerCase()}">${pic(c.obj, c.color)}</div>`).join("");
     return pile + `<div class="faces" data-seat="${i}">${faces}</div>`;
   }).join("");
   $("table").innerHTML = html + `<div class="chant" id="chant"></div>`;

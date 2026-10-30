@@ -3,6 +3,8 @@
 python3 shoot.py art          card faces, card back, box lid/side/end -> tex/ (jpg) and ../ (webp for the page)
 python3 shoot.py scene NAME   a three.js still from scene.html (hero|table|kit|home|og|cozy) -> ../render-NAME.webp + sizes (cozy -> render-scene)
 python3 shoot.py check NAMES  draws each object's silhouette on its own and reports overlaps, near misses and frame cuts
+python3 shoot.py playart      the toy and card drawings the playable build shows -> ../../play/art/*.webp (painted once here, so
+                              no browser has to run the paint filter; Safari drew the live SVG cards blank)
 python3 shoot.py page URL OUT [W H]   screenshot any page on the local site (used for previews)
 """
 import sys, os, io, threading, http.server, functools
@@ -105,6 +107,28 @@ def check(p, names):
     b.close()
 
 
+def playart(p):
+    out = os.path.abspath(os.path.join(HERE, "../../play/art"))
+    os.makedirs(out, exist_ok=True)
+    b = p.chromium.launch()
+    pg = b.new_page(viewport={"width": 600, "height": 600})
+    pg.goto(BASE + "/games/un-deux-trois-cat/play/")
+    pg.wait_for_timeout(500)
+    # nothing but the drawing on a clear page
+    pg.add_style_tag(content="html,body{background:transparent!important}body>*:not(#__art):not(svg){visibility:hidden!important}")
+    combos = pg.evaluate("""() => { const l = [["cat", "", "cat"]];
+      const A = window.UDTC_ART; for (const o of A.OBJ) for (const c of A.COLORS) l.push([o, c, o + "-" + c]); return l; }""")
+    for o, c, stem in combos:
+        pg.evaluate("""([o, c]) => { let d = document.getElementById("__art"); if (!d) { d = document.createElement("div"); d.id = "__art";
+          d.style.cssText = "position:fixed;left:0;top:0;width:264px;height:256px;z-index:99999;background:transparent"; document.body.appendChild(d); }
+          d.innerHTML = window.UDTC_ART.draw(o, c || "yellow"); const s = d.firstElementChild; s.style.width = "100%"; s.style.height = "100%"; s.style.display = "block"; }""", [o, c])
+        pg.wait_for_timeout(60)
+        im = Image.open(io.BytesIO(pg.locator("#__art").screenshot(omit_background=True)))
+        im.save(os.path.join(out, stem + ".webp"), quality=90, method=6, alpha_quality=100)
+    print("saved", len(combos), "play drawings")
+    b.close()
+
+
 def page(p, url, out, w=1280, h=900):
     b = p.chromium.launch(args=GL)
     pg = b.new_page(viewport={"width": int(w), "height": int(h)})
@@ -123,6 +147,8 @@ with sync_playwright() as p:
             scene(p, n, 1200 if n == "og" else 1600, 630 if n == "og" else 1000)
     elif cmd == "check":
         check(p, sys.argv[2:])
+    elif cmd == "playart":
+        playart(p)
     elif cmd == "page":
         page(p, *sys.argv[2:])
 srv.shutdown()
