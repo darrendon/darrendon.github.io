@@ -246,15 +246,15 @@ table{border-collapse:collapse;width:100%}
         </div>
         <h2>Setup</h2>
         <ol>
-          <li>Everyone picks a color and takes that color's stand and three Boos (3, 2 and 1), plus a scoring card. <b>With 4 players, put your 1 back in the box.</b></li>
+          <li>Everyone picks a color and takes that color's stand and three Boos (3, 2 and 1), plus a scoring card. <b>With 4 players, put your 2 back in the box.</b></li>
           <li>Make the role deck using the table below: one Living card for each player, plus some Ghosts.</li>
         </ol>
         <table class="deck">
           <tr><th>Players</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
           <tr class="lv"><td>Living cards</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
-          <tr class="gh"><td>Ghost cards</td><td>6</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+          <tr class="gh"><td>Ghost cards</td><td>4</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
         </table>
-        <p class="small">The deck always has one or two more Ghosts than Living, but any mix can turn up at the table, including no Living at all.</p>
+        <p class="small">The deck always has at least as many Ghosts as Living, but any mix can turn up at the table, including no Living at all.</p>
         <h2>Table talk</h2>
         <p>Chat all you like, but never tell anyone what their card says, and don't plan out loud who to boo.</p>
       </div>
@@ -423,7 +423,7 @@ const scoring = () => `<div class="sc"><div class="hd">Scoring</div><div class="
     <i style="background:var(--r2)">2</i><b>Midnight</b><span>Boos face down</span>
     <i style="background:var(--r3)">3</i><b>Witching Hour</b><span>double points</span>
   </div>
-  <div class="ft">Ties share the win · 4 players: no 1s</div></div></div>`;
+  <div class="ft">Ties share the win · 4 players: no 2s</div></div></div>`;
 
 const cell = (kind) => kind === 'score' ? `<div class="cell">${scoring()}</div>`
   : kind === '' ? '<div class="cell"></div>'
@@ -463,7 +463,7 @@ const booPage = (isBack) => {
 html += `<div class="page sheet"><div class="head"><h2>Boo tokens: fronts</h2><p>Each color has a 3, a 2 and a 1. The backs (next page) show only the color, for Midnight.</p></div>${booPage(false)}
   <div class="tip"><div><b>Thin card hides the number</b>Glue both pages to thin card before cutting, so nobody can read a face-down Boo through the paper at Midnight.</div>
   <div><b>Cut on the outline</b>Cut each Boo on its thin outer line. A small trim inside the line does no harm.</div>
-  <div><b>Keep a set together</b>Each player takes one color: a 3, a 2 and a 1. With 4 players, the 1s stay in the box.</div></div>
+  <div><b>Keep a set together</b>Each player takes one color: a 3, a 2 and a 1. With 4 players, the 2s stay in the box.</div></div>
   <div class="foot"><b>Boo Who? · by Darren Don</b><span>Boo tokens · fronts</span></div></div>`;
 html += `<div class="page sheet"><div class="head"><h2>Boo tokens: backs</h2><p>Print this page on the back of the fronts page (flip on the long edge), or cut out and glue back to back.</p></div>${booPage(true)}
   <div class="foot"><b>Boo Who? · by Darren Don</b><span>Boo tokens · backs</span></div></div>`;
