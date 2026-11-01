@@ -55,7 +55,7 @@
 .pitch{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px)}
 .pitch .big{font-size:clamp(20px,2.1vw,25px);line-height:1.45;max-width:40ch}
 .pitch .big b{color:var(--g-red);font-weight:700}
-.sets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 28px}
+.sets{display:grid;grid-template-columns:1fr;gap:20px}
 .set{border-top:2px solid var(--g-ink);padding-top:14px;display:flex;flex-direction:column;gap:8px}
 .set h3{font-size:19px;font-weight:750;font-stretch:106%;line-height:1.2}
 .set p{font-size:15.5px;color:var(--g-muted)}
