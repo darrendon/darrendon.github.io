@@ -2069,7 +2069,7 @@ if (root) {
     setTimeout(() => { buildFaces(); render(); }, 30);
     setTimeout(applyDigSite, 0);
     if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", applyDigSite);
-    if (!G && /[?&#]tutorial/.test(location.search + location.hash)) { startTutorial(); render(); }
+    if (!G && /[?&#]tutorial\b/.test(location.search + location.hash)) { startTutorial(); render(); }
   };
   window.claude?.hot?.snapshot?.(() => ({ G, setupN: ui.setupN }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
