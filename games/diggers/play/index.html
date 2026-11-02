@@ -1384,10 +1384,10 @@ function statusHtml() {
     who = "The season has closed";
   } else if (G.turn !== 0) {
     who = `${fullName(G.turn)} is ${G.players[G.turn].bot === false ? "digging" : "surveying"}…`;
-    hint = seatAway(G.turn) ? `${fullName(G.turn)} has dropped off the table. If they don't come back soon, a bot digs for them.` : "Keep an eye on the sites beside your camp.";
+    hint = seatAway(G.turn) ? `${fullName(G.turn)} has dropped off the table. If they don't come back soon, a bot digs for them.` : "";
   } else if (ui.pending) {
     who = "Sending your move to the table…";
-    hint = "The host's browser checks every move before it lands.";
+    hint = "Checking with the host.";
   } else if (ui.mode === "placeScout") {
     who = `Set the poached ${cardName(ui.scout.card)}`;
     hint = G.lanes[ui.scout.lane].fx === "open" ? "Tap a gap in your rock face to place it. It's an open pit, so next you discard a fossil instead of sending one." : "Tap a gap in your rock face to place it.";
@@ -1402,7 +1402,7 @@ function statusHtml() {
     who = inf ? `Selected: ${describe(cards)}` : "Those bones don't belong together";
     const legal = inf ? myLanes(G, 0).filter(i => canPlayOn(G, i, inf)) : [];
     hint = !inf ? `A run is numbers in order (3-4-5 or 5-4-3); a set is all one number. Finds can be up to ${CAP} cards.` :
-      legal.length ? "Tap a highlighted site to excavate it there." : "It doesn't outshine any find beside your camp. Change the selection or poach instead.";
+      legal.length ? "Tap a highlighted site to excavate it there." : "It doesn't beat any find beside your camp. Pick other fossils or poach.";
   } else {
     who = "Your turn to dig";
     hint = `Tap 1–${CAP} adjacent fossils to excavate a find, or tap an outlined end bone at a site beside you to poach it.`;
@@ -1450,7 +1450,7 @@ function overlayHtml() {
   const shed = r.shedder === null ? "The season was called off." : (r.shedder === 0 ? "You finished your dig first." : `${fullName(r.shedder)} finished the dig first.`);
   if (G.phase === "roundEnd") {
     return `<div class="overlay"><div class="modal" role="dialog" aria-label="Season results">
-      <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}${tut ? `<p class="tut-note"><b>Field lesson complete.</b> You hold all three sites, so you bank 3 prestige. From here the deal is random and Ashworth plays for real, with sites worth 2 and then 4. Watch the sites beside you, and think twice about what you send him.</p>` : ""}
+      <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}${tut ? `<p class="tut-note"><b>Field lesson complete.</b> You hold all three sites, so you bank 3 prestige. From here the deal is random and Ashworth plays for real, with sites worth 2 and then 4.</p>` : ""}
       <p>Every site is cleared and each camp gets a fresh rock face of ${G.cfg.hand}. Next season, sites are worth ${ROUND_VALUES[r.round + 1]} prestige.</p>
       ${net ? netRoundButtons(r) : `<button class="primary" data-act="nextround">Open season ${r.round + 2}</button>`}</div></div>`;
   }
@@ -1488,19 +1488,19 @@ function catalogueHtml() {
       <figcaption><b style="--suit:${sp.suit}">${symSvg(s, "sym")}${sp.name}</b><span>${sp.rock}</span></figcaption>
     </figure>`).join("");
   return `<details class="rules catalogue" data-key="cat" ${ui.open.cat ? "open" : ""}><summary>The five skeletons</summary>
-    <p class="cat-note">Every number is a bone, and the copies of each number come from different animals, each set in its own rock. Lay one species' 1 to 9 in three rows of three and the whole skeleton comes out of the slab. Species matters once: a suited run, every card from one animal, outranks a set of the same size. The deck uses one more species than there are diggers.</p>
+    <p class="cat-note">Each species is nine cards, 1 to 9, that form one skeleton. A suited run (all one species) beats a set of the same size. The deck uses one more species than there are diggers.</p>
     <div class="slabs">${slabs}</div></details>`;
 }
 
 function setupHtml() {
   const desc = { 2: "One rival · three sites between your camps · three species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · four species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all five species · 10 in your rock face" };
   return `<div class="top"><div><div class="eyebrow">A new dig</div><h1>Diggers</h1>
-    <p class="sub">A shedding lane battler. Rival paleontologists fight over the dig sites between their camps, and each site goes to whoever brings up the finer skeleton.</p></div></div>
+    <p class="sub">A lane battler where you can never rearrange your hand.</p></div></div>
   <div class="setup">
-    <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp and bots run the rest. Sites earn 1, 2, then 4 prestige, and finds can be up to 4 cards.</p></div>
+    <div><div class="eyebrow">Diggers at the table</div><p style="margin:4px 0 0;color:var(--muted);font-size:14px">You take the bottom camp. Bots take the rest.</p></div>
     <div class="choices">${[2,3,4].map(n => `<button class="choice ${ui.setupN === n ? "on" : ""}" data-act="pickn" data-n="${n}" aria-pressed="${ui.setupN === n}"><span class="n">${n}</span><span class="d">${desc[n]}</span></button>`).join("")}</div>
-    <button class="advtoggle ${ui.adv ? "on" : ""}" data-act="advtoggle" aria-pressed="${ui.adv}"><span class="box">${ui.adv ? "✓" : ""}</span><span><b>Advanced: site effects</b><span class="d">Each season the six site cards are shuffled and dealt effect side up: Overturned Beds, Shared Claim, Trackway, Shallow Pit, Hard Rock and Open Pit. Online tables use this setting too.</span></span></button>
-    <div class="actions"><button class="primary" data-act="start">Open the first season</button><button class="tutbtn" data-act="tutorial">New here? Take the 2-minute field lesson</button></div>
+    <button class="advtoggle ${ui.adv ? "on" : ""}" data-act="advtoggle" aria-pressed="${ui.adv}"><span class="box">${ui.adv ? "✓" : ""}</span><span><b>Advanced: site effects</b><span class="d">Each site gets its own rule each season. Applies to online tables too.</span></span></button>
+    <div class="actions"><button class="primary" data-act="start">Open the first season</button><button class="tutbtn" data-act="tutorial">Two-minute field lesson</button></div>
   </div>${onlinePanelHtml()}${rulesHtml()}${catalogueHtml()}`;
 }
 
@@ -1879,7 +1879,7 @@ function seatTags(i) {
 
 async function startHost() {
   const name = getName();
-  if (!name) { ui.netMsg = "Add your name first, so friends know whose table it is."; return render(); }
+  if (!name) { ui.netMsg = "Add your name first."; return render(); }
   if (ui.busy) return;
   ui.busy = true; ui.netMsg = "Connecting to a relay…"; render();
   const h = new NETX.HostSession(ui.setupN, name);
@@ -1891,7 +1891,7 @@ async function startGuest(code) {
   code = normCode(code);
   const name = getName();
   if (code.length !== 5) { ui.netMsg = "Enter the 5-letter table code."; return render(); }
-  if (!name) { ui.netMsg = "Add your name first, so the table knows who you are."; return render(); }
+  if (!name) { ui.netMsg = "Add your name first."; return render(); }
   if (ui.busy) return;
   ui.busy = true; ui.netMsg = `Looking for table ${code}…`; render();
   const g = new NETX.GuestSession(code, name);
@@ -1972,7 +1972,7 @@ function netStateText() {
     return [`Hosting through ${net.broker ? net.broker.name : "the relay"}`, false];
   }
   if (net.relayLost) return ["Relay connection lost; reconnecting…", true];
-  if (net.hostStale) return ["The host's page isn't answering. Your seat is safe; the dig carries on when they're back.", true];
+  if (net.hostStale) return ["The host isn’t answering. Your seat is kept until they’re back.", true];
   return [`Camp ${(net.seat || 0) + 1} at this table`, false];
 }
 function netBarHtml() {
@@ -1988,11 +1988,11 @@ function choicesHtml(act, n) {
 function onlinePanelHtml() {
   const busy = ui.busy ? "disabled" : "";
   return `<div class="setup online">
-    <div><div class="eyebrow">Play with friends online</div><p class="note">One digger hosts a table and shares its code or link; friends join from their own devices. Bots take any seat nobody sits in, and each digger sees only their own rock face.</p></div>
-    ${NETX.SANDBOXED ? `<p class="note warn">Inside claude.ai this page can't open outside connections, so online tables won't connect here. Bots and the field lesson work fine.</p>` : ""}
+    <div><div class="eyebrow">Play with friends online</div><p class="note">Host a table and share the code or link. Bots fill empty seats.</p></div>
+    ${NETX.SANDBOXED ? `<p class="note warn">Online tables don't work inside claude.ai. Bots and the field lesson do.</p>` : ""}
     <label class="field"><span>Your name</span><input data-key="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name || "")}" placeholder="How rivals will see you"></label>
     <div class="online-grid">
-      <div class="opt"><button class="primary" data-act="host" ${busy}>Host an online table</button><span class="note">For ${ui.setupN} diggers, as picked above. You can change it in the lobby.</span></div>
+      <div class="opt"><button class="primary" data-act="host" ${busy}>Host an online table</button><span class="note">For ${ui.setupN} diggers. You can change this in the lobby.</span></div>
       <div class="opt"><div class="joinrow"><input data-key="code" maxlength="5" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${esc(ui.code || "")}" placeholder="CODE" aria-label="Table code"><button data-act="join" ${busy}>Join a table</button></div><span class="note">Type the 5-letter code from the host.</span></div>
     </div>
     ${ui.netMsg ? `<p class="netmsg" role="status">${esc(ui.netMsg)}</p>` : ""}
@@ -2000,7 +2000,7 @@ function onlinePanelHtml() {
 }
 function inviteHtml() {
   return `<div class="top"><div><div class="eyebrow">An invitation to dig</div><h1>Diggers</h1>
-    <p class="sub">A shedding lane battler. You've been asked to join an online table: rival paleontologists fight over the dig sites between their camps.</p></div></div>
+    <p class="sub">A lane battler where you can never rearrange your hand. You’re invited to an online table.</p></div></div>
   <div class="setup online">
     <div class="codebox"><div><div class="eyebrow">Table code</div><div class="code">${esc(ui.invite)}</div></div></div>
     <label class="field"><span>Your name</span><input data-key="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name || "")}" placeholder="How rivals will see you"></label>
@@ -2030,10 +2030,10 @@ function lobbyHtml() {
   <div class="setup">
     <div class="codebox"><div><div class="eyebrow">Table code</div><div class="code">${esc(st.code)}</div></div><button data-act="copycode">Copy code</button></div>
     <div class="linkrow"><input readonly value="${esc(net.link())}" aria-label="Link to this table" onfocus="this.select()"><button data-act="copylink">Copy link</button></div>
-    <p class="note ${warn ? "warn" : ""}">${host ? "Send friends the link, or have them choose Join a table and type the code. " : ""}${esc(txt)}.</p>
+    <p class="note ${warn ? "warn" : ""}">${host ? "Share the link or the code. " : ""}${esc(txt)}.</p>
   </div>
   <div class="setup">
-    <div><div class="eyebrow">Diggers at the table</div><p class="note">${host ? "Pick how many dig, and which seats are kept for friends. Seats go around the table in turn order, and each site lies between two neighboring camps." : `${esc(hostName)} picks how many dig and who sits where.`}</p></div>
+    <div><div class="eyebrow">Diggers at the table</div><p class="note">${host ? "Choose how many dig and which seats are for friends." : `${esc(hostName)} sets up the table.`}</p></div>
     ${host ? choicesHtml("netn", st.n) : ""}
     <div class="lseats">${rows}</div>
     <div class="actions">${host ? `<button class="primary" data-act="netstart">Open the first season</button>` : `<p class="note">Waiting for ${esc(hostName)} to open the first season.</p>`}</div>
