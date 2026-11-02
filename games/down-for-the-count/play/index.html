@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Down for the Count — play in your browser</title>
-<meta name="description" content="Down for the Count — a wrestling climbing card game. Play 2 to 5 players against bots in your browser.">
+<title>Down for the Count</title>
+<meta name="description" content="Down for the Count, a shedding game where you don’t want to shed. 2–5 players against bots or online.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
@@ -633,10 +633,10 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     dropNet();
     app.innerHTML =
       '<div class="hero"><div><h1>Down for<br>the Count</h1>' +
-      '<p class="tag">A shedding game where you don’t want to shed, for 2–5. Beat the move on the table or spend stamina. Run out of cards and you tap out; run out of stamina and you’re pinned. Last one standing wins.</p></div>' +
+      '<p class="tag">A shedding game where you don’t want to shed. Beat the move or spend stamina to stay in. Last one standing wins.</p></div>' +
       '<div class="fan"><img src="' + IMG + 'card-4.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-10.webp" alt="" width="240" height="336"><img src="' + IMG + 'card-7.webp" alt="" width="240" height="336"></div></div>' +
       '<div class="startbox">' +
-      '<div class="learn"><div><h2>New here? Take the tutorial</h2><p>A coach walks you through one short round against two bots, one move at a time. About 3 minutes.</p></div>' +
+      '<div class="learn"><div><h2>Tutorial</h2><p>One round against two bots, one move at a time. About 3 minutes.</p></div>' +
       '<button type="button" class="gold" id="learn">Learn to play</button></div>' +
       '<h2>How many wrestlers?</h2>' +
       '<div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5].map((n) => '<button type="button" data-n="' + n + '" aria-pressed="' + (n === chosenN) + '">' + n + '</button>').join('') + '</div>' +
@@ -645,7 +645,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       '<button type="button" data-bots="tough" aria-pressed="' + tough + '">Tough</button><button type="button" data-bots="casual" aria-pressed="' + !tough + '">Casual</button></div>' +
       '<p class="setup-note" id="botnote"></p>' +
       '<div><button class="go" type="button" id="start">Ring the bell</button></div></div>' +
-      '<div class="startbox online"><h2>Play online with friends<small>One of you hosts and shares a five-letter code. Bots fill any corner nobody takes, and everyone sees only their own hand.</small></h2>' +
+      '<div class="startbox online"><h2>Play online<small>The host shares a five-letter code. Bots fill empty corners.</small></h2>' +
       '<label class="field"><span class="lbl">Your ring name</span><input id="nm" maxlength="16" autocomplete="nickname" placeholder="e.g. Macho Mel" value="' + esc(myName) + '"></label>' +
       '<div class="online-row"><button type="button" class="go" id="host">Host an online table</button>' +
       '<div class="joinrow"><input class="codein" id="code" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="Table code"><button type="button" id="join">Join a table</button></div></div>' +
@@ -1178,7 +1178,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     app.innerHTML =
       '<div class="top"><div class="logo">Down for the Count<small>BY DARREN DON</small></div><div class="right"><button type="button" class="ghost" id="back">Back to the menu</button></div></div>' +
       '<div class="startbox online"><div class="tablehead"><div><span class="lbl">Joining table</span><div class="tcode">' + esc(code) + '</div></div></div>' +
-      '<h2>Step into the ring<small>Pick the name the other wrestlers will see. The host sets the number of players and which corners are bots.</small></h2>' +
+      '<h2>Join a table<small>The host sets the number of players and the bots.</small></h2>' +
       '<label class="field"><span class="lbl">Your ring name</span><input id="nm" maxlength="16" autocomplete="nickname" placeholder="e.g. Macho Mel" value="' + esc(myName) + '"></label>' +
       '<div><button type="button" class="go" id="jgo">Join table ' + esc(code) + '</button></div>' +
       '<p class="netmsg" id="netmsg" role="status"></p></div>';
@@ -1199,7 +1199,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
         state = s.kind === 'host' ? '' : s.connected ? 'Ready' : 'Lost connection';
         if (host && s.kind === 'guest') btn = '<button type="button" data-seat="' + i + '" data-kind="bot">Give to a bot</button>';
       } else if (s.kind === 'open') {
-        who = 'Open corner'; state = 'Waiting for a friend. A bot takes it if nobody does.';
+        who = 'Open corner'; state = 'A bot takes it if nobody joins.';
         if (host) btn = '<button type="button" data-seat="' + i + '" data-kind="bot">Make it a bot</button>';
       } else {
         who = 'Bot'; state = 'Saved for a bot';
@@ -1214,7 +1214,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       '<div class="startbox online lobby">' +
       '<div class="tablehead"><div><span class="lbl">Table code</span><div class="tcode" id="tcode">' + esc(st.code) + '</div></div><button type="button" class="gold" id="copycode">Copy code</button></div>' +
       '<div class="field"><span class="lbl">Link to this table</span><div class="linkrow"><input id="tlink" readonly value="' + esc(shareLink(st.code)) + '" aria-label="Link to join this table"><button type="button" id="copylink">Copy link</button></div></div>' +
-      '<p class="setup-note">' + (host ? 'Send your friends the code or the link. The link opens straight into joining; with the code, they choose Join a table on the menu.'
+      '<p class="setup-note">' + (host ? 'Share the code or the link.'
         : 'You’re in. Waiting for ' + esc(st.hostName) + ' to ring the bell.') + ' Relay: ' + esc(st.relay || '') + '.</p>' +
       (host ? '<h2>How many wrestlers?</h2><div class="pick-n" role="group" aria-label="Number of players">' + [2, 3, 4, 5].map((n) => '<button type="button" data-ln="' + n + '" aria-pressed="' + (n === st.N) + '"' + (n < people ? ' disabled' : '') + '>' + n + '</button>').join('') + '</div>' +
         '<h2>Bots</h2><div class="pick-n" role="group" aria-label="Bot strength"><button type="button" data-lb="tough" aria-pressed="' + st.tough + '">Tough</button><button type="button" data-lb="casual" aria-pressed="' + !st.tough + '">Casual</button></div>'
