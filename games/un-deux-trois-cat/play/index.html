@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Un, Deux, Trois, Cat! — play in your browser</title>
-<meta name="description" content="Un, Deux, Trois, Cat! — a simultaneous-flip dexterity game. Play 2 to 6 players against bots in your browser.">
+<meta name="description" content="Un, Deux, Trois, Cat!: a dexterity game where you grab real cat toys. 2–6 players, with bots and online tables.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
@@ -234,7 +234,7 @@ button{font:inherit;color:inherit}
   <section class="panel" id="setup">
     <div class="hero">
       <h1>Un, Deux, Trois, Cat!</h1>
-      <p>Everyone flips at once. Find a toy shown in its own color and grab it before the cats beside you do.</p>
+      <p>A dexterity game where you grab real cat toys.</p>
     </div>
     <div class="cols">
       <div class="field">
@@ -270,7 +270,7 @@ button{font:inherit;color:inherit}
     <div class="online" id="online">
       <div class="ohead">
         <h2>Play online</h2>
-        <span class="hint" id="onlineHint">Friends join from their own phones or computers with a table code. Your browser runs the game, and bots fill any empty seats.</span>
+        <span class="hint" id="onlineHint">Share a table code. Bots fill empty seats.</span>
       </div>
       <div class="cols">
         <label class="field"><span class="lab">Your name</span><input class="txtin" id="nameIn" maxlength="16" autocomplete="nickname" spellcheck="false" placeholder="e.g. Camille"></label>
@@ -338,7 +338,7 @@ button{font:inherit;color:inherit}
       <div class="coach" id="coach" role="status" aria-live="polite" hidden></div>
       <div class="banner" id="banner" aria-live="polite"></div>
       <div class="glog" id="glog" hidden><div class="gh" id="glogH"></div><ol id="glogL"></ol>
-        <p class="gn">Each time runs from the moment the cards appeared on that player’s own screen, so a slow connection doesn’t cost anyone the grab.</p></div>
+        <p class="gn">Times count from when the cards appeared on each player’s screen.</p></div>
       <p class="keys">Click a toy, or press 1–5 for the toys and 6 for the cat.</p>
     </aside>
   </div>
@@ -591,7 +591,7 @@ button{font:inherit;color:inherit}
       const hello = () => this.link.pub(this.topic + "/h", { t: "hello", name: this.name, from: this.token });
       await new Promise((resolve, reject) => {
         let settled = false;
-        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error("No table answered with that code. Check the code, and that the host still has the page open.")); } }, 12000);
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error("No table with that code. Check the code, and that the host’s page is still open.")); } }, 12000);
         this.link.sub(my, (m) => {
           this.lastHeard = Date.now();
           if (this.troubled) { this.troubled = false; this.onTrouble && this.onTrouble(false); }
@@ -790,7 +790,7 @@ function syncSetup(){
   document.querySelectorAll("#diffSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.diff)));
   const P = S.opp + 1, f = P <= 3 ? 2 : 1, per = 60 / P;
   $("oppHint").textContent = `${P} players · ${per} cards each · ${per/f} rounds${f===2 ? " · everyone flips 2 cards" : ""}`;
-  $("diffHint").textContent = S.diff === "easy" ? "Bots take around two seconds and misgrab often." : "Bots grab in about a second and rarely slip.";
+  $("diffHint").textContent = S.diff === "easy" ? "Bots take about two seconds and often grab wrong." : "Bots take about a second and rarely grab wrong.";
 }
 $("oppSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.opp = +b.dataset.v; save("udtc-opp", S.opp); syncSetup(); if (!S.live) showExample(); });
 $("diffSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.diff = b.dataset.v; save("udtc-diff", S.diff); syncSetup(); });
@@ -1174,17 +1174,17 @@ const TUT = {
   rounds: [
     { // one toy in its own color, on someone else's card
       cards: [["bird","pink"],["fish","green"],["fly","blue"],["mouse","yellow"]],
-      pre: "Everyone chants <b>“un, deux, trois, cat!”</b> and flips their top card at the same moment. Nobody knows what’s coming, not even you.",
+      pre: "Everyone chants <b>“un, deux, trois, cat!”</b> and flips their top card at the same moment.",
       prompt: "Look at <b>every</b> card on the table, not just yours. Is any toy shown in its own color? Grab that toy.",
       hint: "Not that one. Check each card against the toys in the middle: Katsu flipped a <b>green fish</b>, and green is the fish’s own color.",
-      after: "That’s the whole idea. The green fish was on <b>Katsu’s</b> card, not yours, and it still counts. Grab a correct toy and your flipped card goes face down into your <b>point pile</b>, apart from the cards in your hand: that’s a point."
+      after: "The green fish was on <b>Katsu’s</b> card, not yours, and it still counts. Grab a correct toy and your flipped card goes face down into your <b>point pile</b>, apart from the cards in your hand: that’s a point."
     },
     { // nothing in its own color: the cat
       cards: [["mouse","green"],["bird","blue"],["ball","pink"],["fly","yellow"]],
       pre: "Next flip. This time, look closely at the colors.",
       prompt: "Is any toy in its own color this time?",
       hint: "Look again: that toy isn’t shown in its own color anywhere. When <b>nothing</b> on the table is in its own color, grab the <b>cat</b>.",
-      after: "Nothing was in its own color, so the <b>cat</b> was the answer. Notice the trick: every wrong color belongs to another toy. The green mouse pulls your eye to the fish, and the blue bird to the ball. That’s what makes it hard at speed."
+      after: "Nothing was in its own color, so the <b>cat</b> was the answer. Every wrong color belongs to another toy, so the green mouse pulls your eye to the fish and the blue bird to the ball."
     },
     { // two toys at once: two players score
       cards: [["fish","orange"],["ball","blue"],["bird","green"],["mouse","pink"]],
@@ -1209,7 +1209,7 @@ const TUT = {
     { // full speed
       cards: [["ball","pink"],["fish","blue"],["bird","yellow"],["mouse","green"]],
       live: true,
-      pre: "That’s everything. The last round is at <b>full speed</b>: the bots won’t wait this time, and a wrong grab counts.",
+      pre: "The last round is at <b>full speed</b>: the bots won’t wait this time, and a wrong grab counts.",
       prompt: "Go!"
     }
   ]
@@ -1235,7 +1235,7 @@ function startTutorial(){
   $("pauseBtn").hidden = true; $("quitBtn").textContent = "Skip tutorial";
   resetToys(false); renderSeats(); renderTable("backs"); updatePill(); banner("&nbsp;");
   coach([
-    "Welcome to the table. These five toys sit in the middle, each in its own color: a <b>yellow bird</b>, a <b>green fish</b>, a <b>blue ball</b>, a <b>pink mouse</b> and an <b>orange butterfly</b>. The <b>cat</b> is the sixth thing you can grab.",
+    "These five toys sit in the middle, each in its own color: a <b>yellow bird</b>, a <b>green fish</b>, a <b>blue ball</b>, a <b>pink mouse</b> and an <b>orange butterfly</b>. The <b>cat</b> is the sixth thing you can grab.",
     "You’re playing Katsu, Gato and Otag. For the first four rounds they’ll wait for you."
   ], [["tNext", "Let’s flip", true, tutPre]], true);
 }
@@ -1676,8 +1676,8 @@ function renderLobby(st){
   $("shareLink").value = shareURL(st.code);
   const people = st.seats.filter(s => s.kind === "host" || s.kind === "guest").length;
   const status = O.trouble ? (host ? "Lost the relay connection. Reconnecting…" : "Can’t reach the host. Still trying…")
-    : host ? `Table open on the ${st.relay} relay. Friends open the link, or choose Play online and type the code.`
-    : `You’re at the table (${st.relay} relay). Waiting for the host to start.`;
+    : host ? `Table open. Share the code or link.`
+    : `You’re at the table. Waiting for the host to start.`;
   $("lobStatus").textContent = status;
   $("lobHostCtl").hidden = !host;
   if (host){
@@ -1685,7 +1685,7 @@ function renderLobby(st){
     $("lobDiff").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.diff)));
     const f = st.N <= 3 ? 2 : 1, per = 60 / st.N;
     $("lobNHint").textContent = `${per} cards each · ${per/f} rounds${f === 2 ? " · everyone flips 2 cards" : ""}`;
-    $("lobDiffHint").textContent = S.diff === "easy" ? "Bots take around two seconds and misgrab often." : "Bots grab in about a second and rarely slip.";
+    $("lobDiffHint").textContent = S.diff === "easy" ? "Bots take about two seconds and often grab wrong." : "Bots take about a second and rarely grab wrong.";
   }
   const names = botNamesFor(st.seats); let b = 0;
   $("lobSeats").innerHTML = st.seats.map((s, i) => {
@@ -1711,7 +1711,7 @@ function renderLobby(st){
   }).join("");
   $("lobStart").hidden = !host;
   $("lobHint").textContent = host
-    ? (people > 1 ? `${people} people seated. Open seats become bots when you start.` : "Share the code. You can start any time; bots fill the empty seats.")
+    ? (people > 1 ? `${people} people seated. Open seats become bots when you start.` : "Start any time. Bots fill empty seats.")
     : "Tap Sit here to change seats.";
   lobbyPreview(st);
   banner(host ? "Waiting for friends to sit down…" : "Waiting for the host to start…");
@@ -1738,7 +1738,7 @@ async function joinTable(codeArg, auto){
   const code = String(codeArg || $("codeIn").value).toUpperCase().replace(/[^A-Z]/g, "");
   const name = myName();
   if (code.length !== 5){ netMsg("Type the 5-letter table code."); $("codeIn").focus(); return; }
-  if (!name){ netMsg("Type your name first, so everyone knows who’s grabbing."); $("nameIn").focus(); return; }
+  if (!name){ netMsg("Type your name first."); $("nameIn").focus(); return; }
   $("hostBtn").disabled = $("joinBtn").disabled = true; netMsg(`${auto ? "Rejoining" : "Looking for"} table ${code}…`);
   const G = new NETX.GuestSession(code, name);
   Object.assign(O, {on: true, role: "guest", sess: G, code, view: null, key: "", facesRid: -1, trouble: false, note: "", pends: []});
@@ -1862,7 +1862,7 @@ $("nameIn").value = NETX.cleanName(load("udtc-name", ""));
     $("codeIn").value = code;
     $("joinBtn").textContent = "Take a seat";
     $("online").classList.add("invite");
-    $("onlineHint").textContent = `You’re invited to table ${code}. Type your name and take a seat.`;
+    $("onlineHint").textContent = `You’re invited to table ${code}. Type your name to join.`;
     const sat = NETX.cleanName(NETX.seatName(code));
     if (sat){ $("nameIn").value = sat; joinTable(code, true); }
     else { $("online").scrollIntoView({block: "center"}); $("nameIn").focus({preventScroll: true}); if ($("nameIn").value) $("joinBtn").focus({preventScroll: true}); }
