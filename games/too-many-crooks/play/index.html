@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Too Many Crooks! — play in your browser</title>
+<title>Too Many Crooks! · Play</title>
 <meta name="description" content="Too Many Crooks! — a dice negotiation game. Play against bots or host an online table for 3 to 6 players.">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <script src="/games/too-many-crooks/img/src/crooks.js"></script>
@@ -278,7 +278,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 
   <div class="card learn" id="learn">
     <div class="trio" aria-hidden="true"><span class="die p1" data-v="2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="die p2" data-v="4"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="die p3" data-v="6"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
-    <div class="lt"><h2>New here? Take the tutorial</h2><p class="muted small">A coach walks you through one job at a four-player table: sending dice, crewing up, paying cuts and making promises. About four minutes.</p></div>
+    <div class="lt"><h2>Tutorial</h2><p class="muted small">One coached job at a four-player table. About four minutes.</p></div>
     <button class="btn red" id="tut-start">Learn to play</button>
   </div>
 
@@ -298,7 +298,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
         <label>Send timer <select id="l-timer"><option value="0" selected>Off</option><option value="60">60 s</option><option value="90">90 s</option><option value="120">120 s</option></select></label>
         <button class="btn red" id="l-start" style="align-self:flex-end">Deal me in</button>
       </div>
-      <p class="muted small">Bots take the other seats. Each one has a personality — some pay fair, one stacks everything on a favorite, one is honest right up until the last job.</p>
+      <p class="muted small">Bots take the other seats, each with its own negotiating style.</p>
     </div>
 
     <div id="tab-host" class="hide">
@@ -307,7 +307,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
         <label>Send timer <select id="h-timer"><option value="0">Off</option><option value="60">60 s</option><option value="90" selected>90 s</option><option value="120">120 s</option></select></label>
         <button class="btn red" id="h-open" style="align-self:flex-end">Open a table</button>
       </div>
-      <p class="muted small">You get a 5-letter code. Friends open this same link, enter the code, and take a seat. Empty seats get bots when you start. Your browser runs the game, so keep this tab open. Talk in the chat, or over a call — promises are made out loud and nothing is binding.</p>
+      <p class="muted small">Share the 5-letter code or this page’s link. Bots fill empty seats. Keep this tab open while you host.</p>
       <div id="h-lobby" class="hide">
         <div class="code" id="h-code"></div>
         <div class="muted small" id="h-relay"></div>
@@ -333,17 +333,17 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   <div class="card">
     <h2 style="font-size:16px;margin-bottom:10px">How it plays</h2>
     <div class="rules">
-      <p><b>The idea.</b> You can't use your own people on a job. You crew up from contacts your rivals send over, and they crew up from yours. Whoever runs a job picks who goes on it and what each of them walks away with.</p>
+      <p><b>The idea.</b> You can't hire your own crew. Your crew comes from dice your rivals send you, and theirs from yours. Whoever runs a job picks the crew and decides what each of them is paid.</p>
       <p><b>Roll.</b> Everyone rolls in the open: 8 dice on job 1, then 7, then 6.</p>
-      <p><b>Send.</b> In turn, send exactly 4 dice to rivals' jobs — any split, never your own. What you didn't send is what you have to pay people with.</p>
+      <p><b>Send.</b> In turn, send exactly 4 dice to rivals' jobs, split any way, never to your own. The dice you keep are what you pay people with.</p>
       <p><b>Crew.</b> Every crew is one of each kind: an <em>inside man</em> (a 1 or 2), a <em>getaway driver</em> (3 or 4) and <em>the muscle</em> (5 or 6). Never two of a kind. You score the total of your crew.</p>
       <p><b>Cuts.</b> At the same time and in secret, hand out your kept dice to your crew: 3 of them on job 1, 2 on jobs 2 and 3. Stack several on one person if you like. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing.</p>
-      <p><b>Your cut.</b> On jobs 1 and 2 one kept die is left over — score it, it's yours. On job 3 both go out, and your crew scores double.</p>
+      <p><b>Your cut.</b> On jobs 1 and 2, score your one leftover kept die. On job 3 both kept dice go to your crew, and your crew scores double.</p>
       <p><b>Frozen out.</b> If nobody sends you anything, crew one of each kind from your own kept dice and score it (doubled on job 3); you pay no one, and on jobs 1 and 2 you still keep your best leftover die as your cut.</p>
-      <p><b>Promises.</b> Say anything, agree anything. None of it binds you. There are two more jobs after this one, and everyone chooses who they send to next time.</p>
+      <p><b>Promises.</b> Promise anything. None of it is binding, but everyone sees who kept their word before the next job.</p>
     </div>
   </div>
-  <p class="muted small" style="text-align:center">Too Many Crooks! is a game by Darren Don</p>
+  <p class="muted small" style="text-align:center">Too Many Crooks! by Darren Don</p>
 </div>
 
 <!-- ============================================================ GAME -->
@@ -558,7 +558,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       const hello = () => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'hello', name: this.name, from: this.token }), { qos: 1 }); } catch (e) {} };
       await new Promise((resolve, reject) => {
         let settled = false;
-        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table answered with that code. Check the code and that the host still has the page open.')); } }, 12000);
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table found with that code. Check it, and that the host still has the page open.')); } }, 12000);
         client.on('message', (t, p) => {
           if (t !== my) return; const m = parse(p); if (!m) return;
           if (m.t === 'welcome') { this.seat = m.seat; if (!settled) { settled = true; clearTimeout(to); resolve(); } }
@@ -870,7 +870,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       } else h = '<span class="hint">Waiting for <b>' + esc(nm(v.sender)) + '</b> to send. Talk, promise, bargain.</span>';
     } else if (v.phase === 'crew') {
       if (v.crewDone[me]) h = '<span class="hint">Crew set. Waiting for the others.</span>';
-      else if (!v.kitchens[me].length) h = '<span class="hint">Nobody showed up — your own people run this job.</span>';
+      else if (!v.kitchens[me].length) h = '<span class="hint">Nobody sent you dice. Your own dice run this job.</span>';
       else {
         if (!crewSel) crewSel = tut ? [] : T.bestCrew(v.kitchens[me]).map((d) => d.id);
         h = '<span class="hint">One of each kind. Click a die to swap it in. You score the total' + (v.job === 2 ? ', <b>doubled</b>' : '') + '.</span><button class="btn red" id="a-crew">Confirm crew</button>';
@@ -938,7 +938,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 
   function renderFeed() {
     const v = view, el = $('feed');
-    if (feedMode === 'chat') el.innerHTML = v.chat.length ? v.chat.map((c) => '<p class="m"><span class="who" style="color:' + ['var(--c0)', 'var(--c1)', '#9a7a0c', 'var(--c3)', '#6b6b6b', 'var(--c5)'][c.seat] + '">' + esc(nm(c.seat)) + '</span> ' + esc(c.text) + '</p>').join('') : '<p class="m sys">Nothing said yet. Promises are made here — and broken at the table.</p>';
+    if (feedMode === 'chat') el.innerHTML = v.chat.length ? v.chat.map((c) => '<p class="m"><span class="who" style="color:' + ['var(--c0)', 'var(--c1)', '#9a7a0c', 'var(--c3)', '#6b6b6b', 'var(--c5)'][c.seat] + '">' + esc(nm(c.seat)) + '</span> ' + esc(c.text) + '</p>').join('') : '<p class="m sys">No messages yet.</p>';
     else el.innerHTML = v.log.map((l) => '<p class="m sys"><span class="j">J' + l.job + '</span>' + esc(l.msg) + '</p>').join('');
     if (feedMode === 'chat' && v.chat.length !== lastChatLen) { lastChatLen = v.chat.length; }
     el.scrollTop = el.scrollHeight;
@@ -976,7 +976,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     h += '<div class="sumgrid">';
     for (const hst of s.hosts) {
       h += '<div class="sumh"><div class="hd"><span class="dot p' + hst.seat + '" style="width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)"></span><span class="nm">' + esc(nm(hst.seat)) + '</span><span class="pts">+' + (hst.crewPts + hst.own) + '</span></div>';
-      if (hst.selfCrew) h += '<div class="line muted">Nobody showed up — ran it with their own people.</div>';
+      if (hst.selfCrew) h += '<div class="line muted">Nobody sent dice. Ran the job with their own.</div>';
       else if (hst.noCrew) h += '<div class="line muted">Nobody showed up.</div>';
       for (const c of hst.crew) h += '<div class="line">' + dieHTML({ id: 'x', v: c.v, owner: c.owner }, 'sm') + '<span class="who">' + esc(nm(c.owner)) + '</span><span class="amt' + (c.paid || c.owner === hst.seat ? '' : ' zero') + '">' + (c.owner === hst.seat ? 'OWN' : c.paid ? '+' + c.paid : 'NOTHING') + '</span></div>';
       h += '<div class="own">Crew ' + hst.crewPts + (s.last ? ' (doubled)' : '') + ' · own cut ' + hst.own + '</div></div>';
@@ -1206,13 +1206,13 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     const ranked = v.players.map((p, i) => ({ i, s: v.scores[i] })).sort((a, b) => b.s - a.s);
     m.classList.remove('hide');
     m.innerHTML = '<div class="box fin" role="dialog" aria-label="Tutorial complete"><h2>That\'s a whole job</h2><div class="sub">TUTORIAL COMPLETE</div>' +
-      '<p class="lead">A game is three jobs, played just like this one. You roll one fewer die each job, because the die you keep as your own cut takes the money and walks. Highest total after job 3 wins.</p>' +
+      '<p class="lead">A game is three jobs, played just like this one. You roll one fewer die each job, because the die you keep as your cut leaves the game. Highest total after job 3 wins.</p>' +
       '<table class="jobs"><thead><tr><th></th><th>Job 1</th><th>Job 2</th><th>Job 3</th></tr></thead><tbody>' +
       '<tr><td>Roll</td><td>8</td><td>7</td><td>6</td></tr><tr><td>Send out</td><td>4</td><td>4</td><td>4</td></tr><tr><td>Keep</td><td>4</td><td>3</td><td>2</td></tr>' +
       '<tr><td>Cuts you pay</td><td>3</td><td class="hot">2</td><td class="hot">2</td></tr><tr><td>Your own cut</td><td>1</td><td>1</td><td class="hot">none</td></tr>' +
       '<tr><td>Your crew scores</td><td>its total</td><td>its total</td><td class="hot">double</td></tr></tbody></table>' +
       '<div class="rules"><p><b>Jobs 2 and 3.</b> You pay only two cuts, so one of your crew gets nothing. You choose who.</p>' +
-      '<p><b>The last job.</b> Your crew scores double, and both kept dice go out to your crew. Nothing is left for you, and nobody can pay you back afterward. Everyone knows that.</p>' +
+      '<p><b>The last job.</b> Your crew scores double, and both kept dice go out to your crew. Nothing is left for you, and nobody can pay you back afterward.</p>' +
       '<p><b>Frozen out.</b> If nobody sends you anything, run the job with your own people: one of each kind from your kept dice, scored as your crew (doubled on job 3). You pay no one. On jobs 1 and 2 you still score your best leftover kept die as your cut.</p>' +
       '<p><b>After job 1.</b> ' + ranked.map((r) => esc(nm(r.i)) + (r.i === 0 && nm(r.i) !== 'You' ? ' (you)' : '') + ' ' + r.s).join(' · ') + '</p></div>' +
       '<div class="row" style="margin-top:14px"><button class="btn red" data-t="play">Play against bots</button><button class="btn" data-t="again">Replay the tutorial</button><button class="btn ghost" data-t="menu">Back to the menu</button></div></div>';
