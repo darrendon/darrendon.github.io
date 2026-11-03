@@ -36,7 +36,7 @@ const PRINT = (() => {
     quad(c, W, H, s, v, TRIM + 24);
     return cv;
   }
-  // Card back: red sandstone with faint pinstripes, two strata bands across, a faint Tyrannosaurus skull,
+  // Card back: red sandstone with faint pinstripes, two strata bands across,
   // and the DIGGERS woodtype logo with an 1877 ribbon. Drawn to full bleed; nothing important sits near the trim.
   function back() {
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
@@ -49,17 +49,6 @@ const PRINT = (() => {
       g.moveTo(-10, y - h / 2); for (let x = -10; x <= W + 10; x += 25) g.lineTo(x, y - h / 2 + Math.sin(x / 70) * 5);
       for (let x = W + 10; x >= -10; x -= 25) g.lineTo(x, y + h / 2 + Math.sin(x / 70 + 0.6) * 5); g.closePath(); g.fill(); g.stroke(); g.restore(); };
     band(cy - 175, "#D9A066", 26); band(cy + 175, "#D9A066", 26); band(cy - 215, "#7E3220", 16); band(cy + 215, "#7E3220", 16);
-    // the skull: a Tyrannosaurus in profile, facing left, jaw a little open (drawn in a 200 x 136 box)
-    { const w = 700; g.save(); g.translate(cx + 4 - w / 2, cy - 30 - w * 0.34); g.scale(w / 200, w / 200); g.fillStyle = "rgba(255,232,205,.17)";
-      const up = new Path2D("M4 70 C10 56 30 44 60 34 C90 24 120 14 146 10 C160 8 172 8 182 14 C194 22 200 38 198 56 C196 72 188 86 176 92 C164 96 150 92 140 90 C120 88 96 88 70 90 C46 92 22 92 10 88 C4 84 2 78 4 70Z");
-      const h = new Path2D(); h.ellipse(92, 58, 30, 17, -0.15, 0, 6.29); h.moveTo(157, 44); h.ellipse(146, 44, 11, 14, 0.1, 0, 6.29);
-      h.moveTo(185, 58); h.ellipse(176, 58, 9, 18, 0.15, 0, 6.29); h.moveTo(30, 64); h.ellipse(22, 64, 8, 5, -0.4, 0, 6.29);
-      const p = new Path2D(); p.addPath(up); p.addPath(h); g.fill(p, "evenodd");
-      const jaw = new Path2D("M18 104 C50 102 100 104 140 100 C160 98 176 96 186 100 C192 108 186 120 170 126 C140 136 96 136 60 128 C40 124 24 116 18 104Z");
-      const jh = new Path2D(); jh.ellipse(150, 112, 16, 6, -0.05, 0, 6.29); const pj = new Path2D(); pj.addPath(jaw); pj.addPath(jh); g.fill(pj, "evenodd");
-      for (let tx = 14; tx <= 130; tx += 10) { const l = tx < 40 ? 9 : 12; g.beginPath(); g.moveTo(tx, 88); g.lineTo(tx + 7, 88); g.lineTo(tx + 3.5, 88 + l); g.closePath(); g.fill(); }
-      for (let tx = 24; tx <= 132; tx += 11) { g.beginPath(); g.moveTo(tx, 104); g.lineTo(tx + 7, 103); g.lineTo(tx + 4, 94); g.closePath(); g.fill(); }
-      g.restore(); }
     // the logo: woodtype with a thick ink outline and a hard red shadow
     g.save(); let size = 150; g.font = `${size}px Rye`; while (g.measureText("DIGGERS").width > 560) { size -= 2; g.font = `${size}px Rye`; }
     g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round"; g.lineWidth = size * 0.16; g.strokeStyle = INK;
