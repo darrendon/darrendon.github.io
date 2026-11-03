@@ -154,6 +154,7 @@
     else {
       // each camp keeps a field guide; the deck and the box wait at the side
       await makeCard('ref.jpg', -11.6, 6.6, 0); await makeCard('ref.jpg', 11.6, -6.6, Math.PI);
+      await makeCard('leader.jpg', -8.6, 6.6, 0); // the near camp leads this season
       await deck(12.6, 2.4, 24, 0.04);
       await box(-15.6, -4.5, -0.12);
       frame([-18.2, 0, -8.4], [14.0, 3.65, 8.4], 56, 0, 0.99);
@@ -161,10 +162,11 @@
   }
 
   if (SCENE === 'kit') {
-    // everything in the box: all 45 cards as five slabs (the short row centred), four field guides, six dig-site cards (three turned to the effect side), the box
+    // everything in the box: all 45 cards as five slabs (the short row centred), four field guides, six dig-site cards (three turned to the effect side), the Expedition Leader card, the box
     for (let s = 0; s < 5; s++) await slab(s, -0.6 + (s % 3) * 8.5 + (s >= 3 ? 4.25 : 0), -5.9 + Math.floor(s / 3) * 11.9);
     await box(-11.6, -8.2, 0);
     for (let i = 0; i < 4; i++) await makeCard('ref.jpg', -13.0 + (i % 2) * 2.8, -1.4 + Math.floor(i / 2) * 3.8, 0);
+    await makeCard('leader.jpg', -7.4, -8.2, 0); // the first player card, beside the box
     for (let i = 0; i < 6; i++) await marker(-13.2 + (i % 2) * 3.75, 5.3 + Math.floor(i / 2) * 1.55, 0, i, i % 2 ? 'fx' : '');
     frame([-15.3, 0, -11.6], [20.0, 3.65, 11.6], 64, 0, 0.97);
   }

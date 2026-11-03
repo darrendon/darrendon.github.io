@@ -810,13 +810,13 @@ const V = c => c % 10, SP = c => Math.floor(c / 10);
 function cardName(c) { return `${SPECIES[SP(c)].name} ${V(c)}`; }
 
 // ===================== RULES ENGINE =====================
+// one season per digger, so everyone opens exactly one season
 const CONFIG = {
-  2: { maxVal: 9, species: 3, hand: 12, lanes: [[0,1],[0,1],[0,1]] },
-  3: { maxVal: 9, species: 4, hand: 11, lanes: [[0,1],[1,2],[2,0]] },
-  4: { maxVal: 9, species: 5, hand: 10, lanes: [[0,1],[1,2],[2,3],[3,0]] },
+  2: { maxVal: 9, species: 4, hand: 14, seasons: 2, lanes: [[0,1],[0,1],[0,1]] },
+  3: { maxVal: 9, species: 5, hand: 12, seasons: 3, lanes: [[0,1],[1,2],[2,0]] },
+  4: { maxVal: 9, species: 5, hand: 10, seasons: 4, lanes: [[0,1],[1,2],[2,3],[3,0]] },
 };
-const ROUND_VALUES = [1, 2, 4];
-const ROUND_CAPS = [4, 4, 4];
+const ROUND_CAPS = [4, 4, 4, 4];
 let CAP = ROUND_CAPS[0];
 const TURN_CAP = 400;
 const NAMES = ["You", "Ashworth", "Penrose", "Hale"];
@@ -894,7 +894,7 @@ function newGame(n, humanSeats, adv = false) {
   const cfg = CONFIG[n];
   const G = {
     n, cfg, adv: !!adv, round: 0, turn: 0, first: 0, turnCount: 0, phase: "play",
-    players: Array.from({ length: n }, (_, i) => ({ name: NAMES[i], title: TITLES[i], human: humanSeats.includes(i), hand: [], score: 0, sheds: 0, r3: 0, roundPts: [] })),
+    players: Array.from({ length: n }, (_, i) => ({ name: NAMES[i], title: TITLES[i], human: humanSeats.includes(i), hand: [], score: 0, sheds: 0, cap: 0, roundPts: [] })),
     lanes: cfg.lanes.map(([a, b]) => ({ a, b, meld: [], owner: null })),
     log: [], offer: null, last: null, roundResult: null,
   };
@@ -908,7 +908,7 @@ function dealRound(G) {
   // basic game: the first site cards, plain side up. Advanced: the six are reshuffled and dealt effect side up.
   const deal = G.adv ? shuffle([0, 1, 2, 3, 4, 5]) : [0, 1, 2, 3, 4, 5];
   G.lanes.forEach((L, i) => { L.site = deal[i]; L.fx = G.adv ? SITE_FX[deal[i]] : null; });
-  for (const p of G.players) p.hand = [];
+  for (const p of G.players) { p.hand = []; p.cap = 0; }
   CAP = ROUND_CAPS[G.round];
   G.last = null;
   const pool = [];
@@ -916,8 +916,7 @@ function dealRound(G) {
   shuffle(pool);
   for (let k = 0; k < G.cfg.hand; k++) for (const p of G.players) p.hand.push(pool.pop());
   G.first = G.round % G.n; G.turn = G.first; G.turnCount = 0; G.phase = "play"; G.offer = null;
-  const v = ROUND_VALUES[G.round];
-  addLog(G, `Season ${G.round + 1} opens. Each site is worth ${v} prestige.` + (G.adv ? ` Site effects: ${G.lanes.map(L => `${SITES[L.site]} (${FX[L.fx].name})`).join(", ")}.` : ""));
+  addLog(G, `Season ${G.round + 1} of ${G.cfg.seasons} opens.` + (G.adv ? ` Site effects: ${G.lanes.map(L => `${SITES[L.site]} (${FX[L.fx].name})`).join(", ")}.` : ""));
 }
 function addLog(G, msg) { G.log.unshift(msg); if (G.log.length > 40) G.log.pop(); }
 
@@ -927,7 +926,8 @@ function doPlay(G, p, lane, s, e) {
   const L = G.lanes[lane];
   const took = L.owner !== null && L.owner !== p;
   const site = laneName(G, lane);
-  const verb = L.meld.length ? (took ? `took ${site} from ${obj(G, L.owner)}` : `strengthened ${p === 0 && !G.online ? "your" : "their"} hold on ${site}`) : `staked ${site}`;
+  const verb = L.meld.length ? (took ? `took ${site} from ${obj(G, L.owner)}, keeping ${L.meld.length} fossil${L.meld.length === 1 ? "" : "s"} as prestige` : `strengthened ${p === 0 && !G.online ? "your" : "their"} hold on ${site}`) : `staked ${site}`;
+  if (took) G.players[p].cap += L.meld.length; // a beaten rival find is kept face down, 1 prestige a card; your own old find is discarded
   L.meld = cards; L.owner = p;
   G.last = { lane };
   addLog(G, `<b>${G.players[p].name}</b> unearthed ${describe(cards)} and ${verb}.`);
@@ -950,7 +950,7 @@ function makeOffer(G, from, lane, takenCard, offered) {
   if (G.players[to].human) { G.phase = "offer"; G.offer = { from, to, card: offered }; return; }
   const h = G.players[to].hand;
   if (tut) { h.splice(h.indexOf(TUT_KEEP_AFTER) + 1, 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
-  else if (botAccepts(h, offered)) { h.splice(bestInsert(h, offered), 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
+  else if (botAccepts(h, offered)) { h.splice(keepInsert(h, offered), 0, offered); addLog(G, `${G.players[to].name} kept it.`); }
   else addLog(G, `${G.players[to].name} turned it away; it is out of the dig this season.`);
   nextTurn(G);
 }
@@ -971,24 +971,30 @@ function nextTurn(G) {
   if (G.turnCount >= TURN_CAP) { addLog(G, "The season was called off at the turn limit."); return endRound(G, null); }
   G.turn = (G.turn + 1) % G.n;
 }
+// Season score: fossils captured + 1 per site held − 1 per fossil left in the rock face
 function endRound(G, shedder) {
-  const v = ROUND_VALUES[G.round];
   const held = G.players.map((_, i) => G.lanes.filter(l => l.owner === i).length);
-  G.players.forEach((pl, i) => { const pts = held[i] * v; pl.score += pts; pl.roundPts.push(pts); if (G.round === 2) pl.r3 = pts; });
+  const cap = G.players.map(pl => pl.cap), left = G.players.map(pl => pl.hand.length);
+  const pts = G.players.map((_, i) => cap[i] + held[i] - left[i]);
+  G.players.forEach((pl, i) => { pl.score += pts[i]; pl.roundPts.push(pts[i]); });
   if (shedder !== null) { G.players[shedder].sheds++; addLog(G, `<b>${G.players[shedder].name}</b> finished the dig and closed season ${G.round + 1}.`); }
-  G.roundResult = { round: G.round, shedder, held, value: v };
-  G.phase = G.round === 2 ? "matchEnd" : "roundEnd";
+  G.roundResult = { round: G.round, shedder, held, cap, left, pts };
+  G.phase = G.round >= G.cfg.seasons - 1 ? "matchEnd" : "roundEnd";
 }
 function nextRound(G) { G.round++; G.roundResult = null; dealRound(G); }
+// The strongest find a digger holds at a dig site when the game ends (the tiebreaker), as [size, kind, total]
+function bestHeld(G, i) {
+  let b = [0, 0, 0];
+  for (const L of G.lanes) if (L.owner === i && L.meld.length) { const x = meldInfo(L.meld); if (x && cmp(x, b) > 0) b = x; }
+  return b;
+}
+// Most prestige wins. Tied: whoever holds the strongest find at a dig site; still tied, they share the win.
 function standings(G) {
-  const order = G.players.map((p, i) => i).sort((a, b) => {
-    const A = G.players[a], B = G.players[b];
-    return (B.score - A.score) || (B.sheds - A.sheds) || (B.r3 - A.r3);
-  });
-  const top = G.players[order[0]];
-  const winners = order.filter(i => { const p = G.players[i]; return p.score === top.score && p.sheds === top.sheds && p.r3 === top.r3; });
-  const tiedOnPoints = order.filter(i => G.players[i].score === top.score).length > 1;
-  return { order, winners, tiedOnPoints };
+  const order = G.players.map((p, i) => i).sort((a, b) => (G.players[b].score - G.players[a].score) || cmp(bestHeld(G, b), bestHeld(G, a)));
+  const top = order[0], topScore = G.players[top].score;
+  const tied = order.filter(i => G.players[i].score === topScore);
+  const winners = tied.filter(i => cmp(bestHeld(G, i), bestHeld(G, top)) === 0);
+  return { order, winners, tiedOnPoints: tied.length > 1 };
 }
 function laneName(G, i) { const L = G.lanes[i]; return SITES[L && L.site != null ? L.site : i]; }
 // a log line is public text, or (online) { t: public text, p: private text, s: seats who see the private text }
@@ -1005,7 +1011,7 @@ function viewFor(G, seat) {
     turn: rot(G.turn), first: rot(G.first),
     players: Array.from({ length: n }, (_, j) => {
       const p = G.players[real(j)];
-      return { name: p.name, title: p.title, human: p.human, bot: !!p.bot, score: p.score, sheds: p.sheds, r3: p.r3, roundPts: p.roundPts.slice(),
+      return { name: p.name, title: p.title, human: p.human, bot: !!p.bot, score: p.score, sheds: p.sheds, cap: p.cap, roundPts: p.roundPts.slice(),
         hand: j === 0 ? p.hand.slice() : [], count: p.hand.length };
     }),
     lanes: Array.from({ length: G.lanes.length }, (_, j) => {
@@ -1013,8 +1019,9 @@ function viewFor(G, seat) {
       return { a: rot(L.a), b: rot(L.b), meld: L.meld.slice(), owner: L.owner === null ? null : rot(L.owner), site: L.site != null ? L.site : laneOf(j), fx: L.fx || null };
     }),
     offer: G.offer ? { from: rot(G.offer.from), to: rot(G.offer.to), card: G.offer.to === seat || G.offer.from === seat ? G.offer.card : null } : null,
-    roundResult: G.roundResult ? { round: G.roundResult.round, value: G.roundResult.value, shedder: G.roundResult.shedder === null ? null : rot(G.roundResult.shedder),
-      held: Array.from({ length: n }, (_, j) => G.roundResult.held[real(j)]) } : null,
+    roundResult: G.roundResult ? { round: G.roundResult.round, shedder: G.roundResult.shedder === null ? null : rot(G.roundResult.shedder),
+      held: Array.from({ length: n }, (_, j) => G.roundResult.held[real(j)]), cap: Array.from({ length: n }, (_, j) => G.roundResult.cap[real(j)]),
+      left: Array.from({ length: n }, (_, j) => G.roundResult.left[real(j)]), pts: Array.from({ length: n }, (_, j) => G.roundResult.pts[real(j)]) } : null,
     ready: (G.ready || []).map(rot),
     log: G.log.map(l => logFor(l, seat)),
     last: null,
@@ -1067,61 +1074,58 @@ function standIn(G, seat) {
   if (G.phase === "offer" && G.offer && G.offer.to === seat) {
     const h = G.players[seat].hand, card = G.offer.card, keep = botAccepts(h, card);
     addLog(G, `<b>${who}</b> was away, so a bot decided for them.`);
-    return resolveOffer(G, keep, keep ? bestInsert(h, card) : 0);
+    return resolveOffer(G, keep, keep ? keepInsert(h, card) : 0);
   }
   if (G.phase === "play" && G.turn === seat) { addLog(G, `<b>${who}</b> was away, so a bot dug in their place.`); return botTurn(G); }
 }
 
 // ===================== BOT =====================
-function botBestPlay(G, p) {
+// How far a rock face is from empty: the fewest finds it splits into (its order is locked), lone low cards counting a little worse.
+function turnsLeft(h) {
+  const n = h.length; if (!n) return 0;
+  const dp = new Array(n + 1).fill(Infinity); dp[0] = 0;
+  for (let i = 1; i <= n; i++) for (let k = 1; k <= Math.min(CAP, i); k++) {
+    const seg = h.slice(i - k, i); if (k > 1 && !meldInfo(seg)) continue;
+    const c = 1 + (k === 1 ? (9 - V(seg[0])) * 0.04 : 0);
+    if (dp[i - k] + c < dp[i]) dp[i] = dp[i - k] + c;
+  }
+  return dp[n];
+}
+const faceCost = h => turnsLeft(h) + h.length * 0.05;
+// Bots weigh: getting out (each fossil left costs 1), capturing (each beaten rival fossil is 1),
+// holding sites (+1 each at season end), the size of find a laid find offers as a prize, and the best find still in the rock face.
+function botChoose(G, p) {
   const h = G.players[p].hand; let best = null;
-  const urgency = Math.max(0, 7 - h.length) * 2.5;
-  for (const x of slices(h)) for (const lane of myLanes(G, p)) {
-    const L = G.lanes[lane]; let sc;
+  const consider = (sc, a) => { if (!best || sc > best.sc) best = { sc, ...a }; };
+  const lanes = myLanes(G, p); if (Math.random() < 0.5) lanes.reverse();
+  for (const x of slices(h)) for (const lane of lanes) {
     if (!canPlayOn(G, lane, x.inf)) continue;
-    const tot = (L.fx === "overturned" ? 20 - x.inf[2] : x.inf[2]) * .3;
-    if (!L.meld.length) sc = x.inf[0] * (10 + urgency) + tot + 4;
-    else sc = x.inf[0] * (10 + urgency) + tot - L.meld.length * 6 + (L.owner !== p ? 5 : 0);
-    if (!best || sc > best.sc) best = { sc, lane, s: x.s, e: x.e, inf: x.inf };
+    const L = G.lanes[lane], nh = [...h.slice(0, x.s), ...h.slice(x.e)];
+    if (!nh.length) { consider(1e6, { kind: "play", lane, s: x.s, e: x.e }); continue; }
+    let sc = -faceCost(nh) + (L.owner !== p && L.owner !== null ? L.meld.length : 0) + bestMeld(nh)[0] * 0.25 - 0.25 * x.inf[0];
+    if (L.owner !== p) sc += 0.6 + 0.1 * x.inf[0];
+    consider(sc, { kind: "play", lane, s: x.s, e: x.e });
+  }
+  for (const lane of lanes) {
+    const L = G.lanes[lane]; if (!L.meld.length) continue;
+    for (const left of (L.meld.length === 1 ? [true] : [true, false])) {
+      const card = left ? L.meld[0] : L.meld[L.meld.length - 1];
+      const site = (L.owner === p ? -1 : 1) * (L.meld.length === 1 ? 0.6 : 0.2);
+      for (let pos = 0; pos <= h.length; pos++) {
+        const nh = [...h.slice(0, pos), card, ...h.slice(pos)];
+        for (let j = 0; j < nh.length; j++) {
+          const fh = [...nh.slice(0, j), ...nh.slice(j + 1)];
+          consider(-(faceCost(fh) + 0.3) + bestMeld(fh)[0] * 0.25 + site, { kind: "scout", lane, left, pos, oi: j });
+        }
+      }
+    }
   }
   return best;
 }
-function botScoutOptions(G, p) {
-  const h = G.players[p].hand; const out = []; const cur = bestMeld(h);
-  for (const lane of myLanes(G, p)) {
-    const L = G.lanes[lane]; if (!L.meld.length) continue;
-    const old = meldInfo(L.meld);
-    for (const left of (L.meld.length === 1 ? [true] : [true, false])) {
-      const card = left ? L.meld[0] : L.meld[L.meld.length - 1];
-      const rem = left ? L.meld.slice(1) : L.meld.slice(0, -1);
-      const nw = rem.length ? meldInfo(rem) : [0,0,0];
-      const pos = bestInsert(h, card); const nh = [...h.slice(0, pos), card, ...h.slice(pos)];
-      let oi = 0, post = null;
-      for (let j = 0; j < nh.length; j++) { const m = bestMeld([...nh.slice(0, j), ...nh.slice(j + 1)]); if (!post || cmp(m, post) > 0) { post = m; oi = j; } }
-      const gain = cmp(post, cur) > 0 ? (post[0] - cur[0]) * 8 + (post[2] - cur[2]) * .3 : 0;
-      const dmg = (old[0] - nw[0]) * 6 + (old[2] - nw[2]) * .2 + (rem.length ? 0 : 15);
-      out.push({ sc: gain * .6 - 4 + (L.owner === p ? -dmg : dmg), size: post[0], lane, left, pos, oi });
-    }
-  }
-  return out;
-}
-function botChoose(G, p) {
-  const h = G.players[p].hand;
-  const bp = botBestPlay(G, p); const bps = bp ? bp.inf[0] : 0;
-  const sc = botScoutOptions(G, p);
-  if (h.length > 4) {
-    const better = sc.filter(s => s.size > bps);
-    if (better.length) return { kind: "scout", ...better.sort((a, b) => (b.size - a.size) || (b.sc - a.sc))[0] };
-  }
-  if (bp) return { kind: "play", ...bp };
-  if (sc.length) return { kind: "scout", ...sc.sort((a, b) => b.sc - a.sc)[0] };
-  return null;
-}
-function botAccepts(h, card) {
-  if (h.length <= 4) return false;
-  const pos = bestInsert(h, card);
-  return bestMeld([...h.slice(0, pos), card, ...h.slice(pos)])[0] > bestMeld(h)[0];
-}
+// keep a sent fossil only if it doesn't add a find to dig out; set it where it fits best
+function keepPos(h, card) { let bp = 0, bv = Infinity; for (let p = 0; p <= h.length; p++) { const v = faceCost([...h.slice(0, p), card, ...h.slice(p)]); if (v < bv) { bv = v; bp = p; } } return { pos: bp, v: bv }; }
+function botAccepts(h, card) { return keepPos(h, card).v <= faceCost(h) + 0.02; }
+function keepInsert(h, card) { return keepPos(h, card).pos; }
 function botTurn(G) {
   const p = G.turn;
   if (tut && tut.bot < TUT_BOT.length) {
@@ -1140,7 +1144,7 @@ function botTurn(G) {
 
 // ===================== FIELD LESSON (tutorial) =====================
 // A stacked two-digger first season that walks through every rule, then hands over to a normal game.
-// Cards are species * 10 + value: 0 Tyrannosaurus, 1 Triceratops, 2 Stegosaurus (the two-digger deck).
+// Cards are species * 10 + value: 0 Tyrannosaurus, 1 Triceratops, 2 Stegosaurus. The lesson deals twelve each from those three.
 const TUT_HANDS = [[9, 3, 14, 5, 22, 17, 8, 23, 24, 25, 19, 29], [28, 6, 16, 26, 1, 11, 21, 13, 4, 15, 2, 12]];
 const TUT_BOT = [{ play: [6, 16, 26], lane: 0 }, { play: [1, 11, 21], lane: 1 }, { play: [13, 4, 15], lane: 2 }, { play: [2, 12, 22], lane: 2 }];
 const TUT_KEEP_AFTER = 12; // Ashworth keeps the 2 you send him, next to his other 2s
@@ -1148,25 +1152,25 @@ const TUT_STEPS = [
   { next: true, focus: "hand", title: "Your rock face",
     text: () => `Along the bottom are your twelve fossils, in the order they were dealt. They're <b>locked</b>: you can never rearrange them, so only fossils sitting side by side can come out together. Each one is a number from 1 to 9 from one of the species.` },
   { next: true, focus: "sites", title: "Three dig sites",
-    text: () => `Between your camp and Prof. Ashworth's lie three dig sites, Como Bluff, Garden Park and Morrison: the lanes you two fight over. On your turn you either <b>excavate</b> a find at a site or <b>poach</b> from one. Whoever holds a site when the season closes earns its prestige: 1 now, 2 next season, 4 in the last.` },
+    text: () => `Between your camp and Prof. Ashworth's lie three dig sites, Como Bluff, Garden Park and Morrison: the lanes you two fight over. On your turn you either <b>excavate</b> a find at a site or <b>poach</b> from one. Beat a rival's find and you keep its fossils as prestige, 1 each. When the season closes, each site you hold is worth 1 more, and each fossil left in your rock face costs 1.` },
   { act: "play", cards: [3, 14, 5], lane: 0, title: "Excavate a run",
     text: () => `A <b>run</b> is numbers in order. Tap your 3, 4 and 5, which sit side by side, then tap <b>Como Bluff</b>. An unclaimed site takes any find.` },
   { act: "scout", lane: 0, place: 2, send: 22, title: "Poach it back",
     text: () => ui.mode === "placeScout" ? `Now set the 6 into your rock face. Tap the glowing gap just before your 7 and 8: that lines up a 6-7-8 run for later.`
       : ui.mode === "chooseOffer" ? `Every poach costs a fossil: send one across to Ashworth. Your lone 2 is stuck where it fits nothing, so tap it. He can keep it or turn it away, and a turned-away fossil is out for the season.`
-      : `Ashworth laid a <b>set</b> of three 6s over your run and took Como Bluff. A set is all one number, and at the same size it beats a run. Instead of excavating, poach: tap an outlined 6 at either end of his find.` },
+      : `Ashworth laid a <b>set</b> of three 6s over your run and took Como Bluff. A set is all one number, and at the same size it beats a run, so he keeps your three fossils as prestige. Instead of excavating, poach: tap an outlined 6 at either end of his find.` },
   { act: "play", cards: [23, 24, 25], lane: 1, title: "A suited run",
     text: () => `Ashworth kept your 2 and laid three 1s at Garden Park. Look at your 3, 4 and 5: the same numbers as your first find, but all Stegosaurus, bones from one skeleton. That's a <b>suited run</b>, and it beats a set of the same size. Tap them, then tap <b>Garden Park</b>.` },
   { act: "play", cards: ["P", 17, 8], lane: 0, title: "More cards wins",
-    text: () => `Ashworth staked Morrison with 3-4-5, but Como Bluff now holds only his two leftover 6s. A find with more cards always wins, whatever its kind. Tap your 6-7-8 and take <b>Como Bluff</b> back.` },
+    text: () => `Ashworth staked Morrison with 3-4-5, but Como Bluff now holds only his two leftover 6s. A find with more cards always wins, whatever its kind. Tap your 6-7-8, take <b>Como Bluff</b> back and keep his two 6s.` },
   { act: "play", cards: [9, 19, 29], lane: 2, title: "Close the season",
-    text: () => `The 2 you sent came back to bite: Ashworth made a set of three 2s and laid it over his own run at Morrison. When finds match in size and kind, the <b>higher total</b> wins. Your three 9s are your last fossils. Play them at <b>Morrison</b>: emptying your rock face closes the season on the spot.` },
+    text: () => `The 2 you sent came back to bite: Ashworth made a set of three 2s and laid it over his own run at Morrison. When finds match in size and kind, the <b>higher total</b> wins. Your three 9s are your last fossils. Play them at <b>Morrison</b>: you keep his three 2s, and emptying your rock face closes the season on the spot, with nothing left to count against you.` },
 ];
 let tut = null;
 function startTutorial() {
   G = newGame(2, [0]);
   G.players[0].hand = [...TUT_HANDS[0]]; G.players[1].hand = [...TUT_HANDS[1]];
-  G.log = []; addLog(G, "Season 1 opens. Each site is worth 1 prestige. This first season is a stacked deal for the lesson.");
+  G.log = []; addLog(G, "Season 1 of 2 opens. This first season is a stacked deal for the lesson.");
   tut = { step: 0, bot: 0, poached: null };
 }
 function tutStep() { return tut && G && G.phase !== "roundEnd" && G.phase !== "matchEnd" ? TUT_STEPS[tut.step] || null : null; }
@@ -1308,8 +1312,8 @@ function seatHtml(i, wide = false) {
   const turn = (G.phase === "play" || G.phase === "offer") && G.turn === i;
   return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${pcol(i)}">
     <div class="name"><span class="dot"></span>${fullName(i)}${turn ? `<span class="turnflag">digging</span>` : ""}</div>
-    <div class="score">${p.score}<span class="meta"> prestige</span></div>
-    <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"} in the rock${seatTags(i)}</div>
+    <div class="score">${p.score < 0 ? "−" + -p.score : p.score}<span class="meta"> prestige</span></div>
+    <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"} in the rock · ${p.cap || 0} captured this season${seatTags(i)}</div>
   </div>`;
 }
 
@@ -1355,13 +1359,13 @@ function laneHtml(i) {
 }
 
 function centerHtml() {
-  const v = ROUND_VALUES[G.round];
+  const n = G.cfg.seasons;
   return `<div class="cell center">
-    <div class="eyebrow">Season ${G.round + 1} of 3</div>
-    <div class="big">${v}</div>
-    <div class="small">prestige per site</div>
-    <div class="small">finds up to ${CAP} cards</div>
-    <div class="seasons">${ROUND_VALUES.map((x, k) => `<span class="${k === G.round ? "on" : ""}">${x}</span>`).join("")}</div>
+    <div class="eyebrow">Season</div>
+    <div class="big">${G.round + 1}</div>
+    <div class="small">of ${n} · finds up to ${CAP} cards</div>
+    <div class="small">+1 per fossil captured<br>+1 per site held · −1 per fossil left</div>
+    <div class="seasons">${Array.from({ length: n }, (_, k) => `<span class="${k === G.round ? "on" : ""}">${k + 1}</span>`).join("")}</div>
   </div>`;
 }
 
@@ -1444,22 +1448,23 @@ function handHtml() {
 function overlayHtml() {
   if (G.phase !== "roundEnd" && G.phase !== "matchEnd") return "";
   const r = G.roundResult;
+  const sg = v => v > 0 ? `+${v}` : v < 0 ? `−${-v}` : "0", tot = v => v < 0 ? `−${-v}` : `${v}`;
   const rows = G.players.map((p, i) => `<tr><td><span class="dot" style="--pc:${pcol(i)}"></span> ${fullName(i)}${G.online && i === 0 ? " (you)" : ""}</td>
-    <td class="num">${r.held[i]}</td><td class="num">+${r.held[i] * r.value}</td><td class="num"><b>${p.score}</b></td></tr>`).join("");
-  const head = `<table class="scores"><thead><tr><th>Digger</th><th class="num">Sites</th><th class="num">Season</th><th class="num">Prestige</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <td class="num">${r.cap[i]}</td><td class="num">${r.held[i]}</td><td class="num">${r.left[i] ? "−" + r.left[i] : 0}</td><td class="num">${sg(r.pts[i])}</td><td class="num"><b>${tot(p.score)}</b></td></tr>`).join("");
+  const head = `<table class="scores"><thead><tr><th>Digger</th><th class="num">Captured</th><th class="num">Sites</th><th class="num">Left</th><th class="num">Season</th><th class="num">Total</th></tr></thead><tbody>${rows}</tbody></table>`;
   const shed = r.shedder === null ? "The season was called off." : (r.shedder === 0 ? "You finished your dig first." : `${fullName(r.shedder)} finished the dig first.`);
   if (G.phase === "roundEnd") {
     return `<div class="overlay"><div class="modal" role="dialog" aria-label="Season results">
-      <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}${tut ? `<p class="tut-note"><b>Field lesson complete.</b> You hold all three sites, so you bank 3 prestige. From here the deal is random and Ashworth plays for real, with sites worth 2 and then 4.</p>` : ""}
-      <p>Every site is cleared and each camp gets a fresh rock face of ${G.cfg.hand}. Next season, sites are worth ${ROUND_VALUES[r.round + 1]} prestige.</p>
+      <div class="eyebrow">Season ${r.round + 1} closed</div><h2>${shed}</h2>${head}${tut ? `<p class="tut-note"><b>Field lesson complete.</b> You kept every find you beat, hold all three sites and emptied your rock face, so nothing counts against you. From here the deal is random and Ashworth plays for real.</p>` : ""}
+      <p>Every site is cleared, captured fossils go back in the deck, and each camp gets a fresh rock face of ${G.cfg.hand}.</p>
       ${net ? netRoundButtons(r) : `<button class="primary" data-act="nextround">Open season ${r.round + 2}</button>`}</div></div>`;
   }
   const st = standings(G);
   const names = st.winners.map(i => fullName(i));
   const title = names.length > 1 ? `${names.join(" and ")} share the honours` : (st.winners[0] === 0 ? "Your finds win the day" : `${names[0]} wins the day`);
-  const tb = st.tiedOnPoints ? `<p>Tied on prestige, so the tiebreaker applied: most seasons closed by finishing your dig, then most prestige in the final season.</p>` : "";
+  const tb = st.tiedOnPoints ? `<p>Tied on prestige, so the tiebreaker applied: whoever holds the strongest find at a dig site wins${names.length > 1 ? ", and those finds tie too" : ""}.</p>` : "";
   return `<div class="overlay"><div class="modal" role="dialog" aria-label="Final results">
-    <div class="eyebrow">Three seasons complete</div><h2>${title}</h2>${head}${tb}
+    <div class="eyebrow">${G.cfg.seasons} seasons complete</div><h2>${title}</h2>${head}${tb}
     ${net ? netMatchButtons() : `<div class="actions"><button class="primary" data-act="again">Dig again</button><button data-act="setup">Change rivals</button></div>`}</div></div>`;
 }
 
@@ -1471,12 +1476,12 @@ function rulesHtml() {
   const c = G ? G.cfg : CONFIG[ui.setupN];
   return `<details class="rules" data-key="rules" ${ui.open.rules ? "open" : ""}><summary>Rules reference</summary><ul>
     <li><b>Your rock face is locked.</b> Fossils sit in the order they were dealt, and you can't rearrange them. It only changes when fossils come out or are set in.</li>
-    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>run</i> (consecutive numbers in order, like 3-4-5) or a <i>set</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more cards, then the better kind, then the higher total. A <i>suited run</i> (all one species) beats a set of the same size; a set beats a run. The old find is discarded and the site is yours.</li>
+    <li><b>Excavate:</b> take up to 4 adjacent fossils that form a <i>run</i> (consecutive numbers in order, like 3-4-5) or a <i>set</i> (all the same number). Place the find at a site beside your camp. An unclaimed site takes any find. A claimed site, yours or a rival's, needs a find that outshines it: more cards, then the better kind, then the higher total. A <i>suited run</i> (all one species) beats a set of the same size; a set beats a run. The site is yours. If you beat a rival's find, keep its fossils face down: 1 prestige each. If you beat your own, the old find is discarded.</li>
     <li><b>Poach:</b> take an end bone from a find at a site beside your camp and set it anywhere in your rock face. Then send any fossil from your rock face to the rival across that site. They keep it or turn it away, and a turned-away fossil is out of the dig this season.</li>
-    <li><b>Closing a season:</b> the moment a digger's rock face is empty. Each site you hold earns prestige: 1 in the first season, 2 in the second, 4 in the third.</li>
+    <li><b>Closing a season:</b> the moment a digger's rock face is empty. Score the fossils you captured, +1 for each site you hold, and −1 for each fossil left in your rock face.</li>
     <li><b>Between seasons:</b> every site and rock face is cleared, the deck is reshuffled, and each camp gets ${c.hand} fresh fossils.</li>
-    <li><b>Deck:</b> one more species than diggers: two diggers play with three species (27 cards), three with four (36), four with all five (45).</li>
-    <li><b>Tiebreaker:</b> most seasons closed by finishing your dig, then most prestige in the final season.</li>
+    <li><b>Deck and seasons:</b> two diggers use four species (36 cards), deal 14 each and play two seasons. Three diggers use all five species (45 cards), deal 12 each and play three. Four diggers use all five, deal 10 each and play four. Every digger opens one season.</li>
+    <li><b>Winning:</b> most prestige after the last season. Tied: whoever holds the strongest find at a dig site wins; if that ties too, share the win.</li>
     <li><b>Advanced: site effects.</b> Each season, shuffle the six site cards and deal one effect side up to each site. ${Object.values(FX).map(f => `<i>${f.name}:</i> ${f.rule}`).join(" ")}</li>
   </ul></details>`;
 }
@@ -1493,7 +1498,7 @@ function catalogueHtml() {
 }
 
 function setupHtml() {
-  const desc = { 2: "One rival · three sites between your camps · three species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · four species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all five species · 10 in your rock face" };
+  const desc = { 2: "One rival · three sites between your camps · 14 in your rock face · two seasons", 3: "Two rivals · a site with each neighbor · 12 in your rock face · three seasons", 4: "Three rivals · a site with each neighbor · 10 in your rock face · four seasons" };
   return `<div class="top"><div><div class="eyebrow">A new dig</div><h1>Diggers</h1>
     <p class="sub">A lane battler where you can never rearrange your hand.</p></div></div>
   <div class="setup">
@@ -1982,7 +1987,7 @@ function netBarHtml() {
     <span class="netstate ${warn ? "warn" : ""}">${esc(txt)}</span></div>`;
 }
 function choicesHtml(act, n) {
-  const desc = { 2: "One rival · three sites between your camps · three species · 12 in your rock face", 3: "Two rivals · a site with each neighbor · four species · 11 in your rock face", 4: "Three rivals · a site with each neighbor · all five species · 10 in your rock face" };
+  const desc = { 2: "One rival · three sites between your camps · 14 in your rock face · two seasons", 3: "Two rivals · a site with each neighbor · 12 in your rock face · three seasons", 4: "Three rivals · a site with each neighbor · 10 in your rock face · four seasons" };
   return `<div class="choices">${[2,3,4].map(k => `<button class="choice ${n === k ? "on" : ""}" data-act="${act}" data-n="${k}" aria-pressed="${n === k}"><span class="n">${k}</span><span class="d">${desc[k]}</span></button>`).join("")}</div>`;
 }
 function onlinePanelHtml() {

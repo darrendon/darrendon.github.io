@@ -1,0 +1,23 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/css/fonts.css"><style>
+html,body{margin:0;background:#000}
+/* first player card ("Expedition Leader"), 2.5 x 3.5 in at 200 dpi, same frame as the field guide */
+#c{width:500px;height:700px;position:relative;overflow:hidden;background:#f3ead3;color:#24180e;font-family:Spectral,serif}
+#c::before{content:"";position:absolute;inset:16px;border:3px solid #24180e}
+#c::after{content:"";position:absolute;inset:23px;border:1px solid rgba(36,24,14,.5)}
+.in{position:absolute;inset:44px 44px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.kick{font-family:"IM Fell English SC";font-size:19px;letter-spacing:3px;color:#8a3a26}
+h1{margin:0;font-family:Rye;font-weight:400;font-size:52px;letter-spacing:2px;line-height:1.02}
+.seal{width:210px;height:210px;border-radius:50%;background:#a8452d;border:4px solid #24180e;box-shadow:inset 0 0 0 8px #f3ead3,inset 0 0 0 10px #24180e;display:grid;place-items:center;margin:6px 0}
+.seal svg{width:128px;height:128px}
+p{margin:0;font-size:18px;line-height:1.35;max-width:340px}
+.foot{margin-top:auto;font-family:"IM Fell English";font-style:italic;font-size:16px;color:#4a3826}
+</style></head><body><div id="c"><div class="in">
+<div class="kick">First player</div>
+<h1>Expedition<br>Leader</h1>
+<div class="seal"><svg viewBox="0 0 100 100" fill="#f6e8c8" aria-hidden="true">
+  <g transform="rotate(-38 50 50)"><rect x="47" y="14" width="6" height="74" rx="2"/><path d="M14 22 Q50 2 86 22 L84 27 Q50 12 16 27Z"/></g>
+  <g transform="rotate(38 50 50)"><rect x="47.5" y="38" width="5" height="50" rx="2"/><path d="M41 38 L59 38 L60 22 L40 22Z"/><path d="M40 22 L39 6 M43 22 L42.5 5 M46 22 L46 4 M49 22 L49 4 M52 22 L52 4 M55 22 L55.5 5 M58 22 L59 5 M60 22 L61 6" stroke="#f6e8c8" stroke-width="2.2"/></g>
+</svg></div>
+<p>You take the first turn this season. When the season ends, pass this card to the left.</p>
+<div class="foot">One season per digger, so everyone leads once.</div>
+</div></div><script>document.fonts.ready.then(()=>window.__done=true)</script></body></html>
