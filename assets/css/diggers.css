@@ -7,10 +7,6 @@
   --dig-title:"Rye",Georgia,serif; --dig-head:"IM Fell English",Georgia,serif; --dig-caps:"IM Fell English SC",Georgia,serif;
   --dig-label:#FFFBEF; --dig-shadow:#24180E;
 }
-@media (prefers-color-scheme: dark){
-  .g-dig{--g-bg:#17120D; --g-panel:#221A13; --g-panel-hi:#2C2219; --g-red:#E9917A; --g-jade:#2C2219;
-    --g-ink:#F1E6CF; --g-muted:#BBA888; --g-line:#3A2E22; --dig-label:#231B14; --dig-shadow:#000}
-}
 .g-dig .g-hero h1{font-family:var(--dig-title);font-weight:400;letter-spacing:.03em;color:var(--g-ink);line-height:1.08;margin-bottom:6px}
 .g-dig .g-hero .tag b{display:block;font-family:var(--dig-title);font-weight:400;font-size:clamp(20px,2.2vw,27px);line-height:1.15;letter-spacing:.02em;color:var(--g-red);margin-bottom:8px}
 .g-dig .pill{font-family:var(--dig-caps);letter-spacing:.1em;border:2px solid var(--g-ink)}
@@ -21,7 +17,6 @@
 .g-dig .rule h3{font-size:22px}
 .g-dig.game .btn{border:2.5px solid var(--g-ink);box-shadow:3px 3px 0 var(--dig-shadow);font-weight:700}
 .g-dig.game .btn.red{border-color:var(--g-ink)}
-@media (prefers-color-scheme: dark){.g-dig.game .btn.red{color:#17120D}}
 
 /* hero: a still render with view buttons, framed like a plate */
 .g-dig .viewer{background:#17120D;border:3px solid var(--g-ink);box-shadow:6px 6px 0 var(--dig-shadow)}
@@ -36,7 +31,6 @@
 .tag-card{position:relative;display:flex;flex-direction:column;background:var(--dig-label);border:3px solid var(--g-ink);box-shadow:5px 5px 0 var(--dig-shadow)}
 .tag-card::after{content:"";position:absolute;inset:5px;border:1px solid color-mix(in srgb,var(--g-ink) 40%,transparent);pointer-events:none}
 .tag-card .cap{position:absolute;top:-3px;left:-3px;z-index:2;background:var(--g-red);color:#FBF3E2;border:3px solid var(--g-ink);padding:5px 12px 4px;font-family:var(--dig-caps);font-size:18px;letter-spacing:.05em;line-height:1}
-@media (prefers-color-scheme: dark){.tag-card .cap{color:#17120D}}
 .tag-card .art{position:relative;height:262px;overflow:hidden;border-bottom:2.5px solid var(--g-ink);background:#E9DFC6;color:#24180E}
 .tag-card p{margin:0;padding:14px 16px 18px;font-size:15.5px;line-height:1.5}
 .ladder{display:flex;flex-direction:column;justify-content:space-between;padding:54px 18px 14px}

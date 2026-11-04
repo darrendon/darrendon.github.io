@@ -7,19 +7,13 @@
   --tmc-slate:#55646E; --tmc-slate-d:#36424A; --tmc-cream:#F2ECDA; --tmc-hot:#E04B2E; --tmc-gold:#F5D27A;
   --tmc-display:"Oswald",sans-serif; --tmc-mono:"Courier Prime",monospace;
 }
-@media (prefers-color-scheme: dark){
-  .g-tmc{--g-bg:#2C363D; --g-panel:#36424A; --g-panel-hi:#435159; --g-red:#FF8A6B; --g-jade:#36424A;
-    --g-ink:#F2ECDA; --g-muted:#C1CAD0; --g-line:#46545D}
-}
 .g-tmc .g-hero h1{font-family:var(--tmc-display);font-weight:700;letter-spacing:.01em;text-transform:uppercase;color:var(--g-ink);text-shadow:0 5px 0 #AEB9BF}
 .g-tmc .g-hero h1 em{font-style:normal;color:var(--tmc-hot)}
-@media (prefers-color-scheme: dark){.g-tmc .g-hero h1{text-shadow:0 6px 0 #0A0C10}}
 .g-tmc .pill{background:var(--tmc-slate);color:var(--tmc-cream);border-color:var(--tmc-slate)}
 .g-tmc .pill::before{background:var(--tmc-gold)}
 .g-tmc .pill{font-family:var(--tmc-mono);font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .g-tmc h2,.g-tmc h3{font-family:var(--tmc-display);font-weight:700;letter-spacing:.03em;text-transform:uppercase}
 .g-tmc .label{font-family:var(--tmc-mono);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--g-red)}
-@media (prefers-color-scheme: dark){.g-tmc.game .btn.red{color:#1B2228}}
 
 /* hero: a still render with view buttons */
 .g-tmc .viewer{background:#1E252A}

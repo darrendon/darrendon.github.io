@@ -14,11 +14,6 @@
   --gutter-r:max(20px, env(safe-area-inset-right, 0px));
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){
-  :root{--paper:#181A1B; --surface:#212426; --ink:#EFEBE3; --muted:#A8A39A; --line:#33373A; --line-strong:#474C50;
-    --red:#E2585E; --green:#5DBB80; --slate:#8E979C; --yellow:#F2C811;
-    --accent:#E2585E; --accent-soft:#3A2224; --on-accent:#181A1B; color-scheme:dark}
-}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:84px}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
@@ -279,7 +274,6 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
 
 /* CTA band and footer */
 .band{background:var(--slate);color:#F3EFE6;border-radius:8px;position:relative;overflow:hidden}
-@media (prefers-color-scheme: dark){.band{background:#2A2E30}}
 .band::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--red) 0 25%,var(--green) 25% 50%,var(--yellow) 50% 75%,#F3EFE6 75%)}
 .band h2{color:#F3EFE6}
 .band p{color:rgba(243,239,230,.78)}
@@ -355,9 +349,7 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
 /* big logo: the four dice */
 .hero-dice{justify-self:end;width:100%;max-width:400px}
 .hero-dice .dice{width:100%;height:auto;display:block;overflow:visible}
-@media (prefers-color-scheme: dark){.hero-dice .dice rect[fill^="rgba"]{fill:rgba(0,0,0,.35)}}
 @media (max-width:820px){.hero-dice{order:-1;justify-self:start;max-width:150px}}
-@media (prefers-color-scheme: dark){.hero-dice .dice rect[fill="#3A3F42"]{stroke:rgba(239,235,227,.35);stroke-width:2}}
 
 /* ============================================================
    Palette v2 (from the second color swatch): orange, periwinkle,
@@ -370,11 +362,6 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
   --orange-text:#A35F05; --olive-text:#6B680E;
   --accent:var(--orange); --accent-soft:#FBEAD0; --on-accent:#25272E;
   --red:var(--orange); --green:var(--olive); --slate:var(--peri); --yellow:var(--pink);
-}
-@media (prefers-color-scheme: dark){
-  :root{--paper:#1A1B20; --surface:#23252B; --ink:#EEECE6; --muted:#A9A8A2; --line:#33353D; --line-strong:#474A53;
-    --orange:#EE9A1E; --peri:#9CA2BE; --sand:#D2C29A; --olive:#B3AE2A; --pink:#DDA8A1;
-    --orange-text:#F0A53A; --olive-text:#C2BD3A; --accent-soft:#3A2A12; --on-accent:#1A1B20}
 }
 :focus-visible{outline-color:var(--orange)}
 .nav a:hover,a.chip:hover{color:var(--orange-text)}
@@ -399,8 +386,6 @@ a.chip:hover{border-color:var(--orange)}
 .band p{color:rgba(31,34,48,.82)}
 .band .btn{border-color:#1F2230;color:#1F2230}
 .band .btn.yellow,.band .btn.accent{background:var(--orange);border-color:var(--orange);color:#1F2230}
-@media (prefers-color-scheme: dark){.band{background:#5F6584;color:#F5F3EE}.band h2{color:#F5F3EE}.band p{color:rgba(245,243,238,.82)}.band .btn{border-color:#F5F3EE;color:#F5F3EE}.band .btn.yellow,.band .btn.accent{color:#1A1B20}}
-@media (prefers-color-scheme: dark){.hero-dice .dice rect[fill="#3A3F42"]{stroke:none}}
 
 /* Wordmark: Righteous for the name and the big page titles */
 :root{--wordmark:"Righteous","Jost",Arial,sans-serif}
@@ -418,11 +403,6 @@ a.chip:hover{border-color:var(--orange)}
 .game-grid .feature.feature:nth-child(4n+2){--card-c:#5C6283}
 .game-grid .feature.feature:nth-child(4n+3){--card-c:#6B680E}
 .game-grid .feature.feature:nth-child(4n+4){--card-c:#A8635B}
-@media (prefers-color-scheme: dark){
-  .game-grid .feature.feature{--card-c:#F0A33A}
-  .game-grid .feature.feature:nth-child(4n+2){--card-c:#AEB4D0}
-  .game-grid .feature.feature:nth-child(4n+3){--card-c:#C2BD45}
-  .game-grid .feature.feature:nth-child(4n+4){--card-c:#E3B2AC}}
 .game-grid .feature.feature h3,.game-grid .feature.feature .go{color:var(--card-c)}
 .nw{white-space:nowrap}
 
@@ -448,11 +428,9 @@ a.chip:hover{border-color:var(--orange)}
 
 /* Accessibility pass: text contrast (WCAG AA) and 44px tap targets */
 .band p{color:#1F2230}
-@media (prefers-color-scheme: dark){.band p{color:#F5F3EE}}
 .principles li:nth-child(2) .n,.principles li:nth-child(3) .n{color:#1F2230}
 :focus-visible{outline-color:var(--orange-text)}
 .game-grid .feature.feature:nth-child(4n+4){--card-c:#985349}
-@media (prefers-color-scheme: dark){.game-grid .feature.feature:nth-child(4n+4){--card-c:#E3B2AC}}
 .nav a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
 .brand{min-height:44px}
 .site-foot a{display:inline-flex;align-items:center;min-height:44px}

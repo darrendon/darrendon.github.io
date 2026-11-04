@@ -5,10 +5,6 @@
   --g-gold:#FFCC28; --ft-red:#E8303F; --g-jade:#1C1530; --g-ink:#1C1530; --g-muted:#5A5170; --g-line:#E8DDC0;
   --ft-display:"Archivo","Arial Black",system-ui,sans-serif; --ft-navy:#101A3D;
 }
-@media (prefers-color-scheme: dark){
-  .g-dftc{--g-bg:#101A3D; --g-panel:#17234F; --g-panel-hi:#1E2C60; --g-red:#7FA6FF; --g-jade:#0B1230;
-    --g-ink:#FFFCF4; --g-muted:#B9C0DC; --g-line:#2A3870}
-}
 .g-dftc .g-hero h1{font-family:var(--ft-display);font-weight:900;font-style:italic;font-stretch:112%;letter-spacing:-.02em;line-height:.92;
   color:#FFFCF4;text-shadow:3px 3px 0 var(--ft-red),6px 6px 0 #1C1530;-webkit-text-stroke:2px #1C1530;paint-order:stroke fill;margin-bottom:8px}
 .g-dftc .pill{background:#FFD630;color:#1C1530;border:2px solid #1C1530;font-weight:800}
@@ -16,7 +12,6 @@
 .g-dftc .label{font-family:var(--ft-display);font-weight:800;letter-spacing:.1em;color:var(--g-red)}
 .g-dftc.game .btn{border-width:3px;box-shadow:3px 3px 0 var(--g-ink);font-weight:800}
 .g-dftc.game .btn.red{color:#FFFCF4;border-color:#1C1530}
-@media (prefers-color-scheme: dark){.g-dftc.game .btn.red{color:#101A3D;border-color:#FFFCF4}}
 
 /* hero: a still render with view buttons */
 .g-dftc .viewer{background:#D9DEE8;border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530}
