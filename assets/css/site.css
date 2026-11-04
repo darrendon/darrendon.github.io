@@ -445,3 +445,21 @@ a.chip:hover{border-color:var(--orange)}
 .show .go svg{width:16px;height:16px;transition:transform .15s}
 .show:hover .go svg{transform:translateX(3px)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* Accessibility pass: text contrast (WCAG AA) and 44px tap targets */
+.band p{color:#1F2230}
+@media (prefers-color-scheme: dark){.band p{color:#F5F3EE}}
+.principles li:nth-child(2) .n,.principles li:nth-child(3) .n{color:#1F2230}
+:focus-visible{outline-color:var(--orange-text)}
+.game-grid .feature.feature:nth-child(4n+4){--card-c:#985349}
+@media (prefers-color-scheme: dark){.game-grid .feature.feature:nth-child(4n+4){--card-c:#E3B2AC}}
+.nav a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+.brand{min-height:44px}
+.site-foot a{display:inline-flex;align-items:center;min-height:44px}
+.signed-list a,.signed .tba a{display:inline-flex;align-items:center;min-height:44px}
+.section-head .more{min-height:44px}
+.game .views button,.views button{min-height:44px}
+.feature .specs div:nth-child(4){grid-column:1/-1}
+/* five games: three across, then two wider cards; on tablets the odd last card spans the row */
+@media (min-width:961px){.game-grid .feature:nth-child(4):nth-last-child(2),.game-grid .feature:nth-child(5):nth-last-child(1){grid-column:span 3}}
+@media (min-width:601px) and (max-width:960px){.game-grid .feature:last-child:nth-child(odd){grid-column:1/-1}}

@@ -16,7 +16,8 @@
 @media (prefers-color-scheme: dark){.g-udtc .g-hero h1{color:var(--udtc-cream)}}
 .g-udtc .pill{background:var(--udtc-plum);color:var(--g-gold);border:0}
 .g-udtc h2,.g-udtc h3{font-family:var(--udtc-title);font-weight:400;letter-spacing:0}
-.g-udtc .label{color:var(--udtc-ochre);letter-spacing:.12em}
+.g-udtc .label{color:var(--udtc-ochre-text,#93601A);letter-spacing:.12em}
+@media (prefers-color-scheme: dark){.g-udtc .label{color:var(--udtc-ochre)}}
 .g-udtc.game .btn{border-radius:999px}
 .g-udtc.game .btn.red{background:var(--udtc-plum);border-color:var(--udtc-plum);color:var(--g-gold)}
 @media (prefers-color-scheme: dark){.g-udtc.game .btn.red{background:var(--g-gold);border-color:var(--g-gold);color:var(--udtc-plum-d)}}

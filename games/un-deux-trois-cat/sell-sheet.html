@@ -20,7 +20,8 @@ html,body{margin:0;background:#8E9499}
 /* ---- left: the box side */
 .side{position:relative;overflow:hidden;background:var(--plum)}
 .side .pat{position:absolute;inset:0;width:100%;height:100%}
-.box{position:absolute;left:.5in;top:.48in;width:3.15in;transform:rotate(-3deg);border-radius:6px;box-shadow:0 14px 26px rgba(0,0,0,.42)}
+.toys{position:absolute;left:-.1in;right:-.1in;top:.4in;height:3.15in;overflow:hidden;-webkit-mask-image:radial-gradient(closest-side,#000 80%,transparent 100%);mask-image:radial-gradient(closest-side,#000 80%,transparent 100%)}
+.toys img{position:absolute;width:5.1in;left:-.3in;top:0;display:block}
 .hook{position:absolute;left:.5in;right:.45in;top:4.02in;color:#f4ebd8}
 .hook b{display:block;font:400 21pt/1.05 "Bagel Fat One",Figtree,sans-serif;color:var(--gold)}
 .hook span{display:block;margin-top:.08in;font-size:10.5pt;line-height:1.38}
@@ -66,8 +67,8 @@ h1 em{font-style:normal;color:var(--ochre)}
 <div class="sheet">
   <aside class="side">
     <svg class="pat" id="pat" viewBox="0 0 400 816" preserveAspectRatio="xMidYMid slice"></svg>
-    <img class="box" src="/games/un-deux-trois-cat/img/box-front.webp" alt="">
-    <div class="hook"><b>Real cat toys<br>to grab.</b><span>Real cat toys make it stand out on a shelf and at a demo table.</span></div>
+    <div class="toys"><img src="/games/un-deux-trois-cat/img/render-scene.webp" alt=""></div>
+    <div class="hook"><b>Six real<br>cat toys.</b><span>A bird, fish, ball, mouse, butterfly and cat, made to match the card art. They make the game stand out on a shelf and at a demo table.</span></div>
     <div class="qr"><img src="/games/un-deux-trois-cat/img/qr.svg" alt="QR code linking to darrendon.com/games/un-deux-trois-cat"><div><b>Play it now</b><span>Tutorial, bots and online tables</span></div></div>
   </aside>
 

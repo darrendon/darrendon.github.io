@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Diggers · Darren Don</title>
-<meta name="description" content="A lane battler where you can never rearrange your hand. Diggers is for 2–4 rival paleontologists fighting over the dig sites between their camps, by Darren Don. For fans of Scout and Schotten Totten. Mockups, a playable version and a sell sheet.">
+<meta name="description" content="A lane battler where you can never rearrange your hand, for 2–4 rival paleontologists fighting over dig sites. By Darren Don, with a playable version.">
 <meta property="og:title" content="Diggers · a shedding lane battler for 2–4 players">
-<meta property="og:description" content="A lane battler where you can never rearrange your hand. For 2–4 rival paleontologists, by Darren Don. Mockups and a playable version with a tutorial and bots.">
+<meta property="og:description" content="A lane battler where you can never rearrange your hand. For 2–4 rival paleontologists, by Darren Don, with a playable version, tutorial and bots.">
 <meta property="og:image" content="https://darrendon.com/games/diggers/img/og.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -19,9 +19,9 @@
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/rye.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="/assets/css/fonts.css?v=8bd6e31d">
-<link rel="stylesheet" href="/assets/css/site.css?v=68b38293">
+<link rel="stylesheet" href="/assets/css/site.css?v=ef4309bc">
 <link rel="stylesheet" href="/assets/css/dim-sum-rush.css?v=96b06b68">
-<link rel="stylesheet" href="/assets/css/diggers.css?v=d31eb92e">
+<link rel="stylesheet" href="/assets/css/diggers.css?v=57d93620">
 <link rel="stylesheet" href="/assets/css/type.css?v=2a3a6f6f">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Game", "name": "Diggers", "url": "https://darrendon.com/games/diggers/", "image": "https://darrendon.com/games/diggers/img/og.jpg", "description": "A lane battler where you can never rearrange your hand, for 2–4 rival paleontologists.", "genre": "Shedding · Lane Battler", "numberOfPlayers": {"@type": "QuantitativeValue", "minValue": 2, "maxValue": 4}, "timeRequired": "10–20 min", "author": {"@type": "Person", "name": "Darren Don", "url": "https://darrendon.com/"}}</script>
 </head>
@@ -95,11 +95,11 @@
   <section class="g-sec" id="overview" aria-labelledby="ov-h">
     <div class="wrap">
       <div class="head"><div><p class="label">Overview</p><h2 id="ov-h">About the game</h2></div></div>
-      <p class="lede">It’s 1877, during the Bone Wars. Each pair of neighboring camps shares a dig site, and the site belongs to whoever played the best find there last. You pick up your cards in the order they’re dealt and <b>never rearrange them</b>, so you can only play cards that already sit side by side. To fix your hand, you can take a card off a rival’s find. Beat a rival’s find and you <b>keep its cards</b>. When anyone empties their hand, the season ends: your captured cards and the sites you hold score, and every card still in your hand counts against you.</p>
+      <p class="lede">It’s 1877, during the Bone Wars. Each pair of neighboring camps shares a dig site, and the site belongs to whoever played the best find there last. You pick up your cards in the order they’re dealt and <b>never rearrange them</b>, so you can only play cards that already sit side by side. To fix your hand, you can poach the end card of any find beside your camp, yours or a rival’s. Beat a rival’s find and you <b>keep its cards</b>. When anyone empties their hand, the season ends: your captured cards and the sites you hold score, and every card still in your hand counts against you.</p>
       <style>.sets.three{grid-template-columns:repeat(3,minmax(0,1fr));margin:6px 0 30px}@media (max-width:760px){.sets.three{grid-template-columns:1fr}}</style>
       <div class="sets three" aria-label="Why it stands out">
         <div class="set"><h3>Now or later</h3><p>Every play is a tradeoff between grabbing a site now and keeping the cards you need later in the order you hold them.</p></div>
-        <div class="set"><h3>Steals cut both ways</h3><p>Taking a card from a rival’s find always means handing them one of yours, so every steal helps someone.</p></div>
+        <div class="set"><h3>Poaching cuts both ways</h3><p>Every poach sends one of your cards to the player across that site, so you have to give away a card they can’t use.</p></div>
         <div class="set"><h3>Small box, short game</h3><p>45 cards and six site cards in a tuck box, for 2–4 players in 10–20 minutes.</p></div>
       </div>
       <div class="turn">
@@ -122,7 +122,7 @@
             <span class="lbl yours">your side</span>
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M47 30 C 70 26, 86 40, 84 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/><path d="M80 60 L84 67 L89 61" fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
           </div>
-          <p>Take the end card off a rival’s find and put it anywhere in your hand. Then give them a card from your hand. They can add it to their hand or turn it away, which removes it for the season.</p>
+          <p>Take the end card off any find beside your camp, yours or a rival’s, and put it anywhere in your hand. Then send a card from your hand to the player across that site. They can add it to their hand or turn it away, which removes it for the season.</p>
         </div>
         <div class="tag-card">
           <span class="cap">Go out</span>
@@ -141,7 +141,7 @@
     <div class="wrap">
       <div class="head">
         <div><p class="label">Components</p><h2 id="co-h">Five skeletons, nine bones each</h2></div>
-        <p>Each card shows part of one of five skeletons, with its own rock color and symbol. Lay a species’ nine cards in a grid, <b>1 2 3 / 4 5 6 / 7 8 9</b>, and they form the whole skeleton. Each game uses one more species than there are players.</p>
+        <p>Each card shows part of one of five skeletons, with its own rock color and symbol. Lay a species’ nine cards in a grid, <b>1 2 3 / 4 5 6 / 7 8 9</b>, and they form the whole skeleton. Two players use four species; three or four use all five.</p>
       </div>
       <div class="species">
         <figure><img src="/games/diggers/img/card-1.webp" srcset="/games/diggers/img/card-1-240.webp 240w, /games/diggers/img/card-1.webp 500w" sizes="(max-width: 600px) 106px, (max-width: 960px) 247px, 214px" width="500" height="700" loading="lazy" alt="The Tyrannosaurus 1 card: red sandstone with the skull, a 1 and a red fang symbol in each corner."><figcaption><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 2.2C13.5 3.2 18.6 8.6 18.4 15.2C18.3 18.4 17.2 20.6 15.6 22.2L14.2 20.2L12.6 21.6L11.6 19.4L9.8 20.4C10.6 14.6 10 8 6.5 2.2Z" fill="#d23a2a"/></svg><div>Tyrannosaurus<span>red sandstone · the skull</span></div></figcaption></figure>
@@ -258,10 +258,10 @@
         <p>The full rules are two pages.</p>
         <div class="actions"><a class="btn red" href="/games/diggers/diggers-rules.pdf" download>Download the rules (PDF)</a><a class="btn" href="/games/diggers/diggers-rules.pdf" target="_blank" rel="noopener">View</a></div></div>
       <div class="rules">
-        <div class="rule"><h3>Setup</h3><p>With two players, use four species, lay three dig-site cards between you and deal 14 cards each. With three or four, use all five species, lay one site card between each pair of neighbors and deal 12 or 10 cards each. Pick your cards up in the order dealt and <em>never rearrange them</em>.</p></div>
+        <div class="rule"><h3>Setup</h3><table class="setup-t"><thead><tr><th scope="col">Players</th><th scope="col">Species</th><th scope="col">Cards each</th><th scope="col">Seasons</th><th scope="col">Dig sites</th></tr></thead><tbody><tr><td>2</td><td>Any 4</td><td>14</td><td>2</td><td>3, all between you</td></tr><tr><td>3</td><td>All 5</td><td>12</td><td>3</td><td>1 between each pair of neighbors</td></tr><tr><td>4</td><td>All 5</td><td>10</td><td>4</td><td>1 between each pair of neighbors</td></tr></tbody></table><p>Pick your cards up in the order dealt and <em>never rearrange them</em>.</p></div>
         <div class="rule"><h3>Finds</h3><p>A find is one or more cards sitting next to each other in your hand: a single card, a <em>run</em> of consecutive numbers in order (3-4-5 or 5-4-3), or a <em>set</em> of one number, up to 4 cards. More cards beat fewer. At equal size, a <em>suited run</em> (every card one species) beats a set, and a set beats a run. Then the higher total wins.</p></div>
         <div class="rule"><h3>Excavate</h3><p>Lay a find at a site beside your camp. An empty site takes any find; a claimed site, yours or a rival's, needs a find that beats the one there. The site is now yours. Beat a rival’s find and you <em>keep its cards</em> face down, 1 prestige each; your own old find is discarded.</p></div>
-        <div class="rule"><h3>Poach</h3><p>Take one end card of a find at a site beside you and insert it anywhere in your hand. Then send any card from your hand to the digger across that site. They insert it anywhere, or turn it away and it's out for the season.</p></div>
+        <div class="rule"><h3>Poach</h3><p>Take one end card of any find at a site beside your camp, yours or a rival’s, and insert it anywhere in your hand. Then send any card from your hand to the digger across that site. They insert it anywhere, or turn it away and it's out for the season.</p></div>
         <div class="rule"><h3>Scoring</h3><p>As soon as any player’s hand is empty, the season ends. Score <em>+1</em> for each card you captured, <em>+1</em> for each site you hold and <em>−1</em> for each card left in your hand. Everything is reshuffled, fresh hands are dealt, and the Expedition Leader card passes left.</p></div>
         <div class="rule"><h3>Winning</h3><p>Play one season per player: two, three or four. Most prestige wins. A tie goes to whoever holds the strongest find at a dig site; if that ties too, share the win.</p></div>
         <div class="rule"><h3>Advanced: site effects</h3><p>Each season, shuffle the six site cards and deal them effect side up. <em>Hard Rock</em> and <em>Shallow Pit</em> limit the size of finds, <em>Trackway</em> ranks runs above sets, <em>Overturned Beds</em> lets the lower total win, at <em>Shared Claim</em> a tie takes the site, and at <em>Open Pit</em> a poacher discards a card instead of sending one.</p></div>

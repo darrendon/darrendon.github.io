@@ -6,5 +6,6 @@ Disallow: /assets/img/src/
 Disallow: /README.md
 # Print-and-play kits are sent on request
 Disallow: /games/*/print-and-play.html
+Disallow: /games/too-many-crooks/rulebook.html
 
 Sitemap: https://darrendon.com/sitemap.xml

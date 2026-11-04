@@ -151,6 +151,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .p3{background:var(--c3);color:#fff}.p4{background:var(--c4);color:#1B1915}.p5{background:var(--c5);color:#fff}
 .dot.p0{background:var(--c0)}.dot.p1{background:var(--c1)}.dot.p2{background:var(--c2)}.dot.p3{background:var(--c3)}.dot.p4{background:var(--c4)}.dot.p5{background:var(--c5)}
 .die.pick{cursor:pointer}
+.die[tabindex]:focus-visible,.sheet[tabindex]:focus-visible{outline:3px solid #F5D27A;outline-offset:2px;box-shadow:0 0 0 6px #1B2228}
 .die.pick:hover{transform:translateY(-2px)}
 .die.sel{outline:3px solid var(--red);outline-offset:2px;transform:translateY(-3px)}
 .die.dim{opacity:.35}
@@ -177,6 +178,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .side-h button{font-size:11px;padding:2px 7px;border:1px solid var(--line);background:transparent;border-radius:3px;color:var(--soft)}
 .side-h button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .feed{flex:1;overflow:auto;padding:8px 12px;font-size:13px;line-height:1.4;min-height:200px}
+@media (max-width:900px){.feed{max-height:280px}}
 .feed .m{margin:0 0 6px}
 .feed .m .who{font-weight:700}
 .feed .m.sys{color:var(--soft);font-size:12px}
@@ -620,7 +622,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); }
   const nm = (i) => (view && view.players[i] ? view.players[i].name : '?');
-  const dieHTML = (d, cls, extra) => '<span class="die p' + d.owner + (cls ? ' ' + cls : '') + '" data-v="' + d.v + '" data-id="' + d.id + '"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>' + (extra || '') + '</span>';
+  const dieHTML = (d, cls, extra) => '<span class="die p' + d.owner + (cls ? ' ' + cls : '') + '" data-v="' + d.v + '" data-id="' + d.id + '"' + (/\b(pick|staged)\b/.test(cls || '') ? ' tabindex="0" role="button" aria-label="' + esc(nm(d.owner)) + '’s die, ' + d.v + (/\bsel\b/.test(cls) ? ', selected' : '') + '"' : '') + '><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>' + (extra || '') + '</span>';
 
   /* ---------------- lobby wiring */
   try { $('name').value = localStorage.getItem('tmc-name') || ''; } catch (e) {}
@@ -758,7 +760,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     if (stagedHere) st += (st ? ' ' : '') + '+' + stagedHere;
     const target = v.phase === 'send' && v.sender === me && !mine && pickDie;
     const tg = TARGETS[i % TARGETS.length];
-    let out = '<div class="sheet' + (mine ? ' me' : '') + (target ? ' target' : '') + '" data-seat="' + i + '">';
+    let out = '<div class="sheet' + (mine ? ' me' : '') + (target ? ' target' : '') + '" data-seat="' + i + '"' + (target ? ' tabindex="0" role="button" aria-label="Send to ' + esc(nm(i)) + '’s job"' : '') + '>';
     out += '<div class="hd"><span class="sirens">' + SIREN('#F0603F') + SIREN('#5AA2F0') + '</span><span class="dot p' + i + '"></span><span class="nm">' + esc(nm(i)) + (mine ? ' — your job' : '') + '</span>' +
       '<span class="tgt">' + tg[1] + tg[0] + '</span><span class="st">' + st + '</span></div>';
 
@@ -898,6 +900,16 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     on('a-show', () => renderSummary());
   }
 
+  // keyboard: Enter or Space on a focusable die or job sheet acts like a click, then focus returns to it after the redraw
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest && e.target.closest('.die[tabindex], .sheet[tabindex]');
+    if (!el || el !== e.target) return;
+    e.preventDefault();
+    const sel = el.dataset.id ? '.die[data-id="' + el.dataset.id + '"][tabindex]' : '.sheet[data-seat="' + el.dataset.seat + '"][tabindex]';
+    el.click();
+    setTimeout(() => { const n = document.querySelector(sel) || document.querySelector('.die[tabindex], .sheet[tabindex]'); if (n) n.focus(); }, 0);
+  });
   // clicks on dice and sheets
   document.addEventListener('click', (e) => {
     const v = view; if (!v) return; const me = v.me;
