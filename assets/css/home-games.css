@@ -4,16 +4,6 @@
 .g-dsr { --g-bg: #FBF4E8; --g-panel: #F3E6CF; --g-panel-hi: #FAF0DD; --g-face: #FFFDF7; --g-red: #A3221B; --g-red-d: #6E120D; --g-gold: #F2C56B; --g-jade: #1F6B4F; --g-ink: #2A1A12; --g-muted: #6B4B32; --g-line: #E2CFAE; --b0: #B07A2A; --b1: #2F5D9E; --b2: #A8462A; --b3: #1F6B4F; --b0d: #8A5A16; --b1d: #234A80; --b2d: #7E3220; --b3d: #154D39; --dsr-title:"Fraunces",Georgia,serif; }
 @media (prefers-color-scheme: dark){.g-dsr { --g-bg: #1E1611; --g-panel: #2A1F18; --g-panel-hi: #35281E; --g-red: #E5675A; --g-ink: #F4E9DA; --g-muted: #C9AE90; --g-line: #3D2E23; --g-jade: #2E8564; }}
 
-/* from boo-who.css */
-.g-boo { --g-bg: #F7F2E6; --g-panel: #EFE6D0; --g-panel-hi: #FAF6EC; --g-face: #FFFFFF; --g-red: #2B2856; --g-gold: #D8B46A; --g-jade: #2B2856; --g-ink: #211E3D; --g-muted: #5F5A74; --g-line: #E2D6B8; --boo-violet: #2B2856; --boo-violet-hi: #3A3570; --boo-gold: #D8B46A; --boo-gold-d: #9C7A3C; --boo-cream: #F4E7C6; --boo-living: #D9662B; --boo-death: #3B3552; --boo-candle: #E3A23A; --boo-title: "Spectral",Georgia,serif; --boo-caps: "IM Fell English SC",Georgia,serif; }
-@media (prefers-color-scheme: dark){.g-boo { --g-bg: #17152C; --g-panel: #221F40; --g-panel-hi: #2B2856; --g-red: #E6C67E; --g-jade: #2B2856; --g-ink: #F4E7C6; --g-muted: #BDB4D2; --g-line: #38335E; }}
-.g-boo h2, .g-boo h3 { font-family: var(--boo-title); font-weight: 700; font-stretch: 100%; letter-spacing: -0.005em; }
-.feature.g-boo h3 { font-family: var(--boo-title); font-weight: 700; font-stretch: 100%; letter-spacing: -0.01em; color: var(--boo-violet); text-shadow: 0 4px 0 var(--boo-gold); }
-@media (prefers-color-scheme: dark){.feature.g-boo h3 { color: var(--boo-cream); text-shadow: 0 4px 0 var(--boo-gold-d); }}
-.feature.g-boo .feature-art { background: rgb(27, 24, 48); padding: 0px; }
-.feature.g-boo .feature-art img { width: 100%; height: 100%; object-fit: cover; }
-.feature.g-boo .go { color: var(--boo-violet); }
-@media (prefers-color-scheme: dark){.feature.g-boo .go { color: var(--boo-gold); }}
 
 /* from too-many-crooks.css */
 .g-tmc { --g-bg: #E7EBED; --g-panel: #D9E0E3; --g-panel-hi: #F1F4F5; --g-face: #FFFFFF; --g-red: #C23A22; --g-gold: #C9A14F; --g-jade: #1B2228; --g-ink: #1B2228; --g-muted: #56636B; --g-line: #C4CDD2; --tmc-slate: #55646E; --tmc-slate-d: #36424A; --tmc-cream: #F2ECDA; --tmc-hot: #E04B2E; --tmc-gold: #F5D27A; --tmc-display: "Oswald",sans-serif; --tmc-mono: "Courier Prime",monospace; }
