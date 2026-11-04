@@ -270,7 +270,7 @@
       return t;
     }
     function rnd(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
-    const CLOTH = '#0d4332', CLOTH_FAR = '#07140f';
+    const CLOTH = '#0d4332', CLOTH_FAR = '#0a3527';
     function clothSet() {
       if (clothScene) return clothScene;
       const set = new THREE.Group(), env = new THREE.Group();
@@ -290,21 +290,23 @@
           g.fillStyle = R() < 0.5 ? 'rgba(0,0,0,' + R() * 0.09 + ')' : 'rgba(120,170,145,' + R() * 0.045 + ')';
           g.fillRect(R() * W, R() * H, 1 + R() * 2, 1);
         }
-        const rg = g.createRadialGradient(W / 2, H * 0.45, W * 0.07, W / 2, H * 0.45, W * 0.3);
-        rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(0.4, 'rgba(3,10,7,0.3)'); rg.addColorStop(1, 'rgba(3,10,7,0.72)');
+        const rg = g.createRadialGradient(W / 2, H * 0.45, W * 0.12, W / 2, H * 0.45, W * 0.52);
+        rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(0.6, 'rgba(3,10,7,0.06)'); rg.addColorStop(1, 'rgba(3,10,7,0.13)');
         g.fillStyle = rg; g.fillRect(0, 0, W, H);
       });
       const clothMesh = new THREE.Mesh(new THREE.PlaneGeometry(CS, CS), new THREE.MeshStandardMaterial({ map: cloth, roughness: 0.96, metalness: 0 }));
       clothMesh.rotation.x = -Math.PI / 2; clothMesh.position.set(0.4, 0, 0.2); clothMesh.receiveShadow = true; env.add(clothMesh);
 
-      // --- lights: a soft warm overhead pool, a low fill so the box front and tile faces read
-      env.add(new THREE.HemisphereLight(0xfff1dc, 0x10261d, 0.3));
-      const lamp = new THREE.SpotLight(0xffecd2, 1.5, 0, 0.52, 1, 1);
-      lamp.position.set(0.6, 22, 2.5); lamp.target.position.set(0.4, 0, 0.4);
+      // --- lights: softbox over the table, tipped toward the camera so the standing box front reads,
+      // with a real frontal fill — bright and even, the jade cloth carries the mood
+      env.add(new THREE.HemisphereLight(0xfff1dc, 0x24493a, 0.66));
+      const lamp = new THREE.SpotLight(0xffecd2, 1.05, 0, 0.86, 1, 1);
+      lamp.position.set(0.6, 22, 4.5); lamp.target.position.set(0.4, 0, 0.4);
       lamp.castShadow = true; lamp.shadow.mapSize.set(2048, 2048); lamp.shadow.radius = 7; lamp.shadow.bias = -0.0006;
       lamp.shadow.camera.near = 10; lamp.shadow.camera.far = 40;
       env.add(lamp); env.add(lamp.target);
-      const fill = new THREE.DirectionalLight(0xffeedd, 0.22); fill.position.set(-2, 9, 14); env.add(fill);
+      const fill = new THREE.DirectionalLight(0xffeedd, 0.56); fill.position.set(-3, 9, 15); env.add(fill);
+      const wash = new THREE.DirectionalLight(0xeaf3ec, 0.3); wash.position.set(0, 10, -14); env.add(wash);
 
       // --- components: the tile-version box, the cloth bag, a dealt cart and a played combination
       set.add(standBox(-2.6, -1.3, 0.1));

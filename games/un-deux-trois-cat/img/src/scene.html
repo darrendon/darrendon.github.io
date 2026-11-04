@@ -29,12 +29,12 @@ try {
   const BG = '#E4DCD2';
   scene.background = C(BG); scene.fog = new THREE.Fog(C(BG), 46, 90);
   const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 300);
-  const hemi = new THREE.HemisphereLight(0xfff4e6, 0x8a7458, 0.52); scene.add(hemi);
-  const key = new THREE.DirectionalLight(0xfff1dc, 0.86); key.position.set(9, 16, 10); key.castShadow = true;
+  const hemi = new THREE.HemisphereLight(0xfff4e6, 0x8a7458, 0.56); scene.add(hemi);
+  const key = new THREE.DirectionalLight(0xfff1dc, 0.9); key.position.set(8, 13, 14); key.castShadow = true;
   key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 80 });
   key.shadow.radius = 6; key.shadow.bias = -0.0004; scene.add(key);
   const rim = new THREE.DirectionalLight(0xffd9a8, 0.34); rim.position.set(-11, 8, -10); scene.add(rim);
-  const fill = new THREE.DirectionalLight(0xe6ecff, 0.18); fill.position.set(-7, 6, 11); scene.add(fill);
+  const fill = new THREE.DirectionalLight(0xe6ecff, 0.28); fill.position.set(-7, 6, 11); scene.add(fill);
 
   // the table: a warm linen cloth
   function linen() {
@@ -303,8 +303,9 @@ try {
   }
 
   if (SCENE === 'cozy') {
-    // the themed still, kept quiet: a plain plum felt cloth from the box's own palette, one soft overhead pool of light
-    // with a gentle vignette, the box standing up, the six felt toys and two flipped cards.
+    // the themed still, kept quiet: a plain plum felt cloth from the box's own palette, lit like a product photo
+    // on a softbox — warm key from the camera side, wide gentle pool, faint vignette — the box standing up,
+    // the six felt toys and two flipped cards.
     // (Only this preset touches the lights and the cloth, so the other stills render exactly as before.)
     let ws = 11; const wr = () => (ws = (ws * 9301 + 49297) % 233280) / 233280;
     const fc = document.createElement('canvas'); fc.width = fc.height = 1024; const fg = fc.getContext('2d');
@@ -313,17 +314,17 @@ try {
       fg.strokeStyle = wr() < .5 ? 'rgba(255,255,255,' + (0.05 + wr() * 0.08) + ')' : 'rgba(0,0,0,' + (0.03 + wr() * 0.05) + ')';
       fg.lineWidth = 0.7 + wr() * 0.8; fg.beginPath(); fg.moveTo(x, y); fg.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); fg.stroke(); }
     const ft = new THREE.CanvasTexture(fc); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(9, 9); ft.encoding = THREE.sRGBEncoding; ft.anisotropy = 16;
-    table.material = new THREE.MeshStandardMaterial({ map: ft, roughness: 1, color: C(q.get('cloth') || '#56365A') });
+    table.material = new THREE.MeshStandardMaterial({ map: ft, roughness: 1, color: C(q.get('cloth') || '#5E3C63') });
 
-    // light: one warm pool from overhead, the room falling off to dark plum
-    const DARK = q.get('bg') || '#24162A';
-    scene.background = C(DARK); scene.fog = new THREE.Fog(C(DARK), +(q.get('fn') || 44), +(q.get('ff') || 80));
-    hemi.color = new THREE.Color(0xfff0e2); hemi.groundColor = new THREE.Color(0x4a3048); hemi.intensity = +(q.get('hemi') || 0.3);
-    key.intensity = 0; rim.intensity = 0.16; fill.color = new THREE.Color(0xf2e6ff); fill.intensity = 0.14;
-    const pool = new THREE.SpotLight(0xfff0dc, +(q.get('spot') || 2.0), 0, +(q.get('ang') || 0.58), 1, 0);
-    pool.position.set(0.8, 30, 2.4); pool.target.position.set(0.8, 0, 0.6); scene.add(pool.target);
-    pool.castShadow = true; pool.shadow.mapSize.set(4096, 4096); pool.shadow.radius = 7; pool.shadow.bias = -0.0003;
-    Object.assign(pool.shadow.camera, { near: 10, far: 60 }); scene.add(pool);
+    // light: a soft warm key from the camera side (it keeps the one soft shadow) over a wide, gentle overhead
+    // pool — the room stays plum, but the box front, the toys and the cards all read clearly
+    const DARK = q.get('bg') || '#3B2742';
+    scene.background = C(DARK); scene.fog = new THREE.Fog(C(DARK), +(q.get('fn') || 120), +(q.get('ff') || 240));
+    hemi.color = new THREE.Color(0xfff0e2); hemi.groundColor = new THREE.Color(0x5e4260); hemi.intensity = +(q.get('hemi') || 0.8);
+    key.intensity = +(q.get('key') || 0.8); key.position.set(7, 13, 15);
+    rim.intensity = 0.22; fill.color = new THREE.Color(0xf2e6ff); fill.intensity = 0.2;
+    const pool = new THREE.SpotLight(0xfff0dc, +(q.get('spot') || 0.25), 0, +(q.get('ang') || 1.15), 1, 0);
+    pool.position.set(0.8, 30, 2.4); pool.target.position.set(0.8, 0, 0.6); scene.add(pool.target); scene.add(pool);
 
     await box(-6.0, -1.0, 0.22);
     for (const [n, x, z, yaw] of [['bird', 1.0, -3.9, -0.5], ['cat', 5.4, -3.7, -0.35], ['mouse', 10.0, -3.0, 2.9], ['ball', 0.0, 1.0, 0], ['fish', 3.9, 1.2, 0.25], ['fly', 8.6, 0.8, 0.15]]) toy(n, x, z, yaw);
@@ -336,8 +337,8 @@ try {
   let vignette = null;
   if (SCENE === 'cozy') {
     const vc = document.createElement('canvas'); vc.width = 800; vc.height = 500; const vg = vc.getContext('2d');
-    vg.setTransform(1, 0, 0, 500 / 800, 0, 0); const grd = vg.createRadialGradient(400, 400, 160, 400, 400, 560);
-    grd.addColorStop(0, 'rgba(26,12,28,0)'); grd.addColorStop(1, 'rgba(22,10,24,0.55)'); vg.fillStyle = grd; vg.fillRect(0, 0, 800, 800);
+    vg.setTransform(1, 0, 0, 500 / 800, 0, 0); const grd = vg.createRadialGradient(400, 400, 280, 400, 400, 640);
+    grd.addColorStop(0, 'rgba(26,12,28,0)'); grd.addColorStop(1, 'rgba(22,10,24,0.13)'); vg.fillStyle = grd; vg.fillRect(0, 0, 800, 800);
     const vt = new THREE.CanvasTexture(vc); vt.encoding = THREE.sRGBEncoding;
     const vs = new THREE.Scene(); vs.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: vt, transparent: true, depthTest: false, depthWrite: false })));
     const vcam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);

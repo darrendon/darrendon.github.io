@@ -22,17 +22,17 @@
   document.body.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = C('#1E252A');
-  scene.fog = new THREE.Fog(C('#1E252A'), 26, 48);
+  scene.background = C('#252E36');
+  scene.fog = new THREE.Fog(C('#252E36'), 34, 78);
   const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
 
-  // ---- lights (same rig as the Dim Sum Rush mockup, warmed a touch)
-  const hemi = new THREE.HemisphereLight(0xfff3e2, 0x8a7458, 0.62); scene.add(hemi);
-  const key = new THREE.DirectionalLight(0xfff1dc, 1.05); key.position.set(7, 12, 7); key.castShadow = true;
+  // ---- lights: softbox product shot — key from the camera side so upright box fronts stay lit
+  const hemi = new THREE.HemisphereLight(0xfff3e2, 0x8a7458, 0.78); scene.add(hemi);
+  const key = new THREE.DirectionalLight(0xfff1dc, 0.92); key.position.set(6, 12, 11); key.castShadow = true;
   key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 50 });
-  key.shadow.radius = 5; key.shadow.bias = -0.0005; scene.add(key);
-  const rim = new THREE.DirectionalLight(0xffd9a8, 0.38); rim.position.set(-9, 6, -8); scene.add(rim);
-  const fill = new THREE.DirectionalLight(0xdfe8ff, 0.18); fill.position.set(-5, 4, 9); scene.add(fill);
+  key.shadow.radius = 8; key.shadow.bias = -0.0005; scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffd9a8, 0.32); rim.position.set(-9, 6, -8); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xdfe8ff, 0.38); fill.position.set(-6, 5, 13); scene.add(fill);
 
   // ---- table: dark walnut with a little grain
   function woodTexture() {
@@ -200,12 +200,12 @@
   let vignette = null;
   if (SCENE === 'themed') {
     // ---- a quiet card table: deep green felt, one soft overhead pool of light, a gentle vignette
-    scene.remove(table); scene.fog = null; scene.background = C('#0B1611');
-    hemi.color = C('#FFF1DC'); hemi.groundColor = C('#2A3A30'); hemi.intensity = 0.1;
-    key.intensity = 0.22; key.position.set(4, 10, 12); rim.intensity = 0.1; fill.intensity = 0.2; fill.position.set(-3, 5, 12);
+    scene.remove(table); scene.fog = null; scene.background = C('#16241C');
+    hemi.color = C('#FFF1DC'); hemi.groundColor = C('#35493C'); hemi.intensity = 0.52;
+    key.intensity = 0.5; key.position.set(4, 10, 12); rim.intensity = 0.22; fill.intensity = 0.34; fill.position.set(-3, 5, 12);
     key.castShadow = false;
-    const pool = new THREE.SpotLight(0xfff0dc, 2.6, 0, 0.62, 1.0, 0); pool.position.set(-6.5, 21, -5.5); pool.target.position.set(-0.2, 0, 0.6);
-    pool.castShadow = true; pool.shadow.mapSize.set(4096, 4096); pool.shadow.radius = 9; pool.shadow.bias = -0.0004;
+    const pool = new THREE.SpotLight(0xfff0dc, 1.45, 0, 0.95, 1.0, 0); pool.position.set(-6.5, 21, -5.5); pool.target.position.set(-0.2, 0, 0.6);
+    pool.castShadow = true; pool.shadow.mapSize.set(4096, 4096); pool.shadow.radius = 10; pool.shadow.bias = -0.0004;
     Object.assign(pool.shadow.camera, { near: 8, far: 40 }); scene.add(pool); scene.add(pool.target);
 
     function feltTexture() {
@@ -234,7 +234,7 @@
 
     // gentle screen-space vignette (drawn over the final frame only; not part of the overlap check)
     const vc = document.createElement('canvas'); vc.width = 512; vc.height = 320; const vg = vc.getContext('2d');
-    const gr = vg.createRadialGradient(256, 150, 60, 256, 160, 330); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0.58)');
+    const gr = vg.createRadialGradient(256, 150, 60, 256, 160, 330); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.04)'); gr.addColorStop(1, 'rgba(0,0,0,0.2)');
     vg.fillStyle = gr; vg.fillRect(0, 0, 512, 320);
     const vt = new THREE.CanvasTexture(vc);
     vignette = { scene: new THREE.Scene(), cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
