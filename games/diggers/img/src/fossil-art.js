@@ -2,7 +2,7 @@
 // Each species is one fossil slab, 3 cards wide by 3 tall. Card v (1-9) is the slab cell in
 // reading order: 1 2 3 / 4 5 6 / 7 8 9. Lay a species' nine cards out that way and the skeleton is whole.
 const SPECIES = [
-  { key: "rex", name: "Tyrannosaurus", rock: "red sandstone", suit: "#d23a2a", base: "#b2523a", bands: ["#c0603f", "#a5482f", "#cc6c48", "#b85a3d", "#a9503a"], seed: 11, sym: "M6.5 2.2C13.5 3.2 18.6 8.6 18.4 15.2C18.3 18.4 17.2 20.6 15.6 22.2L14.2 20.2L12.6 21.6L11.6 19.4L9.8 20.4C10.6 14.6 10 8 6.5 2.2Z" },
+  { key: "allo", name: "Allosaurus", rock: "red sandstone", suit: "#d23a2a", base: "#b2523a", bands: ["#c0603f", "#a5482f", "#cc6c48", "#b85a3d", "#a9503a"], seed: 11, sym: "M6.5 2.2C13.5 3.2 18.6 8.6 18.4 15.2C18.3 18.4 17.2 20.6 15.6 22.2L14.2 20.2L12.6 21.6L11.6 19.4L9.8 20.4C10.6 14.6 10 8 6.5 2.2Z" },
   { key: "tri", name: "Triceratops", rock: "blue slate", suit: "#3a7fc4", base: "#5a84ad", bands: ["#6690b9", "#4f79a2", "#729cc4", "#5a86af", "#6189b2"], seed: 23, sym: "M2.5 16.5C2.5 9.5 6.8 5 12 5C17.2 5 21.5 9.5 21.5 16.5L17.6 16.5L15 22L9 22L6.4 16.5ZM7.2 12.6L4.2 2.6L10 11ZM16.8 12.6L19.8 2.6L14 11ZM10.6 17.4L12 13.6L13.4 17.4Z" },
   { key: "stego", name: "Stegosaurus", rock: "green mudstone", suit: "#3fa155", base: "#5f9460", bands: ["#6aa16a", "#558a56", "#77ad74", "#5c935d", "#669b64"], seed: 37, sym: "M2 20H22V22.5H2ZM3.2 20C2.6 15.4 4 11.2 6.6 8.2C9.2 11.2 10.4 15.4 9.8 20ZM9.4 20C8.8 13.8 10.2 7.6 12.6 3C15.2 7.6 16.6 13.8 15.8 20ZM15.4 20C14.9 16 16 12.4 18.4 10C20.6 12.4 21.6 16 21 20Z" },
   { key: "bronto", name: "Brontosaurus", rock: "purple shale", suit: "#8a55c4", base: "#8a6aa8", bands: ["#9677b4", "#7e5f9c", "#a283bf", "#8768a5", "#9172ae"], seed: 41, sym: "M1.5 21.5C2 15.5 6.2 12.4 10.8 12.6C12.4 12.7 13.2 11 13.4 8.6C13.6 5.2 15.2 2.8 18.4 2.6L21.4 3.2L22.4 4.6L20.8 5.6L18.6 5.4C16.6 5.8 16.4 8.4 16.6 11.6C16.8 14.6 17.6 17.2 17.4 21.5L14.6 21.5L14.4 18L9.6 18L9.4 21.5L6.6 21.5L6.4 18.2C4.6 18.6 3.6 19.8 3.4 21.5Z" },
@@ -10,7 +10,7 @@ const SPECIES = [
 ];
 const BONE_NAMES = ["Jaws", "Skull", "Tail", "Shoulder", "Ribs", "Hips", "Forefoot", "Hind leg", "Hind foot"];
 const BONE_OVERRIDES = {
-  rex: { 4: "Arm", 7: "Far foot" },
+  allo: { 1: "Horns", 2: "Jaws", 4: "Arms", 7: "Far foot" },
   tri: { 1: "Horns & beak", 2: "Frill" },
   stego: { 1: "Skull", 2: "Neck & plates", 3: "Thagomizer" },
   bronto: { 1: "Skull", 2: "Long neck", 3: "Whip tail" },
@@ -132,12 +132,15 @@ const FossilArt = (() => {
 
   // ---------- skulls (drawn in their own local units, then placed with xf) ----------
   const SKULL = {
-    rex(P) {
-      P.poly([[16, 63], [50, 67], [86, 65], [98, 61], [96, 72], [80, 79], [48, 81], [22, 75]]);
-      P.poly([[9, 51], [15, 40], [33, 33], [58, 29], [82, 30], [96, 37], [101, 48], [97, 58], [86, 63], [60, 65], [34, 65], [15, 61]]);
-      P.detail(c => { c.beginPath(); c.moveTo(18, 62); c.quadraticCurveTo(55, 66, 92, 61); c.lineTo(92, 64); c.quadraticCurveTo(55, 69, 18, 65); c.closePath(); c.fillStyle = HOLE; c.fill();
-        c.fillStyle = BONE; for (let x = 22; x < 86; x += 6.2) { c.beginPath(); c.moveTo(x, 62.5); c.lineTo(x + 3.4, 62.5); c.lineTo(x + 1.6, 67.6); c.closePath(); c.fill(); } });
-      P.holeEll(75, 42, 5.2, 4.8); P.holePoly([[38, 41], [58, 37], [65, 47], [57, 56], [41, 54]]); P.holeEll(20, 46, 3.2, 2.4, -0.3); P.holeEll(89, 50, 3.6, 6, 0.2); P.holeEll(72, 73, 7, 2.2, 0.05);
+    allo(P) {
+      // Allosaurus: a long, low skull with a row of nasal ridges, a horn in front of each eye and a big window before it
+      P.poly([[8, 55], [36, 59], [70, 60], [92, 57], [99, 53], [97, 63], [84, 69], [52, 70], [22, 65], [10, 60]]);
+      P.poly([[2, 47], [8, 41], [26, 37], [48, 33], [66, 30], [80, 28], [92, 31], [100, 39], [102, 48], [96, 55], [80, 57], [52, 58], [26, 57], [8, 54]]);
+      P.poly([[63, 32], [68, 24], [72, 15], [75, 23], [79, 30]], false, { shadeW: 2 });
+      P.detail(c => { c.beginPath(); c.moveTo(10, 54); c.quadraticCurveTo(50, 58.5, 90, 56); c.lineTo(90, 58.6); c.quadraticCurveTo(50, 61.5, 10, 57); c.closePath(); c.fillStyle = HOLE; c.fill();
+        c.fillStyle = BONE; for (let x = 13; x < 84; x += 5.2) { c.beginPath(); c.moveTo(x, 55); c.lineTo(x + 3, 55.2); c.lineTo(x + 1.2, 60); c.closePath(); c.fill(); }
+        c.strokeStyle = "rgba(110,90,60,.7)"; c.lineWidth = 0.9; for (let x = 18; x < 62; x += 7) { c.beginPath(); c.moveTo(x, 37.6 - (x - 18) * 0.11); c.lineTo(x + 3.5, 35.6 - (x - 18) * 0.11); c.stroke(); } });
+      P.holeEll(84, 39, 4, 4.4); P.holePoly([[42, 41], [62, 36], [70, 44], [64, 52], [44, 51]]); P.holeEll(12, 46, 3.4, 2.2, -0.2); P.holeEll(94, 47, 3, 5, 0.25); P.holeEll(74, 63, 7, 2, 0.04);
     },
     tri(P) {
       P.poly([[60, 50], [62, 31], [70, 15], [82, 6], [94, 7], [100, 20], [99, 44], [93, 63], [80, 74], [68, 66]]);
@@ -195,18 +198,21 @@ const FossilArt = (() => {
   const along = (path, every, fn, from = 2) => { for (let i = from; i < path.length - 2; i += every) { const q = path[i + 1], r = path[i - 1]; const a = Math.atan2(q[1] - r[1], q[0] - r[0]); fn(path[i], Math.sin(a), -Math.cos(a), a); } };
 
   const POSE = {
-    // Tyrannosaurus: big skull on an S-shaped neck, tiny arms, long hind legs, tail about twice the body
-    rex: P => standard(P, {
-      key: "rex", skull: { at: [34, -84], anchor: [97, 60], k: 0.98, rot: -0.95, flip: true },
-      neck: [[32, -82], [8, -66], [-6, -36], [0, 0]], neckO: { step: 8, size: () => 16, spine: () => 9, cervical: () => 10 },
-      back: [[0, 0], [40, -12], [100, -14], [150, 4]], backO: { step: 9, size: () => 17, spine: () => 20 },
-      tail: [[150, 4], [188, 2], [218, -18], [238, -50], [244, -88], [236, -124], [214, -152], [186, -168], [156, -172]],
-      tailO: { step: 9, size: t => 17 - 10 * t, spine: t => 15 * (1 - t * .7), chevron: t => 14 * (1 - t * .7) },
-      rib: [10, 140, 13], ribLen: ribLen(52, 38), ribW: 4.6,
-      pelvis: { ilium: [146, -2, 42, 15, 0.05], pubis: [[138, 10], [112, 72]], pw: 10, boot: [110, 78, 22, 9, 0.1], ischium: [[160, 12], [186, 62]], iw: 8 },
-      fore: { pts: [[10, -6], [-2, 26], [-12, 44], [-16, 56]], w: [10, 7.5, 6], toes: [-16, 56, [DOWN + 0.7, DOWN + 0.2], 9, 3.2] },
-      hind: { pts: [[154, 10], [118, 94], [160, 162], [198, 190]], w: [21, 16, 10.5], toes: [198, 190, FR, 30, 6] },
-      far: [{ pts: [[144, 10], [92, 82], [78, 152], [42, 180]], w: [18, 14, 9.5], toes: [42, 180, FL, 27, 5.5] }],
+    // Allosaurus: a long low skull on an S-shaped neck, long arms with three big claws, long hind legs, tail longer than the body
+    allo: P => standard(P, {
+      key: "allo", skull: { at: [30, -94], anchor: [99, 52], k: 1.06, rot: -0.78, flip: true },
+      neck: [[28, -92], [2, -78], [-14, -44], [0, 0]], neckO: { step: 8, size: () => 14, spine: () => 8, cervical: () => 10 },
+      back: [[0, 0], [40, -12], [100, -14], [150, 4]], backO: { step: 9, size: () => 16, spine: () => 18 },
+      tail: [[150, 4], [190, 4], [222, -14], [244, -46], [252, -86], [244, -124], [222, -154], [192, -172], [160, -178]],
+      tailO: { step: 9, size: t => 16 - 10 * t, spine: t => 14 * (1 - t * .7), chevron: t => 13 * (1 - t * .7) },
+      rib: [10, 140, 13], ribLen: ribLen(50, 36), ribW: 4.4,
+      pelvis: { ilium: [146, -2, 40, 14, 0.05], pubis: [[138, 10], [114, 70]], pw: 9, boot: [112, 76, 20, 8, 0.1], ischium: [[160, 12], [184, 60]], iw: 7.5 },
+      fore: { pts: [[10, -4], [-4, 26], [-18, 46], [-26, 56]], w: [9.5, 7.5, 6], toes: [-26, 56, [DOWN + 1.0, DOWN + 0.45, DOWN - 0.1], 13, 3.6] },
+      hind: { pts: [[154, 10], [120, 94], [158, 160], [194, 188]], w: [20, 15, 10], toes: [194, 188, FR, 28, 5.8] },
+      far: [
+        { pts: [[22, 0], [12, 26], [2, 42], [-4, 52]], w: [8, 6.5, 5], toes: [-4, 52, [DOWN + 0.9, DOWN + 0.35, DOWN - 0.2], 11, 3.1] },
+        { pts: [[144, 10], [94, 82], [80, 150], [46, 178]], w: [17, 13, 9], toes: [46, 178, FL, 25, 5.2] },
+      ],
     }),
     // Triceratops: a skull three-quarters as long as the body, short neck, sprawling forelegs shorter than the hind
     tri: P => standard(P, {
@@ -298,7 +304,7 @@ const FossilArt = (() => {
     },
   };
   // fit each animal to the slab: rotate it, then scale and centre it inside the 300 x 420 world
-  const FIT_ROT = { rex: 0, tri: 0, stego: 0, bronto: 0.05, ptera: 0 };
+  const FIT_ROT = { allo: 0, tri: 0, stego: 0, bronto: 0.05, ptera: 0 };
   const fitCache = {};
   function fit(key) {
     if (fitCache[key]) return fitCache[key];

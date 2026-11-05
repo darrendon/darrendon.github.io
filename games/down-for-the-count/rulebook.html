@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Down for the Count — Rules</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css?v=8bd6e31d">
+<style>
+/* Source for down-for-the-count-rules.pdf (the retail rulebook): print at US Letter portrait, no margins, backgrounds on.
+   The print-and-play kit (print-and-play.html) carries its own printing notes. */
+@page{size:8.5in 11in;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:#FFFCF4;position:relative;overflow:hidden;color:#1C1530;
+  font-family:Figtree,system-ui,sans-serif;font-size:9.5pt;line-height:1.4;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:always;break-after:page;padding:.6in .66in .7in}
+.page:last-child{page-break-after:auto;break-after:auto}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none}}
+.page::before{content:"";position:absolute;inset:.28in;border:3px solid #1C1530;border-radius:10px;pointer-events:none}
+h1{font-family:Archivo;font-weight:900;font-style:italic;font-stretch:112%;font-size:44pt;line-height:.9;letter-spacing:-.02em;margin:0;
+  color:#FFFCF4;-webkit-text-stroke:1.6px #1C1530;paint-order:stroke fill;text-shadow:2.5px 2.5px 0 #CC162C,5px 5px 0 #1C1530}
+.kick{font:800 9.5pt/1 Archivo;letter-spacing:.12em;text-transform:uppercase;color:#CC162C;margin-bottom:.1in}
+.tag{font:600 10.3pt/1.38 Figtree;margin:.12in 0 .08in;max-width:6.6in}
+h2{font:900 13pt/1.1 Archivo;font-style:italic;font-stretch:110%;text-transform:uppercase;color:#CC162C;margin:.14in 0 .05in;border-bottom:2px solid #1C1530;padding-bottom:2px}
+h3{font:800 10.2pt/1.2 Archivo;margin:.07in 0 .02in}
+p{margin:0 0 .07in}
+ul,ol{margin:0 0 .08in;padding-left:.2in}
+li{margin-bottom:.03in}
+b{font-weight:800}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.28in;align-items:start}
+table{border-collapse:collapse;width:100%;margin:.04in 0 .1in;font-size:9.1pt}
+th{font:800 8.2pt/1.2 Archivo;letter-spacing:.06em;text-transform:uppercase;text-align:left;border-bottom:2px solid #1C1530;padding:3px 4px}
+td{border-bottom:.6px solid rgba(28,21,48,.25);padding:2px 4px}
+.box{border:2px solid #1C1530;border-radius:6px;background:#FFF0BF;padding:.08in .12in;margin:.06in 0 .1in;box-shadow:2px 2px 0 #1C1530}
+.box p:last-child,.box ol:last-child{margin-bottom:0}
+.goal{background:#101A3D;color:#FFFCF4;border-radius:8px;padding:.1in .16in;margin:.02in 0 .06in;font-size:10pt;border:2px solid #1C1530;box-shadow:3px 3px 0 #CC162C}
+.goal b{color:#FFD630}
+.ex{display:flex;gap:.05in;align-items:center;margin:.02in 0 .04in}
+.ex img{width:.4in;border-radius:3px}
+.ladder .g{display:flex}.ladder .g img+img{margin-left:-.26in}.ladder b{font:900 15pt/1 Archivo;margin:0 .04in}
+.ex span{font-size:9pt;color:#4D4668;margin-left:.06in}
+.small{font-size:8.7pt;color:#4D4668}
+.inbox{display:grid;grid-template-columns:auto 1fr;gap:.04in .12in;align-items:baseline;margin:.02in 0 .06in}
+.inbox .n{font:900 17pt/1 Archivo;font-style:italic;color:#CC162C;text-align:right}
+.deck{display:grid;grid-template-columns:repeat(10,1fr);gap:.05in;margin:.06in auto .02in;max-width:6.2in}
+.deck figure{margin:0;text-align:center;font:800 6.4pt/1.15 Archivo;letter-spacing:.02em;text-transform:uppercase;color:#4D4668}
+.deck img{width:100%;border-radius:3px;display:block;margin-bottom:.03in;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+/* setup diagram */
+.diagram{position:relative;height:2.2in;margin:.06in 0 .06in;border-radius:10px;background:#E9ECF7;border:2px solid #1C1530}
+.diagram .ring{position:absolute;left:2.4in;right:2.4in;top:.3in;height:.9in;border-radius:8px;background:#2F7BFF;border:2px solid #1C1530;display:grid;place-items:center}
+.diagram .ring .mv{display:flex;margin-top:-.12in}.diagram .ring .mv img{width:.38in;border-radius:3px}.diagram .ring .mv img+img{margin-left:-.2in}
+.diagram .ring span{position:absolute;bottom:.05in;color:#fff;font:800 7.6pt/1 Archivo;text-transform:uppercase;letter-spacing:.06em}
+.seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.04in;font:800 7.8pt/1.1 Archivo;text-transform:uppercase;letter-spacing:.05em}
+.seat .hand{display:flex}.seat .hand img{width:.34in;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.3)}.seat .hand img+img{margin-left:-.22in}
+.seat .stam{display:flex;gap:.04in}.seat .stam img{width:.3in;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.seat i{display:block;font:600 7.4pt/1.1 Figtree;text-transform:none;letter-spacing:0;color:#4D4668}
+.qr{border:2px solid #1C1530;border-radius:6px;background:#101A3D;color:#FFFCF4;padding:.1in .13in;margin:.06in 0 .08in}
+.qr h3{margin:0 0 .04in;color:#FFD630;font-style:italic;text-transform:uppercase;letter-spacing:.04em}
+.qr p{margin:0 0 .04in}.qr b{color:#FFD630}
+ul.two{columns:2;column-gap:.28in}ul.two li{break-inside:avoid}
+.foot{position:absolute;left:.66in;right:.66in;bottom:.42in;display:flex;justify-content:space-between;font:800 8.5pt/1 Archivo;letter-spacing:.08em;text-transform:uppercase;color:#5A5170}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="kick">A wrestling card game · 2 to 5 players · about 15 minutes</div>
+  <h1>DOWN FOR THE COUNT</h1>
+  <p class="tag">Every card in your hand is a move you can still make. Run out of moves and you tap out. Run out of stamina and the ref counts you out. Either way you’re done for the round, and the last wrestler still on their feet wins it.</p>
+  <div class="goal"><b>Object of the game:</b> be the last wrestler standing. Each round scores by the order wrestlers drop out, and after three rounds the highest total wins the match.</div>
+
+  <h2>In the box</h2>
+  <div class="inbox">
+    <span class="n">60</span><span><b>Cards</b>, poker-sized: ranks 1 to 10, six of each, with the number in two corners. Each rank is a wrestling move, from a Chop at 1 to a Frog Splash at 10.</span>
+    <span class="n">1</span><span><b>Rulebook.</b> Your <b>stamina</b> cards come from the same deck, so nothing else is needed.</span>
+  </div>
+  <div class="deck" id="deck"></div>
+
+  <div class="cols">
+    <div>
+      <h2>Setup</h2>
+      <ol>
+        <li>Build the deck for your player count (table) and shuffle.</li>
+        <li>Deal each player a <b>hand</b>, plus three face-down cards in a row in front of them: your <b>stamina</b>. Don’t look at your stamina cards.</li>
+        <li>With 2 players, set the last 12 cards aside unseen for the round. Otherwise the whole deck is dealt.</li>
+        <li>Pick who opens the first round. After that, the previous round’s winner opens.</li>
+      </ol>
+      <p>Arrange your hand however you like, whenever you like.</p>
+    </div>
+    <div>
+      <table><thead><tr><th>Players</th><th>Deck</th><th>Hand</th><th>Stamina</th></tr></thead>
+        <tbody><tr><td>2</td><td>1–8 (remove 9s, 10s)</td><td>15</td><td>3</td></tr><tr><td>3</td><td>1–9 (remove 10s)</td><td>15</td><td>3</td></tr><tr><td>4</td><td>1–10</td><td>12</td><td>3</td></tr><tr><td>5</td><td>1–10</td><td>9</td><td>3</td></tr></tbody></table>
+      <p class="small">A <b>move</b> on the table is the last group of cards played. Everyone answers it in turn, going clockwise.</p>
+    </div>
+  </div>
+
+  <div class="diagram" aria-label="Setup for three players">
+    <div class="ring"><div class="mv"><img src="/games/down-for-the-count/img/card-5-240.webp" alt=""><img src="/games/down-for-the-count/img/card-5-240.webp" alt=""></div><span>The move on the table</span></div>
+    <div class="seat" style="left:.35in;top:.15in"><div class="hand" id="h1"></div><div class="stam" id="s1"></div><span>Opponent<i>hand · 3 stamina</i></span></div>
+    <div class="seat" style="right:.35in;top:.15in"><div class="hand" id="h2"></div><div class="stam" id="s2"></div><span>Opponent<i>hand · 3 stamina</i></span></div>
+    <div class="seat" style="left:50%;bottom:.1in;transform:translateX(-50%);flex-direction:row;gap:.18in"><div class="hand" id="h3"></div><div class="stam" id="s3"></div><span style="text-align:left;width:1.7in">You<i>your hand, then three face-down stamina cards</i></span></div>
+  </div>
+  <div class="foot"><span>Down for the Count · Designed by Darren Don</span><span>Rules · 1 of 3</span></div>
+</div>
+
+<div class="page">
+  <div class="cols">
+    <div>
+      <h2 style="margin-top:0">Moves</h2>
+      <p>You play cards in groups of <b>1 to 4</b> called <b>moves</b>:</p>
+      <ul><li><b>Sets</b>: cards of the same rank. One card on its own is a set of 1.</li><li><b>Runs</b>: 2 to 4 cards in consecutive ranks, one of each.</li></ul>
+      <div class="ex"><img src="/games/down-for-the-count/img/card-5-240.webp" alt=""><img src="/games/down-for-the-count/img/card-5-240.webp" alt=""><span>A set of 2</span></div>
+      <div class="ex"><img src="/games/down-for-the-count/img/card-6-240.webp" alt=""><img src="/games/down-for-the-count/img/card-7-240.webp" alt=""><img src="/games/down-for-the-count/img/card-8-240.webp" alt=""><span>A run of 3</span></div>
+      <h2>Answering a move</h2>
+      <p>To play on top of the move on the table, yours has to beat it. <b>More cards always wins. Same number of cards? Higher wins.</b></p>
+      <div class="ex ladder"><span class="g"><img src="/games/down-for-the-count/img/card-5-240.webp" alt=""><img src="/games/down-for-the-count/img/card-5-240.webp" alt=""></span><b>›</b><span class="g"><img src="/games/down-for-the-count/img/card-7-240.webp" alt=""><img src="/games/down-for-the-count/img/card-7-240.webp" alt=""></span><b>›</b><span class="g"><img src="/games/down-for-the-count/img/card-3-240.webp" alt=""><img src="/games/down-for-the-count/img/card-3-240.webp" alt=""><img src="/games/down-for-the-count/img/card-3-240.webp" alt=""></span></div>
+      <p>In full, the first rule that applies decides:</p>
+      <ol>
+        <li><b>More cards always wins,</b> whatever the type or numbers.</li>
+        <li><b>Same number of cards: a set beats a run.</b> A pair beats a 2-run; three 6s beat 4-5-6.</li>
+        <li><b>Same number and type: higher wins.</b> Runs compare by their top card.</li>
+      </ol>
+      <div class="box"><p><b>5-5</b> is on the table: beat it with a higher pair, or any move of 3 or 4 cards.</p><p><b>5-6-7</b> is on the table: beat it with any three of a kind, a 3-run topping out on 8, 9 or 10, or any 4-card move.</p></div>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Your turn</h2>
+      <p><b>If the table is empty</b>, you <b>open</b>: play any move. You can’t skip this.</p>
+      <p><b>Otherwise</b>, do one of three things:</p>
+      <ul>
+        <li><b>Play</b> a move that beats the one on the table.</li>
+        <li><b>Reversal</b>: take one card from the move on the table into your hand, and discard one of your stamina cards face down.</li>
+        <li><b>Kick out</b>: take one of your stamina cards into your hand. The move on the table stays.</li>
+      </ul>
+      <p>A reversal or a kick out uses up one stamina: you survive, you’re a card richer, and you’re one step closer to the pin. <b>With 2 players there is no kick out.</b> If you can’t beat the move, you reverse.</p>
+      <h2>Stamina</h2>
+      <p>Your face-down cards are your stamina. Every reversal and every kick out uses one up. Once they’re gone, the next time you’d have to reverse or kick out, <b>you’re pinned</b>: out of the round. A stamina card that comes into your hand is just a card. It never goes back.</p>
+      <p>If you play your last card and your hand is empty, you’ve <b>tapped out</b>: also out of the round. Pinned or tapped out, it’s the same result.</p>
+      <h2>Reversals</h2>
+      <p>A reversal takes one card off the move on the table, and whatever’s left must still be a legal move:</p>
+      <ul>
+        <li>From a <b>set</b>, take any one card. Four of a kind becomes three, a pair becomes a single.</li>
+        <li>From a <b>run</b>, take either <b>end</b> card. A 4-run becomes a 3-run, a 2-run a single.</li>
+        <li>Reversing a <b>single</b> clears the table. The next player opens.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Down for the Count · Designed by Darren Don</span><span>Rules · 2 of 3</span></div>
+</div>
+
+<div class="page">
+  <div class="cols">
+    <div>
+      <h2 style="margin-top:0">When your move comes back</h2>
+      <p>If the turn comes back around to you and the move on the table is still yours:</p>
+      <ul>
+        <li><b>If it was reversed</b> (it’s smaller than you played it), it’s live. Beat it, reverse it or kick out, same as anyone.</li>
+        <li><b>If nobody touched it</b> (everyone kicked out), <b>take one card from it back into your hand</b> for free: any card from a set, an end card from a run. The next player then answers what’s left. If that was the last card, the table clears and the next player opens.</li>
+      </ul>
+      <p class="small">If the player who played the current move is out, play continues against it as normal; once it has gone all the way around, the next player opens.</p>
+      <h2>Winning a round</h2>
+      <p>Wrestlers drop out one by one until a single player is left standing. They win the round.</p>
+      <h2>Playing a match</h2>
+      <p>A match is <b>three rounds</b>. Each round, score by where you finished:</p>
+      <table><thead><tr><th>Finish</th><th>Points</th></tr></thead>
+        <tbody><tr><td>1st (last standing)</td><td>number of players</td></tr><tr><td>2nd</td><td>one less</td></tr><tr><td>…</td><td>…</td></tr><tr><td>first out</td><td>1</td></tr></tbody></table>
+      <p>The winner of each round opens the next. Highest total after three rounds wins; tied players share the win.</p>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Example of play</h2>
+      <p>Three players, Ana, Ben and Cy, each have three stamina cards.</p>
+      <ol>
+        <li><b>Ana</b> opens with 5-5.</li>
+        <li><b>Ben</b> plays 7-7: same size and type, higher.</li>
+        <li><b>Cy</b> reverses. He takes one 7 into his hand and discards a stamina card. The move is now a single 7.</li>
+        <li><b>Ana</b> plays a 9, a higher single.</li>
+        <li><b>Ben</b> kicks out: he takes one of his stamina cards into his hand. The 9 stays.</li>
+        <li><b>Cy</b> plays 3-3. More cards always wins.</li>
+        <li><b>Ana</b> plays 4-5-6, three cards over two.</li>
+        <li><b>Ben</b> and <b>Cy</b> both kick out. Cy is down to his last stamina card.</li>
+        <li>The turn is back to Ana and nobody touched her 4-5-6, so she <b>takes the 6 back</b> into her hand for free. Ben must now answer 4-5.</li>
+      </ol>
+      <div class="qr">
+        <h3>Quick reference</h3>
+        <p><b>Empty table:</b> open with any move of 1–4 cards.</p>
+        <p><b>Otherwise:</b> play a move that beats it, reverse (take a card off it, discard a stamina card) or kick out (take a stamina card into your hand). No kick out with 2 players.</p>
+        <p><b>What beats what:</b> more cards; then a set over a run; then higher.</p>
+        <p><b>Your move comes back untouched:</b> take one card from it back.</p>
+        <p style="margin:0"><b>Out:</b> empty hand (tapped out) or no stamina when you need it (pinned). Last one standing wins the round.</p>
+      </div>
+      <p class="small">Play it in your browser against bots at <b>darrendon.com/games/down-for-the-count</b>. Questions? darren@darrendon.com</p>
+    </div>
+  </div>
+  <div class="advice">
+      <h2>Ringside advice</h2>
+      <ul class="two">
+        <li><b>Your cards are your moves.</b> Every card you play is one you can’t play later. The minimum that beats the move is usually right.</li>
+        <li><b>Stamina is cheaper than it looks, until it isn’t.</b> Each stamina card buys a card. The one after your last is the pin.</li>
+        <li><b>Reverse when the card helps you; kick out when the move should stay scary</b> for the next player. But if everyone kicks out, the leader gets a card back for free.</li>
+        <li><b>Save the big one for when they’re on the ropes.</b> A move nobody can answer is a finisher against a wrestler with no stamina left, and a gift against anyone else.</li>
+        <li><b>Watch the table.</b> Six of every rank exist. Count what’s been played.</li>
+      </ul>
+  </div>
+  <div class="foot"><span>Down for the Count · Designed by Darren Don</span><span>Rules · 3 of 3</span></div>
+</div>
+
+<script>
+const NAMES = ['Chop', 'Dropkick', 'Clothesline', 'Suplex', 'Body Slam', 'Spear', 'Superkick', 'Moonsault', 'Flying Elbow', 'Frog Splash'];
+const img = (r) => `<img src="/games/down-for-the-count/img/card-${r}-240.webp" alt="">`;
+const back = '<img src="/games/down-for-the-count/img/card-back.webp" alt="">';
+document.getElementById('deck').innerHTML = NAMES.map((n, i) => `<figure>${img(i + 1)}${i + 1} · ${n}</figure>`).join('');
+const hands = [[2, 4, 4, 6, 8, 9], [1, 3, 5, 7, 7, 10], [2, 3, 6, 6, 8, 9, 10]];
+hands.forEach((h, i) => {
+  document.getElementById('h' + (i + 1)).innerHTML = i < 2 ? h.map(() => back).join('') : h.map(img).join('');
+  document.getElementById('s' + (i + 1)).innerHTML = back + back + back;
+});
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; })))
+  .then(() => document.fonts.ready).then(() => { window.__done = true; });
+</script>
+</body>
+</html>
