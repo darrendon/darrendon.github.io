@@ -109,7 +109,7 @@
 .g-dig .renders img{aspect-ratio:16/10}
 .g-dig .mode{border-color:var(--g-ink)}
 .g-dig .play-frame{border:3px solid var(--g-ink);box-shadow:6px 6px 0 var(--dig-shadow)}
-.g-dig .play-frame iframe{height:min(90vh,980px)}
+.g-dig .play-frame iframe{height:min(calc(100vh - 140px),980px)}
 .g-dig .preview img{border:3px solid var(--g-ink);box-shadow:5px 5px 0 var(--dig-shadow)}
 .g-dig .g-cta{background:#A8452D;border:3px solid #24180E;box-shadow:6px 6px 0 #24180E}
 .g-dig .g-cta h2{font-family:var(--dig-title);font-weight:400}

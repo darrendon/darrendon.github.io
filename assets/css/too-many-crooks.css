@@ -60,7 +60,7 @@
 .die6[data-v="6"] i:nth-child(1),.die6[data-v="6"] i:nth-child(3),.die6[data-v="6"] i:nth-child(4),.die6[data-v="6"] i:nth-child(6),.die6[data-v="6"] i:nth-child(7),.die6[data-v="6"] i:nth-child(9){visibility:visible}
 
 .g-tmc .renders img{aspect-ratio:16/10}
-.g-tmc .play-frame iframe{height:min(88vh,940px)}
+.g-tmc .play-frame iframe{height:min(calc(100vh - 140px),940px)}
 .g-tmc .g-cta{background:var(--tmc-slate)}
 .g-tmc .g-cta h2{font-family:var(--tmc-display);font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--tmc-cream);text-shadow:0 3px 0 #0A0C10}
 .g-tmc .g-cta .btn.light{color:#1B2228}

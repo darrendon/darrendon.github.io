@@ -57,7 +57,7 @@
 
 .g-udtc .renders img{aspect-ratio:16/10;border-radius:14px}
 .g-udtc .play-frame{background:var(--udtc-plum-d);border:0;box-shadow:0 18px 40px -18px rgba(42,29,49,.55)}
-.g-udtc .play-frame iframe{height:min(92vh,1000px)}
+.g-udtc .play-frame iframe{height:min(calc(100vh - 140px),1000px)}
 .g-udtc .set{border-top-color:var(--udtc-ochre)}
 .g-udtc .g-cta{background:var(--udtc-plum)}
 .g-udtc .g-cta .btn.light{color:var(--udtc-plum)}

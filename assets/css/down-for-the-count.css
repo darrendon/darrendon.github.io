@@ -54,7 +54,7 @@
 
 .g-dftc .renders img{aspect-ratio:16/10;border:3px solid #1C1530;box-shadow:4px 4px 0 #1C1530}
 .g-dftc .play-frame{border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530;background:#101A3D}
-.g-dftc .play-frame iframe{height:min(92vh,1040px)}
+.g-dftc .play-frame iframe{height:min(calc(100vh - 140px),1040px)}
 .g-dftc .mode{border-color:#1C1530}
 .g-dftc .set{border-top-color:var(--g-red)}
 .g-dftc .g-cta{background:#245CE8;border:3px solid #1C1530;box-shadow:6px 6px 0 #1C1530}

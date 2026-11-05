@@ -91,7 +91,7 @@
 
 /* play */
 .play-frame{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--g-line);background:var(--g-panel);box-shadow:0 30px 60px -40px rgba(0,0,0,.5)}
-.play-frame iframe{display:block;width:100%;height:min(86vh,880px);min-height:620px;border:0;background:var(--g-bg)}
+.play-frame iframe{display:block;width:100%;height:min(calc(100vh - 140px),880px);min-height:560px;border:0;background:var(--g-bg)}
 .play-frame:fullscreen iframe{height:100vh}
 .play-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:22px}
