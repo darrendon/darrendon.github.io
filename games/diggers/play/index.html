@@ -329,10 +329,6 @@ button:disabled { opacity: .55; cursor: default; }
   .log { font-size: 14.5px; }
   .site .board .fxrule, .site .fxbanner span { font-size: 15px; } .site .fxbanner b { font-size: 14px; } .site .fxbanner { padding: 7px 12px 8px; }
 }
-@media (min-width: 760px) and (min-height: 640px) {
-  /* the rock face stays docked at the bottom of the screen while the table scrolls above it */
-  .hand-wrap { position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6px 18px rgba(30, 18, 8, .35); }
-}
 @media (min-width: 1100px) {
   .wrap { max-width: 1440px; }
   .card { width: 72px; height: 101px; border-radius: 7px; }
@@ -344,6 +340,148 @@ button:disabled { opacity: .55; cursor: default; }
   .hand .card { width: 96px; height: 134px; border-radius: 8px; }
   .hand .card .ix { min-width: 25px; } .hand .card .ix b { font-size: 29px; } .hand .card .ix svg { width: 20px; height: 20px; }
   .slot { width: 11px; height: 134px; }
+}
+
+/* ---- fit the game screen to the window: the header, the table and your rock face all show at once, with no scrolling.
+   Card sizes follow the window height (and the width, so the rock face stays on one row); far sites shrink;
+   every site sizes to what's on it instead of a fixed height. ---- */
+@media (min-width: 760px) {
+  :root { --sc: clamp(44px, 9.4vh, 101px); }
+  .hand-wrap { --hc: min(clamp(70px, 14vh, 134px), calc((min(100vw, 1440px) - 340px) / (max(var(--hn, 14), 10) + 1) * 1.36)); }
+  .wrap { padding-block: clamp(8px, 1.6vh, 16px) 28px; gap: clamp(8px, 1.4vh, 16px); }
+  .top h1 { font-size: clamp(26px, 4.6vh, 40px); }
+  .top button { padding: 7px 14px; }
+  .status { min-height: 0; padding: clamp(6px, 1vh, 10px) 14px; }
+  .status .who { font-size: clamp(18px, 2.6vh, 22px); }
+  .coach { padding: clamp(8px, 1.2vh, 12px) 14px; gap: 4px; }
+  .coach h3 { font-size: clamp(18px, 2.6vh, 21px); }
+  .coach .actions { margin-top: 0; }
+  .coach .actions button { padding: 6px 14px; }
+  .card { height: var(--sc); width: calc(var(--sc) * .716); }
+  .card .ix { min-width: calc(var(--sc) * .2); } .card .ix b { font-size: calc(var(--sc) * .22); } .card .ix svg { width: calc(var(--sc) * .15); height: calc(var(--sc) * .15); }
+  .seat { padding: 6px 12px; } .seat .name { font-size: 18px; } .seat .score { font-size: 22px; }
+  .site { min-height: 0; }
+  .site.h { grid-template-rows: auto auto auto; }
+  .site.v { grid-template-rows: none; grid-template-columns: auto auto auto; }
+  .site.v.fx { grid-template-rows: auto 1fr; }
+  .site .side { min-height: 0; padding: 6px 8px; gap: 3px; }
+  .site .board { padding: 4px 14px; }
+  .site.v .board { padding: 12px 5px; }
+  .site.v .meld { max-width: none; }
+  .site.far .card { height: calc(var(--sc) * .62); width: calc(var(--sc) * .62 * .716); }
+  .site.far .card .ix b { font-size: calc(var(--sc) * .17); } .site.far .card .ix svg { display: none; }
+  .site.far .what { display: none; }
+  .center { padding: 4px; } .center .big { font-size: clamp(36px, 6vh, 58px); }
+  /* the rock face's label and buttons sit in a narrow column at its right, so the fossils get the height */
+  .hand-wrap { padding: 6px 14px 10px; flex-direction: row-reverse; align-items: stretch; gap: 12px; }
+  .hand-wrap > .hand { flex: 1; min-width: 0; }
+  .hand-head { flex: 0 0 180px; flex-direction: column; align-items: flex-end; justify-content: center; text-align: right; gap: 6px; padding-top: 10px; }
+  .hand-head .eyebrow { font-size: 13px; line-height: 1.25; }
+  .hand-head .actions { justify-content: flex-end; }
+  .hand-head .actions button { padding: 5px 12px; font-size: 13.5px; }
+  /* placing a fossil adds a slot between every pair, so the fossils shrink to keep the row on one line */
+  .hand-wrap:has(.slot) .hand .card { height: calc(var(--hc) * .72); width: calc(var(--hc) * .72 * .716); }
+  .hand-wrap:has(.slot) .slot { height: calc(var(--hc) * .72); }
+  .hand { gap: 4px; padding-top: 12px; min-height: calc(var(--hc) + 12px); }
+  .hand .card { height: var(--hc); width: calc(var(--hc) * .716); border-radius: 6px; }
+  .hand .card .ix { min-width: calc(var(--hc) * .2); } .hand .card .ix b { font-size: calc(var(--hc) * .22); } .hand .card .ix svg { width: calc(var(--hc) * .15); height: calc(var(--hc) * .15); }
+  .hand .card.sel { transform: translateY(-10px); }
+  .slot { height: var(--hc); width: 9px; }
+}
+@media (min-width: 760px) {
+  .site.v .board b { font-size: clamp(12px, 1.6vh, 17px); letter-spacing: .05em; }
+  .site.v .board .untouched { display: none; }
+  .center .big { font-size: clamp(30px, 5vh, 58px); }
+}
+@media (min-width: 760px) and (max-height: 1000px) { .center .small:nth-child(4) { display: none; } }
+/* short windows (a laptop embed): the title shrinks to one line, the plank names tighten, the rock face header slims down */
+@media (min-width: 760px) and (max-height: 820px) {
+  .hand-wrap { --hc: min(clamp(64px, 12vh, 134px), calc((min(100vw, 1440px) - 340px) / (max(var(--hn, 14), 10) + 1) * 1.36)); }
+  .wrap { gap: clamp(7px, 1.2vh, 16px); }
+  .top { align-items: center; }
+  .top > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; }
+  .top > div:first-child h1 { order: -1; } .top > div:first-child .sub { flex-basis: 100%; order: 1; margin-top: 2px; }
+  .top h1 { font-size: 28px; }
+  .top button { padding: 5px 12px; }
+  .site.v .board { padding: 6px 4px; }
+  .site.v .board b { font-size: 12px; letter-spacing: .03em; }
+  .top { padding: 7px 14px; }
+  .coach p { font-size: 13.5px; max-width: none; }
+  .coach .actions button.link { padding-block: 4px; }
+  /* a seat reads on two lines (name and prestige, then the counts), and the season ledger on two */
+  .seat { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 12px; row-gap: 0; }
+  .seat .name { flex: 1 1 auto; } .seat .score { font-size: 20px; } .seat .meta { flex-basis: 100%; }
+  .center { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 2px; }
+  .center .big { font-size: 30px; } .center .seasons { flex-basis: 100%; justify-content: center; margin-top: 2px; }
+}
+@media (min-width: 760px) and (max-height: 720px) {
+  :root { --sc: clamp(44px, 9vh, 101px); }
+  .hand-wrap { --hc: min(clamp(62px, 11.5vh, 134px), calc((min(100vw, 1440px) - 340px) / (max(var(--hn, 14), 10) + 1) * 1.36)); }
+  .site .what { display: none; }
+  .wrap { padding-top: 8px; }
+  .site .side { padding: 4px 8px; gap: 2px; }
+  .site .board { padding: 2px 12px; } .site .board b { font-size: 14px; }
+  .site.v .board b { font-size: 11px; }
+  .status { padding-block: 5px; }
+}
+/* phones: the whole game screen fits too. Seven fossils to a row in the rock face; seats, the ledger and far sites slim down;
+   an upright site gives its width to the side holding the find, so two fossils sit side by side instead of one. */
+@media (max-width: 759px) {
+  /* the rock face measures itself, so seven fossils always fit a row */
+  .hand-wrap { container-type: inline-size; }
+  .hand { --hc: min(62px, calc((100cqw - 26px) / 7 * 1.397)); }
+  .wrap { padding-block: 8px 28px; gap: 8px; }
+  .top { padding: 7px 12px; align-items: center; }
+  .top > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; }
+  .top > div:first-child h1 { order: -1; } .top > div:first-child .sub { flex-basis: 100%; order: 1; margin-top: 2px; }
+  .top h1 { font-size: 26px; }
+  .top button { padding: 6px 11px; font-size: 13px; }
+  .status { min-height: 0; padding: 6px 11px; }
+  .status .who { font-size: 16px; } .status .hint { font-size: 12.5px; line-height: 1.3; }
+  .coach { padding: 8px 11px; gap: 3px; } .coach h3 { font-size: 17px; } .coach p { font-size: 13px; line-height: 1.35; }
+  .coach .actions { margin-top: 2px; } .coach .actions button { padding: 5px 12px; } .coach button.link { padding-block: 4px; }
+  .coach p { line-height: 1.3; }
+  .table { gap: 6px; }
+  .seat { padding: 5px 7px; gap: 1px; } .seat .name { font-size: 13.5px; } .seat .score { font-size: 17px; }
+  .seat .meta { font-size: 10.5px; line-height: 1.25; }
+  .turnflag { font-size: 11px; }
+  .center { padding: 4px; gap: 0; flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 6px; }
+  .center .big { font-size: 28px; } .center .small { font-size: 11px; line-height: 1.25; flex-basis: 100%; }
+  .center .seasons { flex-basis: 100%; justify-content: center; }
+  .center .small:nth-child(4) { display: none; } .center .seasons { margin-top: 3px; }
+  .site { min-height: 84px; }
+  .site .side { min-height: 0; padding: 3px; gap: 1px; }
+  .site .meld { gap: 1px; min-height: 0; }
+  .site .what { font-size: 9.5px; }
+  .site.v { grid-template-columns: auto auto auto; }
+  .site.v.fx { grid-template-rows: auto 1fr; }
+  .site.v .meld { max-width: none; width: 49px; flex-wrap: wrap; justify-content: flex-start; }
+  .site.v .board { padding: 6px 3px; } .site.v .board b { font-size: 10px; letter-spacing: .03em; }
+  .site.v .board .untouched { display: none; }
+  .site.far .card { width: 18px; height: 25px; border-radius: 2px; }
+  .site.far .card .ix b { font-size: 9px; } .site.far .what { display: none; }
+  .site.far.v .meld { width: 37px; }
+  .hand-wrap { padding: 6px 10px 9px; gap: 2px; }
+  .hand-head { flex-wrap: nowrap; min-height: 28px; } .hand-head .eyebrow { font-size: 11.5px; } .hand-head .eyebrow .opt { display: none; }
+  .hand-head .actions { flex-wrap: nowrap; } .hand-head .actions button { padding: 4px 9px; font-size: 12.5px; }
+  .hand { gap: 4px; padding-top: 8px; min-height: calc(var(--hc) + 8px); }
+  .hand .card { height: var(--hc); width: calc(var(--hc) * .716); }
+  .hand .card.sel { transform: translateY(-7px); }
+  .slot { height: var(--hc); width: 10px; }
+  .hand-wrap:has(.slot) .hand .card { height: calc(var(--hc) * .85); width: calc(var(--hc) * .85 * .716); }
+  .hand-wrap:has(.slot) .slot { height: calc(var(--hc) * .85); }
+  .seat .meta .opt { display: none; }
+  /* two diggers: the empty corners go, so both seats get a full-width line */
+  .table.t2 > .cell:nth-child(1), .table.t2 > .cell:nth-child(7), .table.t2 > .cell:nth-child(9) { display: none; }
+  .table.t2 > .cell:nth-child(2) { grid-column: 1 / span 2; }
+  .table.t2 > .cell:nth-child(8) { grid-column: 1 / -1; }
+}
+/* the narrowest phones (and the game page's embed on a phone) */
+@media (max-width: 380px) {
+  .top .eyebrow { display: none; }
+  .site .card { width: 21px; height: 30px; } .site .card .ix b { font-size: 11px; }
+  .site.v:not(.far) .meld { width: 43px; }
+  .site .board b { font-size: 10.5px; }
 }
 </style>
 
@@ -1313,7 +1451,7 @@ function seatHtml(i, wide = false) {
   return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${pcol(i)}">
     <div class="name"><span class="dot"></span>${fullName(i)}${turn ? `<span class="turnflag">digging</span>` : ""}</div>
     <div class="score">${p.score < 0 ? "−" + -p.score : p.score}<span class="meta"> prestige</span></div>
-    <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"} in the rock · ${p.cap || 0} captured this season${seatTags(i)}</div>
+    <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"}<span class="opt"> in the rock</span> · ${p.cap || 0} captured<span class="opt"> this season</span>${seatTags(i)}</div>
   </div>`;
 }
 
@@ -1439,8 +1577,8 @@ function handHtml() {
   } else if (ui.sel.length) {
     actions = `<button data-act="clear">Clear selection</button>`;
   }
-  return `<div class="hand-wrap ${tutStep() && tutStep().focus === "hand" ? "tut-focus" : ""}">
-    <div class="hand-head"><span class="eyebrow">Your rock face · locked strata · ${me.hand.length} fossils</span><div class="actions">${actions}</div></div>
+  return `<div class="hand-wrap ${tutStep() && tutStep().focus === "hand" ? "tut-focus" : ""}" style="--hn:${me.hand.length + (incoming ? 1 : 0)}">
+    <div class="hand-head"><span class="eyebrow">Your rock face<span class="opt"> · locked strata</span> · ${me.hand.length} fossils</span><div class="actions">${actions}</div></div>
     <div class="hand">${incoming ? `<div class="incoming"><span class="lab">${incoming.lab}</span>${cardHtml(incoming.card, ui.lastShown === incoming.card ? "" : "arrive", `role="img" aria-label="${cardName(incoming.card)}"`)}</div>` : ""}${inner || (incoming ? "" : `<span class="empty-note">The rock face is clear.</span>`)}</div>
   </div>`;
 }
