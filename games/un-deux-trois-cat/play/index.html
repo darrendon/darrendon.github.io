@@ -107,6 +107,10 @@ button{font:inherit;color:inherit}
 .tags{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;white-space:nowrap;pointer-events:none}
 .tag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--gold);color:#2a1d31;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .tag.bad{background:var(--bad)}
+/* the Cat Paw edition (visual only): a cat paw on a stick swipes from the grabber's seat to the toy */
+.board .seat{z-index:7}             /* seat labels stay above a swiping paw's stick */
+.pawswipe{position:absolute;left:0;top:0;z-index:5;pointer-events:none;transform-origin:0 50%;filter:drop-shadow(0 5px 6px rgba(0,0,0,.4))}
+.pawswipe svg{display:block;overflow:visible}
 .board.compact .tag .tm{display:none}
 
 /* beside the table: the coach, the round result and the keys */
@@ -255,6 +259,14 @@ button{font:inherit;color:inherit}
           <button type="button" id="diffHard" data-v="hard">Hard</button>
         </div>
         <span class="hint" id="diffHint"></span>
+      </div>
+      <div class="field">
+        <span class="lab">Edition</span>
+        <div class="seg" id="edSeg">
+          <button type="button" data-v="std">Standard</button>
+          <button type="button" data-v="paws">Cat Paw</button>
+        </div>
+        <span class="hint" id="edHint"></span>
       </div>
     </div>
     <ol class="rules">
@@ -753,7 +765,7 @@ function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e
 
 /* ---------- state ---------- */
 const S = {
-  opp: load("udtc-opp", 3), diff: load("udtc-diff", "easy"),
+  opp: load("udtc-opp", 3), diff: load("udtc-diff", "easy"), paws: load("udtc-paws", false),
   players: [], discard: [], round: 0, rounds: 0, flips: 1,
   legal: new Set(), t0: 0, timers: [], resolved: true, out: new Set(), misgrabs: [],
   eligible: [], sudden: false, taken: new Map(), done: new Set(), scorers: [], paused: false, waiting: false, live: false,
@@ -791,9 +803,12 @@ function syncSetup(){
   const P = S.opp + 1, f = P <= 3 ? 2 : 1, per = 60 / P;
   $("oppHint").textContent = `${P} players · ${per} cards each · ${per/f} rounds${f===2 ? " · everyone flips 2 cards" : ""}`;
   $("diffHint").textContent = S.diff === "easy" ? "Bots take about two seconds and often grab wrong." : "Bots take about a second and rarely grab wrong.";
+  document.querySelectorAll("#edSeg button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.v === "paws") === S.paws)));
+  $("edHint").textContent = S.paws ? "Every grab is a swipe of a cat paw on a stick. Only the look changes; the rules are the same." : "Grab the toys by hand. The Cat Paw edition gives everyone a cat paw instead.";
 }
 $("oppSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.opp = +b.dataset.v; save("udtc-opp", S.opp); syncSetup(); if (!S.live) showExample(); });
 $("diffSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.diff = b.dataset.v; save("udtc-diff", S.diff); syncSetup(); });
+$("edSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.paws = b.dataset.v === "paws"; save("udtc-paws", S.paws); syncSetup(); });
 
 /* ---------- rendering ---------- */
 function renderToys(){
@@ -813,6 +828,37 @@ function tagToy(o, text, bad){
   const t = $("toy-"+o); if (!t) return;
   t.querySelector(".tags").insertAdjacentHTML("beforeend", `<span class="tag${bad?" bad":""}">${text}</span>`);
 }
+/* the Cat Paw edition: a pink plush paw with a silver stitched print on a bark stick, after the real one. The paw
+   reaches from the grabber's seat label to the toy and pulls back. Visual only. */
+function pawSvg(D, h){
+  const r = h / 2, cx = D - r * 0.92, st = Math.max(3, h * 0.085);
+  const toes = [[0.62, -0.42], [0.62, 0.42], [0.32, -0.92], [0.32, 0.92]];
+  const body = `<circle cx="${cx - r * 0.12}" cy="0" r="${r * 0.86}"/>` + toes.map(([dx, dy]) => `<circle cx="${cx + dx * r}" cy="${dy * r * 0.86}" r="${r * 0.36}"/>`).join("");
+  const heart = (() => { const p = []; for (let i = 0; i <= 40; i++){ const t = i / 40 * Math.PI * 2;
+    const x = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t), y = 16 * Math.pow(Math.sin(t), 3);
+    p.push(`${(cx - r * 0.22 + x * r * 0.022).toFixed(1)},${(y * r * 0.022).toFixed(1)}`); } return p.join(" "); })();
+  return `<svg width="${D}" height="${h}" viewBox="0 ${-r} ${D} ${h}" aria-hidden="true">
+    <path d="M${r * 0.2} ${-st * 0.55} L${cx - r * 0.5} ${-st * 0.45} L${cx - r * 0.5} ${st * 0.5} L${r * 0.2} ${st * 0.6} Z" fill="#6e4630" stroke="#3e2618" stroke-width="1"/>
+    <g fill="#f4ccd6" stroke="#d99aae" stroke-width="1.5">${body}</g><g fill="#f4ccd6">${body}</g>
+    <g fill="#e8e0e6" stroke="#9c97a0" stroke-width="${Math.max(1.2, r * 0.05)}"><polygon points="${heart}"/>
+    ${toes.map(([dx, dy]) => `<ellipse cx="${cx + dx * r * 0.95}" cy="${dy * r * 0.8}" rx="${r * 0.15}" ry="${r * 0.12}"/>`).join("")}</g></svg>`;
+}
+function pawSwipe(seatEl, toy){
+  if (!S.paws || !seatEl) return;
+  const b = $("board"), t = $("toy-" + toy); if (!b || !t) return;
+  const B = b.getBoundingClientRect(), a = seatEl.getBoundingClientRect(), c = t.getBoundingClientRect();
+  const sx = a.left + a.width / 2 - B.left, sy = a.top + a.height / 2 - B.top, tx = c.left + c.width / 2 - B.left, ty = c.top + c.height / 2 - B.top;
+  const D = Math.hypot(tx - sx, ty - sy), h = c.width * 0.86, ang = Math.atan2(ty - sy, tx - sx) * 180 / Math.PI;
+  if (D < h) return;
+  const el = document.createElement("div"); el.className = "pawswipe"; el.innerHTML = pawSvg(D + h * 0.2, h);
+  el.style.left = sx + "px"; el.style.top = sy - h / 2 + "px"; b.appendChild(el);
+  const back = `rotate(${ang}deg) translateX(${-D * 0.3}px)`, out = `rotate(${ang}deg) translateX(0px)`;
+  const an = el.animate([{transform: back, opacity: 0}, {transform: out, opacity: 1, offset: 0.32}, {transform: out, opacity: 1, offset: 0.62}, {transform: back, opacity: 0}],
+    {duration: 900, easing: "cubic-bezier(.3,.7,.3,1)"});
+  an.onfinish = an.oncancel = () => el.remove();
+}
+const seatOf = p => document.querySelector(`#seats [data-seat="${S.players.indexOf(p)}"]`);
+
 /* each player is a cat; their face sits on their seat label: [fur, ears, eyes, markings] */
 const FUR = {You:["#8a827c","#5d5652","#b5d96a"],
   Katsu:["#a3a9af","#6d737a","#ffc94a"],                       // grey
@@ -1054,7 +1100,7 @@ function grab(p, target){
   if (S.legal.has(target)){
     S.taken.set(target, p); S.done.add(p); S.scorers.push({p, target, t});
     if (S.tut && p.human) tutYouGrabbed();
-    $("toy-"+target).classList.add("won");
+    $("toy-"+target).classList.add("won"); pawSwipe(seatOf(p), target);
     tagToy(target, `${p.name}<span class="tm"> · ${t.toFixed(2)}s</span>`, false);
     if (S.sudden) return resolve();
     const open = [...S.legal].filter(o => !S.taken.has(o));
@@ -1066,7 +1112,7 @@ function grab(p, target){
     return;
   }
   S.out.add(p); S.misgrabs.push({p, target});
-  const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss");
+  const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss"); pawSwipe(seatOf(p), target);
   tagToy(target, p.name, true);
   if (p.human){ S.stats.miss++; banner(`Wrong grab. That's not the ${NAME[target].toLowerCase()}. You're out this round.`); }
   refreshToys(); renderSeats();
@@ -1491,6 +1537,10 @@ function paintOnline(v){
   const pends = O.pends, pend = pends[pends.length - 1] || null, live = v.phase === "live", fresh = live || v.phase === "result";
   const won = {}, missed = {};
   if (fresh) for (const r of v.log){ if (r.res === "won") won[r.toy] = r; if (r.res === "miss") (missed[r.toy] = missed[r.toy] || []).push(r); }
+  if (fresh && S.paws){ O.swiped = O.swiped || new Set();
+    for (const r of v.log){ const k = v.rid + ":" + r.seat + ":" + r.toy + ":" + r.res; if (O.swiped.has(k) || (r.res !== "won" && r.res !== "miss")) continue; O.swiped.add(k);
+      const label = r.seat === me ? "You" : v.players[r.seat].name;
+      requestAnimationFrame(() => pawSwipe([...document.querySelectorAll("#seats .seat")].find(el => (el.querySelector(".nm") || {}).textContent === label), r.toy)); } }
   const taken = new Set(v.taken.map(([o]) => o));
   const mayGrab = live && v.eligible.includes(me) && !v.out.includes(me) && !v.mine.late;
   const pendOn = o => pends.find(q => q.toy === o);

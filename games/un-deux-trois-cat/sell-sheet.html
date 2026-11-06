@@ -40,18 +40,22 @@ h1 em{font-style:normal;color:var(--ochre)}
 .pitch{margin:.13in 0 0;font-size:11.6pt;line-height:1.42}
 .fans{margin:.07in 0 0;font-size:11.2pt;color:var(--soft)}
 .fans b{color:var(--ink);font-weight:800}
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.2in}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;margin-top:.14in}
 .panel{border-radius:10px;position:relative;display:flex;flex-direction:column;background:#fff;border:1.5px solid #dcd0bf;overflow:hidden}
-.panel .art{height:1.62in;position:relative;overflow:hidden;background:var(--wash)}
+.panel .art{height:1.12in;position:relative;overflow:hidden;background:var(--wash)}
 .panel .cap{position:absolute;top:.08in;left:.08in;z-index:2;background:var(--plum);color:var(--gold);border-radius:999px;padding:4px 10px 3px;
   font:400 10.5pt/1 "Bagel Fat One",Figtree,sans-serif;letter-spacing:.01em}
 .panel p{margin:0;padding:.09in .11in .11in;font-size:10.2pt;line-height:1.33}
 .panel p b{font-weight:800}
-.cards{position:absolute;left:0;right:0;bottom:.16in;display:flex;justify-content:center;gap:.04in}
+.cards{position:absolute;left:0;right:0;bottom:.13in;display:flex;justify-content:center;gap:.04in}
 .cards img{width:.42in;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,.18);display:block}
 .cards img.hit{box-shadow:0 0 0 3px #4ca055,0 2px 5px rgba(0,0,0,.18)}
 .art img.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.art img.cat{position:absolute;left:50%;bottom:.04in;width:1.5in;transform:translateX(-50%)}
+.art img.cat{position:absolute;left:50%;bottom:.03in;width:1.06in;transform:translateX(-50%)}
+.paw-ed{display:flex;gap:.16in;align-items:center;margin-top:.14in;padding:.07in .14in .07in .07in;border-radius:10px;background:var(--wash)}
+.paw-ed i{width:1.7in;height:.74in;border-radius:7px;display:block;flex:none;background:url(/games/un-deux-trois-cat/img/render-paw-800.webp) 54% 58%/126% auto no-repeat}
+.paw-ed p{margin:0;font-size:10.2pt;line-height:1.36}
+.paw-ed b{font-weight:800}
 .facts{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:0 .34in;margin-top:auto;padding-top:.16in;border-top:2.5px solid var(--ink)}
 .facts b{display:block;font:400 20pt/1 "Bagel Fat One",Figtree,sans-serif}
 .facts span{font-size:9.8pt;color:var(--soft)}
@@ -77,6 +81,7 @@ h1 em{font-style:normal;color:var(--ochre)}
     <h1>A dexterity game where you <em>grab cat toys.</em></h1>
     <p class="pitch">Players chant “un, deux, trois, cat!” and flip their top cards together. Each card shows one of five toys, usually in another toy’s color. If any card shows a toy in its own color, grab that toy from the middle of the table. If none does, grab the cat. The answer comes from every card on the table at once, so nobody knows it until the cards land. Some rounds have two right answers, and the fastest player can take both.</p>
     <p class="fans">For fans of <b>Ghost Blitz</b> and <b>Taco Cat Goat Cheese Pizza</b></p>
+    <div class="paw-ed"><i aria-hidden="true"></i><p><b>Optional Cat Paw edition.</b> For a sillier, mass-market box, every player gets a cat paw on a stick and bats the toys to themselves. No hands allowed.</p></div>
 
     <div class="strip">
       <div class="panel">

@@ -5,7 +5,7 @@
 <script src="/games/un-deux-trois-cat/img/src/toy-art.js"></script>
 </head><body>
 <script>
-/* Un, Deux, Trois, Cat! — still renders. Units are inches. ?scene=hero|table|kit|home|og  &w=1600&h=1000  &check=1
+/* Un, Deux, Trois, Cat! — still renders. Units are inches. ?scene=hero|table|kit|home|og|cozy|paws|pawsolo  &w=1600&h=1000  &check=1
    The toys are felt plush in one dominant colour each, made to match the card art. Nothing in any scene touches
    anything else: with &check=1 each object is drawn alone and any overlap, near miss (< 3 px) or frame cut is reported. */
 (async function () {
@@ -192,6 +192,72 @@ try {
     g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 50, .2, 14, false), gm));
     return g;
   }
+  // ---- the Cat Paw edition, after Darren's photo: a flat pink plush paw with a silver embroidered paw print, on a
+  // natural bark-covered twig, with two strings that each end in a peach bead and a pink bell. About 8.6 in long.
+  // Origin at the tip of the toes, on the cloth; the stick runs back along −x. It lies flat, print up.
+  const PAWLEN = 8.6;
+  function paw() {
+    const g = new THREE.Group();
+    const plush = new THREE.MeshStandardMaterial({ map: canvasTex(256, 256, (c, w, h) => { c.fillStyle = '#F4CCD6'; c.fillRect(0, 0, w, h); }), roughness: 1 });
+    const silver = new THREE.MeshStandardMaterial({ color: C('#A7A4AA'), roughness: 0.45, metalness: 0.35 });
+    const silverIn = new THREE.MeshStandardMaterial({ color: C('#D3CFD3'), roughness: 0.7 });
+    // the paw's outline: a round body with four toes along its front, traced as the union of five circles
+    const circles = [[-0.12, 0, 1.06], [1.06, 0.4, 0.42], [1.06, -0.4, 0.42], [0.66, 1.0, 0.38], [0.66, -1.0, 0.38]];
+    const sh = new THREE.Shape();
+    for (let i = 0; i <= 180; i++) {
+      const a = i / 180 * Math.PI * 2, dx = Math.cos(a), dy = Math.sin(a); let best = 0;
+      for (const [cx, cy, r] of circles) { const dc = dx * cx + dy * cy, disc = r * r - (cx * cx + cy * cy) + dc * dc; if (disc >= 0) best = Math.max(best, dc + Math.sqrt(disc)); }
+      if (i === 0) sh.moveTo(dx * best, dy * best); else sh.lineTo(dx * best, dy * best);
+    }
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.22, bevelEnabled: true, bevelThickness: 0.27, bevelSize: 0.2, bevelSegments: 8, curveSegments: 12 });
+    const pp = geo.attributes.position, puv = geo.attributes.uv; for (let k = 0; k < pp.count; k++) puv.setXY(k, (pp.getX(k) + 1.5) / 3, (pp.getY(k) + 1.5) / 3);
+    const cushion = new THREE.Mesh(geo, plush); cushion.rotation.x = -Math.PI / 2;   // shape x → world x (toward the toes), extrusion → up
+    const pawG = new THREE.Group(); pawG.add(cushion);
+    const top = 0.22 + 0.27;                                                            // the cushion's face, above its base
+    // the embroidered print: silver stitched outlines on the face, the pads filled a shade paler than the plush
+    const thread = (pts, fill) => {
+      const v3 = pts.map(([x, z]) => new THREE.Vector3(x, top + .02, z));
+      pawG.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(v3, true), 160, .034, 6, true), silver));
+      const fs = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z)));
+      const fm = new THREE.Mesh(new THREE.ShapeGeometry(fs, 24), silverIn); fm.rotation.x = -Math.PI / 2; fm.position.y = top + .008; pawG.add(fm);
+    };
+    const heart = []; for (let i = 0; i < 64; i++) { const t = i / 64 * Math.PI * 2;      // lobes toward the toes, point toward the stick
+      heart.push([-0.32 + .034 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)), .034 * 16 * Math.pow(Math.sin(t), 3)]); }
+    thread(heart);
+    for (const [x, z] of [[1.0, .38], [1.0, -.38], [0.62, .93], [0.62, -.93]]) {
+      const e = []; for (let i = 0; i < 32; i++) { const t = i / 32 * Math.PI * 2; e.push([x + .2 * Math.cos(t), z + .16 * Math.sin(t)]); } thread(e);
+    }
+    const PS = 1.12, pawX = -1.5 * PS; pawG.scale.setScalar(PS); pawG.position.set(pawX, 0.27 * PS + .01, 0); g.add(pawG);
+    // the twig: a slightly crooked bark stick, its end sewn into the back of the paw
+    const bark = new THREE.MeshStandardMaterial({ map: canvasTex(512, 64, (c, w, h) => { c.fillStyle = '#6E4630'; c.fillRect(0, 0, w, h);
+      for (let i = 0; i < 70; i++) { c.fillStyle = fr() < .5 ? 'rgba(40,22,12,.35)' : 'rgba(160,120,90,.22)'; c.fillRect(fr() * w, fr() * h, 20 + fr() * 70, 1 + fr() * 2.5); }
+      for (let i = 0; i < 26; i++) { c.fillStyle = 'rgba(190,160,130,.35)'; c.beginPath(); c.ellipse(fr() * w, fr() * h, 2 + fr() * 2, 1, 0, 0, 7); c.fill(); } }), roughness: 0.92 });
+    const x0 = pawX - 0.2, x1 = -PAWLEN;
+    const path = new THREE.CatmullRomCurve3([new THREE.Vector3(x0, .2, 0), new THREE.Vector3(x0 - 2.2, .2, .06), new THREE.Vector3(x0 - 4.6, .2, -.05), new THREE.Vector3(x1, .2, .08)]);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(path, 60, .2, 18, false), bark));
+    const cut = new THREE.Mesh(new THREE.CircleGeometry(.2, 18), new THREE.MeshStandardMaterial({ color: C('#B48C64'), roughness: .9 }));
+    cut.position.set(x1, .2, .08); cut.rotation.y = -Math.PI / 2; g.add(cut);
+    // two strings from the bottom of the paw, each with a peach bead and a pink bell, lying on the cloth
+    const cord = new THREE.MeshStandardMaterial({ color: C('#EDEAE6'), roughness: .8 });
+    const beadM = new THREE.MeshStandardMaterial({ color: C('#F2B496'), roughness: .35 });
+    const bellM = new THREE.MeshStandardMaterial({ color: C('#E77BA6'), roughness: .3, metalness: .55 });
+    const slot = new THREE.MeshStandardMaterial({ color: C('#3a2430'), roughness: .5 });
+    for (const [sz, ex, ez] of [[.55, -3.9, 1.35], [-.55, -4.7, -1.2]]) {
+      const sx = pawX - .95, cv = new THREE.CatmullRomCurve3([new THREE.Vector3(sx, .12, sz), new THREE.Vector3((sx + ex) / 2, .03, (sz + ez) / 2 + sz * .2), new THREE.Vector3(ex + .2, .03, ez)]);
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(cv, 30, .028, 8, false), cord));
+      const bd = sph(.16, beadM); bd.position.set(ex, .16, ez); g.add(bd);
+      const dir = new THREE.Vector3(ex - (sx + ex) / 2, 0, ez - ((sz + ez) / 2 + sz * .2)).normalize();
+      const bx = ex + dir.x * .4, bz = ez + dir.z * .4;
+      const bell = sph(.23, bellM); bell.position.set(bx, .23, bz); g.add(bell);
+      const seam = new THREE.Mesh(new THREE.TorusGeometry(.228, .018, 8, 40), slot); seam.rotation.x = Math.PI / 2 - .5; seam.rotation.y = Math.atan2(-dir.z, dir.x); seam.position.set(bx, .23, bz); g.add(seam);
+    }
+    return g;
+  }
+  // place a paw by where its toes are and the point its handle lies toward
+  function pawAt(name, tx, tz, hx, hz) {
+    const o = paw(); o.position.set(tx, 0, tz); o.rotation.y = Math.atan2(-(tz - hz), tx - hx); return add(name, o);
+  }
+
   const TOY = { ball, mouse, fish, bird, fly: butterfly, cat };
   function toy(name, x, z, yaw = 0) { const o = TOY[name](); o.position.set(x, 0, z); o.rotation.y = yaw; return add(name + '@' + x + ',' + z, o); }
 
@@ -291,6 +357,36 @@ try {
       if (s !== 3) await backs(cx + tx * 3.1, cz + tz * 3.1, 2 + s, yaw);
     }
     frame([-18.2, 0, -11.6], [18.2, 1.5, 11.6], 64, 0, 0.99);
+  }
+
+  if (SCENE === 'pawsolo') {
+    // one paw beside the fish, close up (for checking the model)
+    pawAt('paw', 1.3, 0.5, -10, -1.4);
+    toy('fish', 4.6, 0.3, 0.3);
+    frame([-7.6, 0, -2.0], [6.4, 1.6, 2.4], 34, 8, 0.9);
+  }
+
+  if (SCENE === 'paws') {
+    // the Cat Paw edition at the table: four players mid-round, each with a cat paw. The green fish is the only toy
+    // in its own colour, so the fish is the grab, and the nearest paw is batting it home.
+    const ring = ['ball', 'bird', 'fish', 'fly', 'mouse'];
+    ring.forEach((n, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / 5 + 0.3; toy(n, Math.cos(a) * 6.2, Math.sin(a) * 3.9 + 0.2, -a - Math.PI / 2 + 0.2); });
+    toy('cat', 0, -0.2, 0);
+    const flips = [['fish', 'green'], ['mouse', 'blue'], ['ball', 'orange'], ['bird', 'pink']];
+    const seats = [[0, 9.6, 0], [-16.0, 0, -Math.PI / 2], [0, -9.6, Math.PI], [16.0, 0, Math.PI / 2]];
+    for (let s = 0; s < 4; s++) {
+      const [cx, cz, yaw] = seats[s];
+      const tx = Math.cos(yaw), tz = -Math.sin(yaw);
+      await backs(cx - tx * 3.1, cz - tz * 3.1, 9 - s, yaw);
+      await face(flips[s][0], flips[s][1], cx, cz, yaw);
+      if (s !== 3) await backs(cx + tx * 3.1, cz + tz * 3.1, 2 + s, yaw);
+    }
+    const P0 = (q.get('p0') || '3.2,5.4,14.5,8.4').split(',').map(Number), P3 = (q.get('p3') || '8.8,3.8,17.2,6.6').split(',').map(Number);
+    pawAt('paw-you', ...P0);
+    pawAt('paw-left', -8.4, -4.4, -18, -7);
+    pawAt('paw-back', 6.4, -5.6, 11.5, -16);
+    pawAt('paw-right', ...P3);
+    frame([-18.4, 0, -13.2], [18.4, 1.5, 13.2], +(q.get('el') || 60), 0, 0.99);
   }
 
   if (SCENE === 'kit') {

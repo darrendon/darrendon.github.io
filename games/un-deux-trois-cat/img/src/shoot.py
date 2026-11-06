@@ -1,7 +1,7 @@
 """Un, Deux, Trois, Cat! — render the art and the mockups from the site root.
 
 python3 shoot.py art          card faces, card back, box lid/side/end -> tex/ (jpg) and ../ (webp for the page)
-python3 shoot.py scene NAME   a three.js still from scene.html (hero|table|kit|home|og|cozy) -> ../render-NAME.webp + sizes (cozy -> render-scene)
+python3 shoot.py scene NAME   a three.js still from scene.html (hero|table|kit|home|og|cozy|paws; pawsolo is a close-up for checking the paw model) -> ../render-NAME.webp + sizes (cozy -> render-scene)
 python3 shoot.py check NAMES  draws each object's silhouette on its own and reports overlaps, near misses and frame cuts
 python3 shoot.py playart      the toy and card drawings the playable build shows -> ../../play/art/*.webp (painted once here, so
                               no browser has to run the paint filter; Safari drew the live SVG cards blank)
@@ -79,6 +79,8 @@ def scene(p, name, w=1600, h=1000):
         im.save(os.path.join(IMG, "og.jpg"), quality=88)
     elif name == "home":
         save_sizes(im, "render-home", [640, 1200])
+    elif name == "pawsolo":  # the Cat Paw edition close-up
+        save_sizes(im, "render-paw", [240, 480, 800])
     elif name == "cozy":  # the themed still: plum felt cloth, one overhead pool of light -> render-scene (homepage card and first image on the page)
         save_sizes(im, "render-scene", [240, 480, 640, 800, 1200], q=84)
     else:
@@ -144,7 +146,7 @@ with sync_playwright() as p:
         art(p)
     elif cmd == "scene":
         for n in sys.argv[2:]:
-            scene(p, n, 1200 if n == "og" else 1600, 630 if n == "og" else 1000)
+            scene(p, n, 1200 if n == "og" else 1600, 630 if n == "og" else 720 if n == "pawsolo" else 1000)
     elif cmd == "check":
         check(p, sys.argv[2:])
     elif cmd == "playart":
