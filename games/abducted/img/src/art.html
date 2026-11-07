@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Abducted art</title>
+<!-- One piece of Darren's art board at print size, from darren-art.json (the board's own markup):
+     ?p=team-H|team-A|back|signal-T|signal-J|signal-back|split|leader|leader-back|lookout|lookout-back|score-H|score-A|score-H-back|score-A-back|box-front|box-side|box-end
+     Cards are drawn at the board's 264 x 408 and padded with their own colour to poker proportions (292 x 408); shoot.py captures them at 750 x 1050. -->
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/abducted-fonts.css">
+<style>
+  html,body{margin:0;background:#fff}
+  .pad{position:relative;width:292px;height:408px;overflow:hidden}
+  .pad>.in{position:absolute;left:14px;top:0;font-family:'M PLUS Rounded 1c','Trebuchet MS',sans-serif;color:#1B1B2F}
+  .pad>.in>div{border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+  .box{width:520px;height:860px;font-family:'M PLUS Rounded 1c','Trebuchet MS',sans-serif}
+  .side{position:relative;width:200px;height:860px;background:#1B2350;overflow:hidden;font-family:'M PLUS Rounded 1c',sans-serif}
+  .end{position:relative;width:520px;height:200px;background:#1B2350;overflow:hidden;font-family:'M PLUS Rounded 1c',sans-serif}
+</style></head><body>
+<div id="a"></div>
+<script>
+const q = new URLSearchParams(location.search), p = q.get('p') || 'team-H';
+fetch('darren-art.json').then((r) => r.json()).then((A) => {
+  const el = document.getElementById('a');
+  const stars = (w, h, n, seed) => { let s = seed, o = ''; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; for (let i = 0; i < n; i++) o += `<circle cx="${r() * w}" cy="${r() * h}" r="${1.2 + r() * 1.2}" fill="#FFF4DE" opacity="${.5 + r() * .5}"/>`; return o; };
+  if (p === 'box-front') el.innerHTML = '<div class="box">' + A[p] + '</div>';
+  else if (p === 'box-side') el.innerHTML = `<div class="side"><svg width="200" height="860" style="position:absolute;inset:0">${stars(200, 860, 22, 7)}<path d="M0 760 Q100 740 200 752 V860 H0Z" fill="#1F8F6B"/></svg>
+      <div style="position:absolute;left:100px;top:420px;transform:translate(-50%,-50%) rotate(-90deg);font-family:'Dela Gothic One',sans-serif;font-size:72px;color:#FFF4DE;text-shadow:4px 5px 0 #E8553A;white-space:nowrap">ABDUCTED</div>
+      <div style="position:absolute;left:0;right:0;top:40px;text-align:center;font-size:15px;font-weight:800;color:#6EE7B7">by Darren Don</div>
+      <div style="position:absolute;left:0;right:0;top:790px;text-align:center;font-size:14px;font-weight:800;color:#FFF4DE">5–12 players</div></div>`;
+  else if (p === 'box-end') el.innerHTML = `<div class="end"><svg width="520" height="200" style="position:absolute;inset:0">${stars(520, 200, 16, 3)}</svg>
+      <div style="position:absolute;left:0;right:0;top:46px;text-align:center;font-family:'Dela Gothic One',sans-serif;font-size:60px;line-height:1;color:#FFF4DE;text-shadow:4px 5px 0 #E8553A">ABDUCTED</div>
+      <div style="position:absolute;left:0;right:0;top:128px;text-align:center;font-size:17px;font-weight:800;color:#6EE7B7">5–12 players · 15–25 min · by Darren Don</div></div>`;
+  else {
+    const html = A[p], bg = (html.match(/background: (#[0-9A-Fa-f]{6})/) || [0, '#FFF4DE'])[1];
+    el.innerHTML = `<div class="pad" style="background:${p === 'split' ? 'linear-gradient(90deg,#FFF4DE 50%,#1B2350 50%)' : bg}"><div class="in">${html}</div></div>`;
+  }
+  Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => { window.__done = true; });
+});
+</script></body></html>

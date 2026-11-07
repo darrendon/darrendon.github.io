@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abducted · Play online</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/abducted-fonts.css">
+<link rel="stylesheet" href="/assets/css/dev-table.css">
+<style>
+  /* a round table under a night sky, the action panel beside it (stacked on phones), in the art board's colours */
+  body{--t-bg:#141B3F;--t-card:#1B2350;--t-ink:#FFF4DE;--t-muted:#A9B0D6;--t-line:#34407F;--t-accent:#F6B92B;--t-accent-ink:#1B1B2F;--t-mast:#1B2350;--t-mast-ink:#FFF4DE;
+    --t-font:"M PLUS Rounded 1c","Trebuchet MS",system-ui,sans-serif;--cobalt:#2E4BD8;--coral:#E8553A;--mustard:#F6B92B;--mint:#4FD1A5;--mint2:#6EE7B7;--cream:#FFF4DE;--ink:#1B1B2F;--night3:#26316D}
+  .dt-mast h1{font-family:"Dela Gothic One","Arial Black",sans-serif;font-weight:400;text-shadow:3px 4px 0 var(--coral);letter-spacing:.01em}
+  .dt-mast .tagline{margin:8px 0 0;color:var(--mint2);font-weight:800;font-size:16px}
+  .dt-mast{padding-right:150px!important}
+  .dt-mast .mbox{position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(4deg);width:92px;border-radius:4px;box-shadow:0 10px 18px -8px rgba(0,0,0,.6)}
+  @media (max-width:480px){.dt-mast{padding-right:104px!important}.dt-mast .mbox{width:70px}}
+  .dt-card input,.dt-card select{background:#141B3F;color:var(--cream);border-color:var(--t-line)}
+  .dt-btn{border-color:var(--t-line)}
+  .dt-tabs button.on{background:var(--mustard);border-color:var(--mustard);color:var(--ink)}
+  .dt-rules b{color:var(--mint2)}
+
+  .ab{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:18px;max-width:1160px;margin:0 auto;align-items:start}
+  @media (max-width:900px){.ab{grid-template-columns:minmax(0,1fr)}}
+  .table{position:relative;width:100%;aspect-ratio:1;max-width:560px;margin:0 auto}
+  .felt{position:absolute;inset:16%;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--night3),#1B2350 70%);border:2px solid var(--t-line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:7%}
+  .felt .round{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t-muted)}
+  .score{display:grid;grid-template-columns:auto auto;align-items:center;gap:5px 9px}
+  .score .lab{font-family:"Dela Gothic One",sans-serif;font-size:clamp(10px,2.4vw,14px);text-align:right}
+  .pips{display:flex;gap:4px}
+  .pip{width:clamp(9px,2.4vw,15px);height:clamp(9px,2.4vw,15px);border-radius:50%;border:2px solid var(--t-line)}
+  .pip.h{background:var(--mustard);border-color:var(--mustard)}.pip.a{background:var(--cobalt);border-color:var(--mint)}
+  .deckrow{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t-muted);font-weight:700}
+  .pile{position:relative;width:clamp(22px,5vw,34px);aspect-ratio:5/7}
+  .pile img{position:absolute;left:0;top:0;width:100%;border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .seat{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;width:19%;background:none;border:0;padding:0;color:inherit;font:inherit}
+  button.seat{cursor:pointer}
+  .seat.dim{opacity:.4}
+  .seat .cw{position:relative;width:60%}
+  .seat .cw img.card{width:100%;display:block;border-radius:6px;box-shadow:0 3px 0 rgba(0,0,0,.3);transition:box-shadow .2s}
+  .seat.search .cw img.card{box-shadow:0 0 0 3px var(--mint2),0 0 14px 2px rgba(110,231,183,.55)}
+  .seat.target .cw img.card{box-shadow:0 0 0 3px var(--coral)}
+  .seat.picked .cw img.card{box-shadow:0 0 0 4px var(--mustard),0 0 16px 3px rgba(246,185,43,.6)}
+  .nm{font-size:clamp(10px,2.3vw,12.5px);font-weight:800;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 6px;border-radius:6px}
+  .seat.me .nm{background:var(--cream);color:var(--ink)}
+  .tags{display:flex;gap:3px;justify-content:center;min-height:17px}
+  .tag{font-size:10px;font-weight:800;padding:0 6px;border-radius:999px;line-height:16px}
+  .tag.p1{background:var(--cream);color:var(--ink)}.tag.p2{background:var(--ink);color:var(--cream);border:1px solid var(--cream);line-height:14px}
+  .tag.ok{background:var(--mint);color:var(--ink)}
+  .role{position:absolute;top:-9px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink)}
+  .role svg{width:13px;height:13px}
+  .role.lead{left:-9px;background:var(--mustard)}.role.look{right:-9px;background:var(--coral)}
+  .sig{position:absolute;right:-30%;bottom:-6%;width:46%;border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+
+  .side{display:flex;flex-direction:column;gap:12px;min-width:0}
+  .panel{background:#1B2350;border:1px solid var(--t-line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .panel h3{margin:0;font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:18px}
+  .panel .kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t-muted)}
+  .panel p{margin:0}
+  .panel.action{border-color:var(--mustard)}
+  .panel.note{border-color:var(--mint)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .b{border:1px solid var(--t-line);border-radius:12px;padding:11px 16px;font-weight:800;background:var(--night3);color:var(--cream);cursor:pointer;font-family:inherit;font-size:15px;min-height:44px}
+  .b:disabled{opacity:.45;cursor:not-allowed}
+  .b.primary{background:var(--mustard);color:var(--ink);border-color:transparent}
+  .b.coral{background:var(--coral);color:var(--cream);border-color:transparent}
+  .sigpick{display:flex;gap:10px}
+  .sigpick button{padding:0;border:3px solid transparent;border-radius:10px;background:none;cursor:pointer;width:96px}
+  .sigpick button img{width:100%;display:block;border-radius:7px}
+  .sigpick button:hover{border-color:var(--mustard)}
+  .result .big{font-family:"Dela Gothic One",sans-serif;font-size:17px}
+  .played{display:flex;gap:4px;flex-wrap:wrap}
+  .played img{width:34px;border-radius:3px}
+  .log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--t-muted);max-height:170px;overflow-y:auto}
+  .log li:first-child{color:var(--cream)}
+  .win{text-align:center}
+  .win .big{font-family:"Dela Gothic One",sans-serif;font-size:28px}
+  .coach{background:var(--mustard);color:var(--ink);border-radius:14px;padding:12px 14px}
+  .coach span{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .coach p{margin:0;font-size:15px;font-weight:500}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/js/dev-table.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  const Ab = window.Abducted, esc = DevTable.esc, TEAM = Ab.TEAM, TEAMS = Ab.TEAMS;
+  const TUT = new URLSearchParams(location.search).has('tutorial');
+  const ICON = {
+    mega: '<svg viewBox="0 0 24 24" fill="#1B1B2F" aria-hidden="true"><path d="M3 9v6h3l9 5V4L6 9z"/></svg>',
+    bino: '<svg viewBox="0 0 24 24" fill="none" stroke="#1B1B2F" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="15" r="4"/><circle cx="17" cy="15" r="4"/><path d="M11 14h2"/></svg>',
+  };
+  const img = (n) => 'art/' + n + '.webp';
+  let pick = null, pickKey = '', tutDone = false;
+
+  function render(el, v, api) {
+    const me = v.seat, P = v.players, n = v.n, over = v.phase === 'over';
+    const key = v.round + v.phase; if (key !== pickKey) { pick = null; pickKey = key; }
+    const nm = (i) => esc(P[i].name);
+    const st = { split: v.leader === me ? 'Split the town' : P[v.leader].name + ' is splitting the town', vote: 'Which party searches?', tiebreak: 'Tied vote', signal: 'Party ' + v.party + ' is searching', abduct: v.lookout === me ? 'Send a searcher to the light' : P[v.lookout].name + ' is picking a searcher', over: v.winner ? TEAMS[v.winner] + ' win' : '' }[v.phase];
+    api.status('Round ' + v.round + ' · ' + st);
+
+    // which split to draw: the leader's pending pick, or the one in play
+    const startSeat = v.phase === 'split' && v.leader === me && pick !== null ? pick : v.split;
+    let p1 = [], p2 = [];
+    if (startSeat != null) { for (let k = 0; k < v.half; k++) p1.push((startSeat + k) % n); p2 = [...Array(n).keys()].filter((i) => !p1.includes(i)); }
+    const searching = (i) => v.searchers && v.searchers.includes(i) && (v.phase === 'signal' || v.phase === 'abduct');
+
+    const seats = P.map((p, i) => {
+      const ang = Math.PI / 2 + (i - me) * 2 * Math.PI / n, x = 50 + 41 * Math.cos(ang), y = 50 + 41 * Math.sin(ang);
+      const c = v.cards[i], face = c.t ? 'team-' + c.t : 'back';
+      let cls = 'seat' + (i === me ? ' me' : '') + (searching(i) ? ' search' : ''), click = false;
+      if (v.phase === 'split' && v.leader === me) { if (v.blocked.includes(i)) cls += ' dim'; else { click = true; if (pick === i) cls += ' picked'; } }
+      if (v.phase === 'abduct' && v.lookout === me) { if (v.targets.includes(i)) { click = true; cls += pick === i ? ' picked' : ' target'; } else cls += ' dim'; }
+      const tags = [];
+      if (p1.includes(i)) tags.push('<span class="tag p1">1</span>'); else if (p2.includes(i)) tags.push('<span class="tag p2">2</span>');
+      if (v.acted.includes(i) && !over) tags.push('<span class="tag ok">✓</span>');
+      const roles = (!over && i === v.leader ? '<span class="role lead" title="Town Leader">' + ICON.mega + '</span>' : '') + (!over && i === v.lookout ? '<span class="role look" title="Lookout">' + ICON.bino + '</span>' : '');
+      const sig = v.phase === 'signal' && v.acted.includes(i) ? '<img class="sig" data-k="sig' + i + '-' + v.round + '" data-enter src="' + img('signal-back') + '" alt="">' : '';
+      const label = P[i].name + (i === me ? ' (you)' : '') + (c.t ? ', ' + TEAM[c.t] : '');
+      return '<' + (click ? 'button type="button"' : 'div') + ' class="' + cls + '" style="left:' + x + '%;top:' + y + '%" data-seat="' + i + '" aria-label="' + esc(label) + '"><span class="cw"><img class="card" data-k="c' + c.id + '" src="' + img(face) + '" alt="">' + roles + sig + '</span><span class="nm">' + nm(i) + (i === me && P[i].name !== 'You' ? ' (you)' : '') + '</span><span class="tags">' + tags.join('') + '</span></' + (click ? 'button' : 'div') + '>';
+    }).join('');
+    const pips = (t) => Array.from({ length: v.toWin }, (_, k) => '<span class="pip ' + (k < v.score[t] ? t.toLowerCase() : '') + '"></span>').join('');
+    const felt = '<div class="felt"><div class="round">' + (over ? 'Game over' : 'Round ' + v.round) + '</div><div class="score"><span class="lab dela">HUMANS</span><span class="pips">' + pips('H') + '</span><span class="lab dela">ALIENS</span><span class="pips">' + pips('A') + '</span></div>' +
+      '<div class="deckrow"><span class="pile">' + [0, 1, 2].map((k) => '<img src="' + img('back') + '" style="left:' + k * 1.5 + 'px;top:' + -k * 1.5 + 'px" alt="">').join('') + '</span>Deck: ' + v.deck + '</div></div>';
+
+    // the action panel
+    const waiting = v.required.filter((s) => !v.acted.includes(s));
+    const waitTxt = waiting.length ? 'Waiting on ' + (waiting.length === 1 ? nm(waiting[0]) : waiting.length + ' players') + '.' : '';
+    let title = '', body = '', ctrls = '';
+    if (over) {
+      const mine = v.cards[me].t, won = mine === v.winner;
+      body = '<div class="panel action win"><div class="big dela">' + TEAMS[v.winner].toUpperCase() + ' WIN</div><p>Your card: <b>' + TEAM[mine] + '</b>. ' + (won ? 'You win!' : 'You lose.') + '</p><p style="color:var(--t-muted)">Winners: ' + P.filter((p, i) => v.cards[i].t === v.winner).map((p) => esc(p.name)).join(', ') + '. Leave to play again.</p></div>';
+    } else {
+      if (v.phase === 'split') {
+        title = 'Split the town';
+        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round, so those seats are dimmed.' : ''); ctrls = '<button class="b primary" data-do="split"' + (pick === null ? ' disabled' : '') + '>Lock in the split</button>'; }
+        else body = nm(v.leader) + ' is splitting the town into two search parties.';
+      } else if (v.phase === 'vote') {
+        title = 'Which party searches?';
+        if (v.leader === me) body = 'Everyone else is voting. You break ties. ' + waitTxt;
+        else if (v.mine !== null) body = 'You voted for Party ' + v.mine + '. ' + waitTxt;
+        else { body = 'Hold up 1 or 2: pick the party you want to send out.'; ctrls = '<button class="b" data-do="vote" data-v="1">Party 1</button><button class="b" data-do="vote" data-v="2">Party 2</button>'; }
+      } else if (v.phase === 'tiebreak') {
+        title = 'Tied vote';
+        if (v.leader === me) { body = 'The vote tied. You decide which party searches.'; ctrls = '<button class="b" data-do="vote" data-v="1">Send Party 1</button><button class="b" data-do="vote" data-v="2">Send Party 2</button>'; }
+        else body = 'The vote tied ' + v.votes[1] + '–' + v.votes[2] + '. ' + nm(v.leader) + ' is breaking the tie.';
+      } else if (v.phase === 'signal') {
+        title = 'Party ' + v.party + ' is searching';
+        if (v.searchers.includes(me)) {
+          if (v.mine !== null) body = 'You played ' + (v.mine === 'T' ? 'Transmit' : 'Jam') + '. ' + waitTxt;
+          else { body = 'Play Transmit if you think you’re an Alien, Jam if you think you’re Human. Nobody sees which.'; ctrls = '<div class="sigpick"><button data-do="sig" data-v="T" aria-label="Transmit"><img src="' + img('signal-T') + '" alt=""></button><button data-do="sig" data-v="J" aria-label="Jam"><img src="' + img('signal-J') + '" alt=""></button></div>'; }
+        } else body = 'The search party is choosing signals in secret. ' + waitTxt;
+      } else if (v.phase === 'abduct') {
+        title = '“Go check out that light”';
+        if (v.lookout === me) { body = 'You’re the Lookout. Tap one searcher to send toward the light.'; ctrls = '<button class="b coral" data-do="abduct"' + (pick === null ? ' disabled' : '') + '>Send them</button>'; }
+        else body = nm(v.lookout) + ' is picking a searcher to abduct.';
+      }
+      body = '<div class="panel action"><div class="kicker">Round ' + v.round + '</div><h3 class="dela">' + title + '</h3><p>' + body + '</p>' + (ctrls ? '<div class="row">' + ctrls + '</div>' : '') + '</div>';
+    }
+    const L = v.last;
+    const result = L ? '<div class="panel"><div class="kicker">Round ' + L.round + ' result</div><p class="result"><span class="big dela">' + TEAMS[L.scored].toUpperCase() + ' SCORE</span></p><div class="played">' + Array(L.T).fill(img('signal-T')).concat(Array(L.J).fill(img('signal-J'))).map((s) => '<img src="' + s + '" alt="">').join('') + '</div><p>Party ' + L.party + ': ' + L.T + ' Transmit, ' + L.J + ' Jam' + (L.flip ? '. Tie: the flipped card was ' + TEAM[L.flip] + '.' : '.') + '</p></div>' : '';
+    const note = v.note && !over ? '<div class="panel note"><div class="kicker">Only you can see this</div><p>Abducted in round ' + v.note.round + '. ' + (v.note.saw[0] === v.note.saw[1] ? 'You saw two ' + TEAM[v.note.saw[0]] + ' cards, so you know you’re ' + (v.note.saw[0] === 'A' ? 'an Alien' : 'a Human') + '.' : 'You saw a ' + TEAM[v.note.saw[0]] + ' and a ' + TEAM[v.note.saw[1]] + ', mixed them and kept one. It’s a coin flip.') + '</p></div>' : '';
+
+    let coach = '';
+    if (TUT && v.round <= 2 && !over) {
+      const T = {
+        split: v.leader === me ? 'You’re the Town Leader. Everyone’s card faces out: you can read every card but your own, which shows its back. Split the town in two by tapping where Party 1 starts.' : 'Everyone’s card faces out: you can read every card but your own. ' + nm(v.leader) + ' is the Town Leader and splits the town into two parties.',
+        vote: v.leader === me ? 'Everyone else now votes on which party searches. You break a tie.' : 'Vote for the party you want searching: the one with more people on your side.',
+        tiebreak: 'A tied vote: the Town Leader decides.',
+        signal: v.searchers && v.searchers.includes(me) ? 'You’re searching. Play Transmit if you think you’re an Alien, Jam if you think you’re Human. The majority scores for that side; a tie flips the deck’s top card.' : 'The searchers secretly play Transmit (Alien) or Jam (Human). The majority scores; a tie flips the deck’s top card.',
+        abduct: 'Now the Lookout sends one searcher to check out the light: they mix their card with the deck’s top card and keep one without looking. They might have just switched sides.',
+      };
+      coach = '<div class="coach"><span>Tutorial · round ' + v.round + ' of 2</span><p>' + T[v.phase] + '</p></div>';
+    } else if (TUT && v.round === 3 && !tutDone) { tutDone = true; api.toast('That’s the whole game. First team to 5 wins.'); }
+
+    DevTable.flip(el, () => {
+      el.innerHTML = '<div class="ab"><div class="table" role="group" aria-label="The table">' + felt + seats + '</div><div class="side">' + coach + body + result + note +
+        '<div class="panel"><div class="kicker">Table log</div><ul class="log">' + v.log.slice().reverse().map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul></div></div></div>';
+    }, 600);
+
+    el.querySelectorAll('button.seat').forEach((b) => b.addEventListener('click', () => { pick = +b.dataset.seat; render(el, v, api); }));
+    el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
+      const d = b.dataset.do;
+      if ((d === 'split' || d === 'abduct') && pick !== null) api.act({ value: pick });
+      if (d === 'vote') api.act({ value: +b.dataset.v });
+      if (d === 'sig') api.act({ value: b.dataset.v });
+    }));
+  }
+
+  DevTable.mount(document.getElementById('app'), {
+    id: 'abducted', title: 'Abducted', blurb: '5–12 players · 15–25 minutes',
+    mast: '<h1 class="dela">ABDUCTED</h1><p class="tagline">Some of you came back... different.</p><img class="mbox" src="/games/abducted/img/box-front-240.webp" alt="">',
+    minPlayers: 5, maxPlayers: 12, defaultPlayers: 7, botNames: Ab.BOT_NAMES, chat: false,
+    botNote: 'Bots count the cards they can see. For the arguing, host a table and play on a call.',
+    options: [{ key: 'points', label: 'Play to', values: [[5, '5 points'], [4, '4 points'], [6, '6 points']], def: 5 }],
+    create: (players, opts) => new Ab.Game(players, TUT ? Object.assign({}, opts, { firstLeader: 0 }) : opts),   // in the tutorial you lead first
+    render,
+    rules:
+      '<p><b>Face out.</b> Everyone is a Human or an Alien, but you can’t see your own card: it faces everyone else.</p>' +
+      '<p><b>Split and vote.</b> The Town Leader splits the town into two parties, never the same way twice running. Everyone else holds up 1 or 2 to pick which party searches; the leader breaks ties.</p>' +
+      '<p><b>Signal.</b> The searchers secretly play Transmit if they think they’re an Alien, or Jam if they think they’re Human. The majority scores for that side. A tie flips the deck’s top card, and its team scores.</p>' +
+      '<p><b>The Lookout.</b> Sends one searcher to check out the light: they look at their card and the deck’s top card, mix them and keep one without looking. If the two matched, they know their team.</p>' +
+      '<p><b>Win.</b> First team to 5. You win if the card in your stand at the end is on the winning team. Talk, persuade, lie.</p>',
+  });
+  if (TUT) { const s = document.getElementById('dt-l-n'); if (s) s.value = '6'; const b = document.getElementById('dt-l-start'); if (b) b.click(); }
+})();
+</script>
+</body>
+</html>

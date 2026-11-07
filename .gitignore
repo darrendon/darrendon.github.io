@@ -2,3 +2,5 @@
 # Print-and-play kits are emailed on request, not published
 games/*/*-print-and-play.pdf
 shots/
+games/abducted/video/src/build/
+games/abducted/video/src/voiceover.m4a

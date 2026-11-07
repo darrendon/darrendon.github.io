@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script src="/assets/vendor/three.r128.min.js"></script>
+</head><body>
+<script>
+/* Abducted — still renders. Units are inches. ?scene=hero|scene|table|kit|home  &w=1600&h=1000
+   Cards stand in stock plastic card stands, facing out. Nothing touches or overlaps anything else, on the table or on screen. */
+(async function () {
+  const q = new URLSearchParams(location.search);
+  const SCENE = q.get('scene') || 'hero', W = +q.get('w') || 1600, H = +q.get('h') || 1000;
+  const TEX = '/games/abducted/img/src/tex/';
+  const C = (h) => new THREE.Color(h).convertSRGBToLinear();
+  const loader = new THREE.TextureLoader(), cache = {};
+  const tex = (n) => cache[n] || (cache[n] = new Promise((res, rej) => loader.load(TEX + n, (t) => { t.anisotropy = 16; t.encoding = THREE.sRGBEncoding; res(t); }, undefined, rej)));
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(W, H);
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  const SHADE = '#1A1F3D';
+  const scene = new THREE.Scene(); scene.background = C(SHADE); scene.fog = new THREE.Fog(C(SHADE), 55, 110);
+  const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 300);
+  scene.add(new THREE.HemisphereLight(0xeef0ff, 0x4a4f7a, 0.72));
+  const key = new THREE.DirectionalLight(0xfff4e6, 0.95); key.position.set(6, 13, 12); key.castShadow = true;
+  key.shadow.mapSize.set(4096, 4096); Object.assign(key.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 70 });
+  key.shadow.radius = 6; key.shadow.bias = -0.0004; scene.add(key);
+  const rim = new THREE.DirectionalLight(0xd8f27a, 0.22); rim.position.set(-10, 8, -9); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xdfe4ff, 0.34); fill.position.set(-7, 6, 14); scene.add(fill);
+
+  // the table: deep indigo felt with a soft pool of light
+  function felt() {
+    const S = 2048, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+    g.fillStyle = '#2A3263'; g.fillRect(0, 0, S, S);
+    let s = 9; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    const id = g.getImageData(0, 0, S, S), d = id.data;
+    for (let k = 0; k < d.length; k += 4) { const n = (r() - 0.5) * 14; d[k] += n; d[k + 1] += n; d[k + 2] += n * 1.2; }
+    g.putImageData(id, 0, 0);
+    const vg = g.createRadialGradient(S / 2, S / 2, S * 0.08, S / 2, S / 2, S * 0.55);
+    vg.addColorStop(0, 'rgba(26,31,61,0)'); vg.addColorStop(1, 'rgba(26,31,61,.7)'); g.fillStyle = vg; g.fillRect(0, 0, S, S);
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+  }
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), new THREE.MeshStandardMaterial({ map: felt(), roughness: 0.97 }));
+  table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
+  const outer = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshBasicMaterial({ color: C(SHADE) })); outer.position.z = -0.01; table.add(outer);
+  const items = []; const add = (o) => { items.push(o); scene.add(o); return o; };
+
+  // ---- cards: poker size, rounded corners
+  const CW = 2.5, CH = 3.5, CT = 0.014, CR = 0.13;
+  function rr(w, h, r) { const s = new THREE.Shape(), x = -w / 2, y = -h / 2; s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h); s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s; }
+  function capGeo(w, h, r) { const g = new THREE.ShapeGeometry(rr(w, h, r), 8); const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getY(i) + h / 2) / h); return g; }
+  const cardCap = capGeo(CW, CH, CR);
+  const cardEdge = new THREE.ExtrudeGeometry(rr(CW, CH, CR), { depth: CT, bevelEnabled: false, curveSegments: 8 });
+  const edgeMat = new THREE.MeshStandardMaterial({ color: C('#EDE6D6'), roughness: 0.8 });
+  const matCache = {};
+  async function faceMat(n) { if (!matCache[n]) matCache[n] = new THREE.MeshStandardMaterial({ map: await tex(n), roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); return matCache[n]; }
+  // a card as a group in its own plane (XY, face towards +z), so it can lie flat or stand
+  async function cardBody(face, backFace) {
+    const g = new THREE.Group();
+    const e = new THREE.Mesh(cardEdge, edgeMat); e.position.z = -CT; e.castShadow = true; e.receiveShadow = true; g.add(e);
+    const f = new THREE.Mesh(cardCap, await faceMat(face)); f.position.z = 0.002; f.receiveShadow = true; g.add(f);
+    const b = new THREE.Mesh(cardCap, await faceMat(backFace || 'back.jpg')); b.position.z = -CT - 0.002; b.rotation.y = Math.PI; b.receiveShadow = true; g.add(b);
+    return g;
+  }
+  async function flat(face, x, z, yaw = 0, name) { const g = new THREE.Group(), b = await cardBody(face); b.rotation.x = -Math.PI / 2; b.position.y = CT + 0.001; g.add(b); g.position.set(x, 0, z); g.rotation.y = yaw; g.name = name || face; return add(g); }
+  async function deck(x, z, n, yaw = 0, top = 'back.jpg') {
+    const g = new THREE.Group(), h = n * CT;
+    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(rr(CW, CH, CR), { depth: h, bevelEnabled: false, curveSegments: 8 }), new THREE.MeshStandardMaterial({ color: C('#E2DACA'), roughness: 0.85 }));
+    body.rotation.x = -Math.PI / 2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+    const f = new THREE.Mesh(cardCap, await faceMat(top)); f.rotation.x = -Math.PI / 2; f.position.y = h + 0.002; g.add(f);
+    g.position.set(x, 0, z); g.rotation.y = yaw; g.name = 'deck'; return add(g);
+  }
+  // a stock plastic card stand (smoke grey acrylic, a slot leaning back 6°) with the card standing in it, face towards local +z
+  const standMat = new THREE.MeshPhysicalMaterial({ color: C('#3A3F5C'), roughness: 0.25, metalness: 0, transparent: true, opacity: 0.86, clearcoat: 1 });
+  async function standing(face, x, z, yaw = 0, name) {
+    const g = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.32, 0.72), standMat); base.position.y = 0.16; base.castShadow = true; base.receiveShadow = true; g.add(base);
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.1), standMat); lip.position.set(0, 0.38, 0.22); g.add(lip);
+    const lean = new THREE.Group(); lean.position.set(0, 0.22, 0.05); lean.rotation.x = -0.1;
+    const b = await cardBody(face); b.position.y = CH / 2; lean.add(b); g.add(lean);
+    g.position.set(x, 0, z); g.rotation.y = yaw; g.name = name || face; return add(g);
+  }
+  // ---- the box: a tuck box 2.6 x 4.3 x 1 in, standing upright, front cover to the camera, lid end on top
+  const BW = 2.6, BD = 1.0, BHt = 4.3;
+  async function box(x, z, yaw = 0) {
+    const tF = await tex('box-front.jpg'), tS = await tex('box-side.jpg'), tE = await tex('box-end.jpg');
+    const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 });
+    const back = new THREE.MeshStandardMaterial({ color: C('#1B2350'), roughness: 0.6 });
+    // BoxGeometry faces: +x, -x, +y (top), -y, +z (front), -z (back)
+    const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BHt, BD), [M(tS), M(tS), M(tE), back, M(tF), back]);
+    body.position.y = BHt / 2; body.castShadow = true; body.receiveShadow = true;
+    const slit = new THREE.Mesh(new THREE.BoxGeometry(BW - 0.05, 0.006, 0.016), new THREE.MeshStandardMaterial({ color: C('#0B0D1C') })); slit.position.set(0, BHt + 0.002, BD / 2 - 0.04);
+    const g = new THREE.Group(); g.add(body); g.add(slit); g.position.set(x, 0, z); g.rotation.y = yaw; g.name = 'box'; return add(g);
+  }
+  // score cubes
+  const cube = (x, z, col, name) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.32, 0.32), new THREE.MeshStandardMaterial({ color: C(col), roughness: 0.55 })); m.position.set(x, 0.16, z); m.castShadow = true; m.name = name; return add(m); };
+
+  function frame(min, max, elevDeg, azimDeg, margin) {
+    const c = new THREE.Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2);
+    const el = elevDeg * Math.PI / 180, az = azimDeg * Math.PI / 180;
+    const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+    const corners = []; for (const x of [min[0], max[0]]) for (const y of [min[1], max[1]]) for (const z of [min[2], max[2]]) corners.push(new THREE.Vector3(x, y, z));
+    let dist = 5;
+    for (let it = 0; it < 90; it++) { camera.position.copy(c).addScaledVector(dir, dist); camera.lookAt(c); camera.updateMatrixWorld(); camera.updateProjectionMatrix(); let ok = true; for (const p of corners) { const v = p.clone().project(camera); if (Math.abs(v.x) > margin || Math.abs(v.y) > margin) { ok = false; break; } } if (ok) break; dist *= 1.05; }
+  }
+
+  // ================================================================ scenes
+  if (SCENE === 'hero' || SCENE === 'scene' || SCENE === 'home') {
+    // the tuck box, and three players' cards standing in their stands, facing out
+    await box(-4.6, -1.0, 0.18);
+    await standing('team-H.jpg', -1.1, 0.4, 0.06, 'card-h1');
+    await standing('team-A.jpg', 1.9, 0.0, -0.04, 'card-a1');
+    await standing('team-H.jpg', 4.9, 0.5, -0.12, 'card-h2');
+    if (SCENE !== 'home') {   // in front: the Town Leader, both signals and the Lookout
+      await flat('leader.jpg', -4.35, 4.8, 0.06, 'leader'); await flat('signal-T.jpg', -1.45, 4.9, -0.03, 'signal-t');
+      await flat('signal-J.jpg', 1.45, 4.9, 0.03, 'signal-j'); await flat('lookout.jpg', 4.35, 4.8, -0.06, 'lookout');
+    }
+    if (SCENE === 'home') frame([-6.3, 0, -1.7], [6.6, 4.3, 1.6], 18, 0, 0.9);
+    else frame([-6.3, 0, -1.7], [6.6, 4.3, 6.8], 30, 0, 0.94);
+  }
+
+  if (SCENE === 'vtitle') {
+    // the video's opening shot: the box and two standing cards on the left third, open felt on the right for the title
+    await box(-9.2, -0.6, 0.2);
+    await standing('team-H.jpg', -5.6, 0.6, 0.12, 'card-h');
+    await standing('team-A.jpg', -2.5, 0.2, 0.0, 'card-a');
+    frame([-10.8, 0, -1.8], [10.8, 4.3, 3.2], 30, 0, 0.92);
+  }
+
+  if (SCENE === 'table') {
+    // from your seat at a seven-player table: the six other players' cards stand facing you (you can't see your own).
+    // The two split cards lie between seats where the town is cut in half; the deck and three face-down signals in the middle;
+    // the Town Leader and Lookout cards in front of their players; the two score counters at the side
+    const faces = ['team-H.jpg', 'team-A.jpg', 'team-H.jpg', 'team-A.jpg', 'team-A.jpg', 'team-H.jpg'], R = 10.4, CZ = 3.4;
+    const at = (deg, r) => { const a = deg * Math.PI / 180; return [Math.cos(a) * r, CZ + Math.sin(a) * r]; };
+    for (let i = 0; i < 6; i++) { const [x, z] = at(-162.5 + i * 29, R); await standing(faces[i], x, z, Math.atan2(-x, CZ - z), 'seat' + i); }
+    { const [x, z] = at(-119, R - 3.6); await flat('split.jpg', x, z, Math.atan2(-x, CZ - z), 'split-a'); }
+    { const [x, z] = at(-32, R - 3.6); await flat('split.jpg', x, z, Math.atan2(-x, CZ - z), 'split-b'); }
+    { const [x, z] = at(-162.5, R - 3.4); await flat('leader.jpg', x, z, Math.atan2(-x, CZ - z), 'leader'); }
+    { const [x, z] = at(-75.5, R - 3.4); await flat('lookout.jpg', x, z, Math.atan2(-x, CZ - z), 'lookout'); }
+    await deck(-2.9, 2.6, 10, 0.08);
+    await flat('signal-back.jpg', 0.0, 2.8, -0.04, 'sig1'); await flat('signal-back.jpg', 2.8, 2.6, 0.05, 'sig2');
+    await flat('score-H.jpg', 9.4, 6.4, -0.2, 'score-h'); await flat('score-A.jpg', -9.4, 6.4, 0.2, 'score-a');
+    frame([-12.4, 0, -7.4], [12.4, 4.4, 8.4], 46, 0, 0.97);
+  }
+
+  if (SCENE === 'kit' || SCENE === 'vkit') {
+    // everything in the box, flat: Human and Alien (10 of each), the shared back; Transmit, Jam (12 of each) and their back;
+    // the two split cards, the Town Leader, the Lookout, the two score counters; four of the twelve stands; the box
+    const GX = 2.85, GZ = 3.85, X0 = -4.3, Z0 = -5.6;
+    const rows = [['team-H', 'team-A', 'back', 'split', 'leader'], ['signal-T', 'signal-J', 'signal-back', 'lookout', 'score-H']];
+    for (const [r, row] of rows.entries()) for (const [c, n] of row.entries()) await flat(n + '.jpg', X0 + c * GX, Z0 + r * GZ, 0, n);
+    await flat('score-A.jpg', X0 + 4 * GX, Z0 + 2 * GZ, 0, 'score-a');
+    await box(-9.6, -3.2, 0);
+    for (let i = 0; i < 4; i++) { const m = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.32, 0.72), standMat); b.position.y = 0.16; b.castShadow = true; m.add(b); const l = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.1), standMat); l.position.set(0, 0.38, 0.22); m.add(l); m.position.set(-3.4 + i * 2.4, 0, 3.9); m.name = 'stand' + i; add(m); }
+    if (SCENE === 'vkit') frame([-11.8, 0, -12.6], [10.6, 4.3, 7.6], 64, 0, 0.97);   // the video's version leaves open felt at the top for the callout
+    else frame([-11.8, 0, -7.6], [9.6, 4.3, 7.6], 64, 0, 0.97);
+  }
+
+  renderer.render(scene, camera);
+  await new Promise((r) => setTimeout(r, 60)); renderer.render(scene, camera);
+  window.__ab = { renderer, scene, camera, table, items };
+  window.__done = true;
+})();
+</script>
+</body></html>

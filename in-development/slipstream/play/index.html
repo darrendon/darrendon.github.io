@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slipstream · Play online</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/dev-table.css">
+<style>
+  body{--t-bg:#FBEBD6;--t-card:#FFF8EE;--t-ink:#3A2420;--t-muted:#7A5A4C;--t-line:#EBCFAE;--t-accent:#D9772B;--t-accent-ink:#2A1712;--t-mast:#3A2420;--t-mast-ink:#FFE3B0}
+  .dt-mast h1{font-family:Righteous,Jost,sans-serif;font-weight:400;letter-spacing:.03em;color:#FFC983}
+  .c0{--c:#2F6E9E}.c1{--c:#D9A91F}.c2{--c:#C2394A}.c3{--c:#4E9A5B}.c4{--c:#8A5AB5}.c5{--c:#1F8A8A}
+
+  .ss{display:grid;gap:14px;max-width:1180px;margin:0 auto}
+  .ss-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+  .ss-head h2{margin:0;font-size:20px}
+  .score{display:flex;flex-wrap:wrap;gap:6px}
+  .score .dt-chip b{font-weight:700}
+  .pip{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+
+  /* road */
+  .road{background:#5B3A2E;border-radius:12px;padding:10px 8px 8px;overflow-x:auto;scrollbar-width:thin;position:relative}
+  .lanes{display:grid;grid-template-columns:repeat(var(--n),minmax(40px,1fr)) minmax(58px,1.2fr);min-width:calc(var(--n) * 40px + 58px)}
+  .sp{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 2px 2px;border-left:2px dashed rgba(255,227,176,.28);min-height:calc(var(--cap) * 36px + 30px)}
+  .sp:first-child{border-left:0}
+  .sp .n{font:600 11px/1 Jost;color:rgba(255,227,176,.72)}
+  .sp.edge{background:linear-gradient(90deg,transparent,rgba(255,201,131,.18));border-right:3px solid #FFC983}
+  .sp.edge .n{color:#FFC983}
+  .sp.boost{background:rgba(78,154,91,.32)}.sp.pothole{background:rgba(20,10,6,.45)}
+  .sp .fx{font:700 10px/1 Jost;padding:2px 5px;border-radius:5px;background:#4E9A5B;color:#fff}.sp.pothole .fx{background:#1E1410;color:#FFC983}
+  .sp.want{background:rgba(255,255,255,.07)}
+  .cliff{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 2px;background:repeating-linear-gradient(135deg,#E0663A 0 6px,#D9772B 6px 12px);border-radius:0 8px 8px 0}
+  .cliff .n{font:700 10.5px/1.1 Jost;color:#2A1712;text-transform:uppercase;letter-spacing:.06em;text-align:center}
+  .tok{width:32px;height:32px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font:700 12.5px/1 Jost;letter-spacing:-.02em;box-shadow:0 3px 0 rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.85);position:relative}
+  .tok.me{outline:3px solid #FFE3B0;outline-offset:1px}
+  .tok.out{transform:rotate(160deg);opacity:.85}
+  .legend{display:flex;justify-content:space-between;font-size:12.5px;color:var(--t-muted);margin-top:6px}
+
+  .cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
+  @media (max-width:860px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--t-card);border:1px solid var(--t-line);border-radius:12px;padding:14px}
+  .panel h3{margin:0 0 10px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-muted)}
+
+  /* cards */
+  .hand{display:flex;flex-wrap:wrap;gap:8px}
+  .card{width:96px;border-radius:10px;background:#fff;border:2px solid var(--t-line);padding:8px 8px 9px;display:flex;flex-direction:column;gap:6px;text-align:left;cursor:default;position:relative;font:inherit;color:var(--t-ink)}
+  button.card{cursor:pointer}
+  button.card:hover{border-color:var(--t-accent)}
+  .card.sel{border-color:var(--t-accent);box-shadow:0 0 0 3px rgba(217,119,43,.3);transform:translateY(-4px)}
+  .card.used{opacity:.4}
+  .card .nm{font-weight:700;font-size:14px;line-height:1.1}
+  .card .vals{display:flex;justify-content:space-between;align-items:flex-end}
+  .v{display:flex;flex-direction:column;align-items:center;line-height:1}
+  .v b{font:400 26px/1 Righteous,Jost;}
+  .v small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+  .v.r b{color:#D24A1E}.v.s b{color:#2F6E9E}
+  .card.big{width:128px}.card.big .v b{font-size:34px}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .btn-r{background:#D24A1E;border-color:#D24A1E;color:#fff}
+  .btn-s{background:#2F6E9E;border-color:#2F6E9E;color:#fff}
+  .prompt{font-size:15.5px;margin:0 0 10px}
+  .prompt b{font-weight:700}
+
+  .trick{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .plays{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px}
+  .play{display:flex;align-items:center;gap:8px;font-size:14.5px;padding:6px 10px;border-radius:8px;background:#fff;border:1px solid var(--t-line)}
+  .play .k{margin-left:auto;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+  .k.risky{color:#D24A1E}.k.safe{color:#2F6E9E}.k.caught{color:#7A5A4C}.k.crash{color:#B3412C}
+  .play.wait{opacity:.55;border-style:dashed}
+
+  .riders{display:flex;flex-direction:column;gap:6px}
+  .rider{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-size:14.5px;padding:6px 8px;border-radius:8px}
+  .rider.turn{background:rgba(217,119,43,.14)}
+  .rider .meta{font-size:12.5px;color:var(--t-muted);text-align:right;white-space:nowrap}
+  .rider .pk{grid-column:2/-1;display:flex;gap:4px;flex-wrap:wrap}
+  .mini{font-size:11.5px;padding:2px 6px;border-radius:5px;background:#fff;border:1px solid var(--t-line)}
+  .log{margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--t-line);font-size:13.5px;color:var(--t-muted);max-height:180px;overflow:auto}
+  .log p{margin:0 0 3px}
+  .banner{border-radius:12px;padding:14px 16px;background:#3A2420;color:#FFE3B0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+  .banner b{font:400 22px/1.1 Righteous,Jost;color:#FFC983}
+  .banner p{margin:0;font-size:15px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/js/dev-table.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  const S = window.Slipstream, esc = DevTable.esc;
+  const init = (n) => { const t = n.replace(/\s*\(bot\)$/, '').trim(); return (t.charAt(0).toUpperCase() + t.charAt(1).toLowerCase()); };
+  let sel = [], leadSel = null, lastPhase = '', lastRace = 0;
+
+  const cardHTML = (c, i, opts) => {
+    opts = opts || {};
+    const tag = opts.button ? 'button type="button"' : 'div';
+    return '<' + tag + ' class="card' + (opts.cls ? ' ' + opts.cls : '') + '"' + (opts.button ? ' data-card="' + i + '"' : '') + (opts.k ? ' data-k="' + opts.k + '"' : '') + '>' +
+      '<span class="nm">' + esc(c.name) + '</span><span class="vals"><span class="v r"><b>' + c.risky + '</b><small>Risky</small></span><span class="v s"><b>' + c.safe + '</b><small>Safe</small></span></span></' + (opts.button ? 'button' : 'div') + '>';
+  };
+
+  function render(el, v, api) {
+    const me = v.seat, P = v.players, C = v.cards;
+    if (v.race !== lastRace) { sel = []; leadSel = null; lastRace = v.race; }
+    if (v.phase !== lastPhase) { leadSel = null; lastPhase = v.phase; }
+    const who = (i) => '<span class="pip c' + i + '"></span>' + esc(P[i].name) + (i === me ? ' (you)' : '');
+
+    // status line
+    const st = { pick: P[me].picked ? 'Waiting for everyone to pick…' : 'Pick ' + v.picksN + ' cards in secret',
+      lead: v.leader === me ? 'Your lead' : P[v.leader].name + ' is leading',
+      follow: v.trick && v.trick.next === me ? 'Your call: risky or safe?' : v.trick && v.trick.next != null ? 'Waiting for ' + P[v.trick.next].name : '',
+      trickEnd: 'Moving…', raceEnd: 'Race ' + v.race + ' is over', over: v.winner != null ? P[v.winner].name + ' wins!' : '' }[v.phase] || '';
+    api.status('Race ' + v.race + ' · ' + st);
+
+    // road
+    let road = '<div class="road"><div class="lanes" style="--n:' + (v.edge + 1) + ';--cap:' + v.cap + '">';
+    for (let s = 0; s <= v.edge; s++) {
+      const sx = v.spaces && v.spaces[s];
+      road += '<div class="sp' + (s === v.edge ? ' edge' : '') + (sx ? ' ' + sx : '') + '"><span class="n">' + (s === v.edge ? 'EDGE' : s) + '</span>' + (sx ? '<span class="fx">' + (sx === 'boost' ? '+1' : '−2') + '</span>' : '');
+      P.forEach((p, i) => { if (!p.crashed && p.pos === s) road += '<span class="tok c' + i + (i === me ? ' me' : '') + '" data-k="r' + i + '" title="' + esc(p.name) + '">' + esc(init(p.name)) + '</span>'; });
+      road += '</div>';
+    }
+    road += '<div class="cliff"><span class="n">Over<br>the edge</span>';
+    P.forEach((p, i) => { if (p.crashed) road += '<span class="tok out c' + i + (i === me ? ' me' : '') + '" data-k="r' + i + '">' + esc(init(p.name)) + '</span>'; });
+    road += '</div></div></div><div class="legend"><span>Start</span><span>Boost +1 · Pothole −2 · Closest to the edge without going over wins</span></div>';
+
+    // banner
+    let banner = '';
+    if (v.phase === 'raceEnd' || v.phase === 'over') {
+      const w = v.raceResult && v.raceResult.winner;
+      banner = '<div class="banner"><div><b>' + (v.phase === 'over' ? esc(P[v.winner].name) + (v.winner === me ? ' (you) win' : ' wins') + ' the game!' : w == null ? 'Everyone went over!' : esc(P[w].name) + (w === me ? ' (you)' : '') + ' wins race ' + v.race) + '</b>' +
+        '<p>' + (v.phase === 'over' ? 'Leave to play again, or keep looking at the final road.' : 'First to ' + v.winsNeeded + ' race wins. Next race starting…') + '</p></div></div>';
+    }
+
+    // main panel
+    let main = '';
+    if (v.phase === 'pick') {
+      if (!P[me].picked) {
+        main = '<h3>Your picks for race ' + v.race + '</h3><p class="prompt">You’re <b>' + (v.edge - P[me].pos) + ' spaces</b> from the edge. Pick ' + v.picksN + ' cards. Everyone else is choosing from the same six.</p>' +
+          '<div class="hand">' + C.map((c, i) => cardHTML(c, i, { button: true, cls: sel.includes(i) ? 'sel' : '' })).join('') + '</div>' +
+          '<div class="acts"><button class="dt-btn go" data-do="lock"' + (sel.length === v.picksN ? '' : ' disabled') + '>Lock in ' + sel.length + ' of ' + v.picksN + '</button></div>';
+      } else {
+        main = '<h3>Your picks</h3><div class="hand">' + v.myPicks.map((c) => cardHTML(C[c], c, { k: 'h' + c })).join('') + '</div><p class="prompt" style="margin-top:12px">Waiting for ' + P.filter((p) => !p.picked).map((p) => esc(p.name)).join(', ') + '…</p>';
+      }
+    } else {
+      let trick = '';
+      const t = v.trick || (v.phase === 'trickEnd' ? v.lastTrick : null);
+      if (t) {
+        const res = v.phase === 'trickEnd' ? t.results : null;
+        trick = '<h3>' + (v.phase === 'trickEnd' ? 'Result' : 'On the table') + '</h3><div class="trick">' + cardHTML(C[t.card], t.card, { cls: 'big', k: 't' + t.card + '-' + v.race }) + '<div class="plays">' +
+          t.plays.map((p, i) => {
+            let k = p.risky ? 'risky' : 'safe', txt = p.risky ? 'Risky' : 'Safe';
+            if (res) { const r = res[i]; k = r.crash ? 'crash' : r.kind; txt = r.crash ? 'Over!' : (r.kind === 'caught' ? 'Caught · 1' : (r.kind === 'risky' ? 'Risky · ' : 'Safe · ') + r.move) + (r.boost ? ' + boost' : '') + (r.pothole ? ' · pothole' : '') + (r.slip ? ' + slip' : ''); }
+            return '<div class="play">' + who(p.seat) + '<span class="k ' + k + '">' + txt + '</span></div>';
+          }).join('') +
+          (v.trick ? v.trick.waiting.map((s) => '<div class="play wait">' + who(s) + '<span class="k">…</span></div>').join('') : '') + '</div></div>';
+      }
+      let act = '';
+      if (v.phase === 'lead' && v.leader === me) {
+        const c = leadSel;
+        act = '<h3>Your lead</h3><p class="prompt">Choose a card to lead. Anyone else who picked it must play it too.</p><div class="hand">' + v.hand.map((x) => cardHTML(C[x], x, { button: true, cls: leadSel === x ? 'sel' : '', k: 'h' + x })).join('') + '</div>' +
+          '<div class="acts">' + (c == null ? '<span class="dt-muted" style="margin:0">Tap a card</span>' : '<button class="dt-btn btn-r" data-do="lead" data-r="1">Lead risky (' + C[c].risky + ')</button><button class="dt-btn btn-s" data-do="lead" data-r="0">Lead safe (' + C[c].safe + ')</button>') + '</div>';
+      } else if (v.phase === 'follow' && v.trick && v.trick.next === me) {
+        const c = C[v.trick.card], before = v.trick.plays.filter((p) => p.risky).length, after = v.trick.waiting.length - 1;
+        act = '<h3>Your call</h3><p class="prompt">You picked <b>' + esc(c.name) + '</b>, so you must play it. ' + (before ? before + ' rider' + (before > 1 ? 's' : '') + ' already went risky: going risky catches them. ' : '') + (after > 0 ? after + ' more rider' + (after > 1 ? 's' : '') + ' still to act could catch you.' : 'Nobody acts after you.') + '</p>' +
+          '<div class="acts"><button class="dt-btn btn-r" data-do="follow" data-r="1">Risky (' + c.risky + ')</button><button class="dt-btn btn-s" data-do="follow" data-r="0">Safe (' + c.safe + ')</button></div>';
+      }
+      const handLeft = (v.phase !== 'lead' || v.leader !== me) && v.myPicks ? '<h3 style="margin-top:14px">Your cards</h3><div class="hand">' + v.myPicks.map((x, i) => { const left = v.hand.filter((h) => h === x).length > 0; return cardHTML(C[x], x, { cls: left ? '' : 'used', k: 'h' + x }); }).join('') + '</div>' : '';
+      main = act + trick + handLeft;
+      if (!main) main = '<p class="prompt">…</p>';
+    }
+
+    // riders
+    const turn = v.phase === 'lead' ? v.leader : v.phase === 'follow' && v.trick ? v.trick.next : -1;
+    const riders = '<div class="riders">' + P.map((p, i) => '<div class="rider' + (i === turn ? ' turn' : '') + '"><span class="tok c' + i + '" style="width:26px;height:26px;font-size:12px">' + esc(init(p.name)) + '</span><span>' + esc(p.name) + (i === me ? ' (you)' : '') + '</span><span class="meta">' + (p.crashed ? 'over the edge' : (v.edge - p.pos) + ' to go') + ' · ' + (p.left == null ? (p.picked ? 'picked' : 'picking') : p.left + ' left') + ' · ' + '★'.repeat(p.wins) + '<span style="opacity:.3">' + '★'.repeat(Math.max(0, v.winsNeeded - p.wins)) + '</span></span>' +
+      (p.picks && i !== me ? '<span class="pk">' + p.picks.map((c) => '<span class="mini">' + esc(C[c].name) + '</span>').join('') + '</span>' : '') + '</div>').join('') + '</div>';
+
+    DevTable.flip(el, () => {
+      el.innerHTML = '<div class="ss">' + banner + road + '<div class="cols"><div class="panel">' + main + '</div><div class="panel"><h3>Riders</h3>' + riders + '<div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(l) + '</p>').join('') + '</div></div></div></div>';
+    });
+
+    // keep my rider in view on narrow screens
+    const road$ = el.querySelector('.road'), tok = el.querySelector('.road .tok.me');
+    if (road$ && tok && road$.scrollWidth > road$.clientWidth) road$.scrollLeft = Math.max(0, tok.offsetLeft - road$.clientWidth / 2 + 40);
+
+    el.querySelectorAll('button.card').forEach((b) => b.addEventListener('click', () => {
+      const c = +b.dataset.card;
+      if (v.phase === 'pick') { if (sel.includes(c)) sel = sel.filter((x) => x !== c); else if (sel.length < v.picksN) sel.push(c); else { sel.shift(); sel.push(c); } }
+      else leadSel = c;
+      render(el, v, api);
+    }));
+    el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
+      const d = b.dataset.do;
+      if (d === 'lock') api.act({ type: 'pick', cards: sel });
+      if (d === 'lead') api.act({ type: 'lead', card: leadSel, risky: b.dataset.r === '1' });
+      if (d === 'follow') api.act({ type: 'follow', risky: b.dataset.r === '1' });
+    }));
+  }
+
+  DevTable.mount(document.getElementById('app'), {
+    id: 'slipstream', title: 'Slipstream', blurb: '3–6 players · 15–20 minutes',
+    minPlayers: 3, maxPlayers: 6, defaultPlayers: 4, botNames: S.BOT_NAMES,
+    botNote: 'Each bot reads the road and its own distance to the edge.',
+    options: [{ key: 'winsNeeded', label: 'Play to', values: [[2, '2 race wins'], [3, '3 race wins'], [1, '1 race']], def: 2 }],
+    create: (players, opts) => new S.Game(players, opts),
+    render,
+    rules:
+      '<p><b>Chicken.</b> Race to the cliff edge. When the race ends, the rider closest to the edge without going over wins it. First to two race wins takes the game.</p>' +
+      '<p><b>Pick in secret.</b> Everyone holds the same six speed cards. Before each race, pick three. Riders start at different distances, so you can guess what everyone wants.</p>' +
+      '<p><b>Lead and follow.</b> In turn, lead a picked card risky or safe. Everyone else who picked it must play it too, risky or safe, in seat order.</p>' +
+      '<p><b>Caught.</b> Safe moves the small number. Risky moves the big number only for the last rider to go risky on that card; anyone risky before them is caught and moves 1.</p>' +
+      '<p><b>The road.</b> Land exactly on a boost and move 1 more; land on a pothole and drop back 2.</p>' +
+      '<p><b>Slipstream.</b> Stop right behind a rider and you slip past to the next open space. It happens after every move and can carry you over the edge.</p>',
+  });
+})();
+</script>
+</body>
+</html>

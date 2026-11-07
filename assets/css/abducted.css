@@ -1,0 +1,63 @@
+/* Abducted skin, in Darren’s palette from the card art: night navy, Human mustard, Alien cobalt, beam mint, coral, cream.
+   The display face is Dela Gothic One (stood in for by heavy Archivo until the font files are added: see abducted-fonts.css). */
+.g-abd{
+  --g-bg:#FFF8EC; --g-panel:#F6EAD2; --g-panel-hi:#FBF2E0; --g-face:#FFFFFF;
+  --g-red:#2E4BD8;            /* the page accent slot: Alien cobalt */
+  --g-gold:#F6B92B; --g-jade:#1B2350; --g-ink:#1B1B2F; --g-muted:#5A5A72; --g-line:#EADCBF;
+  --ab-night:#1B2350; --ab-hum:#F6B92B; --ab-ali:#2E4BD8; --ab-beam:#6EE7B7; --ab-coral:#E8553A; --ab-cream:#FFF4DE;
+  --ab-display:"Dela Gothic One","Archivo","Arial Black",system-ui,sans-serif;
+}
+.g-abd .g-hero h1{font-family:var(--ab-display);font-weight:900;font-stretch:112%;font-synthesis:none;letter-spacing:.01em;line-height:.95;color:var(--ab-night);text-shadow:4px 5px 0 var(--ab-coral);margin-bottom:12px}
+.g-abd .g-hero .tag em{font-style:normal;font-weight:600;color:var(--ab-ali)}
+.g-abd .pill{background:var(--ab-night);color:var(--ab-beam)}
+.g-abd .pill::before{background:var(--ab-beam)}
+.g-abd.game .btn.red{background:var(--ab-night);border-color:var(--ab-night);color:#fff}
+
+.g-abd .viewer{background:#141B3F;border-radius:14px;overflow:hidden}
+.g-abd .viewer .stage{aspect-ratio:16/10}
+.g-abd .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
+.g-abd .viewer .bar{background:var(--g-panel)}
+
+/* what everyone sees: three ways your table looks */
+.seen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:clamp(20px,3vw,32px)}
+.seen div{border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;background:var(--g-face);border:1px solid var(--g-line);color:var(--g-ink)}
+.seen b{font-family:var(--ab-display);font-weight:900;font-stretch:112%;font-synthesis:none;font-size:22px;line-height:1.05;color:var(--g-red)}
+.seen span{font-size:15px}
+.seen .night{background:var(--ab-night);color:var(--ab-cream);border-color:var(--ab-night)}
+.seen .night b{color:var(--ab-beam)}
+@media (max-width:820px){.seen{grid-template-columns:1fr}}
+
+/* the cards */
+.ranks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(6px,1.1vw,14px);margin-top:clamp(28px,4vw,44px)}
+.ranks img{width:100%;height:auto;aspect-ratio:5/7;border-radius:6%/4.3%;box-shadow:0 8px 16px -10px rgba(27,30,51,.55);transition:transform .2s;display:block}
+.ranks img:hover{transform:translateY(-6px) rotate(-2deg)}
+.ranks img:nth-child(even):hover{transform:translateY(-6px) rotate(2deg)}
+@media (max-width:820px){.ranks{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.extras{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1.4vw,18px);margin-top:clamp(18px,2.6vw,28px)}
+.extras figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.extras img{width:100%;height:auto;aspect-ratio:5/7;border-radius:6%/4.3%;box-shadow:0 8px 16px -10px rgba(27,30,51,.55);display:block}
+.extras figcaption{font-size:14px;color:var(--g-muted);line-height:1.35}
+.extras figcaption b{display:block;color:var(--g-ink);font-size:15px}
+@media (max-width:820px){.extras{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:480px){.extras{grid-template-columns:repeat(3,minmax(0,1fr))}.extras figcaption{font-size:12.5px}}
+
+.boxart{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr);gap:clamp(18px,3vw,40px);align-items:center;margin-top:clamp(40px,6vw,72px)}
+.boxart figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0;max-width:300px}
+.boxart img{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 18px 30px -18px rgba(27,30,51,.7)}
+.boxart figcaption{font-size:14.5px;color:var(--g-muted)}
+.boxart figcaption b{display:block;color:var(--g-ink);font-size:16px}
+@media (max-width:700px){.boxart{grid-template-columns:1fr}.boxart figure{max-width:220px}}
+
+.g-abd .renders img{aspect-ratio:16/10}
+.g-abd .play-frame{background:#141B3F;border-radius:14px;overflow:hidden}
+.g-abd .play-frame iframe{height:min(calc(100vh - 140px),1040px)}
+.g-abd .set{border-top-color:var(--ab-hum)}
+.g-abd .set:nth-child(2){border-top-color:var(--ab-ali)}
+.g-abd .g-cta{background:var(--ab-night)}
+.g-abd .g-cta h2{color:var(--ab-cream);font-family:var(--ab-display);font-weight:900;font-stretch:112%;font-synthesis:none}
+.g-abd .g-cta .btn.light{color:var(--ab-night)}
+
+/* home page card */
+.feature.g-abd h3{font-family:var(--ab-display);font-weight:900;font-stretch:112%;font-synthesis:none;letter-spacing:.01em}
+.feature.g-abd .feature-art{background:#141B3F;padding:0}
+.feature.g-abd .feature-art img{width:100%;height:100%;object-fit:cover}

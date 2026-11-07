@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>In Development box art</title>
+<!-- Box fronts for the In Development games. ?g=slipstream|jibber|abducted|polar
+     &view=scene (1600×1000: box on its own backdrop, for cards and page heroes) or &view=box (box front only, 900×900).
+     Rendered to webp by shoot.py. -->
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+  html,body{margin:0}
+  body{width:1600px;height:1000px;overflow:hidden;font-family:Jost,sans-serif}
+  body.box{width:900px;height:900px}
+  .scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .box{width:640px;height:640px;position:relative;border-radius:10px;overflow:hidden;box-shadow:0 40px 60px -30px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.08)}
+  body.box .scene{background:none!important}
+  body.box .box{width:900px;height:900px;border-radius:0;box-shadow:none}
+  .box svg{position:absolute;inset:0;width:100%;height:100%}
+  .by{position:absolute;left:0;right:0;bottom:5.2%;text-align:center;font:600 3.1cqw/1 Jost,sans-serif;letter-spacing:.32em;text-transform:uppercase}
+  .box{container-type:inline-size}
+  .ttl{position:absolute;left:0;right:0;text-align:center;line-height:.9}
+</style>
+</head>
+<body>
+<div class="scene" id="scene"></div>
+<script>
+const q = new URLSearchParams(location.search), g = q.get('g') || 'slipstream';
+if (q.get('view') === 'box') document.body.classList.add('box');
+const A = {
+  /* Slipstream: a chicken run to a cliff edge at sunset */
+  slipstream: {
+    bg: 'radial-gradient(120% 90% at 40% 35%,#F6C27A,#D9772B)',
+    svg: `<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD48A"/><stop offset=".55" stop-color="#F29A4A"/><stop offset="1" stop-color="#E0663A"/></linearGradient></defs>
+      <rect width="100" height="100" fill="url(#sky)"/>
+      <circle cx="70" cy="47" r="13" fill="#FFF1C9" opacity=".9"/>
+      <path d="M0 62 L18 54 L30 58 L46 50 L58 56 L72 51 L86 57 L100 53 L100 100 L0 100Z" fill="#B9542F" opacity=".55"/>
+      <path d="M0 70 L72 70 L74 72 L76 100 L0 100Z" fill="#5B3A2E"/>
+      <path d="M0 70 L72 70" stroke="#FFE3B0" stroke-width=".6"/>
+      <path d="M4 76 H66" stroke="#FFE3B0" stroke-width=".8" stroke-dasharray="4 3"/>
+      <g transform="translate(14 63)"><rect x="0" y="2" width="11" height="4.2" rx="1.6" fill="#2F6E9E"/><rect x="3" y="0" width="5" height="3" rx="1.2" fill="#2F6E9E"/><circle cx="2.4" cy="6.6" r="1.6" fill="#1E1E24"/><circle cx="8.6" cy="6.6" r="1.6" fill="#1E1E24"/><path d="M-6 3 H-1 M-8 5 H-2" stroke="#FFF1C9" stroke-width=".7" stroke-linecap="round"/></g>
+      <g transform="translate(34 63)"><rect x="0" y="2" width="11" height="4.2" rx="1.6" fill="#E8C33B"/><rect x="3" y="0" width="5" height="3" rx="1.2" fill="#E8C33B"/><circle cx="2.4" cy="6.6" r="1.6" fill="#1E1E24"/><circle cx="8.6" cy="6.6" r="1.6" fill="#1E1E24"/><path d="M-6 3 H-1 M-8 5 H-2" stroke="#FFF1C9" stroke-width=".7" stroke-linecap="round"/></g>
+      <g transform="translate(54 63)"><rect x="0" y="2" width="11" height="4.2" rx="1.6" fill="#C2394A"/><rect x="3" y="0" width="5" height="3" rx="1.2" fill="#C2394A"/><circle cx="2.4" cy="6.6" r="1.6" fill="#1E1E24"/><circle cx="8.6" cy="6.6" r="1.6" fill="#1E1E24"/><path d="M-6 3 H-1 M-8 5 H-2" stroke="#FFF1C9" stroke-width=".7" stroke-linecap="round"/></g>
+      <path d="M72 70 L100 70 L100 100 L76 100 Z" fill="#E0663A" opacity="0"/>
+      <g transform="translate(80 58)"><rect x="0" y="0" width="1" height="12" fill="#3A2A22"/><path d="M1 .5 H9 L7.5 2.5 L9 4.5 H1Z" fill="#FFF1C9"/></g>
+    </svg>
+    <div class="ttl" style="top:11%;font:400 13.5cqw/1 Righteous,sans-serif;color:#3A2420;letter-spacing:.02em">SLIPSTREAM</div>
+    <div class="ttl" style="top:27%;font:600 3.4cqw/1 Jost;letter-spacing:.3em;color:#5B2E20;text-transform:uppercase">Race to the edge</div>
+    <div class="by" style="color:#FFE3B0">by Darren Don</div>`,
+  },
+  /* 2 Jibber 2 Jabble: the five question words */
+  jibber: {
+    bg: 'radial-gradient(120% 90% at 40% 35%,#FBE3C2,#E8A877)',
+    svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#FFF4E0"/>
+      <g font-family="Righteous" font-size="7.4" text-anchor="middle">
+        <g transform="translate(25 44.5)"><path d="M-14 -7 h28 a4 4 0 0 1 4 4 v8 a4 4 0 0 1 -4 4 h-20 l-5 5 v-5 h-3 a4 4 0 0 1 -4 -4 v-8 a4 4 0 0 1 4 -4z" fill="#F28B66" stroke="#2B1D14" stroke-width=".7"/><text y="2.6" fill="#2B1D14">WHO?</text></g>
+        <g transform="translate(72 44.5)"><path d="M-16 -7 h32 a4 4 0 0 1 4 4 v8 a4 4 0 0 1 -4 4 h-3 v5 l-5 -5 h-24 a4 4 0 0 1 -4 -4 v-8 a4 4 0 0 1 4 -4z" fill="#F6C445" stroke="#2B1D14" stroke-width=".7"/><text y="2.6" fill="#2B1D14">WHAT?</text></g>
+        <g transform="translate(27 65.5)"><path d="M-16 -7 h32 a4 4 0 0 1 4 4 v8 a4 4 0 0 1 -4 4 h-24 l-5 5 v-5 h-3 a4 4 0 0 1 -4 -4 v-8 a4 4 0 0 1 4 -4z" fill="#86D0AA" stroke="#2B1D14" stroke-width=".7"/><text y="2.6" fill="#2B1D14">WHEN?</text></g>
+        <g transform="translate(71 65.5)"><path d="M-18 -7 h36 a4 4 0 0 1 4 4 v8 a4 4 0 0 1 -4 4 h-3 v5 l-5 -5 h-28 a4 4 0 0 1 -4 -4 v-8 a4 4 0 0 1 4 -4z" fill="#7CBDEB" stroke="#2B1D14" stroke-width=".7"/><text y="2.6" fill="#2B1D14">WHERE?</text></g>
+        <g transform="translate(50 85)"><path d="M-13 -6 h26 a4 4 0 0 1 4 4 v6 a4 4 0 0 1 -4 4 h-26 a4 4 0 0 1 -4 -4 v-6 a4 4 0 0 1 4 -4z" fill="#C7A3EA" stroke="#2B1D14" stroke-width=".7"/><text y="2" fill="#2B1D14" font-size="6.4">WHY?</text></g>
+      </g></svg>
+    <div class="ttl" style="top:7%;font:400 12.5cqw/.92 Righteous,sans-serif;color:#2B1D14">2 JIBBER<br>2 JABBLE</div>
+    <div class="ttl" style="top:33.5%;font:italic 600 4.2cqw/1 Jost;color:#A35F05">…hmm?</div>
+    <div class="by" style="color:#5C5F6B;bottom:3.4%">by Darren Don</div>`,
+  },
+  /* Abducted: a saucer beam over a row of card stands */
+  abducted: {
+    bg: 'radial-gradient(120% 90% at 40% 35%,#3C4677,#161A33)',
+    svg: `<svg viewBox="0 0 100 100"><defs><linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D8F27A" stop-opacity=".85"/><stop offset="1" stop-color="#D8F27A" stop-opacity=".08"/></linearGradient></defs>
+      <rect width="100" height="100" fill="#1E2447"/>
+      <g fill="#F4EDE2" opacity=".8"><circle cx="12" cy="40" r=".5"/><circle cx="86" cy="36" r=".6"/><circle cx="20" cy="56" r=".4"/><circle cx="90" cy="58" r=".4"/><circle cx="8" cy="72" r=".5"/><circle cx="94" cy="80" r=".5"/><circle cx="78" cy="46" r=".35"/></g>
+      <path d="M43 50 L57 50 L72 86 L28 86Z" fill="url(#beam)"/>
+      <ellipse cx="50" cy="49" rx="17" ry="4.6" fill="#B7BCD6"/><path d="M41 48 a9 6.5 0 0 1 18 0z" fill="#9FE3D4"/><ellipse cx="50" cy="50.4" rx="17" ry="2" fill="#7E84A3"/>
+      <g fill="#F7E36B"><circle cx="39" cy="50.6" r=".9"/><circle cx="45" cy="51.2" r=".9"/><circle cx="51" cy="51.4" r=".9"/><circle cx="57" cy="51.2" r=".9"/><circle cx="62" cy="50.6" r=".9"/></g>
+      <path d="M0 86 H100 V100 H0Z" fill="#141830"/>
+      <g transform="translate(18 74)"><rect width="9" height="12" rx="1.2" fill="#E18C0A"/><circle cx="4.5" cy="5" r="2.4" fill="#fff" opacity=".9"/></g>
+      <g transform="translate(36 72)"><rect width="9" height="12" rx="1.2" fill="#8FD14F"/><ellipse cx="4.5" cy="5" rx="2.6" ry="3" fill="#fff" opacity=".9"/></g>
+      <g transform="translate(55 72)"><rect width="9" height="12" rx="1.2" fill="#E18C0A"/><circle cx="4.5" cy="5" r="2.4" fill="#fff" opacity=".9"/></g>
+      <g transform="translate(73 74)"><rect width="9" height="12" rx="1.2" fill="#8FD14F"/><ellipse cx="4.5" cy="5" rx="2.6" ry="3" fill="#fff" opacity=".9"/></g>
+      <g fill="#0E1124"><path d="M20 86h5l-1-1.5h-3z"/><path d="M38 84h5l-1 2h-3z"/><path d="M57 84h5l-1 2h-3z"/><path d="M75 86h5l-1-1.5h-3z"/></g>
+    </svg>
+    <div class="ttl" style="top:10%;font:400 14cqw/1 Righteous,sans-serif;color:#D8F27A;letter-spacing:.03em">ABDUCTED</div>
+    <div class="ttl" style="top:26.5%;font:600 3.3cqw/1 Jost;letter-spacing:.28em;color:#B7BCD6;text-transform:uppercase">Which side are you on?</div>
+    <div class="by" style="color:#B7BCD6;bottom:3.6%">by Darren Don</div>`,
+  },
+  /* Day One: young gods raise the first islands from an empty sea */
+  dayone: {
+    bg: 'radial-gradient(120% 90% at 40% 35%,#9C7451,#5E3F27)',
+    svg: `<svg viewBox="0 0 100 100"><defs><linearGradient id="dsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7B0"/><stop offset="1" stop-color="#F7C873"/></linearGradient></defs>
+      <rect width="100" height="100" fill="#2F86A3"/>
+      <rect width="100" height="40" fill="url(#dsky)"/>
+      <circle cx="88" cy="37" r="4" fill="#FFF6DE"/>
+      <g stroke="#1B5F7A" stroke-width=".6" fill="#3A93B0">
+        ${(()=>{let o='';const r=7.2,h=r*Math.sqrt(3);for(let row=0;row<4;row++)for(let col=0;col<7;col++){const x=8+col*h+(row%2?h/2:0),y=50+row*r*1.5;if(x>98)continue;let p='';for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p+=(i?'L':'M')+(x+r*Math.cos(a)).toFixed(2)+' '+(y+r*Math.sin(a)).toFixed(2)}o+=`<path d="${p}Z"/>`}return o})()}
+      </g>
+      ${[[20.5,57.2,['#d4532b','#3e8e4e','#e9c66b']],[45.4,57.2,['#ec8fa4','#5d6474']],[32.9,79,['#3e8e4e','#3e8e4e','#e9c66b','#d4532b']],[70.4,79,['#5d6474','#ec8fa4','#e9c66b']],[82.9,57.2,['#e9c66b']]].map(([x,y,cs])=>cs.map((c,k)=>`<ellipse cx="${x}" cy="${y+1.6-k*1.9}" rx="3.6" ry="1.5" fill="${c}" stroke="rgba(0,0,0,.35)" stroke-width=".35"/>`).join('')).join('')}
+      <g transform="translate(58 67.2)"><circle r="2.8" fill="#3d55b3" stroke="#1f2d6b" stroke-width=".6"/><path d="M-2.2 -2.6 L0 -6.2 L2.2 -2.6Z" fill="#3d55b3" stroke="#1f2d6b" stroke-width=".5"/></g>
+    </svg>
+    <div class="ttl" style="top:9%;font:400 15cqw/1 Righteous,sans-serif;color:#4A2C14;letter-spacing:.03em">DAY ONE</div>
+    <div class="ttl" style="top:25.5%;font:600 3.2cqw/1 Jost;letter-spacing:.28em;color:#7A4A1E;text-transform:uppercase">Raise the first islands</div>
+    <div class="by" style="color:#E9F6FA;bottom:3.6%">by Darren Don</div>`,
+  },
+  /* Polar Bear Market: a bear trader on the five Midfloe hexes */
+  polar: {
+    bg: 'radial-gradient(120% 90% at 40% 35%,#CFE6EE,#7FAFC4)',
+    svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#2E6E8E"/>
+      <path d="M0 0 H100 V44 H0Z" fill="#E9F3F6"/>
+      <g stroke="#2E6E8E" stroke-width=".7" fill="#F7FBFC">
+        ${[[50,66],[35,57.5],[65,57.5],[35,74.5],[65,74.5]].map(([x,y])=>{const r=9.4;let p='';for(let i=0;i<6;i++){const a=Math.PI/3*i;p+=(i?'L':'M')+(x+r*Math.cos(a)).toFixed(2)+' '+(y+r*Math.sin(a)).toFixed(2)}return `<path d="${p}Z"/>`}).join('')}
+      </g>
+      <g fill="#E18C0A"><rect x="31" y="54" width="3" height="3"/><rect x="66" y="72" width="3" height="3"/></g>
+      <g fill="#949015"><rect x="62" y="55" width="3" height="3"/><rect x="36" y="72" width="3" height="3"/></g>
+      <g fill="#CD9993"><rect x="47" y="70" width="3" height="3"/></g>
+      <g transform="translate(50 60) scale(.72)">
+        <ellipse cx="0" cy="3" rx="7.5" ry="5.6" fill="#FFFFFF" stroke="#9DB8C4" stroke-width=".5"/>
+        <circle cx="0" cy="-4.4" r="4.6" fill="#FFFFFF" stroke="#9DB8C4" stroke-width=".5"/>
+        <circle cx="-3.3" cy="-8" r="1.5" fill="#fff" stroke="#9DB8C4" stroke-width=".5"/><circle cx="3.3" cy="-8" r="1.5" fill="#fff" stroke="#9DB8C4" stroke-width=".5"/>
+        <circle cx="-1.6" cy="-4.8" r=".55" fill="#25272E"/><circle cx="1.6" cy="-4.8" r=".55" fill="#25272E"/><ellipse cx="0" cy="-3" rx=".9" ry=".6" fill="#25272E"/>
+        <path d="M-4.8 -1 h9.6 v1.6 h-9.6z" fill="#C2394A"/>
+      </g>
+      
+    </svg>
+    <div class="ttl" style="top:8%;font:400 11cqw/.92 Righteous,sans-serif;color:#1F4E66">POLAR BEAR<br>MARKET</div>
+    <div class="by" style="color:#E9F3F6;bottom:3.6%">by Darren Don</div>`,
+  },
+};
+const a = A[g];
+const s = document.getElementById('scene');
+s.style.background = a.bg;
+s.innerHTML = '<div class="box">' + a.svg + '</div>';
+</script>
+</body>
+</html>

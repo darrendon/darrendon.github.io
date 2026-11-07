@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Abducted — print and play</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css?v=8bd6e31d">
+<link rel="stylesheet" href="/assets/css/abducted-fonts.css">
+<style>
+/* Source for abducted-print-and-play.pdf (emailed on request, not published): US Letter portrait, no margins, backgrounds on.
+   One rules page, then six sheets of up to nine poker cards, each followed by its backs mirrored for a long-edge duplex flip. */
+:root{--ink:#1B1B2F;--night:#1B2350;--hum:#F6B92B;--beam:#6EE7B7;--coral:#E8553A;--soft:#5A5A72;--line:#EADCBF;--accent:#2E4BD8;--disp:"Dela Gothic One","Arial Black",sans-serif}
+*{box-sizing:border-box}
+@page{size:8.5in 11in;margin:0}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:#fff;position:relative;overflow:hidden;color:var(--ink);font:10.4pt/1.42 Jost,system-ui,sans-serif;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none;break-after:page}}
+.rules{padding:.6in .65in}
+.rules h1{margin:0;font:900 38pt/1 var(--disp);font-stretch:112%;font-synthesis:none;color:var(--night);text-shadow:3px 3px 0 var(--coral)}
+.rules .sub{margin:.06in 0 .2in;color:var(--soft);font-size:11.5pt}
+.rules h2{font:900 13pt/1.1 var(--disp);font-stretch:112%;font-synthesis:none;color:var(--accent);margin:.18in 0 .05in}
+.rules p,.rules li{margin:0 0 .06in}
+.rules ol{margin:0;padding-left:1.2em}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.35in}
+.print{background:#FFF4DE;border-radius:8px;padding:.14in .18in;margin-top:.18in;font-size:10pt}
+.print b{color:var(--accent)}
+/* card sheets: 3 x 3 poker cards, centred, with crop marks in the margins */
+.grid{position:absolute;left:calc((8.5in - 7.5in) / 2);top:calc((11in - 10.5in) / 2);width:7.5in;height:10.5in;display:grid;grid-template-columns:repeat(3,2.5in);grid-template-rows:repeat(3,3.5in)}
+.grid img,.grid i{width:2.5in;height:3.5in;display:block}
+.grid i{background:#fff}
+.marks{position:absolute;inset:0;pointer-events:none}
+.label{position:absolute;left:0;right:0;bottom:.08in;text-align:center;font-size:7.5pt;color:#999}
+</style>
+</head>
+<body>
+<section class="page rules">
+  <h1>ABDUCTED</h1>
+  <p class="sub">Print and play · 5–12 players · 15–25 minutes · by Darren Don</p>
+  <div class="cols">
+    <div>
+      <h2>Setup</h2>
+      <ol>
+        <li>Shuffle the 10 Human and 10 Alien cards and deal one face down to each player. Without looking, stand it so it faces everyone else: you can read every card but your own.</li>
+        <li>The rest are the deck, face down in the middle.</li>
+        <li>Everyone takes a Transmit and a Jam. Set both score counters to 0.</li>
+        <li>A random player is the Town Leader; the player across the table is the Lookout.</li>
+      </ol>
+      <h2>A round</h2>
+      <ol>
+        <li><b>Split.</b> The Town Leader lays the two split cards to cut the town into Party 1 and Party 2, runs of neighbours as even as possible. Not the same way as last round.</li>
+        <li><b>Vote.</b> On three, everyone else holds up 1 or 2 fingers. The party with more votes searches; the Town Leader breaks ties.</li>
+        <li><b>Signal.</b> Each searcher secretly plays Transmit (they think they’re an Alien) or Jam (Human). Shuffle and reveal. The majority scores for its team; on a tie, flip the deck’s top card and its team scores.</li>
+        <li><b>Check out that light.</b> The Lookout points at another searcher. They look at their card and the deck’s top card, mix them face down, and stand one without looking. The other goes under the deck.</li>
+        <li>Pass the Town Leader and Lookout cards clockwise.</li>
+      </ol>
+    </div>
+    <div>
+      <h2>Winning</h2>
+      <p>The first team to 5 wins. Everyone looks at their own card: if it shows the winning team, you win.</p>
+      <h2>Table talk</h2>
+      <p>Say anything, true or not. Never show anyone their own card.</p>
+      <h2>What’s in the kit</h2>
+      <p>20 team cards (10 Human, 10 Alien), 24 signal cards (12 Transmit, 12 Jam), 2 split cards, the Town Leader and Lookout cards, and 2 score counters: turn the counter so the score is at the top, and flip it for 4.</p>
+      <div class="print"><b>Printing.</b> Print pages 2–13 double-sided, flipping on the long edge, on card stock if you can. Every card sheet is followed by its backs. Cut on the crop marks. For stands, use any card stands, or fold a 4 × 3.5 in strip of card into a tent and lean the card against it.</div>
+    </div>
+  </div>
+</section>
+<div id="sheets"></div>
+<script>
+const T = '/games/abducted/img/src/tex/';
+// every card as [front, back], chunked into sheets of nine
+const cards = [];
+for (let i = 0; i < 10; i++) cards.push(['team-H', 'back'], ['team-A', 'back']);
+for (let i = 0; i < 12; i++) cards.push(['signal-T', 'signal-back'], ['signal-J', 'signal-back']);
+cards.push(['split', 'split'], ['split', 'split'], ['leader', 'leader-back'], ['lookout', 'lookout-back'], ['score-H', 'score-H-back'], ['score-A', 'score-A-back']);
+const sheets = []; for (let i = 0; i < cards.length; i += 9) { const c = cards.slice(i, i + 9); sheets.push({ f: c.map((x) => x[0]), b: c.map((x) => x[1]) }); }
+const marks = () => {
+  // crop marks at every card edge, in the page margins only
+  const L = 48, T0 = 48, X = [0, 240, 480, 720].map((v) => L + v), Y = [0, 336, 672, 1008].map((v) => T0 + v); let o = '';
+  for (const x of X) { o += `<line x1="${x}" y1="0" x2="${x}" y2="${T0 - 6}"/><line x1="${x}" y1="${T0 + 1008 + 6}" x2="${x}" y2="1056"/>`; }
+  for (const y of Y) { o += `<line x1="0" y1="${y}" x2="${L - 6}" y2="${y}"/><line x1="${L + 720 + 6}" y1="${y}" x2="816" y2="${y}"/>`; }
+  return `<svg class="marks" viewBox="0 0 816 1056" stroke="#777" stroke-width=".8">${o}</svg>`;
+};
+const cell = (n) => n ? `<img src="${T}${n}.jpg" alt="">` : '<i></i>';
+let h = '', page = 2;
+for (const s of sheets) {
+  const f = [...s.f]; while (f.length < 9) f.push(null);
+  const b = [...s.b]; while (b.length < 9) b.push(null);
+  h += `<section class="page"><div class="grid">${f.map(cell).join('')}</div>${marks()}<div class="label">Abducted · print and play · page ${page++}</div></section>`;
+  // backs: each row mirrored left to right, so they line up after a long-edge flip
+  const m = []; for (let r = 0; r < 3; r++) m.push(...b.slice(r * 3, r * 3 + 3).reverse());
+  h += `<section class="page"><div class="grid">${m.map(cell).join('')}</div>${marks()}<div class="label">Abducted · print and play · page ${page++} (backs)</div></section>`;
+}
+document.getElementById('sheets').innerHTML = h;
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>

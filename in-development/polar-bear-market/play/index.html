@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Polar Bear Market · Play online</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/dev-table.css">
+<style>
+  body{--t-bg:#E8F2F6;--t-card:#F8FCFD;--t-ink:#12324A;--t-muted:#4C6B80;--t-line:#C6DCE6;--t-accent:#1F6F9F;--t-accent-ink:#fff;--t-mast:#0E2236;--t-mast-ink:#C8E8F5;
+    --vp:#C27C0E;--aurora:#6B4FA8;--ice:#3D8FB8;--sea:#D3E7F0;--sea2:#BFDCE8}
+  .dt-mast{background:linear-gradient(160deg,#10263C,#0B1A2A)}
+  .dt-mast h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E8F4FF;font-size:clamp(28px,6vw,42px)}
+  .dt-mast h1 span{color:#8BBFD8}
+  .dt-sub b{color:#F0A832}
+  .dt-rules b{color:var(--t-accent)}
+  .c0{--c:#1E86C4}.c1{--c:#E0592A}.c2{--c:#C79300}.c3{--c:#5A9A2C}.c4{--c:#8E5BB5}
+
+  .pbm{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .panel{background:var(--t-card);border:1px solid var(--t-line);border-radius:12px;padding:12px}
+  .panel h3{margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;justify-content:space-between}
+  .panel h3 small{letter-spacing:.02em;text-transform:none;font-size:12.5px;font-weight:500}
+
+  /* players strip */
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .pl{background:var(--t-card);border:1.5px solid var(--t-line);border-left:5px solid var(--c);border-radius:10px;padding:7px 9px;display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;min-width:0}
+  .pl.turn{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+  .pl .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:color-mix(in srgb,var(--c) 75%,#000)}
+  .pl .vp{font:700 20px/1 Georgia,serif;color:var(--vp);text-align:right;white-space:nowrap}
+  .pl .vp small{font:600 10px Jost;color:var(--t-muted);margin-left:2px}
+  .pl .meta{grid-column:1/-1;font-size:11.5px;color:var(--t-muted);display:flex;gap:8px;flex-wrap:wrap}
+  .pl .pcs{grid-column:1/-1;display:flex;gap:3px;align-items:center;min-height:22px}
+  .pcard{width:16px;height:21px;border-radius:4px;border:1.5px solid var(--t-muted);font:700 11px/18px Jost;text-align:center;color:var(--t-ink);background:#fff}
+  .pcs .played{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t-muted)}
+  .pcs .played .pcard{width:22px;height:26px;line-height:23px;font-size:14px;background:var(--c);border-color:var(--c);color:#fff}
+  .pcs .ord{font:700 11px Jost;color:var(--t-ink);background:var(--sea);border-radius:999px;padding:1px 7px}
+  .pcs .ready{font-size:11px;color:var(--t-muted);margin-left:auto}
+
+  .main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,1fr);grid-template-rows:auto 1fr;grid-template-areas:"map hand" "map market";gap:12px;align-items:start}
+  .main>.mapwrap{grid-area:map}.main>.handp{grid-area:hand}.main>.mkt{grid-area:market}
+  .lower{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,1fr);gap:12px;align-items:start}
+  @media (max-width:899px){.main,.lower{grid-template-columns:1fr}.main{grid-template-rows:none;grid-template-areas:"hand" "map" "market"}}
+
+  /* map */
+  .mapwrap{padding:8px;background:linear-gradient(180deg,#DCEEF5,#CFE6F0);border-color:#B7D5E2}
+  .map{position:relative;width:min(100%,calc((100vh - 320px) * var(--ar)));min-width:min(100%,330px);margin:0 auto;aspect-ratio:var(--ar);container-type:inline-size}
+  .map svg.sea{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .hex{position:absolute;transform:translate(-50%,-50%);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:color-mix(in srgb,var(--rc) 55%,#fff);display:grid;place-items:center;border:0;padding:0;margin:0;cursor:default;-webkit-tap-highlight-color:transparent}
+  .hex .in{position:absolute;inset:5%;clip-path:inherit;background:color-mix(in srgb,var(--rc) 14%,#F4FAFC);display:grid;place-items:center}
+  .hex .plus{color:color-mix(in srgb,var(--rc) 50%,#fff);font:400 calc(var(--s) * .9) / 1 Jost}
+  .hex.ok{cursor:pointer;background:var(--t-accent);animation:pulse 1.4s ease-in-out infinite}
+  .hex.ok .in{background:#fff}
+  .hex.ok.occ{background:#E0592A}
+  .hex.dim{opacity:.35}
+  .hex.pick{background:#F0A832}
+  .hex.hot{background:#F0A832}
+  @keyframes pulse{50%{filter:brightness(1.25)}}
+  .btile{position:absolute;inset:9%;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--c);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+  .btile b{font:700 calc(var(--s) * .78) / 1 Georgia,serif}
+  .btile i{font:600 calc(var(--s) * .3) / 1 Jost;font-style:normal;letter-spacing:.06em;opacity:.85;margin-top:1px}
+  .btile.spec{background:linear-gradient(160deg,var(--c) 55%,var(--aurora))}
+  .chan{position:absolute;transform:translate(-50%,-50%);width:calc(var(--s) * 1.3);height:calc(var(--s) * 1.3);border-radius:50%;border:1.5px dashed #7FAFC6;background:#EAF5F9;display:grid;place-items:center;padding:0;color:#7FAFC6;font:400 calc(var(--s) * .6) / 1 Jost;cursor:default}
+  .chan.ok{cursor:pointer;border:2.5px solid var(--t-accent);color:var(--t-accent);background:#fff;animation:pulse 1.4s ease-in-out infinite}
+  .chan.hot{border-color:#F0A832;border-style:solid}
+  .chan .ctile{width:100%;height:100%;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font:700 calc(var(--s) * .62) / 1 Georgia,serif;box-shadow:0 0 0 2px #fff}
+  .rlab{position:absolute;transform:translate(-50%,-50%);text-align:center;pointer-events:none;line-height:1.05;white-space:nowrap}
+  .rlab b{display:block;font:700 max(9px,calc(var(--s) * .4)) / 1.1 Jost;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--rc) 80%,#000)}
+  .rlab span{display:inline-flex;gap:calc(var(--s) * .14);font:600 max(11px,calc(var(--s) * .46)) / 1.2 Georgia,serif;color:var(--t-muted)}
+  .rlab span em{font-style:normal;color:#fff;background:var(--vp);border-radius:4px;padding:0 calc(var(--s) * .12)}
+  .rlab span s{text-decoration:none;opacity:.55}
+  .rlab span i{font-style:normal}
+
+  .regions{display:grid;grid-template-columns:auto auto 1fr;gap:3px 10px;font-size:13px;align-items:center;margin-top:8px}
+  .regions .rn{font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .regions .rn i{width:10px;height:10px;border-radius:3px;background:var(--rc);flex:none}
+  .regions .rv{font-family:Georgia,serif;color:var(--t-muted);white-space:nowrap}
+  .regions .rv em{font-style:normal;color:var(--vp);font-weight:700}
+  .regions .rs{display:flex;flex-wrap:wrap;gap:3px 8px;color:var(--t-muted)}
+  .regions .rs b{color:color-mix(in srgb,var(--c) 80%,#000)}
+  .regions .rs b.lead::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-right:4px;vertical-align:1px}
+
+  /* tiles */
+  .hand{display:flex;flex-wrap:wrap;gap:6px}
+  .tile{position:relative;width:64px;height:82px;border-radius:9px;border:2px solid var(--t-line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:5px 3px 4px;font:inherit;color:var(--t-ink);cursor:default;box-shadow:0 2px 0 rgba(18,50,74,.12);-webkit-tap-highlight-color:transparent}
+  button.tile{cursor:pointer}
+  .tile .lab{font:700 10px/1 Jost;letter-spacing:.08em;color:#fff;background:var(--t-muted);border-radius:999px;padding:3px 6px}
+  .tile .val{font:700 30px/1 Georgia,serif}
+  .tile .nm{font-size:10px;line-height:1.1;text-align:center;color:var(--t-muted);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .tile.spec{border-color:#B8A6DB;background:linear-gradient(180deg,#F3EEFB,#fff 60%)}
+  .tile.spec .lab{background:var(--aurora)}
+  .tile.cons{border-color:#9CC7DA;background:linear-gradient(180deg,#E6F3F8,#fff 60%)}
+  .tile.cons .lab{background:var(--ice)}
+  .tile.sel{border-color:var(--t-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--t-accent) 35%,transparent);transform:translateY(-5px)}
+  .tile.pay{border-color:#E8A024;background:#FFF4DE}
+  .tile.pay::after{content:"pay";position:absolute;top:-8px;right:-6px;background:#E8A024;color:#fff;font:700 10px/1 Jost;padding:3px 5px;border-radius:999px}
+  .tile.disc{border-color:#C0563B;background:#FBE9E4;opacity:.8}
+  .tile.disc::after{content:"discard";position:absolute;top:-8px;right:-6px;background:#C0563B;color:#fff;font:700 10px/1 Jost;padding:3px 5px;border-radius:999px}
+  .tile.lock{opacity:.4}
+  .hand .empty{color:var(--t-muted);font-size:14px;padding:10px 0}
+  .used{display:flex;gap:5px;flex-wrap:wrap}
+  .used span{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--t-line);color:var(--t-muted)}
+  .used span.done{background:var(--t-ink);border-color:var(--t-ink);color:#fff;text-decoration:line-through}
+
+  .chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:26px}
+  .chips .lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t-muted);width:64px;flex:none}
+  .chip{width:24px;height:24px;border-radius:6px;border:1.5px solid color-mix(in srgb,var(--c,#4C6B80) 70%,#fff);background:#fff;display:grid;place-items:center;font:700 12.5px/1 Georgia,serif;color:var(--t-ink)}
+  .chip.spec{background:#EFE8FA;border-color:#9B85CC}
+  .chip.cons{background:#E3F1F7;border-color:#7FB3CB}
+  .chip.dim{opacity:.55}
+  .chips .none{font-size:12px;color:var(--t-muted)}
+
+  /* market */
+  .tier{margin-bottom:10px}
+  .tier:last-child{margin-bottom:0}
+  .tier .th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t-muted);margin-bottom:5px;display:flex;justify-content:space-between}
+  .slots{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;max-width:calc(var(--n) * 150px)}
+  .mk{position:relative;border:1.5px solid var(--t-line);border-radius:9px;background:#fff;padding:6px 6px 7px;text-align:left;font:inherit;color:var(--t-ink);display:flex;flex-direction:column;gap:2px;min-height:76px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .mk.t1{border-top:4px solid #8BBFD8}.mk.t2{border-top:4px solid #2D8A5E}.mk.t3{border-top:4px solid var(--aurora)}
+  .mk .row{display:flex;align-items:baseline;justify-content:space-between;gap:4px}
+  .mk .val{font:700 24px/1 Georgia,serif}
+  .mk .cost{font:700 12px/1 Jost;color:#fff;background:#C0563B;border-radius:999px;padding:3px 7px;white-space:nowrap}
+  .mk .nm{font-size:11.5px;font-weight:600;line-height:1.15}
+  .mk .tx{font-size:11px;line-height:1.25;color:var(--t-muted)}
+  .mk.spec .nm{color:var(--aurora)}.mk.cons .nm{color:var(--ice)}
+  .mk.can{border-color:var(--t-accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--t-accent) 20%,transparent)}
+  .mk.no{opacity:.55}
+  .mk.sel{border-color:#E8A024;box-shadow:0 0 0 3px #F6D493}
+  .vac{border:1.5px dashed var(--t-line);border-radius:9px;display:grid;place-items:center;min-height:76px;font-size:11px;color:var(--t-muted)}
+  @media (max-width:599px){.mk .tx{display:none}}
+
+  .books{display:flex;flex-direction:column;gap:8px}
+  .bk{border-left:4px solid var(--c);padding:4px 0 4px 9px}
+  .bk .h{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;margin-bottom:3px;flex-wrap:wrap}
+  .bk .h b{color:color-mix(in srgb,var(--c) 80%,#000)}
+  .bk .h span{color:var(--t-muted)}
+  .log{max-height:240px;overflow:auto;font-size:13px;color:var(--t-muted)}
+  .log p{margin:0 0 3px}
+  .log p:first-child{color:var(--t-ink);font-weight:600}
+
+  .banner{border-radius:12px;padding:12px 14px;background:linear-gradient(160deg,#10263C,#163450);color:#DDEFF8;display:flex;flex-direction:column;gap:6px}
+  .banner b.t{font:700 19px/1.15 Georgia,serif;color:#F0C46A;letter-spacing:.02em}
+  .banner .res{display:flex;flex-wrap:wrap;gap:6px}
+  .banner .res span{background:rgba(255,255,255,.1);border-radius:999px;padding:3px 10px;font-size:13.5px}
+  .banner .res span b{color:#F0C46A}
+  .banner p{margin:0;font-size:14px}
+
+  /* action bar */
+  .dt-bar{gap:8px 10px}
+  .dt-bar .say{min-width:0}
+  .dt-bar .say b{display:block;font-size:15px}
+  .dt-bar .say span{display:block;font-size:13px;color:var(--t-muted);line-height:1.35}
+  .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+  .acts .dt-btn{min-height:44px;min-width:44px}
+  .pitch{display:flex;gap:6px;flex-wrap:wrap}
+  .pitch button{width:52px;min-height:58px;border-radius:10px;border:2px solid var(--t-accent);background:#fff;font:inherit;color:var(--t-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:3px}
+  .pitch button b{font:700 22px/1 Georgia,serif}
+  .pitch button small{font-size:10.5px;font-weight:600;color:var(--vp);line-height:1.1}
+  .pitch button small+small{color:var(--t-muted);font-weight:500}
+  .pitch button:disabled{opacity:.25;cursor:default;border-color:var(--t-line)}
+  @media (max-width:520px){.dt-bar .say{flex-basis:100%}.acts{margin-left:0;width:100%}.acts .grow{flex:1}.pitch{width:100%}.pitch button{flex:1;width:auto}}
+  @media (max-width:420px){.tile{width:calc((100vw - 78px) / 5);height:78px}.tile .val{font-size:27px}}
+  @media (max-width:599px){.strip{grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px}.pl .yu{display:none}.pl{padding:6px 7px}.pl .nm{font-size:13px}.pl .vp{font-size:17px}.pl .meta{font-size:11px;gap:2px 6px}.pl .meta .tb{display:none}.pcard{width:15px;height:20px;line-height:17px;font-size:10.5px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/js/dev-table.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  const PB = window.PolarBearMarket, esc = DevTable.esc, R = PB.REGIONS;
+  const S3 = Math.sqrt(3), GAP = 1.06;
+  const CENT = { 0: [-5.8, -3.4], 1: [0, -6.8], 2: [5.8, -3.4], 3: [5.8, 3.4], 4: [-5.8, 3.4], 5: [0, 0], 6: [0, 6.8] };
+
+  /* ---------- board geometry (in hex-size units; the map scales to fit) */
+  const GEO = (() => {
+    const hexes = [];
+    PB.SHAPES.forEach((sh, rg) => {
+      const pts = sh.map(([q, r]) => [GAP * S3 * (q + r / 2), GAP * 1.5 * r]);
+      const mx = pts.reduce((a, p) => a + p[0], 0) / pts.length, my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+      pts.forEach((p) => hexes.push({ rg, x: CENT[rg][0] + p[0] - mx, y: CENT[rg][1] + p[1] - my }));
+    });
+    const labels = {};
+    R.forEach((r) => {
+      const hs = hexes.filter((h) => h.rg === r.id), cx = hs.reduce((a, h) => a + h.x, 0) / hs.length;
+      const top = Math.min(...hs.map((h) => h.y)), bot = Math.max(...hs.map((h) => h.y));
+      if (r.id === 5) labels[r.id] = [hs[0].x + 0.85, hs[0].y - 1.9];
+      else if ([3, 4, 6].includes(r.id)) labels[r.id] = [cx, bot + 1.75];
+      else labels[r.id] = [cx, top - 1.75];
+    });
+    const xs = hexes.map((h) => h.x), ys = hexes.map((h) => h.y).concat(Object.values(labels).map((l) => l[1]));
+    const minX = Math.min(...xs) - 1.15, maxX = Math.max(...xs) + 1.15, minY = Math.min(...ys) - 0.75, maxY = Math.max(...ys) + 0.75;
+    const W = maxX - minX, H = maxY - minY;
+    const px = (x) => ((x - minX) / W) * 100, py = (y) => ((y - minY) / H) * 100;
+    const chans = PB.WATER.map((w) => { const [a, b] = w.regions; return { id: w.id, a, b, x: (CENT[a][0] + CENT[b][0]) / 2, y: (CENT[a][1] + CENT[b][1]) / 2 }; });
+    return { hexes, labels, W, H, px, py, chans, minX, minY };
+  })();
+
+  /* ---------- helpers */
+  const sum = (a) => a.reduce((s, t) => s + t.v, 0);
+  const ord = (n) => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+  const who = (v, i) => (i === v.seat ? 'You' : v.players[i].name);
+  const kind = (t) => (t.action === 'consultant' ? 'cons' : t.action ? 'spec' : '');
+  const TEXT = PB.TEXT;
+  // a region's payout if it scored right now (for the Closer preview)
+  function payoutNow(v, region) {
+    const ranks = v.players.map((p, i) => ({ player: i, score: (v.standings[region].find((x) => x[0] === i) || [i, 0])[1] })).sort((a, b) => b.score - a.score);
+    const places = v.season + 1, vals = v.regionVP[region], out = Array(v.N).fill(0);
+    let s = 0, h = 0;
+    while (h < places && s < ranks.length && ranks[s].score !== 0) {
+      const sc = ranks[s].score, grp = []; let m = s;
+      while (m < ranks.length && ranks[m].score === sc) { grp.push(ranks[m]); m++; }
+      const take = Math.min(grp.length, places - h); let pot = 0;
+      for (let k = 0; k < take; k++) pot += vals[v.season - h - k] || 0;
+      grp.forEach((g) => { out[g.player] += Math.floor(pot / grp.length); });
+      h += take; s += grp.length;
+    }
+    return out;
+  }
+  const payText = (v, pay) => pay.map((x, i) => (x ? who(v, i) + ' +' + x : null)).filter(Boolean).join(', ') || 'nobody scores';
+
+  /* ---------- local UI state (one seat's choices before they become an action) */
+  let ui = { key: '', sel: null, mode: null, pay: [], disc: [] };
+  let V = null, API = null, EL = null, bound = false, lastSeq = -1;
+  const reset = () => { ui.sel = null; ui.mode = null; ui.pay = []; ui.disc = []; };
+  const myTurn = (v) => v.phase === 'play' && v.turn === v.seat;
+  const canAct = (v) => myTurn(v) && v.actionsLeft > 0;
+  const usedK = (v, k) => v.actionsUsed.includes(k);
+  const handT = (v, id) => v.hand.find((t) => t.id === id);
+
+  function legalHex(v, t, h) {   // can tile t be placed on hex h with the Place action?
+    if (!t || !canAct(v) || usedK(v, 'place') || t.action === 'consultant') return false;
+    if (!h.tile) return v.reach.includes(h.region);
+    return t.v > h.tile.v && sum(v.hand.filter((x) => x.id !== t.id)) >= t.v - h.tile.v;
+  }
+  function legalChan(v, t, w) {
+    if (!t || !canAct(v) || usedK(v, 'place') || t.action !== 'consultant' || w.tile) return false;
+    return w.regions.some((r) => v.reach.includes(r));
+  }
+  function startPay(v, cost, exclude, action, title) {
+    const pool = v.hand.filter((t) => !exclude.includes(t.id));
+    const g = PB.payGreedy(pool, cost);
+    ui.mode = { kind: 'pay', cost, exclude, action, title };
+    ui.pay = g ? g.removed.map((t) => t.id) : [];
+  }
+
+  /* targets for the specialist being activated */
+  function specialTargets(v) {
+    const m = ui.mode, me = v.seat, out = new Set();
+    if (!m || m.kind !== 'special') return out;
+    const t = handT(v, m.tile);
+    v.hexes.forEach((h) => {
+      switch (m.action) {
+        case 'founder': if (!h.tile) out.add(h.id); break;
+        case 'poacher': if (h.tile && h.tile.owner !== me) out.add(h.id); break;
+        case 'closer': out.add(h.id); break;
+        case 'relocator': if (h.tile && h.id !== m.from) out.add(h.id); break;
+        case 'transfer':
+          if (!m.from) { if (h.tile && h.tile.owner === me) out.add(h.id); }
+          else if (h.id !== m.from) { const mv = v.hexes.find((x) => x.id === m.from).tile; if (!h.tile || (mv.v > h.tile.v && sum(v.hand.filter((x) => x.id !== t.id)) >= mv.v - h.tile.v)) out.add(h.id); }
+          break;
+        case 'negotiator': {
+          const u = m.use && handT(v, m.use);
+          if (u && (!h.tile || (h.tile.owner !== me && u.v > h.tile.v && sum(v.hand.filter((x) => x.id !== t.id && x.id !== u.id)) >= u.v - h.tile.v))) out.add(h.id);
+          break;
+        }
+      }
+    });
+    return out;
+  }
+
+  /* ---------- drawing */
+  const tileHTML = (t, cls, attrs) => '<' + (attrs ? 'button type="button"' : 'div') + ' class="tile ' + kind(t) + (cls ? ' ' + cls : '') + '" data-k="' + t.id + '"' + (attrs || '') + ' title="' + esc(t.name + (TEXT[t.action] ? ': ' + TEXT[t.action] : '')) + '">' +
+    '<span class="lab">' + esc(t.label) + '</span><b class="val">' + t.v + '</b><span class="nm">' + esc(t.name.replace(/^The /, '')) + '</span></' + (attrs ? 'button' : 'div') + '>';
+  const chip = (t, owner, dim) => '<span class="chip ' + kind(t) + ' c' + owner + (dim ? ' dim' : '') + '" data-k="' + t.id + '" title="' + esc(t.name + ' (' + t.v + ')') + '">' + t.v + '</span>';
+  const chipRow = (label, arr, owner, dim) => '<div class="chips"><span class="lbl">' + label + '</span>' + (arr.length ? arr.map((t) => chip(t, owner, dim)).join('') : '<span class="none">none</span>') + '</div>';
+
+  function boardHTML(v) {
+    const t = ui.sel && handT(v, ui.sel);
+    const targets = specialTargets(v);
+    const m = ui.mode;
+    const hot = new Set(v.lastMove && v.lastMove.seat !== v.seat ? v.lastMove.hexes : []);
+    let h = '<div class="map" style="--ar:' + (GEO.W / GEO.H).toFixed(4) + ';--s:calc(100cqw / ' + GEO.W.toFixed(3) + ')">';
+    // sea channels
+    h += '<svg class="sea" viewBox="0 0 ' + GEO.W.toFixed(3) + ' ' + GEO.H.toFixed(3) + '" aria-hidden="true">';
+    GEO.chans.forEach((c) => {
+      const A = CENT[c.a], B = CENT[c.b], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy), k = 0.5 - 1.15 / L;
+      const w = v.water.find((x) => x.id === c.id), own = w.tile ? w.tile.owner : null;
+      h += '<line x1="' + (A[0] + dx * k - GEO.minX).toFixed(2) + '" y1="' + (A[1] + dy * k - GEO.minY).toFixed(2) + '" x2="' + (B[0] - dx * k - GEO.minX).toFixed(2) + '" y2="' + (B[1] - dy * k - GEO.minY).toFixed(2) + '" stroke="' + (own != null ? PB.COLORS[own] : '#8DB9CD') + '" stroke-width="' + (own != null ? 0.14 : 0.08) + '" stroke-dasharray="' + (own != null ? 'none' : '0.25 0.2') + '" stroke-linecap="round"/>';
+    });
+    h += '</svg>';
+    // region labels
+    R.forEach((r) => {
+      const [x, y] = GEO.labels[r.id], vp = v.regionVP[r.id];
+      h += '<div class="rlab" style="--rc:' + r.color + ';left:' + GEO.px(x) + '%;top:' + GEO.py(y) + '%"><b>' + esc(r.short) + '</b><span>' + vp.map((n, i) => (i === v.season ? '<em>' + n + '</em>' : i < v.season ? '<s>' + n + '</s>' : '<i>' + n + '</i>')).join('') + '</span></div>';
+    });
+    // hexes
+    v.hexes.forEach((hx, i) => {
+      const g = GEO.hexes[i], r = R[hx.region];
+      let cls = '';
+      if (m && m.kind === 'special') { if (targets.has(hx.id)) cls = ' ok' + (hx.tile ? ' occ' : ''); if (m.from === hx.id || (m.action === 'closer' && m.region === hx.region)) cls = ' pick'; }
+      else if (m && m.kind === 'pay' && m.hex === hx.id) cls = ' pick';
+      else if (t && !m) { if (legalHex(v, t, hx)) cls = ' ok' + (hx.tile ? ' occ' : ''); else if (!hx.tile && t.action !== 'consultant' && canAct(v) && !usedK(v, 'place')) cls = ' dim'; }
+      if (!cls && hot.has(hx.id)) cls = ' hot';
+      const tl = hx.tile;
+      h += '<button type="button" class="hex' + cls + '" data-hex="' + hx.id + '" style="--rc:' + r.color + ';left:' + GEO.px(g.x) + '%;top:' + GEO.py(g.y) + '%;width:' + ((S3 * 0.98) / GEO.W * 100) + '%;height:' + ((2 * 0.98) / GEO.H * 100) + '%" aria-label="' + esc(r.short + (tl ? ', ' + who(v, tl.owner) + ' ' + tl.v : ', empty')) + '">' +
+        '<span class="in">' + (tl ? '' : '<span class="plus">+</span>') + '</span>' +
+        (tl ? '<span class="btile c' + tl.owner + (tl.action ? ' spec' : '') + '" data-k="' + tl.id + '"><b>' + tl.v + '</b><i>' + esc(tl.label) + '</i></span>' : '') + '</button>';
+    });
+    // channels
+    GEO.chans.forEach((c) => {
+      const w = v.water.find((x) => x.id === c.id);
+      let cls = '';
+      if (t && !m && legalChan(v, t, w)) cls = ' ok';
+      else if (hot.has(w.id)) cls = ' hot';
+      h += '<button type="button" class="chan' + cls + '" data-chan="' + c.id + '" style="left:' + GEO.px(c.x) + '%;top:' + GEO.py(c.y) + '%" aria-label="Channel between ' + esc(R[c.a].short + ' and ' + R[c.b].short) + '">' +
+        (w.tile ? '<span class="ctile c' + w.tile.owner + '" data-k="' + w.tile.id + '">' + w.tile.v + '</span>' : '≈') + '</button>';
+    });
+    return h + '</div>';
+  }
+
+  function regionsHTML(v) {
+    return '<div class="regions">' + R.map((r) => {
+      const st = v.standings[r.id], vp = v.regionVP[r.id];
+      return '<span class="rn" style="--rc:' + r.color + '"><i></i>' + esc(r.short) + '</span><span class="rv">' + vp.map((n, i) => (i === v.season ? '<em>' + n + '</em>' : n)).join(' · ') + '</span>' +
+        '<span class="rs">' + (st.length ? st.map(([p, s], k) => '<b class="c' + p + (k === 0 && (!st[1] || st[1][1] < s) ? ' lead' : '') + '">' + esc(who(v, p)) + ' ' + s + '</b>').join('') : '<span>nobody yet</span>') + '</span>';
+    }).join('') + '</div>';
+  }
+
+  function stripHTML(v) {
+    return '<div class="strip" style="--cols:' + (v.N === 4 ? 2 : v.N) + '">' + v.players.map((p, i) => {
+      const turn = v.phase === 'play' && v.turn === i;
+      const pos = v.phase === 'play' ? v.turnOrder.indexOf(i) : -1;
+      const left = p.pitchLeft.filter((c) => !(i === v.seat && v.phase === 'pitch' && p.pitched === c));
+      let right = '';
+      if (p.pitched != null) right = '<span class="played">' + (pos >= 0 ? '<span class="ord">' + ord(pos + 1) + '</span>' : '') + '<span class="pcard" data-k="pc' + i + '-' + p.pitched + '">' + p.pitched + '</span></span>';
+      else if (v.phase === 'pitch') right = '<span class="ready">' + (p.ready ? 'pitched' : 'choosing…') + '</span>';
+      return '<div class="pl c' + i + (turn ? ' turn' : '') + '"><span class="nm">' + esc(p.name) + (i === v.seat && p.name !== 'You' ? '<span class="yu"> (you)</span>' : '') + '</span><span class="vp">' + p.vp + '<small>VP</small></span>' +
+        '<span class="pcs">' + left.map((c) => '<span class="pcard" data-k="pc' + i + '-' + c + '" title="Pitch card ' + c + ' still in hand">' + c + '</span>').join('') + right + '</span>' +
+        '<span class="meta"><span>' + p.handCount + ' in hand</span><span>' + p.onBoard + ' on board</span><span class="tb">top bid ' + p.topBid + '</span></span></div>';
+    }).join('') + '</div>';
+  }
+
+  function handPanel(v) {
+    const me = v.players[v.seat], m = ui.mode;
+    const mine = myTurn(v);
+    const tiles = v.hand.map((t) => {
+      let cls = '';
+      if (m && m.kind === 'pay') cls = m.exclude.includes(t.id) ? (t.id === m.placing ? 'sel' : 'lock') : ui.pay.includes(t.id) ? 'pay' : '';
+      else if (m && m.kind === 'discard') cls = ui.disc.includes(t.id) ? 'disc' : '';
+      else if (m && m.kind === 'special') cls = t.id === m.tile ? 'sel' : m.action === 'negotiator' && t.id === m.use ? 'pay' : '';
+      else if (ui.sel === t.id) cls = 'sel';
+      return tileHTML(t, cls, mine || v.phase === 'pitch' ? ' data-hand="' + t.id + '"' : ' data-hand="' + t.id + '"');
+    }).join('');
+    const used = v.phase === 'play' && mine ? '<span class="used">' + [['place', 'Place'], ['hire', 'Hire'], ['action', 'Activate']].map(([k, n]) => '<span' + (usedK(v, k) ? ' class="done"' : '') + '>' + n + '</span>').join('') + '</span>' : '';
+    return '<div class="panel handp"><h3><span>Your hand <small>' + v.hand.length + '/' + PB.HAND + ' · ' + sum(v.hand) + ' seals</small></span>' + used + '</h3>' +
+      '<div class="hand">' + (tiles || '<span class="empty">Your hand is empty.</span>') + '</div>' +
+      '<div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">' + chipRow('Bag ' + me.bagCount, me.books, v.seat) + chipRow('Discard', me.discard, v.seat, true) + '</div></div>';
+  }
+
+  function marketHTML(v) {
+    const m = ui.mode, total = sum(v.hand), can = canAct(v) && !usedK(v, 'hire') && !m;
+    const refresh = can && total >= PB.REFRESH_COST;
+    let h = '<div class="panel mkt"><h3><span>Hiring agency <small>' + v.market.tier1.slots.length + ' per tier</small></span>' +
+      (myTurn(v) && !usedK(v, 'hire') ? '<button class="dt-btn ghost sm" data-do="refresh"' + (refresh ? '' : ' disabled') + '>Refresh (' + PB.REFRESH_COST + ' seals)</button>' : '') + '</h3>';
+    PB.TIERS.forEach((tk, ti) => {
+      const tier = v.market[tk];
+      h += '<div class="tier"><div class="th"><span>' + PB.TIER_NAMES[tk] + '</span><span>' + tier.left + ' left</span></div><div class="slots" style="--n:' + tier.slots.length + '">';
+      tier.slots.forEach((s, si) => {
+        if (!s) { h += '<div class="vac">vacant</div>'; return; }
+        const afford = total >= s.cost, sel = m && m.kind === 'pay' && m.action.type === 'hire' && m.action.tier === tk && m.action.slot === si;
+        h += '<button type="button" class="mk t' + (ti + 1) + ' ' + kind(s) + (sel ? ' sel' : can ? (afford ? ' can' : ' no') : '') + '" data-k="' + s.id + '" data-enter data-tier="' + tk + '" data-slot="' + si + '">' +
+          '<span class="row"><b class="val">' + s.v + '</b><span class="cost">cost ' + s.cost + '</span></span><span class="nm">' + esc(s.name) + '</span>' + (TEXT[s.action] ? '<span class="tx">' + esc(TEXT[s.action]) + '</span>' : '') + '</button>';
+      });
+      h += '</div></div>';
+    });
+    return h + '</div>';
+  }
+
+  function booksHTML(v) {
+    const others = v.players.map((p, i) => i).filter((i) => i !== v.seat);
+    return '<div class="panel"><h3><span>Open books <small>every tile is public; only the draw is hidden</small></span></h3><div class="books">' + others.map((i) => {
+      const p = v.players[i];
+      return '<div class="bk c' + i + '"><div class="h"><b>' + esc(p.name) + '</b><span>' + p.handCount + ' in hand · ' + p.bagCount + ' in bag · top bid ' + p.topBid + '</span></div>' +
+        chipRow('Bag+hand', p.books, i) + chipRow('Discard', p.discard, i, true) + '</div>';
+    }).join('') + '</div></div>';
+  }
+
+  function bannerHTML(v) {
+    if (v.phase === 'over' && v.result) {
+      const order = v.players.map((p, i) => i).sort((a, b) => v.players[b].vp - v.players[a].vp || v.result.board[b] - v.result.board[a]);
+      const w = v.result.winners;
+      return '<div class="banner"><b class="t">' + (w.length > 1 ? 'Shared win: ' + w.map((i) => esc(who(v, i))).join(' and ') : esc(who(v, w[0])) + (w[0] === v.seat ? ' win!' : ' wins!')) + '</b>' +
+        '<div class="res">' + order.map((i) => '<span>' + esc(who(v, i)) + ' <b>' + v.players[i].vp + ' VP</b> · ' + v.result.board[i] + ' on the map</span>').join('') + '</div>' +
+        '<p>Ties break on the total value of your tiles on the map. Leave to play again.</p></div>';
+    }
+    const ls = v.lastScoring;
+    if (ls && v.round === 0 && v.phase === 'pitch' && ls.season === v.season - 1) {
+      return '<div class="banner"><b class="t">' + PB.SEASON_NAMES[ls.season] + ' scoring</b><div class="res">' + v.players.map((p, i) => '<span>' + esc(who(v, i)) + ' <b>+' + ls.totals[i] + '</b> (' + p.vp + ')</span>').join('') + '</div>' +
+        '<p>' + PB.SEASON_NAMES[v.season] + ' pays the top ' + (v.season + 1) + '. The market now shows ' + v.market.tier1.slots.length + ' hires per tier' + (v.season === 1 ? ', and Consultants went home.' : '. Consultants went home.') + '</p></div>';
+    }
+    return '';
+  }
+
+  /* the sticky bar: what to do now, and the buttons to do it */
+  function barHTML(v) {
+    const me = v.players[v.seat], m = ui.mode;
+    let say = '', acts = '';
+    if (v.phase === 'over') {
+      say = '<b>Game over</b><span>' + esc(v.log[v.log.length - 1] || '') + '</span>';
+    } else if (v.phase === 'pitch') {
+      if (me.pitched == null) {
+        say = '<b>' + (v.closing ? 'Closing round pitch' : PB.SEASON_NAMES[v.season] + ', round ' + (v.round + 1) + ' pitch') + '</b><span>' + (v.closing ? 'The order flips: lowest card goes first, the highest gets the last word before scoring.' : 'Higher cards act earlier. Lower cards draw bonus tiles. Each card once a season.') + '</span>';
+        acts = '<div class="pitch">' + PB.PITCH.map((c) => {
+          const has = me.pitchLeft.includes(c), bonus = PB.pitchBonus(c);
+          const when = v.closing ? (c === 1 ? 'first' : c === 5 ? 'last' : '') : (c === 5 ? 'first' : c === 1 ? 'last' : '');
+          return '<button data-pitch="' + c + '"' + (has ? '' : ' disabled') + ' aria-label="Pitch ' + c + '"><b>' + c + '</b><small>' + (bonus ? '+' + bonus + ' tiles' : 'no bonus') + '</small><small>' + (when ? 'acts ' + when : '&nbsp;') + '</small></button>';
+        }).join('') + '</div>';
+      } else {
+        const wait = v.players.map((p, i) => (p.ready ? null : esc(p.name))).filter(Boolean);
+        say = '<b>You pitched ' + me.pitched + '</b><span>Waiting for ' + (wait.join(', ') || 'the reveal') + '…</span>';
+      }
+    } else if (!myTurn(v)) {
+      const p = v.players[v.turn];
+      say = '<b>' + esc(p.name) + ' is playing</b><span>' + esc(v.log[v.log.length - 1] || '') + '</span>';
+    } else if (m && m.kind === 'pay') {
+      const got = sum(v.hand.filter((t) => ui.pay.includes(t.id)));
+      say = '<b>' + esc(m.title) + '</b><span>Tap tiles to pay ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + '. Picked ' + got + (got > m.cost ? ' (no change given)' : '') + '. Paid tiles go to your discard.</span>';
+      acts = '<button class="dt-btn ghost" data-do="cancel">Cancel</button><button class="dt-btn go grow" data-do="confirm"' + (got >= m.cost ? '' : ' disabled') + '>Pay ' + got + ' &amp; ' + esc(m.verb || 'confirm') + '</button>';
+    } else if (m && m.kind === 'discard') {
+      const need = Math.max(0, v.hand.length - ui.disc.length - PB.HAND);
+      say = '<b>End your turn</b><span>' + (need ? 'Tap ' + need + ' more tile' + (need > 1 ? 's' : '') + ' to discard: you keep 5.' : 'Tap any tiles you want to discard, then draw back up to 5.') + '</span>';
+      acts = '<button class="dt-btn ghost" data-do="cancel">Back</button><button class="dt-btn go grow" data-do="end"' + (need ? ' disabled' : '') + '>' + (ui.disc.length ? 'Discard ' + ui.disc.length + ' &amp; end turn' : 'End turn') + '</button>';
+    } else if (m && m.kind === 'special') {
+      const t = handT(v, m.tile), P = {
+        founder: 'Tap an empty hex for The Founder.',
+        poacher: "Tap an opponent's tile to replace it with The Poacher.",
+        closer: 'Tap any hex in the region you want to score now.',
+        relocator: m.from ? 'Now tap the second tile to swap with.' : 'Tap the first tile to swap.',
+        transfer: m.from ? 'Tap where it goes (an empty hex, or a weaker tile to outbid).' : 'Tap one of your tiles on the map to move.',
+        negotiator: m.use ? 'Tap a hex: any empty hex, or an opponent’s weaker tile to outbid.' : 'Tap a tile in your hand to place.',
+      };
+      let extra = '', go = '';
+      if (m.action === 'closer' && m.region != null) { extra = R[m.region].short + ' now: ' + payText(v, payoutNow(v, m.region)) + '.'; go = '<button class="dt-btn go grow" data-do="closer">Score ' + esc(R[m.region].short) + '</button>'; }
+      say = '<b>' + esc(t ? t.name : '') + '</b><span>' + (extra || P[m.action] || '') + '</span>';
+      acts = '<button class="dt-btn ghost" data-do="cancel">Cancel</button>' + go;
+    } else {
+      const t = ui.sel && handT(v, ui.sel);
+      if (t) {
+        const special = PB.isSpecial(t), canPlace = canAct(v) && !usedK(v, 'place'), canSpec = special && canAct(v) && !usedK(v, 'action');
+        let tip;
+        if (!canAct(v)) tip = 'No actions left this turn.';
+        else if (t.action === 'consultant') tip = canPlace ? 'Tap a lit water channel. It counts for both regions until the season ends.' : 'You already placed this turn.';
+        else tip = (canPlace ? 'Tap a lit hex to place it' + (special ? ', or activate it once (then it leaves the game).' : '. Orange hexes are outbids: pay the difference.') : 'You already placed this turn.') + (special ? ' ' + TEXT[t.action] : '');
+        say = '<b>' + esc(t.name) + ' · ' + t.v + '</b><span>' + esc(tip) + '</span>';
+        acts = (canSpec ? '<button class="dt-btn go" data-do="activate">Activate</button>' : '') + '<button class="dt-btn ghost" data-do="deselect">Done</button>';
+      } else {
+        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Tap a tile to place or activate it, or tap the market to hire. Each action once per turn.' : 'You have used both actions.') + '</span>';
+      }
+      acts += '<button class="dt-btn ghost" data-do="discard">Discard…</button><button class="dt-btn go grow" data-do="endq">End turn</button>';
+    }
+    return '<div class="dt-bar"><div class="say">' + say + '</div>' + (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>';
+  }
+
+  function statusText(v) {
+    if (v.phase === 'over') return 'Game over';
+    const s = PB.SEASON_NAMES[v.season] + ' · round ' + (v.round + 1) + '/' + PB.ROUNDS + (v.closing ? ' (closing)' : '');
+    if (v.phase === 'pitch') return s + ' · pitch';
+    return s + ' · ' + (myTurn(v) ? 'your turn' : v.players[v.turn].name);
+  }
+
+  function draw() {
+    const v = V;
+    const k = [v.phase, v.turn, v.season, v.round, v.actionsUsed.join(','), v.hand.map((t) => t.id).join(',')].join('|');
+    if (k !== ui.key) { ui.key = k; reset(); }
+    API.status(statusText(v));
+    const html = '<div class="pbm">' + bannerHTML(v) + stripHTML(v) +
+      '<div class="main"><div class="panel mapwrap">' + boardHTML(v) + regionsHTML(v) + '</div>' + handPanel(v) + marketHTML(v) + '</div>' +
+      '<div class="lower">' + booksHTML(v) + '<div class="panel"><h3><span>Log</span></h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(l) + '</p>').join('') + '</div></div></div>' +
+      barHTML(v) + '</div>';
+    DevTable.flip(EL, () => { EL.innerHTML = html; }, 560);
+    // when a choice needs your hand (paying, discarding, the Negotiator's tile), bring it into view
+    const m = ui.mode, needHand = m && (m.kind === 'pay' || m.kind === 'discard' || (m.kind === 'special' && m.action === 'negotiator' && !m.use));
+    if (needHand && ui.scrolled !== m) {
+      ui.scrolled = m;
+      const hp = EL.querySelector('.handp'), bar = EL.querySelector('.dt-bar');
+      if (hp && bar) { const r = hp.getBoundingClientRect(), top = 60, bottom = bar.getBoundingClientRect().top; if (r.top < top || r.bottom > bottom) window.scrollBy({ top: r.top - top, behavior: 'smooth' }); }
+    }
+  }
+
+  function act(a) { const r = API.act(a); reset(); if (r && r.ok === false) draw(); return r; }
+
+  function onClick(e) {
+    const v = V; if (!v) return;
+    const b = e.target.closest('[data-pitch],[data-hand],[data-hex],[data-chan],[data-tier],[data-do]');
+    if (!b || !EL.contains(b) || b.disabled) return;
+    const m = ui.mode;
+    if (b.dataset.pitch) { act({ type: 'pitch', card: +b.dataset.pitch }); return; }
+    if (b.dataset.do) {
+      const d = b.dataset.do;
+      if (d === 'cancel') { reset(); draw(); return; }
+      if (d === 'deselect') { ui.sel = null; draw(); return; }
+      if (d === 'endq') { if (v.hand.length > PB.HAND) { ui.mode = { kind: 'discard' }; ui.disc = []; ui.sel = null; draw(); } else act({ type: 'end', discard: [] }); return; }
+      if (d === 'discard') { ui.mode = { kind: 'discard' }; ui.disc = []; ui.sel = null; draw(); return; }
+      if (d === 'end') { act({ type: 'end', discard: ui.disc.slice() }); return; }
+      if (d === 'refresh') { startPay(v, PB.REFRESH_COST, [], { type: 'refresh' }, 'Refresh the market'); ui.mode.verb = 'refresh'; ui.sel = null; draw(); return; }
+      if (d === 'confirm' && m && m.kind === 'pay') { act(Object.assign({}, m.action, { pay: ui.pay.slice() })); return; }
+      if (d === 'closer' && m && m.region != null) { act({ type: 'activate', tile: m.tile, region: m.region }); return; }
+      if (d === 'activate') {
+        const t = handT(v, ui.sel); if (!t) return;
+        if (['restructurer', 'headhunter', 'localExpert', 'luxuryExpert'].includes(t.action)) { act({ type: 'activate', tile: t.id }); return; }
+        ui.mode = { kind: 'special', action: t.action, tile: t.id }; draw(); return;
+      }
+      return;
+    }
+    if (b.dataset.hand) {
+      const id = b.dataset.hand;
+      if (!myTurn(v)) { const t = handT(v, id); if (t) API.toast(t.name + ' · ' + t.v + (TEXT[t.action] ? ': ' + TEXT[t.action] : '')); return; }
+      if (m && m.kind === 'pay') { if (m.exclude.includes(id)) return; ui.pay = ui.pay.includes(id) ? ui.pay.filter((x) => x !== id) : ui.pay.concat(id); draw(); return; }
+      if (m && m.kind === 'discard') { ui.disc = ui.disc.includes(id) ? ui.disc.filter((x) => x !== id) : ui.disc.concat(id); draw(); return; }
+      if (m && m.kind === 'special') {
+        if (m.action === 'negotiator' && id !== m.tile) { const u = handT(v, id); if (u.action === 'consultant') { API.toast('Consultants go on water channels.'); return; } m.use = id; draw(); }
+        return;
+      }
+      ui.sel = ui.sel === id ? null : id; draw(); return;
+    }
+    if (b.dataset.tier) {
+      const s = v.market[b.dataset.tier].slots[+b.dataset.slot]; if (!s) return;
+      const info = s.name + ' · ' + s.v + ', cost ' + s.cost + (TEXT[s.action] ? '. ' + TEXT[s.action] : '');
+      if (m || !canAct(v) || usedK(v, 'hire')) { API.toast(info); return; }
+      if (sum(v.hand) < s.cost) { API.toast('Need ' + s.cost + ' seals, you have ' + sum(v.hand) + '. ' + info); return; }
+      ui.sel = null;
+      startPay(v, s.cost, [], { type: 'hire', tier: b.dataset.tier, slot: +b.dataset.slot }, 'Hire ' + s.name + ' (' + s.v + ')' + (TEXT[s.action] ? ': ' + TEXT[s.action] : ''));
+      ui.mode.verb = 'hire'; draw(); return;
+    }
+    if (b.dataset.chan) {
+      const t = ui.sel && handT(v, ui.sel), w = v.water.find((x) => x.id === b.dataset.chan);
+      if (t && !m && legalChan(v, t, w)) act({ type: 'water', tile: t.id, channel: w.id });
+      return;
+    }
+    if (b.dataset.hex) {
+      const h = v.hexes.find((x) => x.id === b.dataset.hex);
+      if (m && m.kind === 'special') {
+        const tg = specialTargets(v);
+        if (m.action === 'closer') { m.region = h.region; draw(); return; }
+        if (!tg.has(h.id)) return;
+        if (m.action === 'founder' || m.action === 'poacher') { act({ type: 'activate', tile: m.tile, hex: h.id }); return; }
+        if (m.action === 'relocator') { if (!m.from) { m.from = h.id; draw(); } else act({ type: 'activate', tile: m.tile, from: m.from, to: h.id }); return; }
+        if (m.action === 'transfer') {
+          if (!m.from) { m.from = h.id; draw(); return; }
+          const mv = v.hexes.find((x) => x.id === m.from).tile;
+          if (!h.tile) { act({ type: 'activate', tile: m.tile, from: m.from, to: h.id }); return; }
+          const tile = m.tile, from = m.from;
+          startPay(v, mv.v - h.tile.v, [tile], { type: 'activate', tile, from, to: h.id }, 'Transfer: outbid in ' + R[h.region].short);
+          ui.mode.verb = 'move'; ui.mode.hex = h.id; draw(); return;
+        }
+        if (m.action === 'negotiator') {
+          const u = handT(v, m.use);
+          if (!h.tile) { act({ type: 'activate', tile: m.tile, use: u.id, hex: h.id }); return; }
+          const tile = m.tile;
+          startPay(v, u.v - h.tile.v, [tile, u.id], { type: 'activate', tile, use: u.id, hex: h.id }, 'Negotiator: outbid in ' + R[h.region].short);
+          ui.mode.verb = 'place'; ui.mode.placing = u.id; ui.mode.hex = h.id; draw(); return;
+        }
+        return;
+      }
+      if (m) return;
+      const t = ui.sel && handT(v, ui.sel);
+      if (!t) { if (h.tile) API.toast(R[h.region].short + ': ' + who(v, h.tile.owner) + ' · ' + h.tile.name + ' (' + h.tile.v + ')'); else if (myTurn(v)) API.toast('Tap a tile in your hand first.'); return; }
+      if (!legalHex(v, t, h)) {
+        if (!canAct(v)) API.toast('No actions left. End your turn.');
+        else if (usedK(v, 'place')) API.toast('You already placed this turn.');
+        else if (t.action === 'consultant') API.toast('Consultants go on water channels.');
+        else if (!h.tile) API.toast(R[h.region].short + ' is out of reach. Open offices where you hold a tile, one outer strait away, or in Midfloe.');
+        else if (t.v <= h.tile.v) API.toast('Your ' + t.v + ' must beat the ' + h.tile.v + ' there.');
+        else API.toast('Not enough seals left in hand to outbid there.');
+        return;
+      }
+      if (!h.tile) { act({ type: 'place', tile: t.id, hex: h.id }); return; }
+      startPay(v, t.v - h.tile.v, [t.id], { type: 'place', tile: t.id, hex: h.id }, 'Outbid in ' + R[h.region].short + ' (' + t.v + ' over ' + h.tile.v + ')');
+      ui.mode.verb = 'outbid'; ui.mode.placing = t.id; ui.mode.hex = h.id; draw();
+    }
+  }
+
+  function render(el, v, api) {
+    EL = el; V = v; API = api;
+    if (!bound) { bound = true; el.addEventListener('click', onClick); }
+    draw();
+  }
+
+  DevTable.mount(document.getElementById('app'), {
+    id: 'polar-bear-market', title: 'Polar Bear Market', blurb: '2–5 players · 45–75 minutes',
+    mast: '<h1>Polar Bear <span>Market</span></h1>',
+    minPlayers: 2, maxPlayers: 5, defaultPlayers: 3, botNames: PB.BOT_NAMES,
+    botNote: 'Bots weigh every placement, outbid, hire and specialist, and pitch to suit their hand.',
+    create: (players) => new PB.Game(players),
+    render,
+    rules:
+      '<p><b>Arctic real estate.</b> Run a polar bear agency fighting over seven regions of the ice for three seasons, five rounds each. Most VP after Autumn wins.</p>' +
+      '<p><b>Every tile is three things.</b> Each tile has one number. In your hand it pays that many seals. On the map it counts that much for its region. A specialist can instead be used once for its action. Whatever you place leaves your bag.</p>' +
+      '<p><b>The pitch.</b> Each round everyone plays a pitch card from 1 to 5 at once, each card once a season. High cards act first; low cards draw bonus tiles (a 1 draws 4). In the fifth, closing round the order flips.</p>' +
+      '<p><b>Your turn.</b> Take up to two different actions: <b>Place</b> a tile (open an office in reach, outbid a weaker tile anywhere by paying the difference, or put a Consultant on a channel), <b>Hire</b> from the market, or <b>Activate</b> a specialist. Then draw back up to 5.</p>' +
+      '<p><b>Scoring.</b> At the end of each season every region pays out: Spring pays 1st place, Summer 1st and 2nd, Autumn the top three. Outbid tiles go back to their owner’s discard, so attacking reloads your rival’s bag.</p>',
+  });
+})();
+</script>
+</body>
+</html>
