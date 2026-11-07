@@ -154,6 +154,8 @@
   .final th:first-child,.final td:first-child{text-align:left}
   .final th{color:var(--ink-dim);font-weight:600;font-size:12px}
   .final tr.win td{color:var(--accent);font-weight:800}
+  .final td:first-child .el{white-space:normal}
+  @container (max-width:520px){.final{padding:16px 14px}.final th,.final td{padding:6px 3px;font-size:12.5px}.final th{font-size:10.5px}}
   .pchip{width:14px;height:14px;border-radius:50%;border:2px solid rgba(0,0,0,.45);display:inline-block;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
 
   /* the action bar: always in reach at the bottom of the screen */
@@ -624,8 +626,8 @@
     box.hidden = false;
     box.innerHTML = '<h3>' + esc(title) + (f.tiebreak ? ' <small style="font-family:var(--f-body);font-size:14px;color:var(--ink-dim)">(tiebreak: most earth collected)</small>' : '') + '</h3>' +
       '<p>Night falls: ' + nameOf(V.s.ender) + ' could not gather earth in round ' + V.s.round + ', and Day One is over.</p>' +
-      '<div class="tablewrap"><table><tr><th>God</th><th>Mastery</th><th>Stars</th><th>Peaks</th><th>Favour</th><th>Collected</th><th>Total</th></tr>' +
-      f.order.map((q) => '<tr class="' + (w.includes(q) ? 'win' : '') + '"><td><span class="el"><span class="pchip" style="background:' + PCOL[q].col + '"></span>' + nameOf(q) + '</span></td><td>' + f.el[q] + '</td><td>' + f.cores[q] + '</td><td>' + f.pl[q] + '</td><td>' + f.gp[q] + '</td><td>' + f.caps[q] + '</td><td><b>' + f.total[q] + '</b></td></tr>').join('') +
+      '<div class="tablewrap"><table><tr><th>God</th><th>Total</th><th>Mastery</th><th>Stars</th><th>Peaks</th><th>Favour</th><th>Collected</th></tr>' +
+      f.order.map((q) => '<tr class="' + (w.includes(q) ? 'win' : '') + '"><td><span class="el"><span class="pchip" style="background:' + PCOL[q].col + '"></span>' + nameOf(q) + '</span></td><td><b>' + f.total[q] + '</b></td><td>' + f.el[q] + '</td><td>' + f.cores[q] + '</td><td>' + f.pl[q] + '</td><td>' + f.gp[q] + '</td><td>' + f.caps[q] + '</td></tr>').join('') +
       '</table></div><p style="font-size:13px">Leave to play again. The map stays up so you can look it over.</p>';
   }
 
