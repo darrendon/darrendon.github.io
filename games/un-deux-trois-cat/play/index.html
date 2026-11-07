@@ -81,8 +81,12 @@ button{font:inherit;color:inherit}
 .card{width:var(--cw);height:var(--ch);border-radius:8px;background:var(--grain),var(--paper);display:grid;place-items:center;box-shadow:0 6px 14px rgba(0,0,0,.4)}
 .card img{width:98%;height:auto;aspect-ratio:132/128;display:block}
 .card.spotmark{background:none;border:2px dashed rgba(255,255,255,.14);box-shadow:none}
-.card.flip{animation:deal .34s ease-out both}
-@keyframes deal{from{transform:translate(var(--fx,0),var(--fy,0)) scale(.06,.9)}to{transform:none}}
+.card.flip{position:relative;animation:deal .46s cubic-bezier(.2,.8,.2,1) both}
+.card.flip::after{content:"";opacity:0;animation:dealback .46s cubic-bezier(.2,.8,.2,1) both}
+.card.flip:nth-child(2),.card.flip:nth-child(2)::after{animation-delay:.08s}
+/* from the hand pile, lifting and turning over on the way: back up for the first half, face up for the second */
+@keyframes deal{0%{transform:translate(var(--fx,0),var(--fy,0))}48%{transform:translate(calc(var(--fx,0px) * .42),calc(var(--fy,0px) * .42 - 16px)) scale(.04,1.08)}100%{transform:none}}
+@keyframes dealback{0%,47.9%{opacity:1}48%,100%{opacity:0}}
 .chant{position:absolute;inset:0;z-index:4;display:grid;place-items:center;pointer-events:none;
   font-family:var(--display);font-size:clamp(40px,10vw,84px);color:var(--gold);text-shadow:0 4px 0 #1a1020,0 0 24px rgba(0,0,0,.5)}
 .chant span{animation:pop .38s ease-out}
@@ -112,6 +116,25 @@ button{font:inherit;color:inherit}
 .pawswipe{position:absolute;left:0;top:0;z-index:5;pointer-events:none;transform-origin:0 50%;filter:drop-shadow(0 5px 6px rgba(0,0,0,.4))}
 .pawswipe svg{display:block;overflow:visible}
 .board.compact .tag .tm{display:none}
+/* motion: toys travel to whoever grabs them, cards fly into point piles (see syncToys / scoreMotion) */
+.toy.held{z-index:3}
+.toy.flying{z-index:4}
+.toy.held .key{display:none}
+.toy.held.won .coaster{transform:none;box-shadow:0 4px 0 #1a1020,0 8px 16px rgba(0,0,0,.45)}
+.tags{transform-origin:50% 0}
+.toy.held .tags.up{bottom:calc(100% + 4px);transform-origin:50% 100%}
+.toy.held .tags{opacity:0;transition:opacity .2s .3s}      /* once it sits on your pile it's plainly yours; the banner keeps the times */
+.card.fly{position:absolute;z-index:8;pointer-events:none;transform-origin:50% 50%;will-change:transform}
+.card.fly .back,.card.flip::after{position:absolute;inset:0;border-radius:8px;border:3px solid var(--paper);
+  background:radial-gradient(circle at 50% 50%,var(--gold) 0 1.6px,transparent 2px) 0 0/11px 11px,linear-gradient(var(--felt-3),var(--felt-3))}
+.card.fly .back{opacity:0}
+.card.fly.down .back{opacity:1}
+.seat .pp{flex:none;width:22px;height:30px;margin-left:2px;border-radius:4px;border:2px solid var(--paper);
+  background:radial-gradient(circle at 50% 50%,var(--gold) 0 1px,transparent 1.3px) 0 0/6px 6px,linear-gradient(var(--felt-3),var(--felt-3));
+  box-shadow:2px 2px 0 #2a1d31,4px 4px 0 #e9e1d4,0 4px 8px rgba(0,0,0,.4)}
+.seat .pp.empty{background:none;border:2px dashed rgba(255,255,255,.3);box-shadow:none}
+.board.compact .seat .pp{width:15px;height:21px;border-width:1.5px}
+.seat .vp b{font-weight:800}
 
 /* beside the table: the coach, the round result and the keys */
 .side{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -822,6 +845,7 @@ function renderToys(){
 }
 function resetToys(enabled){
   document.querySelectorAll(".toy").forEach(t => { t.classList.remove("legal","won","miss"); t.querySelector(".tags").innerHTML = ""; t.disabled = !enabled; });
+  syncToys();
 }
 function setToysEnabled(on){ document.querySelectorAll(".toy").forEach(t => t.disabled = !on); }
 function tagToy(o, text, bad){
@@ -843,21 +867,196 @@ function pawSvg(D, h){
     <g fill="#e8e0e6" stroke="#9c97a0" stroke-width="${Math.max(1.2, r * 0.05)}"><polygon points="${heart}"/>
     ${toes.map(([dx, dy]) => `<ellipse cx="${cx + dx * r * 0.95}" cy="${dy * r * 0.8}" rx="${r * 0.15}" ry="${r * 0.12}"/>`).join("")}</g></svg>`;
 }
-function pawSwipe(seatEl, toy){
-  if (!S.paws || !seatEl) return;
-  const b = $("board"), t = $("toy-" + toy); if (!b || !t) return;
-  const B = b.getBoundingClientRect(), a = seatEl.getBoundingClientRect(), c = t.getBoundingClientRect();
-  const sx = a.left + a.width / 2 - B.left, sy = a.top + a.height / 2 - B.top, tx = c.left + c.width / 2 - B.left, ty = c.top + c.height / 2 - B.top;
-  const D = Math.hypot(tx - sx, ty - sy), h = c.width * 0.86, ang = Math.atan2(ty - sy, tx - sx) * 180 / Math.PI;
-  if (D < h) return;
+/* ---------- motion: pieces travel instead of blinking ----------
+   A grabbed toy slides from the middle onto its grabber's hand pile (in the Cat Paw edition the paw reaches out and drags
+   it back) and slides home when the next round starts. Scored cards fly face down into the scorer's point pile on their
+   seat label; a wrong grab's lost point flies out of it to the discard in the middle; unclaimed cards are swept there
+   too. Flipped cards travel from the hand pile and turn over on the way. prefers-reduced-motion: everything is instant. */
+const MOTION = !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const EASE = "cubic-bezier(.2,.8,.2,1)";
+const ALLTOYS = [...OBJ, "cat"];
+const RUNNING = new Set();
+function track(a){ RUNNING.add(a); const done = () => RUNNING.delete(a); a.addEventListener("finish", done); a.addEventListener("cancel", done); return a; }
+// resolves once every running motion has finished (or after ms, whichever comes first)
+function settled(ms){ return Promise.race([Promise.all([...RUNNING].map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, ms || 1500))]); }
+function inBoard(el){ const B = $("board").getBoundingClientRect(), r = el.getBoundingClientRect(); return {x: r.left + r.width / 2 - B.left, y: r.top + r.height / 2 - B.top, w: r.width, h: r.height}; }
+const cssPx = k => parseFloat(getComputedStyle($("board")).getPropertyValue(k)) || 0;
+// the discard lives under the cat's spot in the middle (wherever the cat itself is right now)
+const discardAt = () => { const c = $("toy-cat"); return c && c.style.left ? {x: parseFloat(c.style.left), y: parseFloat(c.style.top)} : null; };
+const pkey = p => p.seat != null ? "s" + p.seat : "i" + S.players.indexOf(p);
+const curP = p => p.seat != null ? S.players.find(q => q.seat === p.seat) : p;      // guests rebuild their players on every view
+const seatEl = p => { const c = p && curP(p), i = c ? S.players.indexOf(c) : -1; return i < 0 ? null : document.querySelector(`#seats [data-seat="${i}"]`); };
+const seatOf = seatEl;
+// where toy o sits now: on its holder's hand pile, sharing it with any other toys they hold; null = in the middle
+function heldSpot(o){
+  const p = S.taken && S.taken.get(o), i = p ? S.players.indexOf(p) : -1;
+  const pile = i >= 0 && $("table").querySelector(`.pile[data-seat="${i}"]`);
+  if (!pile || !pile.style.left) return null;
+  const mine = ALLTOYS.filter(t => S.taken.get(t) === p), k = mine.indexOf(o), n = mine.length;
+  const cw = cssPx("--cw"), ch = cssPx("--ch"), t = cssPx("--t") || 1;
+  const size = Math.min(cw * 1.04, ch * 1.02 / n), step = Math.min(size, ch / n);
+  const dir = (S.seatDir && S.seatDir[i]) || {uy: 1};
+  return {x: parseFloat(pile.style.left), y: parseFloat(pile.style.top) + (k - (n - 1) / 2) * step, s: size / t, up: dir.uy > 0};
+}
+function toyXform(el, q){
+  if (!q) return "translate(-50%,-50%)";
+  return `translate(-50%,-50%) translate(${(q.x - parseFloat(el.style.left)).toFixed(1)}px,${(q.y - parseFloat(el.style.top)).toFixed(1)}px) scale(${q.s.toFixed(3)})`;
+}
+// put every toy where it belongs (its holder's pile, or the middle), travelling there unless opt.animate === false.
+// opt.lead: the toy just grabbed; opt.paw: that grabber's seat label in the Cat Paw edition (the paw drags it)
+function syncToys(opt){
+  opt = opt || {};
+  let k = 0;
+  ALLTOYS.forEach(o => {
+    const el = $("toy-" + o); if (!el || !el.style.left) return;
+    const q = heldSpot(o), key = `${el.style.left},${el.style.top}|` + (q ? `${q.x.toFixed(1)},${q.y.toFixed(1)},${q.s.toFixed(3)}` : "");
+    if (el.dataset.at === key) return;
+    const who = S.taken && S.taken.get(o) ? pkey(S.taken.get(o)) : "";
+    if (opt.layout && el.dataset.at !== undefined && (el.dataset.h || "") !== who) return;   // a new holder travels on its own call
+    el.dataset.h = who;
+    const first = el.dataset.at === undefined; el.dataset.at = key;
+    const tags = el.querySelector(".tags"), inv = q ? 1 / q.s : 1;
+    const from = el._an ? getComputedStyle(el).transform : (el.style.transform || "translate(-50%,-50%)");
+    const tFrom = tags ? (el._an ? getComputedStyle(tags).transform : (tags.style.transform || "translateX(-50%)")) : "";
+    if (el._an){ el._an.cancel(); el._an = null; }
+    if (tags && tags._an){ tags._an.cancel(); tags._an = null; }
+    const to = toyXform(el, q), tTo = `translateX(-50%) scale(${inv.toFixed(3)})`, start = inBoard(el);
+    el.style.transform = to; el.classList.toggle("held", !!q);
+    if (tags){ tags.style.transform = tTo; tags.classList.toggle("up", !!(q && q.up)); }
+    if (first || opt.animate === false || !MOTION || from === to) return;
+    let delay = 0, dur = q ? 520 : 460;
+    if (o === opt.lead && q && opt.paw){ const m = pawDrag(opt.paw, start, q); if (m){ delay = m.delay; dur = m.dur; } }
+    else if (!q && o !== opt.lead){ delay = 60 * k++; }          // toys going home leave one after another
+    el.classList.add("flying");
+    const a = el._an = track(el.animate([{transform: from}, {transform: to}], {duration: dur, delay, easing: EASE, fill: "backwards"}));
+    a.onfinish = a.oncancel = () => { if (el._an === a){ el._an = null; el.classList.remove("flying"); } };
+    if (!opt.paw || o !== opt.lead){                                       // a hand lifts the toy a little on the way
+      const c = el.querySelector(".coaster");
+      if (c) track(c.animate([{translate: "0 0", scale: "1"}, {translate: "0 -10px", scale: "1.1", offset: 0.4}, {translate: "0 0", scale: "1"}], {duration: dur, delay, easing: "ease-in-out"}));
+    }
+    if (tags) tags._an = track(tags.animate([{transform: tFrom}, {transform: tTo}], {duration: dur, delay, easing: EASE, fill: "backwards"}));
+  });
+}
+/* the Cat Paw edition: a pink plush paw with a silver stitched print on a bark stick, after the real one. */
+function pawSvg(D, h){
+  const r = h / 2, cx = D - r * 0.92, st = Math.max(3, h * 0.085);
+  const toes = [[0.62, -0.42], [0.62, 0.42], [0.32, -0.92], [0.32, 0.92]];
+  const body = `<circle cx="${cx - r * 0.12}" cy="0" r="${r * 0.86}"/>` + toes.map(([dx, dy]) => `<circle cx="${cx + dx * r}" cy="${dy * r * 0.86}" r="${r * 0.36}"/>`).join("");
+  const heart = (() => { const p = []; for (let i = 0; i <= 40; i++){ const t = i / 40 * Math.PI * 2;
+    const x = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t), y = 16 * Math.pow(Math.sin(t), 3);
+    p.push(`${(cx - r * 0.22 + x * r * 0.022).toFixed(1)},${(y * r * 0.022).toFixed(1)}`); } return p.join(" "); })();
+  return `<svg width="${D}" height="${h}" viewBox="0 ${-r} ${D} ${h}" aria-hidden="true">
+    <path d="M${r * 0.2} ${-st * 0.55} L${cx - r * 0.5} ${-st * 0.45} L${cx - r * 0.5} ${st * 0.5} L${r * 0.2} ${st * 0.6} Z" fill="#6e4630" stroke="#3e2618" stroke-width="1"/>
+    <g fill="#f4ccd6" stroke="#d99aae" stroke-width="1.5">${body}</g><g fill="#f4ccd6">${body}</g>
+    <g fill="#e8e0e6" stroke="#9c97a0" stroke-width="${Math.max(1.2, r * 0.05)}"><polygon points="${heart}"/>
+    ${toes.map(([dx, dy]) => `<ellipse cx="${cx + dx * r * 0.95}" cy="${dy * r * 0.8}" rx="${r * 0.15}" ry="${r * 0.12}"/>`).join("")}</g></svg>`;
+}
+// paw on a stick from origin (sx, sy) to the toy at (tx, ty); keyframes along the stick: [offset, along, opacity, easing]
+function pawRun(sx, sy, tx, ty, h, frames, dur){
+  const b = $("board"), D = Math.hypot(tx - sx, ty - sy), ang = Math.atan2(ty - sy, tx - sx) * 180 / Math.PI;
+  if (!b || D < h) return null;
   const el = document.createElement("div"); el.className = "pawswipe"; el.innerHTML = pawSvg(D + h * 0.2, h);
   el.style.left = sx + "px"; el.style.top = sy - h / 2 + "px"; b.appendChild(el);
-  const back = `rotate(${ang}deg) translateX(${-D * 0.3}px)`, out = `rotate(${ang}deg) translateX(0px)`;
-  const an = el.animate([{transform: back, opacity: 0}, {transform: out, opacity: 1, offset: 0.32}, {transform: out, opacity: 1, offset: 0.62}, {transform: back, opacity: 0}],
-    {duration: 900, easing: "cubic-bezier(.3,.7,.3,1)"});
-  an.onfinish = an.oncancel = () => el.remove();
+  const a = track(el.animate(frames.map(([offset, along, opacity, easing]) => ({offset, opacity, easing: easing || "linear",
+    transform: `rotate(${ang}deg) translateX(${(typeof along === "function" ? along(D) : along).toFixed(1)}px)`})), {duration: dur, fill: "both"}));
+  a.onfinish = a.oncancel = () => el.remove();
+  return a;
 }
-const seatOf = p => document.querySelector(`#seats [data-seat="${S.players.indexOf(p)}"]`);
+// a correct grab: the paw comes in behind the hand pile, reaches the toy, and drags it back onto the pile
+function pawDrag(label, c, q){
+  if (!MOTION) return null;
+  const h = c.w * 0.86, L = Math.hypot(q.x - c.x, q.y - c.y);
+  if (L < 4) return null;
+  const ux = (q.x - c.x) / L, uy = (q.y - c.y) / L, back = Math.max(h * 1.6, cssPx("--ch") * 0.9);
+  const sx = q.x + ux * back, sy = q.y + uy * back;                       // the stick's end, behind the pile
+  const px = c.x - ux * h * 0.42, py = c.y - uy * h * 0.42;               // the paw hooks the far side, so the toy shows as it comes
+  const R = 300, HOLD = 120, DRAG = 560, OUT = 260, T = R + HOLD + DRAG + OUT;
+  const a = pawRun(sx, sy, px, py, h, [
+    [0, D => -D * 0.35, 0, EASE], [R / T, 0, 1], [(R + HOLD) / T, 0, 1, EASE], [(R + HOLD + DRAG) / T, -L, 1, "ease-in"], [1, D => -L - D * 0.3, 0]], T);
+  return a ? {delay: R + HOLD, dur: DRAG} : null;
+}
+// a wrong grab: the paw bats the toy and pulls back without it; by hand, the toy lurches toward the grabber and is put back
+function wrongGrab(label, toy){
+  const t = $("toy-" + toy); if (!t || !label || !MOTION) return;
+  const c = inBoard(t), a = inBoard(label);
+  if (S.paws){ pawRun(a.x, a.y, c.x, c.y, c.w * 0.86, [[0, D => -D * 0.3, 0, "cubic-bezier(.3,.7,.3,1)"], [0.32, 0, 1], [0.62, 0, 1], [1, D => -D * 0.3, 0]], 900); return; }
+  const D = Math.hypot(a.x - c.x, a.y - c.y) || 1, k = Math.min(42, D * 0.2) / D, c0 = t.querySelector(".coaster");
+  if (c0) track(c0.animate([{translate: "0 0"}, {translate: `${((a.x - c.x) * k).toFixed(1)}px ${((a.y - c.y) * k).toFixed(1)}px`, offset: 0.35}, {translate: "0 0"}], {duration: 620, easing: "ease-in-out"}));
+}
+// count shown on a seat label while cards are still in the air
+const vpShown = p => p.vp.length + ((S.vpAdj && S.vpAdj.get(pkey(p))) || 0);
+function bumpVp(p, d){
+  const k = pkey(p); S.vpAdj.set(k, (S.vpAdj.get(k) || 0) + d);
+  const el = seatEl(p); if (!el) return;
+  p = curP(p) || p;
+  const v = el.querySelector(".vp b"), pp = el.querySelector(".pp");
+  if (v) v.textContent = vpShown(p);
+  if (pp){ pp.classList.toggle("empty", vpShown(p) <= 0); if (MOTION) pp.animate([{scale: "1"}, {scale: "1.45"}, {scale: "1"}], {duration: 280, easing: "ease-out"}); }
+}
+const BACK = '<i class="back"></i>';
+// one card face up from the table, face down into a seat's point pile
+function flyToPile(src, p, delay){
+  const B = inBoard(src), dst = seatEl(p), pp = dst && dst.querySelector(".pp");
+  if (!pp || !MOTION){ bumpVp(p, 1); return; }
+  const T = inBoard(pp), el = src.cloneNode(true);
+  el.className = "card fly"; el.removeAttribute("role"); el.insertAdjacentHTML("beforeend", BACK);
+  Object.assign(el.style, {left: B.x - B.w / 2 + "px", top: B.y - B.h / 2 + "px", width: B.w + "px", height: B.h + "px"});
+  $("board").appendChild(el);
+  const dx = T.x - B.x, dy = T.y - B.y, k = Math.max(0.12, T.h / B.h), dur = Math.round(Math.min(860, 520 + Math.hypot(dx, dy) * 0.6)), ez = "ease-in-out";
+  const a = track(el.animate([
+    {transform: "none"},
+    {transform: `translate(${dx * 0.1}px,${dy * 0.1 - 34}px) scale(1.1) rotate(-4deg)`, offset: 0.22},
+    {transform: `translate(${dx * 0.42}px,${dy * 0.42 - 40}px) scale(0.02,${(0.6 + k / 2).toFixed(2)}) rotate(-2deg)`, offset: 0.48},
+    {transform: `translate(${dx * 0.8}px,${dy * 0.8 - 18}px) scale(${(k * 1.25).toFixed(3)})`, offset: 0.8},
+    {transform: `translate(${dx}px,${dy}px) scale(${k.toFixed(3)})`}], {duration: dur, delay, easing: ez, fill: "both"}));
+  track(el.querySelector(".back").animate([{opacity: 0}, {opacity: 0, offset: 0.479}, {opacity: 1, offset: 0.48}, {opacity: 1}], {duration: dur, delay, easing: ez, fill: "both"}));
+  setTimeout(() => { src.style.visibility = "hidden"; }, delay);
+  a.onfinish = a.oncancel = () => { el.remove(); bumpVp(p, 1); };
+}
+// a lost point: one card face down out of the seat's point pile, onto the discard under the cat
+function flyFromPile(p, delay){
+  const dst = seatEl(p), pp = dst && dst.querySelector(".pp"), cat = $("toy-cat");
+  if (!pp || !cat || !MOTION){ bumpVp(p, -1); return; }
+  setTimeout(() => {
+    if (!pp.isConnected) return bumpVp(p, -1);
+    const A = inBoard(pp), C = discardAt() || inBoard(cat), cw = cssPx("--cw"), ch = cssPx("--ch"), el = document.createElement("div");
+    el.className = "card fly down"; el.innerHTML = BACK;
+    Object.assign(el.style, {left: C.x - cw / 2 + "px", top: C.y - ch / 2 + "px", width: cw + "px", height: ch + "px"});
+    $("board").appendChild(el); bumpVp(p, -1);
+    const k = A.h / ch, a = track(el.animate([
+      {transform: `translate(${A.x - C.x}px,${A.y - C.y}px) scale(${k.toFixed(3)})`, opacity: 1},
+      {transform: `translate(${(A.x - C.x) * 0.5}px,${(A.y - C.y) * 0.5 - 24}px) scale(0.9) rotate(-8deg)`, opacity: 1, offset: 0.5},
+      {transform: "rotate(10deg) scale(0.85)", opacity: 1, offset: 0.82}, {transform: "rotate(14deg) scale(0.8)", opacity: 0}], {duration: 820, easing: EASE, fill: "both"}));
+    a.onfinish = a.oncancel = () => el.remove();
+  }, delay);
+}
+// moves = [{src: element, to: player}], losers = [player]; cards wait for the grabbed toys to land first
+function scoreMotion(moves, losers){
+  S.vpAdj = S.vpAdj || new Map();
+  moves.forEach(m => { const k = pkey(m.to); S.vpAdj.set(k, (S.vpAdj.get(k) || 0) - 1); });
+  losers.forEach(p => { const k = pkey(p); S.vpAdj.set(k, (S.vpAdj.get(k) || 0) + 1); });
+  const tok = S.round + ":" + (O.rid || 0);
+  const go = () => {
+    if (S.round + ":" + (O.rid || 0) !== tok){ S.vpAdj = new Map(); renderSeats(); return; }
+    moves.forEach((m, i) => flyToPile(m.src, m.to, i * 120));
+    losers.forEach((p, i) => flyFromPile(p, moves.length * 120 + 380 + i * 140));
+  };
+  MOTION ? settled(1300).then(go) : go();
+}
+// the flipped cards nobody won leave for the discard under the cat before the next deal
+function sweepFaces(){
+  if (!MOTION) return;
+  const C = discardAt(); if (!C) return;
+  [...$("table").querySelectorAll(".faces .card.flip")].filter(c => c.style.visibility !== "hidden").forEach((src, i) => {
+    const B = inBoard(src), el = src.cloneNode(true);
+    el.className = "card fly"; el.removeAttribute("role");
+    Object.assign(el.style, {left: B.x - B.w / 2 + "px", top: B.y - B.h / 2 + "px", width: B.w + "px", height: B.h + "px"});
+    $("board").appendChild(el);
+    const a = track(el.animate([{transform: "none", opacity: 1}, {transform: `translate(${C.x - B.x}px,${C.y - B.y}px) scale(.8) rotate(${i % 2 ? 9 : -7}deg)`, opacity: 1, offset: 0.8},
+      {transform: `translate(${C.x - B.x}px,${C.y - B.y}px) scale(.75) rotate(${i % 2 ? 12 : -10}deg)`, opacity: 0}], {duration: 560, delay: i * 50, easing: EASE, fill: "both"}));
+    a.onfinish = a.oncancel = () => el.remove();
+  });
+}
 
 /* each player is a cat; their face sits on their seat label: [fur, ears, eyes, markings] */
 const FUR = {You:["#8a827c","#5d5652","#b5d96a"],
@@ -882,7 +1081,7 @@ function renderSeats(){
     const dim = S.sudden && !S.eligible.includes(p);
     const flag = !S.resolved && S.out.has(p) ? `<span class="flag">Out</span>` : p.away ? `<span class="flag">Away</span>` : "";
     return `<div class="seat${p.human?" you":""}${dim||p.open?" dim":""}${p.away?" away":""}" data-seat="${i}"><span class="ava">${avatar(p.name, p.fur)}</span>
-      <span class="txt"><span class="nm">${p.name}</span><span class="sub"><span class="vp" title="Points">★ ${p.vp.length}</span><span class="left" title="Cards in hand">${p.deck.length} in hand</span>${flag}</span></span></div>`;
+      <span class="txt"><span class="nm">${p.name}</span><span class="sub"><span class="vp" title="Points">★ <b>${vpShown(p)}</b></span><span class="left" title="Cards in hand">${p.deck.length} in hand</span>${flag}</span></span><i class="pp${vpShown(p) > 0 ? "" : " empty"}" title="Point pile" aria-hidden="true"></i></div>`;
   }).join("");
   place();
 }
@@ -974,14 +1173,18 @@ function place(){
     sol = {t, cw, ch, toyPos, seatPos, ok};
     if (ok) break;
   }
-  S.layoutOk = sol.ok;
+  S.layoutOk = sol.ok; S.seatDir = sol.seatPos.map(q => ({ux: q.label.ux, uy: q.label.uy}));
   b.style.setProperty("--t", sol.t.toFixed(1) + "px"); b.style.setProperty("--cw", sol.cw.toFixed(1) + "px"); b.style.setProperty("--ch", sol.ch.toFixed(1) + "px");
   for (const o in sol.toyPos){ const el = $("toy-" + o); if (el){ el.style.left = sol.toyPos[o].x + "px"; el.style.top = sol.toyPos[o].y + "px"; } }
   labels.forEach((el, k) => { const q = sol.seatPos[k]; if (q){ el.style.left = q.label.x + "px"; el.style.top = q.label.y + "px"; } });
   $("table").querySelectorAll(".pile").forEach(el => { const q = sol.seatPos[+el.dataset.seat]; if (!q) return; el.style.left = q.pile.x + "px"; el.style.top = q.pile.y + "px"; });
   $("table").querySelectorAll(".faces").forEach(el => { const q = sol.seatPos[+el.dataset.seat]; if (!q) return;
     el.style.left = q.face.x + "px"; el.style.top = q.face.y + "px";
-    el.style.setProperty("--fx", (q.pile.x - q.face.x).toFixed(1) + "px"); el.style.setProperty("--fy", (q.pile.y - q.face.y).toFixed(1) + "px"); });
+    el.style.setProperty("--fx", (q.pile.x - q.face.x).toFixed(1) + "px"); el.style.setProperty("--fy", (q.pile.y - q.face.y).toFixed(1) + "px");
+    const n = el.children.length;
+    [...el.children].forEach((c, j) => { const off = (j - (n - 1) / 2) * (sol.cw + 6);
+      c.style.setProperty("--fx", (q.pile.x - q.face.x - off).toFixed(1) + "px"); c.style.setProperty("--fy", (q.pile.y - q.face.y).toFixed(1) + "px"); }); });
+  syncToys({animate: false, layout: true});
 }
 function banner(html){ $("banner").innerHTML = html === "&nbsp;" ? "" : html; }
 function updatePill(){
@@ -996,7 +1199,7 @@ function showExample(){
   const P = S.opp + 1, F = P <= 3 ? 2 : 1;
   const decoys = [["bird","pink"],["fly","blue"],["mouse","yellow"],["ball","orange"],["bird","blue"],["fish","pink"],["ball","yellow"],["mouse","green"],["fly","green"],["bird","orange"],["mouse","blue"]];
   let k = 0;
-  S.flips = F; S.sudden = false; S.resolved = true; S.out = new Set();
+  S.flips = F; S.sudden = false; S.resolved = true; S.out = new Set(); S.taken = new Map(); S.vpAdj = new Map();
   S.players = ["You", ...BOTS.slice(0, S.opp)].map((name, i) => ({name, human: i === 0, vp: [], deck: new Array(60 / P - F).fill(0),
     flipped: Array.from({length: F}, (_, j) => i === 1 && j === 0 ? {obj: "fish", color: "green"} : {obj: decoys[k][0], color: decoys[k++][1]})}));
   S.eligible = S.players;
@@ -1014,7 +1217,7 @@ function startGame(){
   const names = BOTS.slice(0, S.opp);
   S.players = [{name:"You", human:true}, ...names.map(n => ({name:n, human:false}))]
     .map((p,i) => Object.assign(p, {deck: deck.slice(i*per, (i+1)*per), vp: [], flipped: []}));
-  S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players;
+  S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players; S.taken = new Map(); S.vpAdj = new Map();
   S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
   $("pauseBtn").textContent = "Pause";
   $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false;
@@ -1030,8 +1233,8 @@ function nextRound(){
 }
 function startRound(eligible, sudden){
   S.sudden = sudden; S.eligible = eligible; S.resolved = true; S.out = new Set(); S.misgrabs = [];
-  S.taken = new Map(); S.done = new Set(); S.scorers = [];
-  updatePill(); resetToys(false); renderSeats(); renderTable("backs"); banner("&nbsp;");
+  S.taken = new Map(); S.done = new Set(); S.scorers = []; S.vpAdj = new Map();
+  sweepFaces(); updatePill(); resetToys(false); renderSeats(); renderTable("backs"); banner("&nbsp;");
   const words = ["Un","Deux","Trois","Cat!"];
   words.forEach((w,i) => later(() => {
     const el = $("chant"); if (el) el.innerHTML = `<span>${w}</span>`;
@@ -1100,7 +1303,7 @@ function grab(p, target){
   if (S.legal.has(target)){
     S.taken.set(target, p); S.done.add(p); S.scorers.push({p, target, t});
     if (S.tut && p.human) tutYouGrabbed();
-    $("toy-"+target).classList.add("won"); pawSwipe(seatOf(p), target);
+    $("toy-"+target).classList.add("won"); syncToys({lead: target, paw: S.paws ? seatOf(p) : null});
     tagToy(target, `${p.name}<span class="tm"> · ${t.toFixed(2)}s</span>`, false);
     if (S.sudden) return resolve();
     const open = [...S.legal].filter(o => !S.taken.has(o));
@@ -1112,7 +1315,7 @@ function grab(p, target){
     return;
   }
   S.out.add(p); S.misgrabs.push({p, target});
-  const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss"); pawSwipe(seatOf(p), target);
+  const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss"); wrongGrab(seatOf(p), target);
   tagToy(target, p.name, true);
   if (p.human){ S.stats.miss++; banner(`Wrong grab. That's not the ${NAME[target].toLowerCase()}. You're out this round.`); }
   refreshToys(); renderSeats();
@@ -1126,20 +1329,27 @@ function resolve(){
   const scorers = S.scorers, first = scorers[0] ? scorers[0].p : null;
   if (!S.sudden) scorers.filter(s => s.p.human).forEach(s => S.stats.times.push(s.t));
 
-  const notes = [], lost = [];
+  const notes = [], lost = [], moves = [];
   if (!S.sudden){
     // each correct toy is a point: a card into the grabber's point pile, their own flipped card first, then any flipped card nobody claimed
+    const src = new Map(), before = S.players.map(p => p.vp.length);
+    S.players.forEach((p, i) => p.flipped.forEach((c, j) => src.set(c, [i, j])));
     const need = new Map();
     scorers.forEach(s => need.set(s.p, (need.get(s.p) || 0) + 1));
     const spare = [];
     S.players.forEach(p => { const n = need.get(p) || 0; p.vp.push(...p.flipped.slice(0, n)); spare.push(...p.flipped.slice(n)); need.set(p, Math.max(0, n - p.flipped.length)); p.flipped = []; });
     S.players.forEach(p => { for (let n = need.get(p) || 0; n > 0 && spare.length; n--) p.vp.push(spare.shift()); });
     S.discard.push(...spare);
+    S.players.forEach((p, i) => p.vp.slice(before[i]).forEach(c => {
+      const at = src.get(c), box = at && $("table").querySelector(`.faces[data-seat="${at[0]}"]`), el = box && box.children[at[1]];
+      if (el) moves.push({src: el, to: p});
+    }));
     for (const m of S.misgrabs){
       if (m.p.vp.length){ S.discard.push(m.p.vp.pop()); notes.push(`${m.p.human ? "You" : m.p.name} lost a point`); lost.push(m.p); }
     }
   }
   S.lastLost = lost;
+  if (!S.sudden) scoreMotion(moves, lost);
   const ansText = S.legal.has("cat") ? "No toy was in its own color, so it was the cat." : "";
   const head = scoreLine(scorers.map(s => ({key: s.p, name: s.p.human ? "You" : s.p.name, toy: s.target, t: s.t})));
   const sub = [ansText, notes.join(" · ")].filter(Boolean).join(" ");
@@ -1274,7 +1484,7 @@ function startTutorial(){
   const R = TUT.rounds;
   S.players = [{name:"You", human:true}, ...TUT.bots.map(n => ({name:n, human:false}))]
     .map((p,i) => Object.assign(p, {deck: R.map(r => ({obj: r.cards[i][0], color: r.cards[i][1]})), vp: [], flipped: []}));
-  S.flips = 1; S.discard = []; S.round = 0; S.rounds = R.length; S.sudden = false; S.eligible = S.players;
+  S.flips = 1; S.discard = []; S.round = 0; S.rounds = R.length; S.sudden = false; S.eligible = S.players; S.taken = new Map(); S.vpAdj = new Map();
   S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
   S.tut = {i: -1}; document.body.classList.add("tut");
   $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false;
@@ -1379,7 +1589,7 @@ function startOnline(){
   });
   S.players = all.slice(hs).concat(all.slice(0, hs));   // you sit at the bottom of your own screen
   S.flips = N <= 3 ? 2 : 1;
-  S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players;
+  S.discard = []; S.round = 0; S.rounds = per / S.flips; S.sudden = false; S.eligible = S.players; S.taken = new Map(); S.vpAdj = new Map();
   S.stats = {times: [], miss: 0}; S.paused = false; S.waiting = false; S.live = true; S.resolved = true;
   S.out = new Set(); S.done = new Set(); S.taken = new Map(); S.scorers = []; S.misgrabs = [];
   O.stats = {}; all.forEach(p => { O.stats[p.seat] = {times: [], miss: 0}; });
@@ -1537,10 +1747,11 @@ function paintOnline(v){
   const pends = O.pends, pend = pends[pends.length - 1] || null, live = v.phase === "live", fresh = live || v.phase === "result";
   const won = {}, missed = {};
   if (fresh) for (const r of v.log){ if (r.res === "won") won[r.toy] = r; if (r.res === "miss") (missed[r.toy] = missed[r.toy] || []).push(r); }
-  if (fresh && S.paws){ O.swiped = O.swiped || new Set();
+  if (fresh){ O.swiped = O.swiped || new Set();
     for (const r of v.log){ const k = v.rid + ":" + r.seat + ":" + r.toy + ":" + r.res; if (O.swiped.has(k) || (r.res !== "won" && r.res !== "miss")) continue; O.swiped.add(k);
-      const label = r.seat === me ? "You" : v.players[r.seat].name;
-      requestAnimationFrame(() => pawSwipe([...document.querySelectorAll("#seats .seat")].find(el => (el.querySelector(".nm") || {}).textContent === label), r.toy)); } }
+      const who = S.players.find(p => p.seat === r.seat), lab = who && seatEl(who);
+      if (r.res === "won") syncToys({lead: r.toy, paw: S.paws ? lab : null}); else wrongGrab(lab, r.toy); } }
+  syncToys();
   const taken = new Set(v.taken.map(([o]) => o));
   const mayGrab = live && v.eligible.includes(me) && !v.out.includes(me) && !v.mine.late;
   const pendOn = o => pends.find(q => q.toy === o);
@@ -1649,6 +1860,15 @@ function chantLocally(){
   const words = ["Un","Deux","Trois","Cat!"];
   words.forEach((w, i) => later(() => { const el = $("chant"); if (el) el.innerHTML = `<span>${w}</span>`; }, i*430));
 }
+// the host's resolve, replayed for the picture: each scorer's own flipped cards first, then cards nobody claimed
+function guestScore(v){
+  const bySeat = [...S.players].sort((a, b) => a.seat - b.seat), need = new Map(), moves = [], spare = [];
+  v.log.filter(r => r.res === "won").forEach(r => need.set(r.seat, (need.get(r.seat) || 0) + 1));
+  bySeat.forEach(p => { const n = need.get(p.seat) || 0, box = $("table").querySelector(`.faces[data-seat="${S.players.indexOf(p)}"]`), kids = box ? [...box.children] : [];
+    kids.slice(0, n).forEach(el => moves.push({src: el, to: p})); spare.push(...kids.slice(n)); need.set(p.seat, Math.max(0, n - kids.length)); });
+  bySeat.forEach(p => { for (let n = need.get(p.seat) || 0; n > 0 && spare.length; n--) moves.push({src: spare.shift(), to: p}); });
+  scoreMotion(moves, (v.res.lost || []).map(i => S.players.find(p => p.seat === i)).filter(Boolean));
+}
 function applyView(v){
   if (!O.on || O.role !== "guest" || !v || !Array.isArray(v.players)) return;
   const N = v.players.length, me = v.me;
@@ -1669,13 +1889,14 @@ function applyView(v){
     O.key = key; O.note = "";
     if (v.phase !== "over") showGameScreen();
     if (v.phase === "ready" || v.phase === "chant" || v.phase === "tie"){
+      S.vpAdj = new Map(); sweepFaces();
       clearTimers(); resetToys(false); renderTable("backs"); O.facesRid = -1;
       if (v.phase === "chant") chantLocally();
     } else if (v.phase === "live" || v.phase === "result"){
       if (O.facesRid !== v.rid){
         clearTimers(); resetToys(false); renderTable("faces"); O.facesRid = v.rid;
         if (v.phase === "live") markPaint(v.rid);
-      }
+      } else if (v.phase === "result" && !v.sudden && v.res) guestScore(v);
     }
   }
   renderSeats(); updatePill(); paintOnline(v);

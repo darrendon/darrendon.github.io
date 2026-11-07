@@ -89,9 +89,24 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 /* cards */
 .card { width: 88px; aspect-ratio: 5 / 7; border-radius: 9px; display: block; position: relative; flex: none; background: none; padding: 0; border: 0; cursor: default; }
 .card img { width: 100%; height: 100%; display: block; border-radius: 9px; box-shadow: 0 2px 0 var(--ink), 0 8px 14px -8px rgba(0, 0, 0, .6); user-select: none; -webkit-user-drag: none; }
-.tablecards .card { width: 92px; animation: slam .32s cubic-bezier(.2, 1.6, .4, 1) both; }
-.tablecards .card:nth-child(2) { animation-delay: .04s; } .tablecards .card:nth-child(3) { animation-delay: .08s; } .tablecards .card:nth-child(4) { animation-delay: .12s; }
-@keyframes slam { from { transform: translateY(-26px) scale(1.25) rotate(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.tablecards .card { width: 92px; }
+/* motion: cards in flight between hands, the mat and the piles */
+.flyer { position: fixed; z-index: 60; pointer-events: none; border-radius: 9px; will-change: transform; }
+.flyer img { width: 100%; height: 100%; display: block; border-radius: 9px; box-shadow: 0 2px 0 var(--ink), 0 16px 22px -10px rgba(0, 0, 0, .65); }
+.flyer.flipper { transform-style: preserve-3d; }
+.flyer.flipper img { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flyer.flipper img.b { transform: rotateY(180deg); }
+.inflight { position: relative; z-index: 40; }
+/* the discard: beaten moves face up, spent stamina face down */
+.piles { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); display: flex; gap: 14px; align-items: flex-start; }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 64px; }
+.pile .stack { position: relative; width: 56px; aspect-ratio: 5 / 7; border-radius: 7px; }
+.pile .stack.empty { border: 2.5px dashed #c9c2b0; }
+.pile .stack img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 7px; border: 1.5px solid var(--ink); box-shadow: 0 2px 0 var(--ink); }
+.pile .stack img:nth-last-child(2) { transform: translate(-3px, 2px) rotate(-5deg); } .pile .stack img:nth-last-child(3) { transform: translate(3px, 3px) rotate(6deg); }
+.pile .cap { font: 700 11px/1.15 var(--body, inherit); color: #6b6488; text-align: center; }
+.pile .cap b { display: block; font: 900 16px/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 1080px) { .piles { position: static; transform: none; } .pile .stack { width: 40px; } .pile { width: 56px; } }
 .card.pick { cursor: pointer; }
 .card.pick img { box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px var(--ink), 0 8px 14px -8px rgba(0, 0, 0, .6); }
 .card.pick:hover { transform: translateY(-4px); }
@@ -339,7 +354,8 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       hands: g.hands.map((h, p) => (p === seat ? h.slice() : h.map(() => 0))), // other hands: sizes only
       counts: g.counts.map((c) => c.map(() => 0)),                               // stamina is face down, even to its owner
       aside: g.aside, status: g.status.slice(), out: g.out.slice(), cur: g.cur, owner: g.owner, touched: g.touched,
-      turn: g.turn, phase: g.phase, roundOver: g.roundOver, lastAction: g.lastAction, log: g.log.slice(-60), logN: g.log.length
+      turn: g.turn, phase: g.phase, roundOver: g.roundOver, lastAction: g.lastAction, log: g.log.slice(-60), logN: g.log.length,
+      disc: Object.keys(g.seen || {}).reduce((s, r) => s + g.seen[r], 0) - (g.cur ? g.cur.cards.length : 0), fdDiscard: g.fdDiscard || 0
     };
     return Object.assign(v, extra || {});
   }
@@ -626,6 +642,147 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
   const cardImg = (r, cls, attrs) => '<span class="card ' + (cls || '') + '" ' + (attrs || '') + '><img src="' + IMG + 'card-' + r + '.webp" alt="' + r + '" width="240" height="336"></span>';
   const backs = (k, big) => k ? Array.from({ length: k }, () => '<img src="' + IMG + 'back.webp" alt="" width="240" height="336">').join('') : '<span class="none">No stamina left</span>';
 
+  // ---------------------------------------------------------------- motion
+  // Every card that changes place travels there: a play lifts out of a hand (or comes from a rival's seat) onto the mat, the
+  // move it beat slides off to the played pile, a card taken off the mat drops into a gap in the hand, a reversal spends a
+  // stamina card face down onto the discard and a kick out flips one up into the hand. snap() measures the page just before
+  // the engine changes the state; plan() works out what went where (it also keeps the played pile's top card); after
+  // render(), run() animates from the old rects. Reduced motion: nothing travels.
+  const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const EASE = 'cubic-bezier(.2,.8,.2,1)';
+  let discTop = [], animEnd = 0;
+  const rectOf = (el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; };
+  const all = (q) => Array.from(app.querySelectorAll(q));
+  const stamEls = (p) => all(p === me ? '.you .counts img' : '.seat[data-p="' + p + '"] .counts img');
+  function snap() {
+    if (!g || !app.querySelector('.ring')) return null;
+    const s = { hand: all('.you .hand .card').map(rectOf), handRanks: g.hands[me].slice(), table: all('.tablecards .card').map(rectOf),
+      tableRanks: g.cur ? g.cur.cards.slice() : [], seats: {}, stam: {}, sel: sel.slice(), round: g.round };
+    for (let p = 0; p < g.n; p++) { const e = app.querySelector('.seat[data-p="' + p + '"]'); s.seats[p] = e ? rectOf(e) : null; s.stam[p] = stamEls(p).map(rectOf); }
+    return s;
+  }
+  function discCount() {
+    if (g.disc != null) return g.disc; // online views carry it
+    let n = 0; for (const r in (g.seen || {})) n += g.seen[r];
+    return Math.max(0, n - (g.cur ? g.cur.cards.length : 0));
+  }
+  function pilesHtml() {
+    const n = discCount(), f = g.fdDiscard || 0;
+    const top = n ? (discTop.length ? discTop : [0]).slice(-3).map((r) => '<img src="' + IMG + (r ? 'card-' + r : 'back') + '.webp" alt="" width="240" height="336">').join('') : '';
+    return '<div class="piles"><div class="pile up" title="Beaten moves, face up"><div class="stack' + (n ? '' : ' empty') + '">' + top + '</div><div class="cap"><b>' + n + '</b>played</div></div>' +
+      '<div class="pile fd" title="Stamina spent on reversals, face down"><div class="stack' + (f ? '' : ' empty') + '">' + (f ? '<img src="' + IMG + 'back.webp" alt="" width="240" height="336">' : '') + '</div><div class="cap"><b>' + f + '</b>stamina spent</div></div></div>';
+  }
+  // which hand positions the played cards came from: the selected ones first, then any card of that rank
+  function sourceIdx(ranks, picked, cards) {
+    const used = new Set(), out = [];
+    for (const r of cards) {
+      let i = picked.find((k) => !used.has(k) && ranks[k] === r);
+      if (i == null) i = ranks.findIndex((x, k) => x === r && !used.has(k));
+      used.add(i); out.push(i);
+    }
+    return out;
+  }
+  function plan(b, la) {
+    if (!b || !la || !la.a || b.round !== g.round) return null;
+    const a = la.a, old = b.tableRanks, cur = g.cur ? g.cur.cards : [];
+    const P = { b, p: la.p, type: a.type, gone: [], keep: [], take: -1 };
+    if (a.type === 'play') P.gone = old.map((r, i) => i);
+    else {
+      let rest = old.map((r, i) => i);
+      if ((a.type === 'reverse' || a.type === 'takeback') && old.length) { P.take = old.indexOf(a.rank); rest = rest.filter((i) => i !== P.take); }
+      if (rest.length === cur.length && rest.every((i, k) => old[i] === cur[k])) P.keep = rest; else P.gone = rest; // what's left stays, or the table cleared
+    }
+    if (P.gone.length) discTop = P.gone.map((i) => old[i]);
+    return P;
+  }
+  function flip(el, from, to, o) {
+    o = o || {};
+    const dx = from.x + from.w / 2 - (to.x + to.w / 2), dy = from.y + from.h / 2 - (to.y + to.h / 2);
+    const sx = from.w / to.w, sy = from.h / to.h, lift = o.lift == null ? 28 : o.lift, rot = o.rot || 0, s3 = o.flipY ? 'perspective(900px) ' : '';
+    const ry = (d) => (o.flipY ? ' rotateY(' + d + 'deg)' : '');
+    el.style.animation = 'none';
+    const an = el.animate([
+      { transform: s3 + 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ') rotate(0deg)' + ry(180), opacity: o.fadeIn ? 0 : 1 },
+      { offset: 0.45, transform: s3 + 'translate(' + dx * 0.5 + 'px,' + (dy * 0.5 - lift) + 'px) scale(' + ((sx + 1) / 2) * 1.07 + ',' + ((sy + 1) / 2) * 1.07 + ') rotate(' + rot / 2 + 'deg)' + ry(90), opacity: 1 },
+      { transform: s3 + 'translate(0px,0px) scale(1,1) rotate(' + rot + 'deg)' + ry(0), opacity: o.fadeOut ? 0 : 1 }
+    ], { duration: o.ms || 560, delay: o.delay || 0, easing: EASE, fill: 'both' });
+    if (!el.classList.contains('flyer')) el.classList.add('inflight');
+    const end = () => { if (o.done) o.done(); else { el.classList.remove('inflight'); an.cancel(); } };
+    an.onfinish = end; an.oncancel = () => el.classList.remove('inflight');
+    animEnd = Math.max(animEnd, Date.now() + (o.delay || 0) + (o.ms || 560));
+    return an;
+  }
+  function ghost(r, at, back, flipper) {
+    const d = document.createElement('div');
+    d.className = 'flyer' + (flipper ? ' flipper' : '');
+    d.style.cssText = 'left:' + at.x + 'px;top:' + at.y + 'px;width:' + at.w + 'px;height:' + at.h + 'px';
+    d.innerHTML = flipper ? '<img class="f" src="' + IMG + 'card-' + r + '.webp" alt=""><img class="b" src="' + IMG + 'back.webp" alt="">'
+      : '<img src="' + IMG + (back ? 'back' : 'card-' + r) + '.webp" alt="">';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 2500); // never strand one
+    return d;
+  }
+  const fly = (r, from, to, back, o) => { const d = ghost(r, to, back, o && o.flipper); flip(d, from, to, Object.assign({}, o, { done: () => d.remove() })); };
+  function veil(el, ms) { if (!el) return; el.style.visibility = 'hidden'; setTimeout(() => { el.style.visibility = ''; }, ms); }
+  function seatBox(p) { // where a rival's hand is: their card count
+    const e = app.querySelector('.seat[data-p="' + p + '"] .row span') || app.querySelector('.seat[data-p="' + p + '"]');
+    if (!e) return null;
+    const r = rectOf(e); return { x: r.x + Math.min(r.w, 60) / 2 - 22, y: r.y + r.h / 2 - 31, w: 44, h: 62 };
+  }
+  function run(P) {
+    if (!P || RM || document.hidden) return;
+    const b = P.b, p = P.p, mine = p === me;
+    const tab = all('.tablecards .card'), hand = all('.you .hand .card');
+    const upEl = app.querySelector('.pile.up .stack'), fdEl = app.querySelector('.pile.fd .stack');
+    const up = upEl && rectOf(upEl), fd = fdEl && rectOf(fdEl);
+    // 1. the move that was beaten (or cleared) slides off to the played pile
+    if (up && P.gone.length) {
+      P.gone.forEach((i, k) => { if (b.table[i]) fly(b.tableRanks[i], b.table[i], up, false, { ms: 520, delay: k * 60, lift: 16, rot: (k - (P.gone.length - 1) / 2) * 6 }); });
+      veil(upEl, 520 + 60 * (P.gone.length - 1));
+    }
+    // 2. what's left of a move after a card is taken closes up
+    P.keep.forEach((i, k) => { if (tab[k] && b.table[i]) flip(tab[k], b.table[i], rectOf(tab[k]), { ms: 420, lift: 0, delay: 120 }); });
+    // where a card entering your hand lands (the engine adds it and sorts, so it sits after any equal cards)
+    let j = -1;
+    if (mine && g.hands[me].length === b.handRanks.length + 1) {
+      const cnt = {}; b.handRanks.forEach((r) => { cnt[r] = (cnt[r] || 0) + 1; });
+      const h = g.hands[me], k = h.findIndex((r) => !(cnt[r]-- > 0));
+      if (k >= 0) j = h.lastIndexOf(h[k]);
+    }
+    // 3. a play lifts out of your hand, or comes from the rival's seat, onto the mat
+    let played = [];
+    if (P.type === 'play' && g.cur) {
+      if (mine) played = sourceIdx(b.handRanks, b.sel, g.cur.cards);
+      const from0 = !mine && (seatBox(p) || b.seats[p]);
+      tab.forEach((el, k) => {
+        const from = mine ? b.hand[played[k]] : from0;
+        if (from) flip(el, from, rectOf(el), { ms: 620, delay: 140 + k * 80, lift: mine ? 46 : 20, fadeIn: !mine });
+      });
+    }
+    // 4. a card taken off the mat drops into the hand
+    if (P.take >= 0 && b.table[P.take]) {
+      if (mine && hand[j]) flip(hand[j], b.table[P.take], rectOf(hand[j]), { ms: 620, lift: 36, delay: 60 });
+      else if (!mine) { const t = seatBox(p); if (t) fly(b.tableRanks[P.take], b.table[P.take], t, false, { ms: 620, lift: 30, delay: 60, fadeOut: true }); }
+    }
+    // 5. stamina: a reversal spends one face down onto the discard; a kick out takes one into the hand
+    const sr = (b.stam[p] || [])[(b.stam[p] || []).length - 1];
+    if (sr && P.type === 'reverse' && fd) { fly(0, sr, fd, true, { ms: 600, delay: 260, lift: 24, rot: 7 }); veil(fdEl, 860); }
+    if (sr && P.type === 'kickout') {
+      if (mine && hand[j]) { const to = rectOf(hand[j]); veil(hand[j], 700); fly(g.hands[me][j], sr, to, false, { ms: 700, lift: 40, flipper: true, flipY: true }); }
+      else if (!mine) { const t = seatBox(p); if (t) fly(0, sr, t, true, { ms: 600, lift: 22, fadeOut: true }); }
+    }
+    // 6. your hand: cards that stay slide to close the gap, or part to make room
+    if (mine && (P.type === 'play' || j >= 0)) {
+      const gone = new Set(played);
+      let n = 0;
+      b.handRanks.forEach((r, i) => {
+        if (gone.has(i)) return;
+        let k = n++; if (j >= 0 && k >= j) k++;
+        if (hand[k] && b.hand[i] && k !== j) { const to = rectOf(hand[k]); if (Math.abs(to.x - b.hand[i].x) > 1) flip(hand[k], b.hand[i], to, { ms: 420, lift: 0 }); }
+      });
+    }
+  }
+
   // ---------------------------------------------------------------- setup
   function setup(msg) {
     if (typeof msg !== 'string') msg = '';
@@ -845,10 +1002,10 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     if (tut) { // scripted bots, at a pace a new player can follow; the coach takes over at the end of the round
       if (g.roundOver || g.turn === 0) return;
       const p = g.turn;
-      timer = setTimeout(() => { const a = tut.bots[p].shift(); if (!a) return; E.act(g, a); afterAct(); }, 1250);
+      timer = setTimeout(() => { const a = tut.bots[p].shift(); if (!a) return; const b = snap(); E.act(g, a); afterAct(b); }, Math.max(1250, animEnd - Date.now() + 250));
       return;
     }
-    if (g.roundOver) { timer = setTimeout(roundModal, 900); return; }
+    if (g.roundOver) { timer = setTimeout(roundModal, Math.max(900, animEnd - Date.now() + 400)); return; }
     if (g.turn === 0) return;
     const humanOut = g.status[0] !== 'in';
     const pace = humanOut ? 420 : 820;
@@ -856,11 +1013,11 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     timer = setTimeout(() => {
       const t0 = Date.now();
       const a = tough ? E.smartAction(g, { samples: 48, ms: humanOut ? 250 : 600 }) : E.botAction(g);
-      timer = setTimeout(() => { E.act(g, a); afterAct(); }, Math.max(0, pace - 100 - (Date.now() - t0)));
+      timer = setTimeout(() => { const b = snap(); E.act(g, a); afterAct(b); }, Math.max(0, pace - 100 - (Date.now() - t0), animEnd - Date.now() + 150));
     }, 100);
   }
-  function afterAct() {
-    const a = g.lastAction;
+  function afterAct(b) {
+    const a = g.lastAction, P = plan(b, a);
     if (a) {
       let word = null;
       if (a.a.type === 'play') word = WORD[Math.max.apply(null, a.a.cards)];
@@ -873,7 +1030,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       // anyone pinned at the start of the next turn
       g.out.forEach((p) => { if (g.status[p] === 'pinned' && p !== a.p && !pops.some((x) => x.p === p) && justOut(p)) pops.push({ p, word: '1, 2, 3!' }); });
     }
-    sel = []; mode = null; render(); schedule();
+    sel = []; mode = null; render(); run(P); schedule();
   }
   function justOut(p) { for (let i = g.log.length - 1; i >= lastLog - 1 && i >= 0; i--) if (g.log[i].who === p && g.log[i].kind === 'out') return true; return false; }
   function human(a) {
@@ -888,9 +1045,10 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       return;
     }
     if (tut && !tutMatches(a)) return;
+    const b = snap();
     try { E.act(g, a); } catch (e) { return; }
     if (tut) tut.step++;
-    afterAct();
+    afterAct(b);
   }
 
   // ---------------------------------------------------------------- render
@@ -959,6 +1117,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       '<div class="status" id="status">' + esc(status) + '</div>' +
       '<div class="tablecards">' + tcards + '</div>' +
       '<div class="hint">' + esc(cur ? E.describe(cur).replace(/^./, (c) => c.toUpperCase()) + ', ' + ownerName + (g.touched && g.owner !== -1 ? ' (reversed)' : '') + '. ' : '') + esc(hint) + '</div>' +
+      pilesHtml() +
       (g.aside ? '<div class="aside"><img src="' + IMG + 'back.webp" alt="" width="240" height="336">' + g.aside + ' set aside</div>' : '') +
       '</div></div>' + (tut ? coachHtml() : '') +
       '<div class="you' + (mine ? ' turn' : '') + (tut ? ' tutmode' : '') + '" style="--pc:' + COLORS[me] + '">' +
@@ -1249,6 +1408,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
   function onView(v, quiet) {
     if (!ov.hidden && ov.dataset.kind === 'ask') { g = v; me = v.me; return; } // don't redraw under a question
     const fresh = g == null || g.matchId !== v.matchId;
+    const b = !fresh && !quiet && v.actN !== lastActN ? snap() : null; // measure the old page before it's redrawn
     g = v; me = v.me; tut = null;
     if (fresh) { lastLog = v.logN; lastActN = v.actN; modalFor = ''; window.scrollTo(0, 0); }
     pending = false; clearTimeout(pendT);
@@ -1270,10 +1430,11 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
         newLines.forEach((l) => { if (l.kind === 'out' && l.who != null && l.who !== a.p && v.status[l.who] === 'pinned' && !pops.some((x) => x.p === l.who)) pops.push({ p: l.who, word: '1, 2, 3!' }); });
       }
     }
-    render();
+    const P = b ? plan(b, v.lastAction) : null;
+    render(); run(P);
     if (v.roundOver) {
       const k = v.matchId + '/' + v.round + (v.over ? '/over' : '');
-      if (modalFor !== k) { modalFor = k; ov.hidden = true; clearTimeout(modalT); modalT = setTimeout(() => { if (net && g && g.roundOver && ov.hidden) roundModal(); }, 900); }
+      if (modalFor !== k) { modalFor = k; ov.hidden = true; clearTimeout(modalT); modalT = setTimeout(() => { if (net && g && g.roundOver && ov.hidden) roundModal(); }, Math.max(900, animEnd - Date.now() + 400)); }
     } else { clearTimeout(modalT); if (!ov.hidden && ov.dataset.kind === 'round') ov.hidden = true; }
   }
 

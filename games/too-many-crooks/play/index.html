@@ -155,6 +155,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .die.pick:hover{transform:translateY(-2px)}
 .die.sel{outline:3px solid var(--red);outline-offset:2px;transform:translateY(-3px)}
 .die.dim{opacity:.35}
+.mghost{position:fixed;z-index:9000;pointer-events:none;margin:0}.mghost .die{margin:0}
 .die.staged{opacity:.55;outline:2px dashed var(--red);outline-offset:1px}
 .die .tag{position:absolute;right:-6px;top:-8px;background:var(--red);color:#fff;font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;padding:1px 4px;border-radius:3px;line-height:1.2}
 .die .pay{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);background:var(--red2);color:#fff;font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;padding:0 4px;border-radius:3px;white-space:nowrap}
@@ -442,6 +443,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     schedule(ms) { clearTimeout(this.t); this.t = setTimeout(() => this.tick(), ms); }
     tick() {
       const g = this.game; if (!g) return;
+      if (typeof window !== 'undefined' && window.__tmcBusy && window.__tmcBusy()) { this.schedule(150); return; }   // let the dice land first
       const S = g.state;
       if (S.phase === 'over') return;
       // timer for humans
@@ -709,10 +711,154 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   $('quick').innerHTML = QUICK.map((q) => '<button>' + esc(q) + '</button>').join('');
   $('quick').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) say(b.textContent); });
 
+
+  /* ---------------- motion: every die travels to its new place instead of blinking there (FLIP). Each render
+     measures the dice first; afterwards a die that changed place slides from where it was, a new die drops in,
+     a die that left fades out where it was. At the reveal, every scoring die sends a copy to the scoreboard chip
+     of whoever it scores for, the numbers count up, and only then does the split open. Bots wait for it. */
+  const Motion = (() => {
+    const EASE = 'cubic-bezier(.2,.8,.2,1)';
+    const reduce = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    let live = 0, lastStart = 0, holdUntil = 0, snapMap = null, scoreShown = null;
+    const track = (a) => { live++; lastStart = Date.now(); const done = () => { live = Math.max(0, live - 1); }; a.finished.then(done, done); return a; };
+    const placeOf = (el) => {
+      const sh = el.closest('.sheet'), row = el.closest('.slot.gold, .slot.red, .slot.keep, .kept');
+      return (sh ? 's' + sh.dataset.seat : 'h') + ':' + (row ? row.className.replace(/\s*(drop|empty-crew)\b/g, '') : '');
+    };
+    const zoomOf = (el, r) => (el.offsetWidth ? r.width / el.offsetWidth : 1) || 1;   // page zoom (the video zooms the body)
+    function snap() {
+      snapMap = null;
+      if (reduce()) return;
+      const m = new Map();
+      document.querySelectorAll('#sheets .die[data-id], #hand .die[data-id]').forEach((el) => {
+        const r = el.getBoundingClientRect(); if (!r.width) return;
+        const e = { r, place: placeOf(el), z: zoomOf(el, r), html: el.outerHTML, staged: el.classList.contains('staged') };
+        (m.get(el.dataset.id) || m.set(el.dataset.id, []).get(el.dataset.id)).push(e);
+      });
+      snapMap = m;
+    }
+    function slide(el, from, to, delay) {
+      const z = zoomOf(el, to);
+      const dx = (from.left - to.left) / z, dy = (from.top - to.top) / z, sc = from.width / to.width;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 2 && Math.abs(sc - 1) < 0.03) return 0;
+      const end = getComputedStyle(el).transform, endT = end === 'none' ? '' : end;
+      const lift = Math.min(34, 8 + dist * 0.1), dur = Math.round(Math.min(650, 380 + dist * 0.45));
+      el.style.zIndex = 60;
+      const a = track(el.animate([
+        { transform: `translate(${dx}px,${dy}px) scale(${sc}) ${endT}`, filter: 'drop-shadow(0 0 0 rgba(0,0,0,0))' },
+        { transform: `translate(${dx * 0.42}px,${dy * 0.42 - lift}px) scale(${(sc + 1) / 2 * 1.14}) ${endT}`, filter: 'drop-shadow(0 12px 9px rgba(0,0,0,.4))', offset: 0.45 },
+        { transform: endT || 'none', filter: 'drop-shadow(0 0 0 rgba(0,0,0,0))' }],
+        { duration: dur, delay, easing: EASE, fill: 'backwards' }));
+      a.finished.then(() => { el.style.zIndex = ''; }, () => {});
+      return delay + dur;
+    }
+    function dropIn(el, delay) {
+      const end = getComputedStyle(el).transform, endT = end === 'none' ? '' : end;
+      track(el.animate([
+        { transform: `translateY(-22px) scale(.7) ${endT}`, opacity: 0 },
+        { transform: `translateY(3px) scale(1.04) ${endT}`, opacity: 1, offset: 0.7 },
+        { transform: endT || 'none', opacity: 1 }], { duration: 420, delay, easing: EASE, fill: 'backwards' }));
+      return delay + 420;
+    }
+    function ghost(e, kf, opts) {                     // a copy of a die that is no longer on the page
+      const g = document.createElement('div');
+      g.className = 'mghost'; g.innerHTML = e.html;
+      Object.assign(g.style, { left: (e.r.left / e.z) + 'px', top: (e.r.top / e.z) + 'px' });
+      document.body.appendChild(g);
+      const a = track(g.animate(kf, opts));
+      a.finished.then(() => g.remove(), () => g.remove());
+      return a;
+    }
+    // after a render: move, drop or fade every die against the snapshot
+    function play() {
+      const m = snapMap; snapMap = null;
+      if (!m) return 0;
+      const seen = new Set(); let end = 0, nDrop = 0, nMove = 0;
+      document.querySelectorAll('#sheets .die[data-id], #hand .die[data-id]').forEach((el) => {
+        const id = el.dataset.id, old = m.get(id); seen.add(id);
+        const r = el.getBoundingClientRect(); if (!r.width) return;
+        if (!old) { end = Math.max(end, dropIn(el, Math.min(nDrop++, 12) * 45)); return; }
+        const pl = placeOf(el);
+        const from = old.find((o) => o.place === pl) || old.find((o) => !o.staged) || old[0];
+        const t = slide(el, from.r, r, from.place === pl ? 0 : Math.min(nMove, 8) * 70);
+        if (t && from.place !== pl) nMove++;
+        end = Math.max(end, t);
+      });
+      for (const [id, old] of m) {
+        if (seen.has(id)) continue;
+        const e = old.find((o) => !o.staged) || old[0];
+        ghost(e, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-14px) scale(.75)' }], { duration: 380, easing: EASE, fill: 'forwards' });
+        end = Math.max(end, 380);
+      }
+      return end;
+    }
+    // the reveal: every die that scores flies (a copy) to the chip of whoever it scores for
+    function reveal(v, delay) {
+      if (reduce()) return 0;
+      const chips = [...document.querySelectorAll('#score .sc')];
+      const order = [...Array(v.N).keys()].filter((i) => i !== v.me).concat([v.me]);
+      let k = 0, end = delay;
+      const fly = (el, seat) => {
+        const chip = chips[seat]; if (!el || !chip) return;
+        const r = el.getBoundingClientRect(), cr = chip.querySelector('.n').getBoundingClientRect(), z = zoomOf(el, r);
+        if (!r.width) return;
+        const e = { r, z, html: el.outerHTML.replace(/<span class="pay[^"]*">[^<]*<\/span>/, '') };
+        const dx = (cr.left + cr.width / 2 - r.left - r.width / 2) / z, dy = (cr.top + cr.height / 2 - r.top - r.height / 2) / z;
+        const d = delay + Math.min(k++, 30) * 20, dur = 600;
+        ghost(e, [
+          { transform: 'none', opacity: 0, offset: 0 }, { transform: 'translateY(-6px) scale(1.08)', opacity: 1, offset: 0.12 },
+          { transform: `translate(${dx * 0.5}px,${dy * 0.5 - 40}px) scale(.9)`, opacity: 1, offset: 0.55 },
+          { transform: `translate(${dx}px,${dy}px) scale(.5)`, opacity: 0.85, offset: 0.95 }, { transform: `translate(${dx}px,${dy}px) scale(.4)`, opacity: 0 }],
+          { duration: dur, delay: d, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'both' });
+        end = Math.max(end, d + dur);
+      };
+      for (const i of order) {
+        const sh = document.querySelector('.sheet[data-seat="' + i + '"]'); if (!sh) continue;
+        const crew = v.crews[i] || [];
+        // crew dice score for this host; the cuts under each crook score for the crook's owner; the own cut for the host
+        sh.querySelectorAll('.slot.gold .die').forEach((el) => { if (crew.some((c) => c.id === el.dataset.id)) fly(el, i); });
+        sh.querySelectorAll('.slot.red[data-crew]').forEach((slot) => {
+          const c = crew.find((x) => x.id === slot.dataset.crew);
+          slot.querySelectorAll('.die').forEach((el) => fly(el, c ? c.owner : i));
+        });
+        sh.querySelectorAll('.slot.keep .die').forEach((el) => fly(el, i));
+      }
+      return end;
+    }
+    // scoreboard numbers count up from what was last shown
+    function scores(v, delay, dur) {
+      const was = scoreShown; scoreShown = v.scores.slice();
+      if (!was || was.length !== v.scores.length || reduce()) return;
+      document.querySelectorAll('#score .sc').forEach((chip, i) => {
+        const a = was[i], b = v.scores[i]; if (a === b) return;
+        const n = chip.querySelector('.n'); n.textContent = a;
+        const t0 = performance.now() + delay;
+        const step = (t) => {
+          if (!n.isConnected) return;
+          const u = Math.max(0, Math.min(1, (t - t0) / dur));
+          n.textContent = Math.round(a + (b - a) * (1 - Math.pow(1 - u, 2)));
+          if (u < 1) requestAnimationFrame(step);
+          else track(chip.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 320, easing: EASE }));
+        };
+        requestAnimationFrame(step);
+      });
+    }
+    return {
+      snap, play, reveal, scores,
+      hold(ms, set) { const t = Date.now() + ms; holdUntil = set ? t : Math.max(holdUntil, t); },
+      holding: () => Date.now() < holdUntil,
+      busy: () => Date.now() < holdUntil || (live > 0 && Date.now() - lastStart < 2500),
+      reduce,
+    };
+  })();
+  window.__tmcBusy = Motion.busy;
   /* ---------------- render */
   function render() {
     const v = view; if (!v) return;
     const me = v.me, job = v.jobs[v.job], last = v.job === v.jobs.length - 1;
+    const prevPhase = render._phase;
+    Motion.snap();
     if (v.seq !== lastSeq) {
       // phase changed? reset local selections
       if (!render._phase || render._phase !== v.phase || render._job !== v.job) { staged = []; pickDie = null; crewSel = null; paySel = {}; pickKept = null; submitted = { crew: false, pay: false }; }
@@ -743,8 +889,24 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     renderActions();
     renderFeed();
     renderTimer();
+    const moved = Motion.play();
+    const done = v.phase === 'summary' || v.phase === 'over';
+    if (done && prevPhase === 'pay' && !tut && !Motion.reduce()) {
+      // the reveal: the last cuts slide into place, every scoring die flies to its scoreboard chip, then the split opens
+      const start = Math.max(moved, 150) + 60;
+      Motion.scores(v, start + 300, 900);
+      Motion.hold(start + 2600);
+      clearTimeout(render._split);
+      render._split = setTimeout(() => {          // measured once the last cuts have landed
+        if (!view || tut) return;
+        const land = view.phase === 'summary' || view.phase === 'over' ? Motion.reveal(view, 0) : 0;
+        Motion.hold(land + 250, true);
+        render._split = setTimeout(() => { if (view && (view.phase === 'summary' || view.phase === 'over') && !tut) renderSummary(); }, land + 250);
+      }, start);
+    } else Motion.scores(v, 0, 600);
     if (tut) renderCoach();
-    else if (v.phase === 'summary' || v.phase === 'over') renderSummary(); else $('modal').classList.add('hide');
+    else if (done) { if (!Motion.holding()) renderSummary(); else $('modal').classList.add('hide'); }
+    else $('modal').classList.add('hide');
   }
 
   function sheetHTML(i, mine) {

@@ -483,6 +483,26 @@ button:disabled { opacity: .55; cursor: default; }
   .site.v:not(.far) .meld { width: 43px; }
   .site .board b { font-size: 10.5px; }
 }
+
+/* ---- motion: pieces travel between rock face, sites, camps and captured piles ---- */
+.seat { position: relative; padding-right: 54px; }
+.pile { position: absolute; right: 9px; top: 50%; width: 30px; height: 42px; transform: translateY(-50%); }
+.pile i { position: absolute; inset: 0; border-radius: 4px; }
+.pile i:nth-child(2) { transform: translate(-3px, -3px); } .pile i:nth-child(3) { transform: translate(-6px, -6px); }
+.pile.n0 i { opacity: 0; } .pile.n0 i:first-child { opacity: 1; background: none; box-shadow: none; border: 1.5px dashed var(--line); }
+.pile.n1 i:nth-child(n+2), .pile.n2 i:nth-child(3) { display: none; }
+.pile b { position: absolute; right: -6px; bottom: -7px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 10px; background: var(--pc); color: #fff; font: 700 12px/19px var(--font-body); text-align: center; font-variant-numeric: lining-nums tabular-nums; box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.pile.n0 b { display: none; }
+.cardback, .pile i { background: radial-gradient(circle at 50% 50%, #e7d6ae 0 2.5px, transparent 3px), repeating-linear-gradient(45deg, #6a4c33 0 4px, #5a3f2a 4px 8px); border: 1px solid rgba(20, 12, 4, .7); box-shadow: inset 0 0 0 2px #c9b48a, var(--shadow); }
+.fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: visible; }
+.fx-layer .fx-fly { position: absolute; display: block; margin: 0; padding: 0; gap: 0; min-height: 0; transform-origin: 0 0; will-change: transform; perspective: 600px; }
+.fx-layer .fx-fly > .card, .fx-layer .fx-fly .fx-flip { width: 100%; height: 100%; margin: 0; transform: none; outline: none; animation: none; }
+.fx-layer .fx-flip { position: relative; transform-style: preserve-3d; }
+.fx-layer .fx-flip > * { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 5px; }
+.fx-layer .fx-flip > .cardback { transform: rotateY(180deg); }
+.fx-hide { visibility: hidden; }
+@media (min-width: 760px) { .seat { padding-right: 66px; } .pile { width: 36px; height: 50px; right: 13px; } }
+@media (max-width: 459px) { .seat { padding-right: 40px; } .pile { width: 22px; height: 31px; right: 7px; } .pile b { min-width: 16px; height: 16px; font-size: 10.5px; line-height: 16px; right: -5px; bottom: -6px; } }
 </style>
 
 </head>
@@ -1427,7 +1447,7 @@ function whom(i) { return i === 0 ? "you" : fullName(i); }
 function scheduleBot() {
   if (!G || botTimer || (net && net.kind === "guest")) return;
   if (G.phase === "play" && !G.players[G.turn].human) {
-    botTimer = setTimeout(() => { botTimer = null; botTurn(G); render(); scheduleBot(); }, 700);
+    botTimer = setTimeout(() => { botTimer = null; botTurn(G); render(); scheduleBot(); }, 700 + Motion.wait());
   }
 }
 
@@ -1437,7 +1457,7 @@ function cardHtml(c, cls = "", attrs = "") {
   const s = SP(c), tip = SPECIES[s].name;
   const u = V(c) === 6 || V(c) === 9 ? ` class="u"` : "";
   const ix = ["tl", "tr", "bl", "br"].map(k => `<span class="ix ${k}"><b${u}>${V(c)}</b>${symSvg(s)}</span>`).join("");
-  return `<div class="card f${c} ${cls}" style="--suit:${SPECIES[s].suit}" title="${tip}" ${attrs}>${ix}</div>`;
+  return `<div class="card f${c} ${cls}" data-c="${c}" style="--suit:${SPECIES[s].suit}" title="${tip}" ${attrs}>${ix}</div>`;
 }
 function buildFaces() {
   if (FACES || typeof document === "undefined") return;
@@ -1454,7 +1474,9 @@ function buildFaces() {
 function seatHtml(i, wide = false) {
   const p = G.players[i];
   const turn = (G.phase === "play" || G.phase === "offer") && G.turn === i;
-  return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${pcol(i)}">
+  const cap = p.cap || 0;
+  return `<div class="cell seat ${wide ? "wide" : ""} ${turn ? "turn" : ""}" style="--pc:${pcol(i)}" data-seat="${i}">
+    <div class="pile n${Math.min(cap, 3)}" data-pile="${i}" title="${cap} captured fossil${cap === 1 ? "" : "s"}, face down" aria-hidden="true"><i></i><i></i><i></i><b>${cap}</b></div>
     <div class="name"><span class="dot"></span>${fullName(i)}${turn ? `<span class="turnflag">digging</span>` : ""}</div>
     <div class="score">${p.score < 0 ? "−" + -p.score : p.score}<span class="meta"> prestige</span></div>
     <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"}<span class="opt"> in the rock</span> · ${p.cap || 0} captured<span class="opt"> this season</span>${seatTags(i)}</div>
@@ -1495,7 +1517,7 @@ function laneHtml(i) {
   // an advanced site carries its effect on the site itself: inside the plank on a horizontal site, as a banner across the top of an upright one
   const fx = L.fx ? FX[L.fx] : null;
   const banner = fx && dir === "v" ? `<div class="fxbanner"><b>${fx.name}</b><span>${fx.rule}</span></div>` : "";
-  return `<div class="cell site ${dir} ${fx ? "fx" : ""} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
+  return `<div data-li="${i}" class="cell site ${dir} ${fx ? "fx" : ""} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
     ${banner}${side(pa, "a")}
     <div class="board"><b>${laneName(G, i)}</b>${fx && dir !== "v" ? `<span class="fxtag">${fx.name}</span>` : ""}${mine ? (fx ? "" : empty) : `<span class="untouched farnote">not beside you</span>`}${fx && dir !== "v" ? `<span class="fxrule">${fx.rule}</span>` : ""}</div>
     ${side(pb, "b")}
@@ -1653,13 +1675,164 @@ function setupHtml() {
   </div>${onlinePanelHtml()}${rulesHtml()}${catalogueHtml()}`;
 }
 
+
+// ===================== MOTION =====================
+// Every render replaces the table's HTML, so pieces would blink from place to place. Motion measures where every card
+// was on screen just before a render and where it is after, then flies a copy along that path in a fixed layer on top:
+// rock face -> site, site -> your rock face (a poach), site -> the winner's face-down captured pile, a fossil sent across
+// -> the rival's camp, a rival's find out of their camp onto the site. Pure UI changes (selecting a card) move nothing.
+const Motion = (() => {
+  const DUR = 560, EASE = "cubic-bezier(.2,.8,.2,1)";
+  let model = null, layer = null, flights = [], until = 0;
+  const landedN = {};
+  const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const modelOf = g => ({ g, caps: g.players.map(p => p.cap || 0), counts: g.players.map(handCount), owner: g.lanes.map(l => l.owner),
+    meld: g.lanes.map(l => l.meld.slice()), turn: g.turn, round: g.round, phase: g.phase, scoutTo: ui.scout ? ui.scout.to : null });
+  function scan() {
+    const out = new Map(); if (!root) return out;
+    root.querySelectorAll(".table .card[data-c], .hand-wrap .card[data-c]").forEach(el => {
+      const site = el.closest(".cell.site"), inc = el.closest(".incoming");
+      const zone = inc ? "inc" : site ? "lane" : "hand";
+      const lane = site ? +site.dataset.li : -1;
+      out.set(+el.dataset.c, { el, rect: el.getBoundingClientRect(), zone, lane, ctx: site ? "" : "hand" });
+    });
+    return out;
+  }
+  const rectOf = sel => { const e = root && root.querySelector(sel); return e ? e.getBoundingClientRect() : null; };
+  function settle() { flights.forEach(f => { try { f.anim.cancel(); } catch (e) {} f.done(); }); flights = []; }
+  function capture() {
+    settle();
+    if (!G || !model || model.g !== G && !(net && net.kind === "guest") || reduced()) return null;
+    const cards = scan(); if (!cards.size && !root.querySelector(".table")) return null;
+    cards.forEach(v => { v.clone = v.el.cloneNode(true); });
+    const seats = {}, piles = {};
+    G.players.forEach((_, i) => { seats[i] = rectOf(`[data-seat="${i}"] .name`) || rectOf(`[data-seat="${i}"]`); piles[i] = rectOf(`[data-pile="${i}"]`); });
+    return { cards, seats, piles, model, slots: !!root.querySelector(".slot") };
+  }
+  function ensureLayer() { if (!layer || !layer.isConnected) { layer = document.createElement("div"); layer.className = "fx-layer"; document.body.appendChild(layer); } return layer; }
+  function wrap(node, ctx, r, faceDown) {
+    const w = document.createElement("div"); w.className = `fx-fly ${ctx}`;
+    w.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
+    node.classList.remove("sel", "edge", "tut", "arrive", "fresh-in"); node.removeAttribute("data-act"); node.removeAttribute("role");
+    if (faceDown) { const f = document.createElement("div"); f.className = "fx-flip"; const b = document.createElement("div"); b.className = "cardback"; f.append(node, b); w.appendChild(f); }
+    else w.appendChild(node);
+    ensureLayer().appendChild(w); return w;
+  }
+  const tf = (dx, dy, sx, sy) => `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+  // fly `node` (shown at rect `at`) between two rects; `from`/`to` are where it starts/ends, one of them is `at`
+  function fly({ node, ctx, at, from, to, delay = 0, dur = DUR, arc = 0, faceDown = false, fadeOut = false, fadeIn = false, reveal = null, onLand = null }) {
+    const w = wrap(node, ctx, at, faceDown);
+    const k = r => [r.left - at.left, r.top - at.top, r.width / at.width, r.height / at.height];
+    const [x0, y0, a0, b0] = k(from), [x1, y1, a1, b1] = k(to);
+    const lift = arc || Math.min(46, 10 + Math.hypot(x1 - x0, y1 - y0) * 0.07);
+    const mid = [(x0 + x1) / 2, (y0 + y1) / 2 - lift, (a0 + a1) / 2 * 1.07, (b0 + b1) / 2 * 1.07];
+    const kf = [
+      { transform: tf(x0, y0, a0, b0), filter: "drop-shadow(0 2px 2px rgba(0,0,0,.25))" },
+      { transform: tf(...mid), offset: 0.5, filter: "drop-shadow(0 14px 12px rgba(0,0,0,.35))" },
+      { transform: tf(x1, y1, a1, b1), filter: "drop-shadow(0 2px 2px rgba(0,0,0,.25))" }];
+    const anim = w.animate(kf, { duration: dur, delay, easing: EASE, fill: "both" });
+    // a piece coming out of (or going into) a camp only fades at that end of its trip
+    if (fadeIn || fadeOut) w.animate([{ opacity: fadeIn ? 0 : 1 }, { opacity: 1, offset: fadeIn ? 0.25 : 0.72 }, { opacity: fadeOut ? 0 : 1 }], { duration: dur, delay, fill: "both" });
+    if (faceDown) w.firstChild.animate([{ transform: "rotateY(0deg)" }, { transform: "rotateY(180deg)" }], { duration: dur * 0.8, delay: delay + dur * 0.1, easing: "ease-in-out", fill: "both" });
+    if (reveal) reveal.classList.add("fx-hide");
+    let landed = false;
+    const done = () => { if (landed) return; landed = true; w.remove(); if (reveal) reveal.classList.remove("fx-hide"); if (onLand) onLand(); };
+    const f = { anim, done }; flights.push(f);
+    anim.finished.then(() => { done(); flights = flights.filter(x => x !== f); }).catch(() => {});
+    until = Math.max(until, performance.now() + delay + dur);
+  }
+  const shrink = (r, s = 0.35) => r && new DOMRect(r.left + r.width / 2 - 23 * s * 2, r.top + r.height / 2 - 32 * s * 2, 46 * s * 2, 64 * s * 2);
+  const same = (a, b) => Math.abs(a.left - b.left) < 2 && Math.abs(a.top - b.top) < 2 && Math.abs(a.width - b.width) < 2;
+  function play(before) {
+    const prev = before && before.model; model = G ? modelOf(G) : null;
+    if (!before || !G || !root) return;
+    const now = scan(), pm = prev, nm = model, P = before.cards;
+    // nothing changed place (a selection lifting a card, a hint): no motion, the page's own transitions handle it
+    const sig = m => [...m.entries()].map(([c, v]) => `${c}:${v.zone}${v.lane}`).sort().join() + "|" + [...m.keys()].join();
+    if (sig(now) === sig(P) && !root.querySelector(".slot") === !before.slots) return;
+    const seatR = i => before.seats[i] || rectOf(`[data-seat="${i}"] .name`) || null;
+    const pileR = i => rectOf(`[data-pile="${i}"]`) || before.piles[i];
+    // 1. pieces leaving the table
+    const gone = [...P.entries()].filter(([c]) => !now.has(c));
+    const capOrder = {}; let toss = 0; for (const k in landedN) delete landedN[k];
+    gone.forEach(([c, p], k) => {
+      let to = null, faceDown = false, fadeOut = false, q = null;
+      if (p.zone === "lane") {
+        const L = p.lane, o = nm.owner[L];
+        if (o !== null && o !== pm.owner[L] && nm.caps[o] > pm.caps[o]) { q = o; to = pileR(o); faceDown = true; }
+        else if (nm.meld[L].length === pm.meld[L].length - 1 && pm.turn !== 0) { to = shrink(seatR(pm.turn)); fadeOut = true; }
+      } else {
+        const r = G.players.findIndex((_, i) => i !== 0 && nm.counts[i] > pm.counts[i]);
+        const tgt = r > 0 ? r : pm.scoutTo; if (tgt != null && tgt !== 0) { to = shrink(seatR(tgt)); fadeOut = true; }
+      }
+      if (!to) { to = new DOMRect(p.rect.left, p.rect.top + 26, p.rect.width, p.rect.height); fadeOut = true; }   // out of the dig
+      let delay;
+      if (q !== null) { const n = capOrder[q] = (capOrder[q] || 0) + 1; delay = (n - 1) * 80; }
+      else delay = (toss++) * 60;
+      fly({ node: p.clone, ctx: p.ctx, at: p.rect, from: p.rect, to, delay, faceDown, fadeOut, arc: faceDown ? 34 : 0,
+        onLand: q === null ? null : () => { const n = landedN[q] = (landedN[q] || 0) + 1; bumpPile(q, n >= capOrder[q] ? nm.caps[q] : Math.min(nm.caps[q], pm.caps[q] + n)); } });
+    });
+    // 2. pieces that moved or arrived; a find played onto a site waits a beat for the beaten find to lift away
+    const capping = Object.keys(capOrder).length > 0;
+    let deal = 0;
+    const order = [...now.entries()].sort((a, b) => a[1].rect.left - b[1].rect.left);
+    const laneIdx = {};
+    order.forEach(([c, v]) => {
+      const p = P.get(c);
+      if (p && same(p.rect, v.rect)) return;
+      const node = v.el.cloneNode(true);
+      if (p) {
+        const toLane = v.zone === "lane" && p.zone !== "lane";
+        const n = toLane ? (laneIdx[v.lane] = (laneIdx[v.lane] || 0) + 1) - 1 : 0;
+        fly({ node: p.clone, ctx: p.ctx, at: p.rect, from: p.rect, to: v.rect, reveal: v.el, delay: (toLane ? n * 70 : 0) + (toLane && capping ? 160 : 0),
+          dur: p.zone === v.zone ? 380 : DUR, arc: v.zone === "hand" && p.zone !== "hand" ? 40 : p.zone === v.zone ? 6 : 0 });
+        return;
+      }
+      if (v.zone === "lane") {
+        const who = nm.owner[v.lane], n = (laneIdx[v.lane] = (laneIdx[v.lane] || 0) + 1) - 1, src = who != null && who !== 0 ? shrink(seatR(who)) : null;
+        if (src) return fly({ node, ctx: v.ctx, at: v.rect, from: src, to: v.rect, reveal: v.el, fadeIn: true, delay: n * 70 + (capping ? 160 : 0) });
+      }
+      if (v.zone === "inc" && G.offer && G.offer.to === 0 && seatR(G.offer.from)) {
+        v.el.classList.remove("arrive");
+        return fly({ node, ctx: v.ctx, at: v.rect, from: shrink(seatR(G.offer.from)), to: v.rect, reveal: v.el, fadeIn: true, delay: 120 });
+      }
+      // a fresh deal: fossils drop into the rock face one after another
+      const from = new DOMRect(v.rect.left, v.rect.top - 60, v.rect.width, v.rect.height);
+      fly({ node, ctx: v.ctx, at: v.rect, from, to: v.rect, reveal: v.el, fadeIn: true, dur: 420, delay: (deal++) * 45, arc: 4 });
+    });
+    // 3. a fossil sent between two rival camps travels face down
+    if (pm.turn !== 0 && pm.round === nm.round) G.players.forEach((_, r) => {
+      if (r === 0 || r === pm.turn || nm.counts[r] <= pm.counts[r] || ![...P.values()].some(p => p.zone === "lane" && !now.has(+p.el.dataset.c))) return;
+      const a = shrink(seatR(pm.turn), 0.45), b = shrink(seatR(r), 0.45); if (!a || !b) return;
+      const node = document.createElement("div"); node.className = "card cardback";
+      fly({ node, ctx: "", at: a, from: a, to: b, delay: 380, fadeOut: true });
+    });
+    Object.keys(capOrder).forEach(q => bumpPile(+q, pm.caps[q]));
+    // the season's scores wait until the last piece has landed
+    const ov = root.querySelector(".overlay"), wait = until - performance.now();
+    if (ov && wait > 0) ov.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, delay: wait + 150, fill: "backwards" });
+  }
+  // the captured pile counts up as each face-down fossil lands on it
+  function bumpPile(q, shown) {
+    const el = root && root.querySelector(`[data-pile="${q}"]`); if (!el) return;
+    el.className = `pile n${Math.min(shown, 3)}`; el.querySelector("b").textContent = shown;
+  }
+  return {
+    capture, play, settle,
+    wait: () => Math.max(0, until - performance.now()),
+    reset: () => { settle(); model = null; },
+  };
+})();
+
 function render() {
   if (!root) return;
-  if (!G) { root.innerHTML = net ? lobbyHtml() : ui.invite ? inviteHtml() : setupHtml(); return; }
+  if (!G) { Motion.reset(); root.innerHTML = net ? lobbyHtml() : ui.invite ? inviteHtml() : setupHtml(); return; }
+  const before = Motion.capture();
   root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}${G.adv ? " · site effects" : ""}</div><h1>Diggers</h1></div>
     <button data-act="setup">${net ? "Leave the table" : "New expedition"}</button></div>
     ${net ? netBarHtml() : ""}${statusHtml()}${tableHtml()}${handHtml()}${logHtml()}${rulesHtml()}${catalogueHtml()}${overlayHtml()}`;
   ui.lastShown = ui.shownNow; ui.shownNow = null; // the face-up card only slides in the first time it appears
+  Motion.play(before);
   if (net && net.kind === "host") net.sync();
 }
 
