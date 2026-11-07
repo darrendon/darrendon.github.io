@@ -1,0 +1,7 @@
+/* Abducted's two typefaces, Dela Gothic One (display) and M PLUS Rounded 1c (text), as named in Darren's art board.
+   Until the real font files are added to /assets/fonts, these names point at the closest faces the site already
+   hosts: Archivo at its heaviest, widest setting, and Figtree. To switch: replace the two src lines (and drop the
+   weight/stretch override below). Everything Abducted uses these names, so nothing else needs to change. */
+@font-face{font-family:"Dela Gothic One";src:url("/assets/fonts/archivo.woff") format("woff");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+@font-face{font-family:"M PLUS Rounded 1c";src:url("/assets/fonts/figtree.woff") format("woff");font-weight:300 900;font-display:swap}
+[style*="Dela Gothic One"],.dela{font-weight:900!important;font-stretch:112%!important}

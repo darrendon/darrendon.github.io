@@ -34,7 +34,7 @@
 .feature.g-udtc .feature-art img { width: 100%; height: 100%; object-fit: cover; }
 
 /* from abducted.css */
-.g-abd { --g-bg: #F3F4FA; --g-panel: #E3E6F3; --g-panel-hi: #EEF0F9; --g-face: #FFFFFF; --g-red: #3D4C9E; --g-gold: #D8F27A; --g-jade: #1E2447; --g-ink: #1B1E33; --g-muted: #555A78; --g-line: #D3D7E8; --ab-night: #1E2447; --ab-hum: #EE8A2B; --ab-ali: #8FCB3F; --ab-beam: #D8F27A; --ab-display: "Righteous","Jost",system-ui,sans-serif; }
-.feature.g-abd h3 { font-family: var(--ab-display); font-weight: 400; letter-spacing: 0.03em; }
-.feature.g-abd .feature-art { background: rgb(26, 31, 61); padding: 0px; }
+.g-abd { --g-bg: #FFF8EC; --g-panel: #F6EAD2; --g-panel-hi: #FBF2E0; --g-face: #FFFFFF; --g-red: #2E4BD8; --g-gold: #F6B92B; --g-jade: #1B2350; --g-ink: #1B1B2F; --g-muted: #5A5A72; --g-line: #EADCBF; --ab-night: #1B2350; --ab-hum: #F6B92B; --ab-ali: #2E4BD8; --ab-beam: #6EE7B7; --ab-coral: #E8553A; --ab-cream: #FFF4DE; --ab-display: "Dela Gothic One","Archivo","Arial Black",system-ui,sans-serif; }
+.feature.g-abd h3 { font-family: var(--ab-display); font-weight: 900; font-stretch: 112%; font-synthesis: none; letter-spacing: 0.01em; }
+.feature.g-abd .feature-art { background: rgb(20, 27, 63); padding: 0px; }
 .feature.g-abd .feature-art img { width: 100%; height: 100%; object-fit: cover; }

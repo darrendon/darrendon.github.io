@@ -8,20 +8,20 @@ from playwright.sync_api import sync_playwright
 from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__)); IMG = os.path.dirname(HERE); TEX = os.path.join(HERE, 'tex')
 URL = 'http://localhost:8124/games/abducted/img/src/'
-ART = [('face-H%d' % v, 'p=team&t=H&v=%d' % v, 750, 1050) for v in range(4)] + [('face-A%d' % v, 'p=team&t=A&v=%d' % v, 750, 1050) for v in range(4)] + [
-  ('back', 'p=back', 750, 1050), ('split-saucer', 'p=split&s=saucer', 750, 1050), ('split-cow', 'p=split&s=cow', 750, 1050),
-  ('leader', 'p=leader', 750, 1050), ('score', 'p=score', 750, 1050), ('box-front', 'p=box-front', 780, 1290), ('box-side', 'p=box-side', 300, 1290), ('box-end', 'p=box-end', 780, 300)]
-SITE = {'face-H0': [240], 'face-H1': [240], 'face-H2': [240], 'face-H3': [240], 'face-A0': [240], 'face-A1': [240], 'face-A2': [240], 'face-A3': [240],
-        'back': [240], 'split-saucer': [240], 'split-cow': [240], 'leader': [240], 'score': [240], 'box-front': [240, 480]}
+CARDS = ['team-H', 'team-A', 'back', 'signal-T', 'signal-J', 'signal-back', 'split', 'leader', 'leader-back', 'lookout', 'lookout-back', 'score-H', 'score-A', 'score-H-back', 'score-A-back']
+# (name, query, css width, css height, device scale): cards are 292 x 408 css px captured at 750 x 1050; the tuck box is 2.6 x 4.3 x 1 in
+ART = [(c, 'p=' + c, 292, 408, 750 / 292) for c in CARDS] + [('box-front', 'p=box-front', 520, 860, 1.5), ('box-side', 'p=box-side', 200, 860, 1.5), ('box-end', 'p=box-end', 520, 200, 1.5)]
+SITE = dict({c: [240] for c in CARDS}, **{'box-front': [240, 480]})
 def save_sizes(im, base, sizes):
     im.save(os.path.join(IMG, base + '.webp'), quality=88)
     for s in sizes: im.resize((s, round(im.height * s / im.width)), Image.LANCZOS).save(os.path.join(IMG, f'{base}-{s}.webp'), quality=86)
 def art(b):
     os.makedirs(TEX, exist_ok=True)
-    for name, qs, w, h in ART:
-        pg = b.new_page(viewport={'width': w, 'height': h})
+    for name, qs, w, h, dsf in ART:
+        pg = b.new_page(viewport={'width': w, 'height': h}, device_scale_factor=dsf)
         pg.goto(URL + 'art.html?' + qs); pg.wait_for_function('window.__done === true'); pg.wait_for_timeout(150)
         im = Image.open(io.BytesIO(pg.screenshot())).convert('RGB'); pg.close()
+        if name in CARDS: im = im.resize((750, 1050), Image.LANCZOS)
         im.save(os.path.join(TEX, name + '.jpg'), quality=92)
         if name in SITE:
             small = im if name.startswith('box') else im.resize((500, 700), Image.LANCZOS)

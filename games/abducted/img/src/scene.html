@@ -42,7 +42,7 @@
     vg.addColorStop(0, 'rgba(26,31,61,0)'); vg.addColorStop(1, 'rgba(26,31,61,.7)'); g.fillStyle = vg; g.fillRect(0, 0, S, S);
     const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
   }
-  const table = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ map: felt(), roughness: 0.97 }));
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), new THREE.MeshStandardMaterial({ map: felt(), roughness: 0.97 }));
   table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
   const outer = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshBasicMaterial({ color: C(SHADE) })); outer.position.z = -0.01; table.add(outer);
   const items = []; const add = (o) => { items.push(o); scene.add(o); return o; };
@@ -87,7 +87,7 @@
   async function box(x, z, yaw = 0) {
     const tF = await tex('box-front.jpg'), tS = await tex('box-side.jpg'), tE = await tex('box-end.jpg');
     const M = (t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 });
-    const back = new THREE.MeshStandardMaterial({ color: C('#1E2447'), roughness: 0.6 });
+    const back = new THREE.MeshStandardMaterial({ color: C('#1B2350'), roughness: 0.6 });
     // BoxGeometry faces: +x, -x, +y (top), -y, +z (front), -z (back)
     const body = new THREE.Mesh(new THREE.BoxGeometry(BW, BHt, BD), [M(tS), M(tS), M(tE), back, M(tF), back]);
     body.position.y = BHt / 2; body.castShadow = true; body.receiveShadow = true;
@@ -110,43 +110,53 @@
   if (SCENE === 'hero' || SCENE === 'scene' || SCENE === 'home') {
     // the tuck box, and three players' cards standing in their stands, facing out
     await box(-4.6, -1.0, 0.18);
-    await standing('face-H0.jpg', -1.1, 0.4, 0.06, 'card-h0');
-    await standing('face-A0.jpg', 1.9, 0.0, -0.04, 'card-a0');
-    await standing('face-H2.jpg', 4.9, 0.5, -0.12, 'card-h2');
-    if (SCENE !== 'home') { await deck(-1.6, 4.7, 12, 0.08); await flat('split-saucer.jpg', 1.6, 4.9, -0.05, 'split'); await flat('leader.jpg', 4.8, 4.8, 0.06, 'leader'); }
+    await standing('team-H.jpg', -1.1, 0.4, 0.06, 'card-h1');
+    await standing('team-A.jpg', 1.9, 0.0, -0.04, 'card-a1');
+    await standing('team-H.jpg', 4.9, 0.5, -0.12, 'card-h2');
+    if (SCENE !== 'home') {   // in front: the Town Leader, both signals and the Lookout
+      await flat('leader.jpg', -4.35, 4.8, 0.06, 'leader'); await flat('signal-T.jpg', -1.45, 4.9, -0.03, 'signal-t');
+      await flat('signal-J.jpg', 1.45, 4.9, 0.03, 'signal-j'); await flat('lookout.jpg', 4.35, 4.8, -0.06, 'lookout');
+    }
     if (SCENE === 'home') frame([-6.3, 0, -1.7], [6.6, 4.3, 1.6], 18, 0, 0.9);
     else frame([-6.3, 0, -1.7], [6.6, 4.3, 6.8], 30, 0, 0.94);
   }
 
-  if (SCENE === 'table') {
-    // from your seat at a seven-player table: the six other players' cards stand facing you (you can't see your own),
-    // each with their split card in front of them, the middle pile and a flipped card between you, the score card and the Mothership at the side
-    const faces = ['face-H1.jpg', 'face-A1.jpg', 'face-H3.jpg', 'face-A2.jpg', 'face-H0.jpg', 'face-A3.jpg'], R = 10.4, CZ = 3.4;
-    for (let i = 0; i < 6; i++) {
-      const a = (-162.5 + i * 29) * Math.PI / 180;            // the far arc of the table
-      const x = Math.cos(a) * R, z = CZ + Math.sin(a) * R, yaw = Math.atan2(-x, CZ - z);
-      await standing(faces[i], x, z, yaw, 'seat' + i);
-      await flat(i % 3 === 1 ? 'split-cow.jpg' : 'split-saucer.jpg', Math.cos(a) * (R - 3.2), CZ + Math.sin(a) * (R - 3.2), yaw, 'split' + i);
-    }
-    await deck(-1.6, 3.6, 7, 0.08);
-    await flat('face-A3.jpg', 1.6, 3.6, -0.05, 'flipped');
-    await flat('score.jpg', 9.4, 6.0, -0.2, 'score');
-    cube(11.6, 5.1, '#EE8A2B', 'cube-h'); cube(11.8, 6.5, '#8FCB3F', 'cube-a');
-    await flat('leader.jpg', -9.4, 6.0, 0.2, 'leader');
-    frame([-12.4, 0, -7.4], [12.4, 4.4, 8.0], 46, 0, 0.97);
+  if (SCENE === 'vtitle') {
+    // the video's opening shot: the box and two standing cards on the left third, open felt on the right for the title
+    await box(-9.2, -0.6, 0.2);
+    await standing('team-H.jpg', -5.6, 0.6, 0.12, 'card-h');
+    await standing('team-A.jpg', -2.5, 0.2, 0.0, 'card-a');
+    frame([-10.8, 0, -1.8], [10.8, 4.3, 3.2], 30, 0, 0.92);
   }
 
-  if (SCENE === 'kit') {
-    // everything in the box, flat: the four Human and four Alien characters (24 cards, three of each), the back, both sides of a split card, the Mothership, the score card, two cubes, four of the twelve stands, the box
-    const GX = 2.85, GZ = 3.85;
-    for (let i = 0; i < 4; i++) await flat('face-H' + i + '.jpg', -4.3 + i * GX, -5.6, 0);
-    for (let i = 0; i < 4; i++) await flat('face-A' + i + '.jpg', -4.3 + i * GX, -5.6 + GZ, 0);
-    await flat('back.jpg', -4.3, -5.6 + 2 * GZ, 0); await flat('split-saucer.jpg', -4.3 + GX, -5.6 + 2 * GZ, 0); await flat('split-cow.jpg', -4.3 + 2 * GX, -5.6 + 2 * GZ, 0);
-    await flat('leader.jpg', -4.3 + 3 * GX, -5.6 + 2 * GZ, 0); await flat('score.jpg', 8.0, -5.6 + 2 * GZ, 0);
-    cube(10.1, 1.5, '#EE8A2B', 'cube-h'); cube(10.1, 2.7, '#8FCB3F', 'cube-a');
+  if (SCENE === 'table') {
+    // from your seat at a seven-player table: the six other players' cards stand facing you (you can't see your own).
+    // The two split cards lie between seats where the town is cut in half; the deck and three face-down signals in the middle;
+    // the Town Leader and Lookout cards in front of their players; the two score counters at the side
+    const faces = ['team-H.jpg', 'team-A.jpg', 'team-H.jpg', 'team-A.jpg', 'team-A.jpg', 'team-H.jpg'], R = 10.4, CZ = 3.4;
+    const at = (deg, r) => { const a = deg * Math.PI / 180; return [Math.cos(a) * r, CZ + Math.sin(a) * r]; };
+    for (let i = 0; i < 6; i++) { const [x, z] = at(-162.5 + i * 29, R); await standing(faces[i], x, z, Math.atan2(-x, CZ - z), 'seat' + i); }
+    { const [x, z] = at(-119, R - 3.6); await flat('split.jpg', x, z, Math.atan2(-x, CZ - z), 'split-a'); }
+    { const [x, z] = at(-32, R - 3.6); await flat('split.jpg', x, z, Math.atan2(-x, CZ - z), 'split-b'); }
+    { const [x, z] = at(-162.5, R - 3.4); await flat('leader.jpg', x, z, Math.atan2(-x, CZ - z), 'leader'); }
+    { const [x, z] = at(-75.5, R - 3.4); await flat('lookout.jpg', x, z, Math.atan2(-x, CZ - z), 'lookout'); }
+    await deck(-2.9, 2.6, 10, 0.08);
+    await flat('signal-back.jpg', 0.0, 2.8, -0.04, 'sig1'); await flat('signal-back.jpg', 2.8, 2.6, 0.05, 'sig2');
+    await flat('score-H.jpg', 9.4, 6.4, -0.2, 'score-h'); await flat('score-A.jpg', -9.4, 6.4, 0.2, 'score-a');
+    frame([-12.4, 0, -7.4], [12.4, 4.4, 8.4], 46, 0, 0.97);
+  }
+
+  if (SCENE === 'kit' || SCENE === 'vkit') {
+    // everything in the box, flat: Human and Alien (10 of each), the shared back; Transmit, Jam (12 of each) and their back;
+    // the two split cards, the Town Leader, the Lookout, the two score counters; four of the twelve stands; the box
+    const GX = 2.85, GZ = 3.85, X0 = -4.3, Z0 = -5.6;
+    const rows = [['team-H', 'team-A', 'back', 'split', 'leader'], ['signal-T', 'signal-J', 'signal-back', 'lookout', 'score-H']];
+    for (const [r, row] of rows.entries()) for (const [c, n] of row.entries()) await flat(n + '.jpg', X0 + c * GX, Z0 + r * GZ, 0, n);
+    await flat('score-A.jpg', X0 + 4 * GX, Z0 + 2 * GZ, 0, 'score-a');
     await box(-9.6, -3.2, 0);
-    for (let i = 0; i < 4; i++) { const m = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.32, 0.72), standMat); b.position.y = 0.16; b.castShadow = true; m.add(b); const l = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.1), standMat); l.position.set(0, 0.38, 0.22); m.add(l); m.position.set(-10.6 + (i % 2) * 2.4, 0, 2.4 + Math.floor(i / 2) * 1.4); m.name = 'stand' + i; add(m); }
-    frame([-11.8, 0, -7.6], [10.6, 4.3, 7.6], 64, 0, 0.97);
+    for (let i = 0; i < 4; i++) { const m = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.32, 0.72), standMat); b.position.y = 0.16; b.castShadow = true; m.add(b); const l = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.1), standMat); l.position.set(0, 0.38, 0.22); m.add(l); m.position.set(-3.4 + i * 2.4, 0, 3.9); m.name = 'stand' + i; add(m); }
+    if (SCENE === 'vkit') frame([-11.8, 0, -12.6], [10.6, 4.3, 7.6], 64, 0, 0.97);   // the video's version leaves open felt at the top for the callout
+    else frame([-11.8, 0, -7.6], [9.6, 4.3, 7.6], 64, 0, 0.97);
   }
 
   renderer.render(scene, camera);
