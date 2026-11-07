@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abducted · Play online</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/dev-table.css">
+<style>
+  body{--t-bg:#E7E9F2;--t-card:#F7F8FC;--t-ink:#1E2447;--t-muted:#5A618A;--t-line:#CDD1E3;--t-accent:#5C6CC4;--t-accent-ink:#fff;--t-mast:#1E2447;--t-mast-ink:#B7BCD6;
+    --hum:#E18C0A;--ali:#7DBF3F}
+  .dt-mast h1{font-family:Righteous,Jost,sans-serif;font-weight:400;letter-spacing:.04em;color:#D8F27A}
+  .dt-sub b{color:#D8F27A}
+
+  .ab{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;max-width:1180px;margin:0 auto;align-items:start}
+  @media (max-width:980px){.ab{grid-template-columns:1fr}}
+  .panel{background:var(--t-card);border:1px solid var(--t-line);border-radius:12px;padding:14px}
+  .panel h3{margin:0 0 10px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-muted)}
+
+  /* score track */
+  .track{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center}
+  .track .lab{font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center}
+  .pips{display:flex;gap:5px}
+  .pips i{width:22px;height:22px;border-radius:6px;border:2px solid var(--c);background:transparent}
+  .pips i.on{background:var(--c)}
+  .hum{--c:var(--hum)}.ali{--c:var(--ali)}
+
+  /* seats */
+  .seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+  @media (max-width:420px){.seats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .seat{background:#fff;border:2px solid var(--t-line);border-radius:12px;padding:8px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font:inherit;color:inherit;text-align:center}
+  button.seat{cursor:pointer}
+  button.seat:hover{border-color:var(--t-accent)}
+  .seat .nm{font-weight:600;font-size:14px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .seat .roles{display:flex;gap:4px;min-height:20px;flex-wrap:wrap;justify-content:center}
+  .role{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--t-ink);color:#fff}
+  .role.ch{background:var(--t-accent)}
+  .role.po{background:#8A5AB5}
+  .seat.me{border-color:var(--t-ink)}
+  .seat.gA{background:#EEF0FF;border-color:#7E8BE0}
+  .seat.gB{background:#FFF4E6;border-color:#E3A55A}
+  .seat.dim{opacity:.45}
+  .seat.voted::after{content:"✓";position:absolute;top:6px;right:8px;font-weight:700;color:var(--t-accent)}
+  .gtag{align-self:stretch;text-align:left;font:700 11px/1 Jost;letter-spacing:.08em;color:var(--t-muted);margin:-2px 0 -2px}
+
+  /* cards in stands */
+  .stand{width:64px;display:flex;flex-direction:column;align-items:center}
+  .tcard{width:58px;height:78px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff;font:700 9.5px/1 Jost;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+  .tcard.H{background:var(--hum)}.tcard.A{background:var(--ali)}
+  .tcard.back{background:repeating-linear-gradient(45deg,#2B3263 0 6px,#232A55 6px 12px);color:#D8F27A;font-size:22px;font-family:Righteous,Jost;letter-spacing:0}
+  .tcard svg{width:30px;height:30px}
+  .stand .base{width:46px;height:7px;border-radius:0 0 6px 6px;background:#1E2447;margin-top:-1px}
+
+  .middle{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+  .pile{position:relative;width:70px;height:92px;margin-top:10px}
+  .pile .tcard{position:absolute;left:0;top:0}
+  .pile .cnt{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:12.5px;color:var(--t-muted)}
+  .flips{display:flex;gap:6px;flex-wrap:wrap}
+  .flips .tcard{width:40px;height:54px;font-size:7.5px}
+  .flips .tcard svg{width:20px;height:20px}
+  .odds{font-size:14px;color:var(--t-muted);margin-top:26px}
+  .odds b{color:var(--t-ink)}
+
+  .prompt{font-size:15.5px;margin:0 0 10px}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .thumb{font-size:26px;line-height:1;padding:10px 18px}
+  .t-up{background:var(--hum);border-color:var(--hum);color:#fff}
+  .t-dn{background:var(--ali);border-color:var(--ali);color:#14260a}
+  .vote{font-size:22px;line-height:1}
+  .talk p{margin:0 0 6px;font-size:14.5px}
+  .talk b{font-weight:700}
+  .log{margin:0;font-size:13.5px;color:var(--t-muted);max-height:200px;overflow:auto}
+  .log p{margin:0 0 3px}
+  .banner{border-radius:12px;padding:14px 16px;background:#1E2447;color:#B7BCD6}
+  .banner b{display:block;font:400 22px/1.15 Righteous,Jost;color:#D8F27A;margin-bottom:4px}
+  .banner p{margin:0;font-size:15px}
+  .stack{display:grid;gap:14px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/js/dev-table.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  const Ab = window.Abducted, esc = DevTable.esc;
+  const ICON = {
+    H: '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8" r="4.5"/><path d="M3.5 21c.6-4.6 4.2-7.2 8.5-7.2s7.9 2.6 8.5 7.2z"/></svg>',
+    A: '<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5c-5 0-8.5 3.6-8.5 8.3 0 5.4 4.7 10.7 8.5 10.7s8.5-5.3 8.5-10.7c0-4.7-3.5-8.3-8.5-8.3z"/><ellipse cx="8.4" cy="11.6" rx="2.6" ry="1.6" transform="rotate(30 8.4 11.6)" fill="#14260a"/><ellipse cx="15.6" cy="11.6" rx="2.6" ry="1.6" transform="rotate(-30 15.6 11.6)" fill="#14260a"/></svg>',
+  };
+  const card = (c, extra) => c.t ? '<div class="tcard ' + c.t + '" data-k="c' + c.id + '"' + (extra || '') + '>' + ICON[c.t] + Ab.NAME[c.t] + '</div>' : '<div class="tcard back" data-k="c' + c.id + '"' + (extra || '') + '>?</div>';
+  let group = null, groupTurn = 0;
+
+  function render(el, v, api) {
+    const me = v.seat, P = v.players, nm = (i) => esc(P[i].name) + (i === me ? ' (you)' : '');
+    if (v.phase === 'split' && v.leader === me && groupTurn !== v.turn) {   // start from an alternating split
+      groupTurn = v.turn; group = []; const k = v.sizes[0];
+      for (let i = 0; i < v.N && group.length < k; i += 2) group.push((v.leader + i) % v.N);
+    }
+    const myTurnTxt = { possess: v.leader === me ? 'Possess someone' : P[v.leader].name + ' is possessing someone',
+      split: v.leader === me ? 'Split the table' : P[v.leader].name + ' is splitting the table',
+      choose: v.chooser === me ? 'Pick the half to beam up' : P[v.chooser].name + ' is picking a half',
+      vote: v.half && v.chosen && v.half[v.chosen].includes(me) && !v.myVote ? 'Vote: thumbs up or down' : 'The beamed-up half is voting',
+      reveal: 'The votes are in', over: (v.winTeam === 'H' ? 'Humans' : 'Aliens') + ' win' }[v.phase];
+    api.status('Turn ' + v.turn + ' · ' + myTurnTxt);
+
+    // seats, clockwise from me
+    const order = [...Array(v.N).keys()].map((k) => (me + k) % v.N);
+    const clickable = (i) => (v.phase === 'possess' && v.leader === me && i !== me) || (v.phase === 'split' && v.leader === me);
+    const seatGroup = (i) => v.phase === 'split' && v.leader === me ? (group.includes(i) ? 'A' : 'B') : v.half ? (v.half.A.includes(i) ? 'A' : 'B') : null;
+    const seats = '<div class="seats">' + order.map((i) => {
+      const g = seatGroup(i), tag = clickable(i) ? 'button type="button"' : 'div';
+      const dim = (v.phase === 'vote' || v.phase === 'reveal') && v.half && !v.half[v.chosen].includes(i);
+      const roles = (i === v.leader ? '<span class="role">Leader</span>' : '') + (i === v.chooser ? '<span class="role ch">Picks half</span>' : '') + (v.possessed && v.possessed.seat === i && v.phase !== 'possess' ? '<span class="role po">Possessed</span>' : '');
+      const vote = v.votes && v.votes[i] ? '<span class="vote">' + (v.votes[i] === 'H' ? '👍' : '👎') + '</span>' : '';
+      return '<' + tag + ' class="seat' + (i === me ? ' me' : '') + (g ? ' g' + g : '') + (dim ? ' dim' : '') + (v.phase === 'vote' && v.voted.includes(i) ? ' voted' : '') + '" data-seat="' + i + '">' +
+        '<span class="gtag">' + (g ? (g === 'A' ? '1st half' : '2nd half') : '&nbsp;') + '</span>' +
+        '<div class="stand">' + card(v.cards[i]) + '<span class="base"></span></div><span class="nm">' + nm(i) + '</span><span class="roles">' + roles + vote + '</span></' + (clickable(i) ? 'button' : 'div') + '>';
+    }).join('') + '</div>';
+
+    // prompt and actions
+    let act = '';
+    if (v.phase === 'over') {
+      const mine = v.cards[me].t, won = mine === v.winTeam;
+      act = '<div class="banner"><b>' + (v.winTeam === 'H' ? 'Humans' : 'Aliens') + ' win, ' + v.score[v.winTeam] + ' to ' + v.score[v.winTeam === 'H' ? 'A' : 'H'] + '</b><p>Your card was ' + Ab.NAME[mine] + ', so you ' + (won ? 'win!' : 'lose.') + ' Every card is face up now. Leave to play again.</p></div>';
+    } else if (v.phase === 'possess' && v.leader === me) act = '<p class="prompt"><b>You lead.</b> Tap another player to possess them: their card is swapped with one from the middle, and they won’t see it.</p>';
+    else if (v.phase === 'split' && v.leader === me) {
+      const ok = v.sizes.includes(group.length);
+      act = '<p class="prompt"><b>Split the table</b> into two halves as evenly as possible (' + (v.sizes[0] === v.sizes[1] ? v.sizes[0] + ' and ' + v.sizes[1] : v.sizes[0] + ' and ' + v.sizes[1]) + '). Tap players to move them between halves. ' + esc(P[v.chooser].name) + ' picks which half is beamed up.</p>' +
+        '<div class="acts"><button class="dt-btn go" data-do="split"' + (ok ? '' : ' disabled') + '>Confirm split (' + group.length + ' / ' + (v.N - group.length) + ')</button></div>';
+    } else if (v.phase === 'choose' && v.chooser === me) act = '<p class="prompt"><b>Which half gets beamed up?</b> They vote, and the majority scores for that side. Then you flip one card from the middle.</p><div class="acts"><button class="dt-btn" style="background:#EEF0FF;border-color:#7E8BE0" data-do="choose" data-h="A">1st half (' + v.half.A.length + ')</button><button class="dt-btn" style="background:#FFF4E6;border-color:#E3A55A" data-do="choose" data-h="B">2nd half (' + v.half.B.length + ')</button></div>';
+    else if (v.phase === 'vote' && v.half[v.chosen].includes(me)) act = v.myVote ? '<p class="prompt">You voted ' + (v.myVote === 'H' ? '👍 Human' : '👎 Alien') + '. Waiting for ' + (v.half[v.chosen].length - v.voted.length) + ' more…</p>' :
+      '<p class="prompt"><b>You’ve been beamed up.</b> Vote for the side you think you’re on. The majority scores a point for that side.</p><div class="acts"><button class="dt-btn thumb t-up" data-do="vote" data-v="H" aria-label="Thumbs up: Human">👍 <small style="font-size:14px">Human</small></button><button class="dt-btn thumb t-dn" data-do="vote" data-v="A" aria-label="Thumbs down: Alien">👎 <small style="font-size:14px">Alien</small></button></div>';
+    else if (v.phase === 'reveal') act = '<p class="prompt"><b>' + v.result.H + ' up, ' + v.result.A + ' down.</b> ' + (v.result.win ? (v.result.win === 'H' ? 'Humans' : 'Aliens') + ' score a point.' : 'A tie scores nothing.') + '</p>';
+    else act = '<p class="prompt">' + esc(myTurnTxt) + '…</p>';
+
+    const track = '<div class="track"><span class="lab hum">' + ICON.H.replace('fill="#fff"', 'fill="var(--hum)" width="18" height="18"') + 'Humans</span><span class="pips hum">' + [...Array(v.target)].map((_, k) => '<i class="' + (k < v.score.H ? 'on' : '') + '"></i>').join('') + '</span>' +
+      '<span class="lab ali">' + ICON.A.replace('fill="#fff"', 'fill="var(--ali)" width="18" height="18"') + 'Aliens</span><span class="pips ali">' + [...Array(v.target)].map((_, k) => '<i class="' + (k < v.score.A ? 'on' : '') + '"></i>').join('') + '</span></div>';
+    const pile = '<div class="middle"><div><div class="pile">' + v.middle.map((id, k) => '<div class="tcard back" data-k="c' + id + '" style="left:' + Math.min(k, 5) * 1.5 + 'px;top:' + -Math.min(k, 5) * 1.5 + 'px">?</div>').join('') + '<span class="cnt">Middle: ' + v.middle.length + '</span></div></div>' +
+      '<div><div class="label" style="font-size:12px;color:var(--t-muted);margin-bottom:6px">Flipped</div><div class="flips">' + (v.flipped.length ? v.flipped.map((c) => card(c)).join('') : '<span style="font-size:13.5px;color:var(--t-muted)">None yet</span>') + '</div></div></div>' +
+      (v.phase !== 'over' ? '<p class="odds">Counting cards, your card is Human about <b>' + v.odds + '%</b> of the time. The rest is talk.</p>' : '');
+    const talk = '<div class="talk">' + (v.talk.length ? v.talk.slice().reverse().map((t) => '<p><b>' + esc(P[t.seat].name) + ':</b> ' + esc(t.text) + '</p>').join('') : '<p style="color:var(--t-muted)">When a half is beamed up, a few bots will tell people what they are. They might be lying.</p>') + '</div>';
+
+    DevTable.flip(el, () => {
+      el.innerHTML = '<div class="ab"><div class="stack"><div class="panel">' + act + '</div><div class="panel">' + seats + '</div></div>' +
+        '<div class="stack"><div class="panel"><h3>Score · first to ' + v.target + '</h3>' + track + '</div><div class="panel"><h3>The middle</h3>' + pile + '</div><div class="panel"><h3>Bot talk</h3>' + talk + '</div><div class="panel"><h3>What happened</h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(l) + '</p>').join('') + '</div></div></div></div>';
+    }, 650);
+
+    el.querySelectorAll('button.seat').forEach((b) => b.addEventListener('click', () => {
+      const i = +b.dataset.seat;
+      if (v.phase === 'possess') api.act({ type: 'possess', target: i });
+      else if (v.phase === 'split') { group = group.includes(i) ? group.filter((x) => x !== i) : group.concat(i); render(el, v, api); }
+    }));
+    el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
+      const d = b.dataset.do;
+      if (d === 'split') api.act({ type: 'split', group });
+      if (d === 'choose') api.act({ type: 'choose', half: b.dataset.h });
+      if (d === 'vote') api.act({ type: 'vote', vote: b.dataset.v });
+    }));
+  }
+
+  DevTable.mount(document.getElementById('app'), {
+    id: 'abducted', title: 'Abducted', blurb: '5–12 players · 15–20 minutes',
+    minPlayers: 5, maxPlayers: 12, defaultPlayers: 7, botNames: Ab.BOT_NAMES, chat: false,
+    botNote: 'Bots count cards and will tell you what you are, truthfully or not. For the real talking, host a table and play on a call.',
+    options: [{ key: 'points', label: 'Play to', values: [[5, '5 points'], [4, '4 points'], [6, '6 points']], def: 5 }],
+    create: (players, opts) => new Ab.Game(players, opts),
+    render,
+    rules:
+      '<p><b>Face out.</b> Your team card sits in a stand facing everyone else: Human or Alien. You can see every card but your own. The deck has the same number of each, and half of it stays face down in the middle, so counting never makes you certain.</p>' +
+      '<p><b>Possess.</b> The leader must possess another player, swapping their card for a random one from the middle. They don’t get to see it.</p>' +
+      '<p><b>Split and beam up.</b> The leader splits the table into two halves as evenly as possible. The next player picks which half is beamed up and flips one middle card face up.</p>' +
+      '<p><b>Thumbs.</b> The beamed-up half votes at once: thumbs up for Human, thumbs down for Alien. The majority scores a point for that side; a tie scores nothing.</p>' +
+      '<p><b>Win.</b> First side to 5 points wins, and you win if your card is that side at the end. Say anything, but never show anyone their own card.</p>',
+  });
+})();
+</script>
+</body>
+</html>

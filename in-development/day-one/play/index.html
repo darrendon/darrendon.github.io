@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Day One · Play online</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/dev-table.css">
+<style>
+  /* Day One: a game laid out on a wooden table. The board is a printed sea, pieces are wooden discs,
+     panels are the paper player aids. Board on the left and aids on the right; one column on phones. */
+  body{
+    --table:#6d4a2f; --table-2:#5e3f27; --table-ink:#f6eedd; --table-dim:#e3cfae;
+    --paper:#f7f2e7; --paper-2:#ede5d3; --rule:#d9ccb2; --shadow:rgba(38,22,8,.35);
+    --ink:#22313a; --ink-dim:#56636b; --ink-faint:#7c817e;
+    --accent:#1d6c86; --gold:#f2c14e;
+    --f-display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+    --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+    --t-bg:#ede5d3; --t-card:#f7f2e7; --t-ink:#22313a; --t-muted:#56636b; --t-line:#d9ccb2; --t-accent:#1d6c86; --t-accent-ink:#fff;
+    --t-mast:#16384a; --t-mast-ink:#f6eedd; --t-font:var(--f-body);
+    background:
+      repeating-linear-gradient(92deg, rgba(0,0,0,.06) 0 2px, transparent 2px 9px, rgba(255,255,255,.035) 9px 10px, transparent 10px 23px),
+      repeating-linear-gradient(88deg, rgba(0,0,0,.05) 0 1px, transparent 1px 41px),
+      linear-gradient(180deg, var(--table) 0%, var(--table-2) 100%) fixed;
+    background-color:var(--table);
+  }
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+  /* lobby */
+  .dt-mast{background:#16384a;box-shadow:0 18px 30px rgba(25,12,2,.4), inset 0 0 0 3px #0f2a39, inset 0 0 0 5px #d8c08a}
+  .dt-mast h1{font-family:var(--f-display);font-weight:400;letter-spacing:.01em;color:var(--table-ink);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .dt-mast .tag{margin:8px 0 0;max-width:52ch;color:#cfe3e8;font-size:15px}
+  .dt-mast .discs{position:absolute;right:18px;top:16px;opacity:.95}
+  @media (max-width:560px){.dt-mast .discs{display:none}}
+  .dt-sub b{color:var(--gold)}
+  .dt-card{box-shadow:0 8px 18px var(--shadow)}
+  .dt-rules h2{font-family:var(--f-display);font-weight:400;font-size:21px}
+  .dt-rules p{max-width:68ch}
+  .dt-credit{color:var(--table-dim)}
+  .dt-top{border-bottom-color:#c9b382}
+  .dt-title{font-family:var(--f-display);font-weight:400;font-size:19px}
+  #dt-board{container-type:inline-size}
+
+  /* table layout */
+  .d1{display:flex;flex-direction:column;gap:12px;color:var(--ink);font-size:15px;line-height:1.45;max-width:1260px;margin:0 auto}
+  .d1-main,.d1-side{display:contents}
+  .d1 .final{order:0}.d1 .turncard{order:1}.d1 .board-card{order:2}.d1 .preview{order:3}.d1 .tray{order:4}.d1 .mats{order:5}
+  .d1 .booklet.logb{order:6}.d1 .booklet.rules{order:7}.d1 .refcard{order:8}.d1 .d1-bar{order:20}
+  @container (min-width:760px){
+    .d1{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:16px 20px;align-items:start}
+    .d1 .final{grid-column:1/-1}
+    .d1-main{display:flex;flex-direction:column;gap:12px;grid-column:1;min-width:0}
+    .d1-side{display:flex;flex-direction:column;gap:14px;grid-column:2;min-width:0}
+    .d1 .d1-bar{grid-column:1/-1}
+  }
+  @container (min-width:1000px){.d1{grid-template-columns:minmax(0,1fr) 380px}}
+
+  /* the board */
+  .board-card{background:#16384a;border-radius:6px;padding:12px;box-shadow:0 22px 34px rgba(25,12,2,.45), 0 3px 0 #0b1f2a, 0 5px 0 #c9b382, 0 7px 0 #9c875a, inset 0 0 0 3px #0f2a39, inset 0 0 0 5px #d8c08a;
+    width:100%;max-width:calc((100vh - 170px) * 1.02);min-width:min(100%,420px);margin:0 auto}
+  @container (max-width:520px){.board-card{padding:6px}}
+  #board{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;border-radius:4px}
+  #board .cell{cursor:default}
+  #board.live .cell.hit{cursor:pointer}
+  .refcard{background:var(--paper);border-radius:8px;padding:4px 8px 10px;box-shadow:0 8px 16px var(--shadow)}
+  .hexinfo{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;min-height:30px;padding:8px 6px 2px;font-size:13px;color:var(--ink-dim)}
+  .hexinfo .coord{font-weight:700;color:var(--ink)}
+  .dots{display:inline-flex;gap:3px;align-items:center}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.28), 0 0 0 1px rgba(0,0,0,.25);vertical-align:-1px}
+  .dot.core{background:radial-gradient(circle at 40% 35%, #ffffff 0 30%, #e9e4f2 70%, #b9b0c9 100%);border-radius:0;box-shadow:none;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);width:14px;height:14px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:6px 6px 0;font-size:12.5px;color:var(--ink-dim)}
+  .legend b{color:var(--ink);font-weight:700}
+  .el{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .legend .el{white-space:normal;align-items:flex-start}
+  .legend .el>svg,.legend .el>.dot{flex-shrink:0;margin-top:2px}
+
+  /* the turn card: a reference card lying on the table */
+  .turncard{position:relative;background:linear-gradient(180deg,#fbf6ea,#f1e8d4);border-radius:12px;padding:14px 16px 15px;box-shadow:0 10px 20px var(--shadow), 0 1px 0 rgba(0,0,0,.25);display:flex;flex-direction:column;gap:8px}
+  .turncard::before{content:"";position:absolute;inset:5px;border:1px solid #d8c8a4;border-radius:8px;pointer-events:none}
+  .turncard h2{font-family:var(--f-display);font-size:19px;font-weight:400;margin:0;color:var(--ink)}
+  .turncard .round{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+  .turncard .who{font-family:var(--f-display);font-size:23px;display:flex;align-items:flex-end;gap:10px;line-height:1}
+  .turncard .who small{font-family:var(--f-body);font-size:13px;color:var(--ink-faint)}
+  .turncard .hint{color:var(--ink-dim);font-size:14px}
+  .turncard .steps{display:flex;gap:16px;font-size:14px;color:var(--ink-dim)}
+  .turncard .steps b{color:var(--ink);font-size:17px;font-family:var(--f-display);font-weight:400;margin-left:3px}
+  .preview dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:13.5px}
+  .preview dt{color:var(--ink-dim)}
+  .preview dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+  .preview .delta{font-size:13px;color:var(--ink-dim)}
+  .preview .delta b{color:var(--ink)}
+  .preview .ph{display:none;border-top:1px dashed var(--rule);padding-top:8px}
+  @container (max-width:759px){.turncard .hint.walk{display:none}.preview .ph{display:block}}
+
+  /* the supply: piles of wooden discs on the table */
+  .tray{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.08));border-radius:12px;padding:8px 10px 10px;box-shadow:inset 0 2px 6px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.08)}
+  .traylab{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--table-dim);padding:0 2px 2px}
+  .tray.live .traylab::after{content:" · tap a pile to take earth";letter-spacing:.04em;text-transform:none;font-weight:600}
+  .supply{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+  .pile{display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:0;border-radius:10px;padding:4px 2px 5px;color:var(--table-ink);font-size:12px;min-height:44px}
+  .pile svg{display:block;transition:transform .12s}
+  .pile .pl{font-weight:600;color:var(--table-dim)}
+  .pile b{font-family:var(--f-display);font-weight:400;font-size:15px;line-height:1}
+  .pile:disabled{cursor:default}
+  .tray.live .pile:not(:disabled){cursor:pointer}
+  .tray.live .pile:not(:disabled):hover svg{transform:translateY(-3px)}
+  .tray.live .pile:disabled{opacity:.45}
+  .pile.on{background:rgba(255,246,222,.16);box-shadow:inset 0 0 0 2px var(--gold)}
+  .pile.on svg{transform:translateY(-4px)}
+
+  /* player mats: cardboard boards with an edge in the player's colour */
+  .mats{display:flex;flex-direction:column;gap:12px}
+  @container (min-width:560px) and (max-width:759px){.mats{display:grid;grid-template-columns:1fr 1fr}}
+  .mat{position:relative;background:linear-gradient(180deg,#efe3c7,#e4d4b1);border-radius:10px;padding:10px 12px;box-shadow:0 8px 16px var(--shadow), 0 2px 0 #b9a174, inset 0 5px 0 var(--pc), inset 0 6px 0 var(--pe);display:flex;flex-direction:column;gap:7px;transition:transform .15s, box-shadow .15s}
+  .mat.active{transform:translateY(-3px);box-shadow:0 14px 24px var(--shadow), 0 2px 0 #b9a174, inset 0 5px 0 var(--pc), inset 0 6px 0 var(--pe), 0 0 0 3px var(--gold)}
+  .mathead{display:flex;align-items:flex-end;gap:8px;padding-top:4px}
+  .mathead .pname{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .mathead .pname small{font-weight:500;color:var(--ink-faint)}
+  .turnflag{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:#3b2a08;border-radius:4px;padding:2px 6px;box-shadow:0 1px 0 #9c7a1c}
+  .ptotal{font-family:var(--f-display);font-size:22px;line-height:1;min-width:38px;height:38px;border-radius:50%;display:inline-grid;place-items:center;background:#f8f1e1;box-shadow:inset 0 0 0 2px var(--pc), 0 2px 0 rgba(0,0,0,.2);font-variant-numeric:tabular-nums}
+  .pboard{background:#f6eedb;border:1px solid #cdb98c;border-radius:6px;padding:4px 6px 3px}
+  .pboard svg{display:block;max-width:330px}
+  .tableau{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12.5px;color:var(--ink-dim)}
+  .tok{display:inline-flex;align-items:center;gap:4px}
+  .tok b{color:var(--ink);font-weight:800}
+  .tok svg{display:block}
+  .tok .none{color:var(--ink-faint);font-style:italic}
+
+  /* rule booklets */
+  .booklet{background:linear-gradient(90deg,#e8dcc2 0 10px,var(--paper) 10px);border-radius:6px 10px 10px 6px;padding:12px 16px 12px 24px;box-shadow:0 8px 16px var(--shadow)}
+  .booklet summary{cursor:pointer;font-family:var(--f-display);font-size:17px;color:var(--ink);list-style:none;min-height:24px}
+  .booklet summary::-webkit-details-marker{display:none}
+  .booklet summary::after{content:" +";color:var(--ink-faint)}
+  .booklet[open] summary::after{content:" –"}
+  .booklet.rules{font-size:14px;color:var(--ink-dim)}
+  .booklet.rules p{max-width:65ch;margin:8px 0}
+  .booklet.rules b{color:var(--ink)}
+  .log{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto;font-size:13px;color:var(--ink-dim)}
+  .log li{display:flex;gap:8px;align-items:baseline}
+  .log li .t{font-size:11px;font-weight:700;color:var(--ink-faint);min-width:28px;font-variant-numeric:tabular-nums}
+
+  /* nightfall */
+  .final{background:var(--paper);border-radius:10px;padding:18px 20px;box-shadow:0 14px 28px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:10px}
+  .final h3{font-family:var(--f-display);font-size:clamp(22px,4vw,28px);margin:0;font-weight:400}
+  .final p{margin:0;color:var(--ink-dim)}
+  .tablewrap{overflow-x:auto}
+  .final table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+  .final th,.final td{padding:7px 6px;border-bottom:1px solid var(--rule);text-align:right}
+  .final th:first-child,.final td:first-child{text-align:left}
+  .final th{color:var(--ink-dim);font-weight:600;font-size:12px}
+  .final tr.win td{color:var(--accent);font-weight:800}
+  .pchip{width:14px;height:14px;border-radius:50%;border:2px solid rgba(0,0,0,.45);display:inline-block;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+
+  /* the action bar: always in reach at the bottom of the screen */
+  .d1-bar{position:sticky;bottom:0;z-index:15;margin:0 calc(-1 * clamp(10px,2vw,20px)) calc(-1 * clamp(10px,2vw,20px));padding:10px clamp(10px,2vw,20px) calc(10px + env(safe-area-inset-bottom,0px));
+    background:color-mix(in srgb,var(--paper) 95%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:2px solid #c9b382;box-shadow:0 -10px 24px -14px rgba(0,0,0,.5);display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+  .d1-bar[hidden]{display:none!important}
+  .d1-bar .say{flex:1 1 220px;font-size:14px;color:var(--ink-dim);min-width:0}
+  .d1-bar .say b{color:var(--ink)}
+  .d1-bar .acts{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .bbtn{min-height:44px;min-width:44px;background:linear-gradient(180deg,#fbf6ea,#efe5cf);border:1.5px solid #5b4528;border-radius:9px;padding:9px 15px;font-weight:700;font-size:14.5px;color:var(--ink);box-shadow:0 3px 0 #5b4528;cursor:pointer}
+  .bbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #5b4528}
+  .bbtn.go{background:linear-gradient(180deg,#2a7f9a,#1d6c86);color:#fff;border-color:#123f50;box-shadow:0 3px 0 #123f50;min-width:88px}
+  .bbtn:disabled{opacity:.45;cursor:default}
+  .lands{display:flex;gap:6px;flex-wrap:wrap}
+  .land{min-height:48px;min-width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1.5px solid var(--rule);background:#fffdf7;border-radius:10px;padding:4px 7px;font-size:11.5px;font-weight:700;color:var(--ink);cursor:pointer;line-height:1.1}
+  .land .row{display:flex;align-items:center;gap:4px;font-size:13px}
+  .land[aria-pressed="true"]{border-color:var(--ink);background:var(--paper-2);box-shadow:inset 0 0 0 1px var(--ink)}
+  .land:disabled{opacity:.4;cursor:default}
+  @container (max-width:420px){.land{min-width:0;flex:1 1 0;padding:4px 2px}.lands{flex:1 1 100%;gap:4px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/js/dev-table.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D1 = window.DayOne, esc = DevTable.esc;
+  const { cells, nbl, R, S3, TM, VBW, VBH, W } = D1.geo;
+  const ELEM = D1.ELEM, PCOL = D1.PCOL, CORE = D1.CORE, NEU = D1.NEU, MTN_VAL = D1.MTN_VAL, TIGHT = D1.TIGHT, coord = D1.coord;
+  const INK = '#10242e', CHALK = '#fff7e3';
+  const SPEED = 170;                       // ms per space walked (the original's "Normal")
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------------- state of this screen ---------------- */
+  let ROOT = null, API = null, V = null, gameKey = null, shownSeq = null;
+  const U = { key: null, mode: 'idle', origin: null, c: 0, clicks: [], pull: undefined, submitted: false, subT: null, F: null, legal: [] };
+  const A = { running: false, pending: null, tail: 0, ov: null, disp: null, p: -1, timer: null, gen: 0 };
+  let lastHeld = null, hoverI = null;
+  const origBusy = window.__ddBusy || (() => false);
+  window.__ddBusy = () => A.running || Date.now() < A.tail || origBusy();   // bots wait for a move to finish walking
+
+  const clean = (n) => String(n).replace(/\s*\(bot\)$/, '');
+  const me = () => V.seat;
+  const isBot = (q) => V.players[q].bot;
+  const nameOf = (q) => esc(clean(V.players[q].name)) + (q === me() && !isBot(q) && clean(V.players[q].name) !== 'You' ? ' (you)' : '');
+  const discDot = (d) => (d.c === CORE ? '<span class="dot core"></span>' : '<span class="dot" style="background:' + ELEM[d.c].col + '"></span>');
+  const myTurn = () => V && !V.s.over && V.s.cur === me() && !isBot(me());
+
+  /* ---------------- drawing: pieces ---------------- */
+  const f1 = (n) => n.toFixed(1);
+  function hexPoints(x, y, r) { const pts = []; for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k - 30); pts.push(f1(x + r * Math.cos(a)) + ',' + f1(y + r * Math.sin(a))); } return pts.join(' '); }
+  function discSVG(x, y, rx, ry, h, top, side, line) {   // a wooden disc: side band then top face (y = top face centre)
+    return '<path d="M' + f1(x - rx) + ' ' + f1(y) + ' v' + h + ' a' + rx + ' ' + ry + ' 0 0 0 ' + 2 * rx + ' 0 v' + -h + ' Z" fill="' + side + '" stroke="' + line + '" stroke-width=".7"/>' +
+      '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + rx + '" ry="' + ry + '" fill="' + top + '" stroke="' + line + '" stroke-width=".7"/>';
+  }
+  function hexPlateSVG(x, y, r, h, top, side, line) {     // a flat hexagonal wooden tile seen from above at an angle
+    const k = 0.5, pts = []; for (let j = 0; j < 6; j++) { const a = Math.PI / 3 * j; pts.push([x + r * Math.cos(a), y + r * k * Math.sin(a)]); }
+    const P = (p) => f1(p[0]) + ',' + f1(p[1]);
+    const sideP = [pts[0], pts[1], pts[2], pts[3], [pts[3][0], pts[3][1] + h], [pts[2][0], pts[2][1] + h], [pts[1][0], pts[1][1] + h], [pts[0][0], pts[0][1] + h]];
+    return '<polygon points="' + sideP.map(P).join(' ') + '" fill="' + side + '" stroke="' + line + '" stroke-width=".8" stroke-linejoin="round"/><polygon points="' + pts.map(P).join(' ') + '" fill="' + top + '" stroke="' + line + '" stroke-width=".8" stroke-linejoin="round"/>';
+  }
+  const DISC_H = 3.4, STACK_BASE = 11.5;
+  function stackLayout(s, i) { const n = s.st[i].length, claimed = s.owner[i] >= 0; const items = n + (claimed ? 1 : 0); return { n, claimed, step: Math.min(DISC_H, 15 / Math.max(1, items)) }; }
+  function stackTop(s, i) { const L = stackLayout(s, i), c = cells[i]; return c.y + STACK_BASE - L.step * L.n - (L.claimed ? 4.4 : 0); }
+  function starSVG(x, y, r, fill, squash) {   // a five-pointed star, flattened to sit on a disc face
+    squash = squash || 1; let d = ''; for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; d += (k ? 'L' : 'M') + f1(x + rr * Math.cos(a)) + ' ' + f1(y + rr * Math.sin(a) * squash); }
+    return '<path d="' + d + 'Z" fill="' + fill + '" pointer-events="none"/>';
+  }
+  // free spots on a space for the little printed/counter badges, clear of any peak tile on its corners
+  function badgeSpot(i, s, prefer) {
+    const c = cells[i], tiles = [];
+    TIGHT.mountains.forEach((t, j) => { const k = 100 + j; if (!t.includes(i) || !V.board.mtn[k] || (k in s.sealed)) return; tiles.push([t.reduce((a, x) => a + cells[x].x, 0) / 3 - c.x, t.reduce((a, x) => a + cells[x].y, 0) / 3 - c.y]); });
+    const clear = (x, y, r) => tiles.every(([tx, ty]) => Math.abs(tx - x) > 8 + r || Math.abs(ty - y) > 8 + r);
+    for (const [x, y] of prefer) if (clear(x, y, 8)) return [x, y];
+    return prefer[0];
+  }
+  function stackSVG(c, s, i, quiet) {
+    const st = s.st[i]; const L = stackLayout(s, i), n = L.n; if (!n && !L.claimed) return '';
+    const step = L.step, atk = L.claimed ? s.cat[i] : -1; let y = c.y + STACK_BASE, out = '', coreVal = 0;
+    out += '<ellipse cx="' + c.x + '" cy="' + f1(c.y + STACK_BASE + DISC_H + 1.5) + '" rx="' + (L.claimed ? 15 : 12) + '" ry="4.6" fill="#0a2633" opacity=".28"/>';
+    for (let k = 0; k <= n; k++) {
+      if (k === atk) { const pc = s.owner[i] === NEU ? { col: '#8e897c', edge: '#4a463d' } : PCOL[s.owner[i]]; y -= 1; out += hexPlateSVG(c.x, y, 14.5, 4.4, pc.col, pc.edge, pc.edge); if (s.owner[i] === NEU) out += '<ellipse cx="' + c.x + '" cy="' + f1(y - 0.2) + '" rx="6.5" ry="2.4" fill="none" stroke="#d9d3c3" stroke-width="1.1" opacity=".85"/>'; y -= 4.4 - 1; }
+      if (k < n) {
+        const d = st[k];
+        if (d.c === CORE) { out += discSVG(c.x, y, 10.5, 4.2, step, 'url(#gGold)', '#c4bccf', '#8a8198'); coreVal += d.v; }
+        else { const e = ELEM[d.c]; out += discSVG(c.x, y, 10.5, 4.2, step, e.col, e.edge, e.edge); }
+        y -= step;
+      }
+    }
+    const topStar = n && st[n - 1].c === CORE && atk !== n ? st[n - 1].v : 0;
+    if (topStar) { const fy = y + step; out += starSVG(c.x, fy, 6.4, '#7d6f9c', 0.66) + '<text x="' + f1(c.x) + '" y="' + f1(fy + 2.3) + '" text-anchor="middle" font-family="Figtree, sans-serif" font-size="6.4" font-weight="800" fill="#ffffff" pointer-events="none">' + topStar + '</text>'; coreVal -= topStar; }
+    const tag = (x, yy, txt, fill) => '<text x="' + f1(x) + '" y="' + f1(yy) + '" text-anchor="middle" font-family="Figtree, sans-serif" font-size="10" font-weight="800" fill="' + fill + '" stroke="' + INK + '" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round" pointer-events="none">' + txt + '</text>';
+    if (n > 1 && !quiet) out += tag(c.x + 18, c.y + 6, n, CHALK);   // kept clear of the corners, where peaks sit (hidden while a carried stack hovers beside it)
+    if (coreVal && !quiet) {   // stars buried in the stack: a badge on the left (or, on a numbered start space, somewhere clear of its tablet)
+      const [bx, by] = TIGHT.startNums.includes(i) ? badgeSpot(i, s, [[0, -21], [-13, 22], [13, 22]]) : [-17, 3.6];
+      const x = c.x + bx, yy = c.y + by;
+      out += starSVG(x, yy, 7.6, '#7d748c') + starSVG(x, yy, 6.4, 'url(#gGold)') + '<text x="' + f1(x) + '" y="' + f1(yy + 3.2) + '" text-anchor="middle" font-family="Figtree, sans-serif" font-size="7" font-weight="800" fill="' + INK + '" pointer-events="none">' + coreVal + '</text>';
+    }
+    return out;
+  }
+  function startBadge(x, y, n) {   // a carved stone tablet (not a coin, so it can't be mistaken for a star or a peak value)
+    return '<rect x="' + f1(x - 6) + '" y="' + f1(y - 6.5) + '" width="12" height="13" rx="2.4" fill="#3b3428" stroke="#e9dfc6" stroke-width="1.1"/><text x="' + f1(x) + '" y="' + f1(y + 3.7) + '" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="10.5" fill="#f4ecd8">' + n + '</text>';
+  }
+  function startNumSVG(c, i, dim) {   // printed start space: a carved ring with its number
+    const k = TIGHT.startNums.indexOf(i); if (k < 0) return '';
+    return '<g opacity="' + (dim ? 0.45 : 1) + '" pointer-events="none"><circle cx="' + c.x + '" cy="' + (c.y + STACK_BASE - 1) + '" r="16" fill="none" stroke="' + CHALK + '" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="2.5 2.5"/>' + startBadge(c.x - 19.5, c.y + 2, k + 1) + '</g>';
+  }
+  function peakTile(x, y, v, opts) {   // a small square tile: the points printed above a peak
+    opts = opts || {}; const h = 8, X = (d) => f1(x + d), Y = (d) => f1(y + d);
+    return '<rect x="' + X(-h) + '" y="' + Y(-h + 1.3) + '" width="' + 2 * h + '" height="' + 2 * h + '" rx="3" fill="#a48a58"/>' +
+      '<rect x="' + X(-h) + '" y="' + Y(-h) + '" width="' + 2 * h + '" height="' + 2 * h + '" rx="3" fill="' + (opts.fill || '#f1e6c6') + '" stroke="' + (opts.edge || '#7a6640') + '" stroke-width="1"/>' +
+      '<path d="M' + X(-6) + ' ' + Y(6.2) + ' L' + X(-2) + ' ' + Y(-0.2) + ' L' + X(0.4) + ' ' + Y(3) + ' L' + X(2.2) + ' ' + Y(1) + ' L' + X(6) + ' ' + Y(6.2) + ' Z" fill="' + (opts.grey ? '#9aa29a' : '#5f7a52') + '" stroke="#2f3d29" stroke-width=".7" stroke-linejoin="round"/>' +
+      '<path d="M' + X(-3.4) + ' ' + Y(2) + ' L' + X(-2) + ' ' + Y(-0.2) + ' L' + X(-0.6) + ' ' + Y(1.9) + ' Z" fill="#f4f0e6"/>' +
+      '<text x="' + X(0) + '" y="' + Y(-1.6) + '" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="8.6" fill="' + INK + '">' + v + '</text>';
+  }
+  function mountainsSVG(s) {   // printed corner marks everywhere; a peak tile sits on each mark in play until it is named and taken away
+    let g = '';
+    TIGHT.mountains.forEach((t, j) => {
+      const k = 100 + j, x = t.reduce((a, c) => a + cells[c].x, 0) / 3, y = t.reduce((a, c) => a + cells[c].y, 0) / 3;
+      g += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="6" fill="#0d3a4c" fill-opacity=".35" stroke="' + CHALK + '" stroke-opacity=".4" stroke-width="1" stroke-dasharray="1.6 1.8" pointer-events="none"/>';
+      if (V.board.mtn[k] && !(k in s.sealed)) g += '<g pointer-events="none"><title>Peak worth ' + MTN_VAL + ': named when all 3 spaces around it hold shrines</title>' + peakTile(x, y, MTN_VAL) + '</g>';
+    });
+    return g;
+  }
+  function godSVG(x, footY, q, scale) {   // a wooden god figure: rounded body, head, little crown of rays
+    const pc = PCOL[q], k = scale || 1, X = (v) => f1(x + v * k), Y = (v) => f1(footY + v * k);
+    return '<g pointer-events="none"><ellipse cx="' + X(0) + '" cy="' + Y(0) + '" rx="' + f1(6.5 * k) + '" ry="' + f1(2.4 * k) + '" fill="' + pc.edge + '"/>' +
+      '<path d="M' + X(-6.5) + ' ' + Y(0) + ' C' + X(-6.5) + ' ' + Y(-6) + ' ' + X(-4.2) + ' ' + Y(-11) + ' ' + X(-2.6) + ' ' + Y(-12) + ' L' + X(2.6) + ' ' + Y(-12) + ' C' + X(4.2) + ' ' + Y(-11) + ' ' + X(6.5) + ' ' + Y(-6) + ' ' + X(6.5) + ' ' + Y(0) + ' A' + f1(6.5 * k) + ' ' + f1(2.4 * k) + ' 0 0 1 ' + X(-6.5) + ' ' + Y(0) + ' Z" fill="' + pc.col + '" stroke="' + pc.edge + '" stroke-width="1"/>' +
+      '<circle cx="' + X(0) + '" cy="' + Y(-15.5) + '" r="' + f1(4.3 * k) + '" fill="' + pc.col + '" stroke="' + pc.edge + '" stroke-width="1"/>' +
+      '<path d="M' + X(-4.2) + ' ' + Y(-19.6) + ' L' + X(-2.6) + ' ' + Y(-23) + ' L' + X(-0.9) + ' ' + Y(-20.4) + ' L' + X(0) + ' ' + Y(-24) + ' L' + X(0.9) + ' ' + Y(-20.4) + ' L' + X(2.6) + ' ' + Y(-23) + ' L' + X(4.2) + ' ' + Y(-19.6) + '" fill="none" stroke="' + pc.edge + '" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      '<path d="M' + X(-2.4) + ' ' + Y(-9) + ' C' + X(-3.2) + ' ' + Y(-5) + ' ' + X(-3) + ' ' + Y(-2) + ' ' + X(-2.2) + ' ' + Y(-0.6) + '" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="1.2" stroke-linecap="round"/></g>';
+  }
+  // the stack your god carries, held just above the space it's over, god on top. Drawn at the origin and moved with a transform so it can glide.
+  function heldSVG(x, baseTop, discs, q, lifted) {
+    const step = discs.length > 5 ? 2.4 : 3; let y = baseTop - (lifted ? 4 : 0), out = '';
+    if (lifted) out += '<ellipse cx="' + f1(x) + '" cy="' + f1(baseTop - 0.6) + '" rx="9" ry="2.6" fill="#0a2633" opacity=".25"/>';
+    for (const d of discs) {
+      if (d.c === CORE) out += discSVG(x, y, 9.5, 3.8, step, 'url(#gGold)', '#c4bccf', '#8a8198');
+      else { const e = ELEM[d.c]; out += discSVG(x, y, 9.5, 3.8, step, e.col, e.edge, e.edge); }
+      y -= step;
+    }
+    return '<g id="held" data-x="' + f1(x) + '" data-y="' + f1(baseTop) + '" pointer-events="none">' + out + godSVG(x, y + (discs.length ? step : 0) + 1, q, 0.92) + '</g>';
+  }
+  function zoneLineSVG() {   // the printed border of the 2–3 god zone (shown on every game, as it is printed on the board)
+    const inZ = new Set(TIGHT.zone); let d = '';
+    for (const a of TIGHT.zone) for (const b of nbl[a]) if (!inZ.has(b)) {
+      const Ac = cells[a], B = cells[b], v = [];
+      for (let k = 0; k < 6; k++) { const ang = Math.PI / 180 * (60 * k - 30); v.push([Ac.x + R * Math.cos(ang), Ac.y + R * Math.sin(ang)]); }
+      v.sort((p1, p2) => Math.hypot(p1[0] - B.x, p1[1] - B.y) - Math.hypot(p2[0] - B.x, p2[1] - B.y));
+      d += 'M' + f1(v[0][0]) + ' ' + f1(v[0][1]) + 'L' + f1(v[1][0]) + ' ' + f1(v[1][1]);
+    }
+    return '<path d="' + d + '" fill="none" stroke="#f2c14e" stroke-width="2.2" stroke-dasharray="5 4" stroke-linecap="round" opacity="' + (V.board.zoned ? 0.9 : 0.55) + '" pointer-events="none"/>';
+  }
+  function trackCells() {   // numbered squares running clockwise around the frame, starting top-left
+    const s = 22, x0 = 6, y0 = 6, x1 = VBW - 6 - s, y1 = VBH - 6 - s;
+    const nx = Math.floor((x1 - x0) / 24) + 1, ny = Math.floor((y1 - y0) / 24) + 1, sx = (x1 - x0) / (nx - 1), sy = (y1 - y0) / (ny - 1), out = [];
+    for (let k = 0; k < nx; k++) out.push([x0 + k * sx, y0]);
+    for (let k = 1; k < ny; k++) out.push([x1, y0 + k * sy]);
+    for (let k = nx - 2; k >= 0; k--) out.push([x0 + k * sx, y1]);
+    for (let k = ny - 2; k >= 1; k--) out.push([x0, y0 + k * sy]);
+    return { s, out };
+  }
+  function cubeSVG(x, y, q, a) {   // a small wooden cube marker, seen from above at an angle
+    const pc = PCOL[q], h = a * 0.55;
+    return '<path d="M' + x + ' ' + (y + h) + ' l' + a / 2 + ' ' + -h / 2 + ' l' + a / 2 + ' ' + h / 2 + ' l' + -a / 2 + ' ' + h / 2 + ' Z" fill="' + pc.col + '" stroke="' + pc.edge + '" stroke-width=".7"/>' +
+      '<path d="M' + x + ' ' + (y + h) + ' l' + a / 2 + ' ' + h / 2 + ' v' + a * 0.55 + ' l' + -a / 2 + ' ' + -h / 2 + ' Z" fill="' + pc.edge + '" stroke="' + pc.edge + '" stroke-width=".5" opacity=".85"/>' +
+      '<path d="M' + (x + a / 2) + ' ' + (y + 1.5 * h) + ' l' + a / 2 + ' ' + -h / 2 + ' v' + a * 0.55 + ' l' + -a / 2 + ' ' + h / 2 + ' Z" fill="' + pc.col + '" stroke="' + pc.edge + '" stroke-width=".5" opacity=".9"/>';
+  }
+  function mixC(a, b, t) { const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)); const Aa = p(a), B = p(b); return '#' + Aa.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+  function trackSVG(s) {
+    const { s: sz, out } = trackCells(), n = out.length; let g = '';
+    out.forEach(([x, y], k) => {
+      const t = k / (n - 1), sun = t < 0.5 ? mixC('#fbe7a6', '#f6d27a', t * 2) : mixC('#f2b98a', '#b9a6d6', (t - 0.5) * 2);
+      g += '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + sz + '" height="' + sz + '" rx="3" fill="' + (k % 5 ? sun : mixC(sun, '#a78b52', 0.28)) + '" stroke="#b9a578" stroke-width=".8"/>';
+      if (k % 5 === 0) g += '<text x="' + f1(x + sz / 2) + '" y="' + f1(y + 7.5) + '" text-anchor="middle" font-family="Figtree, sans-serif" font-size="6.5" font-weight="800" fill="#7a6a43">' + k + '</text>';
+    });
+    const gp = s.giftPts || [], atk = {};
+    for (let q = 0; q < s.P; q++) { const v = gp[q] || 0, k = v % n; (atk[k] = atk[k] || []).push({ q, lap: Math.floor(v / n) }); }
+    for (const k in atk) {   // markers sharing a square sit side by side, never on top of each other
+      const [x, y] = out[k], list = atk[k], a = list.length <= 2 ? 8 : 6.4, cols = Math.min(3, list.length);
+      list.forEach((m, j) => {
+        const cx = x + 2 + (j % cols) * (a + 0.6) + (sz - 4 - cols * (a + 0.6)) / 2, cy = y + (list.length > 3 ? 5 : 8) + Math.floor(j / 3) * (a + 1.6);
+        g += cubeSVG(cx, cy, m.q, a); if (m.lap) g += '<text x="' + f1(cx + a / 2) + '" y="' + f1(cy - 0.5) + '" text-anchor="middle" font-family="Figtree, sans-serif" font-size="5" font-weight="800" fill="' + INK + '">+' + m.lap * n + '</text>';
+      });
+    }
+    return '<g pointer-events="none">' + g + '</g>';
+  }
+  const dotLine = (ids, op, w) => '<polyline points="' + ids.map((i) => f1(cells[i].x) + ',' + f1(cells[i].y)).join(' ') + '" fill="none" stroke="#f6f1e4" stroke-opacity="' + op + '" stroke-width="' + w + '" stroke-dasharray="0.1 6" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>';   // the god's wake: a line of dots
+
+  /* ---------------- drawing: the board ---------------- */
+  // ov: { hide: seat whose god is lifted, legal: [cells to outline], free: walk in progress, anim: {trail, held, flash} }
+  function boardSVG(s, ov) {
+    let base = '', top = '', labels = '', trail = '';
+    const legal = new Set(ov.legal || []), hits = new Set(ov.hits || []);
+    const held = ov.anim ? ov.anim.held : ov.free ? ov.free.held : null;
+    let crowd = -1;   // a space where the carried stack meets a god standing there
+    if (held) for (let q = 0; q < s.P; q++) if (q !== ov.hide && (s.ship[q] >= 0 ? s.ship[q] : V.board.starts[q]) === held.i) crowd = held.i;
+    for (const c of cells) {
+      const i = c.i;
+      if (V.board.out[i]) {   // outside the 2–3 god zone: shallows, out of play
+        base += '<g data-i="' + i + '" class="cell"><polygon points="' + hexPoints(c.x, c.y, R) + '" fill="#cfe3e0" fill-opacity=".38" stroke="' + CHALK + '" stroke-opacity=".18" stroke-width="1"/><path d="M' + (c.x - 9) + ' ' + c.y + ' q3 -3.5 6 0 t6 0 t6 0" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="1.2" stroke-linecap="round"/>' + startNumSVG(c, i, true) + '</g>';
+        continue;
+      }
+      base += '<g data-i="' + i + '" class="cell' + (hits.has(i) ? ' hit' : '') + '"><polygon points="' + hexPoints(c.x, c.y, R) + '" fill="#ffffff" fill-opacity=".001" stroke="' + CHALK + '" stroke-opacity=".32" stroke-width="1"/>';
+      base += startNumSVG(c, i, false) + stackSVG(c, s, i, i === crowd) + '</g>';
+      if (legal.has(i)) top += '<polygon points="' + hexPoints(c.x, c.y, R - 3) + '" fill="#ffffff" fill-opacity="' + (ov.origin === i ? 0.08 : 0.14) + '" stroke="' + CHALK + '" stroke-opacity=".85" stroke-width="1.6" pointer-events="none"/>';
+    }
+    base += mountainsSVG(s);
+    let heldShift = 0;
+    for (let q = 0; q < s.P; q++) {
+      if (q === ov.hide) continue;
+      const atI = s.ship[q] >= 0 ? s.ship[q] : V.board.starts[q];
+      let dx = 0; if (atI === crowd) { dx = -6.5; heldShift = 11; }   // a god passing by: the one standing there steps aside, clear of the printed tablet
+      top += godSVG(cells[atI].x + dx, stackTop(s, atI) + 1, q);
+    }
+    labels += zoneLineSVG() + trackSVG(s);
+    for (let col = 0; col < W; col++) { const c = cells[col]; labels += '<text x="' + c.x + '" y="' + (TM + 3) + '" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8.5" font-weight="700" fill="' + CHALK + '" fill-opacity=".7" pointer-events="none">' + D1.geo.COLS[col] + '</text>'; }
+    if (ov.free) trail += freeSVG(ov.free);   // the wake and step rings sit under the pieces
+    if (ov.anim) {
+      const a = ov.anim;
+      if (a.flash !== null && a.flash !== undefined) { const c = cells[a.flash]; top += '<polygon points="' + hexPoints(c.x, c.y, R - 2) + '" fill="#ffb08f" fill-opacity=".35" stroke="#ffb08f" stroke-width="2.4" pointer-events="none"/>'; }
+      if (a.trail.length > 1) trail = dotLine(a.trail, 0.8, 3);
+    }
+    if (held) { const c = cells[held.i]; top += heldSVG(c.x + heldShift, stackTop(s, held.i), held.hand, held.q, held.lifted); }
+    return '<defs>' +
+      '<radialGradient id="gGold" cx="38%" cy="32%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#f3eee6"/><stop offset="80%" stop-color="#d9d2e2"/><stop offset="100%" stop-color="#b9b0c9"/></radialGradient>' +
+      '<radialGradient id="gSea" cx="45%" cy="40%" r="75%"><stop offset="0%" stop-color="#4aa3b8"/><stop offset="60%" stop-color="#2f86a3"/><stop offset="100%" stop-color="#21677f"/></radialGradient>' +
+      '<pattern id="pWave" width="34" height="22" patternUnits="userSpaceOnUse"><path d="M2 14 q4 -4 8 0 t8 0" fill="none" stroke="#ffffff" stroke-opacity=".09" stroke-width="1.2" stroke-linecap="round"/></pattern>' +
+      '</defs><rect x="0" y="0" width="' + f1(VBW) + '" height="' + f1(VBH) + '" fill="#14384a"/><rect x="' + (TM - 4) + '" y="' + (TM - 4) + '" width="' + f1(VBW - 2 * TM + 8) + '" height="' + f1(VBH - 2 * TM + 8) + '" rx="4" fill="url(#gSea)" pointer-events="none"/><rect x="' + (TM - 4) + '" y="' + (TM - 4) + '" width="' + f1(VBW - 2 * TM + 8) + '" height="' + f1(VBH - 2 * TM + 8) + '" rx="4" fill="url(#pWave)" pointer-events="none"/>' +
+      base + labels + trail + top;
+  }
+  function freeSVG(F) {   // the walk being planned: its wake, and the spaces you can step to next
+    const pc = PCOL[me()].col; let out = '';
+    F.segs.forEach((g, j) => { if (F.phase !== 'fly' && j === F.segs.length - 1) out += dotLine([g.from, ...g.path], 0.8, 3); else out += dotLine([g.from, ...g.path], 0.3, 2); });
+    if (F.phase === 'fly' && F.path.length) out += dotLine([F.from, ...F.path], 0.8, 3);
+    const left = F.phase === 'fly' ? F.cnt - F.path.length : 0;
+    for (const x of F.next) {
+      const c = cells[x];
+      if (F.phase === 'pull') { out += '<polygon points="' + hexPoints(c.x, c.y, R - 3) + '" fill="#f2c14e" fill-opacity=".18" stroke="#f2c14e" stroke-width="1.8" pointer-events="none"/>'; continue; }
+      if (F.phase === 'target' || left === 1) { out += '<polygon points="' + hexPoints(c.x, c.y, R - 3) + '" fill="' + pc + '" fill-opacity=".22" stroke="' + pc + '" stroke-opacity=".95" stroke-width="2" pointer-events="none"/>'; continue; }   // where your god can come to rest
+      const gift = F.D.owner[x] >= 0 && F.D.owner[x] !== me();
+      out += '<polygon points="' + hexPoints(c.x, c.y, R - 3) + '" fill="' + (gift ? '#ffb08f' : '#ffffff') + '" fill-opacity="' + (gift ? 0.2 : 0.13) + '" stroke="' + (gift ? '#ffb08f' : CHALK) + '" stroke-opacity=".85" stroke-width="1.6" pointer-events="none"/>';
+    }
+    if (F.pull !== undefined) { const pc2 = cells[F.pull]; out += '<polygon points="' + hexPoints(pc2.x, pc2.y, R - 3) + '" fill="#f2c14e" fill-opacity=".35" stroke="#f2c14e" stroke-width="2.4" pointer-events="none"/>'; }
+    return out;
+  }
+
+  /* ---------------- drawing: the player aids ---------------- */
+  function pileSVG(c, n) {   // a pile of wooden discs in the supply
+    const e = ELEM[c], step = 3.4; let y = 52, g = '<ellipse cx="22" cy="' + (y + 5) + '" rx="15" ry="4.4" fill="#2a1a0c" opacity=".28"/>';
+    for (let j = 0; j < n; j++) { g += discSVG(22, y, 13, 5, step, e.col, e.edge, e.edge); y -= step; }
+    if (!n) g += '<ellipse cx="22" cy="' + y + '" rx="13" ry="5" fill="none" stroke="#b49a6c" stroke-width="1.2" stroke-dasharray="2 2"/>';
+    return '<svg viewBox="0 0 44 62" width="44" height="62" aria-hidden="true">' + g + '</svg>';
+  }
+  const godIcon = (q, h) => '<svg viewBox="-9 -27 18 30" width="' + (h * 0.6).toFixed(0) + '" height="' + h + '" aria-hidden="true">' + godSVG(0, 0, q, 1) + '</svg>';
+  function shrineIcon(q, n) {   // the shrines a player still has in hand, as little tiles side by side
+    const pc = PCOL[q]; let g = '';
+    for (let j = 0; j < n; j++) g += hexPlateSVG(8 + j * 15, 9, 6, 2.6, pc.col, pc.edge, pc.edge);
+    return '<svg viewBox="0 0 ' + Math.max(16, 2 + n * 15) + ' 15" width="' + Math.max(16, 2 + n * 15) + '" height="15" aria-hidden="true">' + g + '</svg>';
+  }
+  const mtnTileSVG = () => '<svg viewBox="-9.5 -9.5 19 20.5" width="20" height="21" aria-hidden="true">' + peakTile(0, 0, MTN_VAL) + '</svg>';
+  function playerBoardSVG(s, q) {   // a printed mastery board: one 0–25 track per land, a marker in that land's colour
+    const cw = 9, ch = 9, gx = 1.1, x0 = 20, W2 = x0 + 26 * (cw + gx) + 30, H2 = ELEM.length * (ch + 3.2) + 4; let g = '';
+    ELEM.forEach((e, k) => {
+      const y = 2 + k * (ch + 3.2), v = s.hangar[q][k] || 0, atv = Math.min(25, v);
+      g += '<circle cx="8" cy="' + f1(y + ch / 2) + '" r="4.6" fill="' + e.col + '" stroke="' + e.edge + '" stroke-width=".8"/>';
+      for (let j = 0; j <= 25; j++) g += '<rect x="' + f1(x0 + j * (cw + gx)) + '" y="' + f1(y) + '" width="' + cw + '" height="' + ch + '" rx="1.6" fill="' + (j % 5 ? '#efe6cf' : '#e2d3ad') + '" stroke="#c9b88f" stroke-width=".5"/>';
+      const cx = x0 + atv * (cw + gx) + cw / 2;
+      g += '<ellipse cx="' + f1(cx) + '" cy="' + f1(y + ch / 2 + 1.1) + '" rx="3.9" ry="2" fill="' + e.edge + '"/><ellipse cx="' + f1(cx) + '" cy="' + f1(y + ch / 2) + '" rx="3.9" ry="2.9" fill="' + e.col + '" stroke="' + e.edge + '" stroke-width=".7"/>';
+      g += '<text x="' + f1(x0 + 26 * (cw + gx) + 4) + '" y="' + f1(y + ch - 1) + '" font-family="Figtree, sans-serif" font-size="8.5" font-weight="800" fill="' + INK + '">' + v + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + W2.toFixed(0) + ' ' + H2.toFixed(0) + '" width="100%" role="img" aria-label="Mastery tracks">' + g + '</svg>';
+  }
+  function legendHTML() {
+    const sw = (w, h, vb, body) => '<svg width="' + w + '" height="' + h + '" viewBox="' + vb + '" aria-hidden="true">' + body + '</svg>';
+    return ELEM.map((e) => '<span class="el"><span class="dot" style="background:' + e.col + '"></span><span>' + e.name + '</span></span>').join('') +
+      '<span class="el"><span>Each land: most <b>10</b>, second <b>5</b> (tied for most: <b>5</b> each)</span></span>' +
+      '<span class="el"><span class="dot core"></span><span>Fallen star <b>1–3</b></span></span>' +
+      '<span class="el">' + sw(16, 22, '-8 -26 16 30', godSVG(0, 0, 0)) + '<span>God: stands on your newest shrine and travels from there</span></span>' +
+      '<span class="el">' + sw(22, 14, '-11 -6 22 14', hexPlateSVG(0, 0, 10, 3.5, PCOL[0].col, PCOL[0].edge, PCOL[0].edge)) + '<span>Shrine: claims the space under it</span></span>' +
+      '<span class="el">' + sw(20, 21, '-9.5 -9.5 19 20.5', peakTile(0, 0, MTN_VAL)) + '<span>Peak <b>' + MTN_VAL + '</b>: stands where 3 spaces meet. The moment all 3 hold shrines, the god with the most shrines there names it and takes the tile (a tie: back to the box).</span></span>' +
+      '<span class="el">' + sw(14, 14, '-1 -1 10 10', cubeSVG(0, 0, 0, 8)) + '<span>The sun\'s path: your favour cube moves 1 step for every offering you make. Each step is a point.</span></span>' +
+      '<span class="el">' + sw(14, 15, '-7 -7.5 14 15', startBadge(0, 0, 1)) + '<span>Start spaces: first player on 1, second on 2, and so on.</span></span>' +
+      '<span class="el">' + sw(22, 14, '-11 -6 22 14', hexPlateSVG(0, 0, 10, 3.5, '#8e897c', '#4a463d', '#4a463d')) + '<span>Elder altar: on every numbered space nobody uses. Discs dropped on it are offerings to the sky (1 favour to you).</span></span>' +
+      (V.board.zoned ? '<span class="el"><span>Dashed line: with 2–3 gods, only spaces inside it are in play.</span></span>' : '');
+  }
+  function hexInfo(i, s) {
+    let html = '<span class="coord">' + coord(i) + '</span>';
+    if (V.board.out[i]) return html + '<span>Shallows: outside the 2–3 god zone, out of play this game.</span>';
+    const st = s.st[i];
+    html += st.length ? '<span class="dots">' + st.map(discDot).join('') + '</span><span>' + st.map(D1.discName).join(', ') + ' (bottom → top)</span>' : '<span>Empty space</span>';
+    if (s.owner[i] === NEU) html += '<span>Elder altar: a disc dropped here is an offering to the sky (1 favour to you) and stays on top.</span>';
+    else if (s.owner[i] >= 0) html += '<span>Shrine: ' + nameOf(s.owner[i]) + (s.ship[s.owner[i]] === i ? ' (god here)' : '') + '</span>';
+    return html;
+  }
+
+  /* ---------------- the walk you are planning ---------------- */
+  function resetTurn() {
+    U.mode = 'idle'; U.origin = null; U.clicks = []; U.pull = undefined; U.F = null; U.legal = [];
+    if (!myTurn()) return;
+    const L = D1.pickable(V.s, me()); U.legal = L;
+    if (L.length === 1) enterAim(L[0]); else if (L.length) U.mode = 'pick';
+  }
+  function enterAim(o) {
+    const k = D1.fillAmount(V.s, o);
+    if (V.s.supply[U.c] < k) { const c = V.s.supply.findIndex((x) => x >= k); if (c >= 0) U.c = c; }
+    U.mode = 'aim'; U.origin = o; U.clicks = []; U.pull = undefined;
+  }
+  function computeWalk() { U.F = U.mode === 'aim' ? D1.walk(V.s, me(), U.origin, U.c, U.clicks, U.pull) : null; return U.F; }
+
+  /* ---------------- screen ---------------- */
+  function skeleton(el) {
+    el.innerHTML = '<div class="d1">' +
+      '<div class="final" hidden></div>' +
+      '<div class="d1-main"><div class="board-card"><svg id="board" role="img" aria-label="The sea" viewBox="0 0 ' + f1(VBW) + ' ' + f1(VBH) + '"></svg></div>' +
+        '<div class="refcard"><div class="hexinfo">Hover or tap a space to read its stack, bottom to top.</div><div class="legend"></div></div></div>' +
+      '<div class="d1-side"><div class="turncard"></div><div class="turncard preview" hidden></div>' +
+        '<div class="tray" role="group" aria-label="Earth of creation"><div class="traylab">Earth of creation</div><div class="supply"></div></div>' +
+        '<div class="mats"></div>' +
+        '<details class="booklet logb"><summary>Game log</summary><ul class="log"></ul></details>' +
+        '<details class="booklet rules"><summary>Rulebook</summary>' + RULES_HTML + '</details></div>' +
+      '<div class="d1-bar" hidden></div></div>';
+    const root = el.querySelector('.d1');
+    root.addEventListener('click', onClick);
+    root.querySelector('#board').addEventListener('pointerover', (e) => {
+      const h = e.target.closest('[data-i]'); if (!h || !V) return; const i = +h.dataset.i; if (hoverI === i) return; hoverI = i;
+      root.querySelector('.hexinfo').innerHTML = hexInfo(i, displayState());
+    });
+  }
+  function displayState() { return A.running ? A.disp : U.F ? U.F.D : V.s; }
+  const $ = (sel) => ROOT.querySelector(sel);
+
+  function draw() {
+    if (!V) return;
+    D1.bindView(V);
+    if (!ROOT.querySelector('.d1')) skeleton(ROOT);
+    const s = V.s, mine = myTurn() && !U.submitted;
+    const F = mine ? computeWalk() : (U.F = null);
+    let ov = { hide: -1, legal: [], hits: [] };
+    if (A.running) ov = A.ov;
+    else if (mine && U.mode === 'pick') ov = { hide: -1, legal: U.legal, hits: U.legal };
+    else if (mine && U.mode === 'aim') {
+      const held = F.phase === 'fly' ? { i: F.path.length ? F.path[F.path.length - 1] : F.from, hand: F.hand.slice(F.path.length), q: me(), lifted: true } : { i: F.target !== null ? F.target : F.final, hand: [], q: me(), lifted: false };
+      ov = { hide: me(), legal: !U.clicks.length ? U.legal : [], origin: U.origin, hits: F.next.concat(!U.clicks.length ? U.legal : []), free: Object.assign(F, { held }) };
+    }
+    const disp = A.running ? A.disp : F ? F.D : s;
+    const svg = $('#board');
+    svg.innerHTML = boardSVG(disp, ov);
+    svg.classList.toggle('live', mine);
+    glideHeld(svg, A.running ? SPEED * 0.85 : 150);
+    drawPanels(disp, F);
+  }
+  function glideHeld(svg, ms) {   // the carried stack slides from the space it was over to the next one
+    const h = svg.querySelector('#held');
+    if (!h) { lastHeld = null; return; }
+    const x = +h.dataset.x, y = +h.dataset.y;
+    if (lastHeld && !reduce) {
+      const dx = lastHeld.x - x, dy = lastHeld.y - y;
+      if ((Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) && Math.hypot(dx, dy) < 4 * R) h.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: ms, easing: 'cubic-bezier(.3,.7,.2,1)' });
+    }
+    lastHeld = { x, y };
+  }
+
+  function drawPanels(s, F) {
+    const sc = D1.score(s), p = A.running ? A.p : V.s.cur, mine = myTurn() && !U.submitted && !A.running;
+    const over = V.s.over && !A.running;
+    // status line
+    API.status(over ? 'Night has fallen' : 'Round ' + V.s.round + ' · ' + (A.running ? clean(V.players[p].name) + ' is walking the sea' : mine ? 'Your turn' : U.submitted ? 'Sending your move…' : clean(V.players[p].name) + (isBot(p) ? ' is thinking' : '’s turn')));
+    // turn card
+    let hint = '';
+    if (over) hint = 'Night has fallen.';
+    else if (A.running) hint = 'Watch the stack: each step drops its bottom disc.';
+    else if (!mine) hint = U.submitted ? 'Sending your move…' : isBot(p) ? 'Thinking…' : 'Waiting for ' + nameOf(p) + '.';
+    else if (U.mode === 'pick') hint = 'Your god can’t travel from where it stands this turn, so pick one of your other shrines (outlined) to start from.';
+    else if (F && F.phase === 'fly' && !U.clicks.length) hint = 'Take earth of creation (tap a pile), then walk your god one space at a time. It carries the stack and drops the bottom disc on every space it enters.';
+    else if (F) hint = F.phase === 'pull' ? 'You’re out of shrines: pick one of yours to move under your god.' : F.phase === 'fly' ? 'Move one space at a time: tap a ringed space. Each step drops your bottom disc; a coral ring is a rival’s shrine or an elder altar, so that disc becomes an offering. You can’t enter the same space twice in a turn. Your god comes to rest on the last step (spaces tinted in your colour), where you raise a shrine.' : F.phase === 'target' ? 'That space is taken. Raise your shrine on one of the highlighted neighbouring stacks.' : 'Check the plan, then go.';
+    const turnN = over ? V.s.turns : V.s.turns + (A.running ? 0 : 1);
+    $('.turncard:not(.preview)').innerHTML = '<span class="round">Round ' + V.s.round + ' · turn ' + turnN + '</span><div class="who">' + godIcon(p, 30) + '<span>' + nameOf(p) + (isBot(p) ? ' <small>bot</small>' : '') + '</span></div><div class="hint' + (mine && U.mode === 'aim' ? ' walk' : '') + '">' + hint + '</div>';
+    // preview
+    const box = $('.preview');
+    if (mine && F) { box.hidden = false; box.innerHTML = previewHTML(F) + '<div class="delta ph">' + hint + '</div>'; } else box.hidden = true;
+    // supply
+    const choosing = mine && (U.mode === 'pick' || (U.mode === 'aim' && !U.clicks.length));
+    const kNeed = U.origin !== null && U.mode === 'aim' ? D1.fillAmount(V.s, U.origin) : 1;
+    $('.supply').innerHTML = ELEM.map((e, c) => {
+      const dis = choosing && s.supply[c] < kNeed, on = choosing && U.c === c;
+      return '<button type="button" class="pile' + (on ? ' on' : '') + '" data-el="' + c + '" ' + (choosing ? 'aria-pressed="' + on + '"' : 'tabindex="-1"') + ' ' + (dis || !choosing ? 'disabled' : '') + ' aria-label="' + e.name + ': ' + s.supply[c] + ' left">' + pileSVG(c, s.supply[c]) + '<span class="pl">' + e.name + '</span><b>' + s.supply[c] + '</b></button>';
+    }).join('');
+    $('.tray').classList.toggle('live', choosing);
+    // mats
+    $('.mats').innerHTML = V.players.map((pp, q) => {
+      const won = Object.keys(s.sealed).filter((k) => +k >= 100 && s.sealed[k] === q).length, left = Math.max(0, V.cfg.outposts - s.outs[q].length), act = q === p && !over;
+      return '<section class="mat' + (act ? ' active' : '') + '" style="--pc:' + PCOL[q].col + ';--pe:' + PCOL[q].edge + '" aria-label="' + esc(clean(pp.name)) + '’s mastery board">' +
+        '<div class="mathead">' + godIcon(q, 26) + '<span class="pname">' + nameOf(q) + (pp.bot ? ' <small>bot</small>' : '') + '</span>' + (act ? '<span class="turnflag">Turn</span>' : '') + '<span class="ptotal" title="Score so far">' + sc.total[q] + '</span></div>' +
+        '<div class="pboard">' + playerBoardSVG(s, q) + '</div>' +
+        '<div class="tableau"><span class="tok" title="Fallen stars"><span class="dot core"></span><b>' + s.cores[q] + '</b></span>' +
+        '<span class="tok" title="Peaks named">' + (won ? Array.from({ length: won }, mtnTileSVG).join('') : '<span class="none">no peaks yet</span>') + '</span>' +
+        '<span class="tok" title="Shrines still in hand">' + (left ? shrineIcon(q, left) : '<span class="none">all shrines out</span>') + '</span>' +
+        '<span class="tok" title="Favour: offerings made (cube on the sun’s path)"><b>' + (sc.gp[q] || 0) + '</b>&nbsp;favour</span></div></section>';
+    }).join('');
+    $('.log').innerHTML = V.log.slice().reverse().map((l) => '<li><span class="t">R' + l.r + '</span><span>' + esc(l.t) + '</span></li>').join('');
+    const lg = $('.legend'); if (!lg.innerHTML) lg.innerHTML = legendHTML();
+    drawFinal(over);
+    drawBar(mine, F);
+  }
+  function previewHTML(F) {
+    const p = me();
+    if (F.phase === 'done') {
+      const m = D1.walkMove(F), r = D1.applyMove(V.s, p, m, false), sb = D1.score(V.s), sa = D1.score(r.ns), d = sa.total[p] - sb.total[p];
+      const others = V.players.map((pp, q) => (q === p ? '' : nameOf(q) + ' <b>' + (sa.total[q] - sb.total[q] >= 0 ? '+' : '') + (sa.total[q] - sb.total[q]) + '</b>')).filter(Boolean).join(' · ');
+      return '<h2>Ready to raise your shrine</h2><dl>' +
+        '<dt>Starts from</dt><dd>' + coord(m.o) + '</dd>' +
+        '<dt>You add</dt><dd>' + m.k + (m.segs.length > 1 ? ' + ' + F.refill + ' on the surge' : '') + ' ' + ELEM[m.c].name + '</dd>' +
+        '<dt>Spaces crossed</dt><dd>' + m.drops + (m.segs.length > 1 ? ' (surge at ' + coord(m.segs[1].from) + ')' : '') + '</dd>' +
+        '<dt>God lands, shrine on</dt><dd>' + (m.target !== null ? coord(m.target) : 'nowhere to raise a shrine') + '</dd>' +
+        '<dt>Collects</dt><dd>' + (r.captured.length ? r.captured.map((x) => discDot(x) + ' ' + D1.discName(x)).join(', ') : 'nothing') + '</dd>' +
+        '<dt>Offerings to rivals</dt><dd>' + r.gifts + '</dd>' +
+        (r.pulled !== null ? '<dt>Shrine moved from</dt><dd>' + coord(r.pulled) + '</dd>' : '') +
+        (r.seals.length ? '<dt>Peaks named</dt><dd>' + r.seals.map((x) => D1.pkName(x.i) + ' → ' + (x.w >= 0 ? nameOf(x.w) : 'tie, nobody')).join('<br>') + '</dd>' : '') +
+        '<dt>Your score</dt><dd>' + sb.total[p] + ' → ' + sa.total[p] + ' (' + (d >= 0 ? '+' : '') + d + ')</dd></dl>' +
+        '<div class="delta">Rivals: ' + others + '</div>';
+    }
+    const left = F.cnt - F.path.length;
+    const next = F.phase === 'pull' ? 'All ' + V.cfg.outposts + ' of your shrines are out. Pick one of them (outlined in amber) to move under your god at ' + coord(F.target) + '. Its stack stays behind, unclaimed.'
+      : F.phase === 'target' ? 'Your god reached ' + coord(F.final) + ', which is taken. Pick a highlighted neighbouring stack to raise your shrine on.'
+      : left === 1 ? 'Next step: your god comes to rest. Rest on a stack of 2 or more with no shrine' + (F.relays < V.cfg.relay ? ' holding ' + ELEM[U.c].name + ' and it surges: you take its top disc, add 1 of your land and walk again' : ' to collect its top disc') + '. A single disc is taken; an empty space gives nothing.'
+      : 'Next step drops ' + discDot(F.hand[F.path.length]) + ' ' + D1.discName(F.hand[F.path.length]) + '.';
+    return '<h2>' + (F.relays ? 'The land surges!' : 'Walking the sea') + '</h2>' +
+      (F.relays ? '<div class="delta">You took ' + discDot(F.bonusCap) + ' ' + D1.discName(F.bonusCap) + ' and added ' + F.refill + ' ' + ELEM[U.c].name + '. Walk again.</div>' : '') +
+      (F.phase === 'fly' ? '<div class="steps"><span>Steps left <b>' + left + '</b></span><span>Offerings <b>' + F.gifts + '</b></span></div>' : '') +
+      '<div class="delta">' + next + '</div>';
+  }
+  function drawBar(mine, F) {
+    const bar = $('.d1-bar');
+    if (!mine || !F && U.mode !== 'pick') {
+      if (U.submitted && myTurn()) { bar.hidden = false; bar.innerHTML = '<span class="say">Sending your move…</span>'; return; }
+      bar.hidden = true; bar.innerHTML = ''; return;
+    }
+    bar.hidden = false;
+    const many = U.legal.length > 1;
+    if (U.mode === 'pick') { bar.innerHTML = '<span class="say"><b>Pick a shrine to start from.</b> Your god can’t travel from where it stands, so tap one of your outlined shrines.</span>'; return; }
+    const undo = '<button class="bbtn" data-do="undo"' + (U.clicks.length || U.pull !== undefined ? '' : ' disabled') + '>Undo step</button>';
+    const restart = U.clicks.length ? '<button class="bbtn" data-do="restart">Restart turn</button>' : many ? '<button class="bbtn" data-do="repick">Pick another shrine</button>' : '';
+    if (!U.clicks.length) {
+      const k = D1.fillAmount(V.s, U.origin);
+      bar.innerHTML = '<span class="say"><b>Take ' + k + ' earth</b>, then tap a ringed space to walk.</span><div class="lands" role="group" aria-label="Land to take">' +
+        ELEM.map((e, c) => '<button type="button" class="land" data-el="' + c + '" aria-pressed="' + (U.c === c) + '"' + (V.s.supply[c] < k ? ' disabled' : '') + ' aria-label="' + e.name + ', ' + V.s.supply[c] + ' left"><span class="row"><span class="dot" style="background:' + e.col + '"></span>' + V.s.supply[c] + '</span>' + e.name + '</button>').join('') +
+        '</div>' + (restart ? '<div class="acts">' + restart + '</div>' : '');
+      return;
+    }
+    let say;
+    if (F.phase === 'done') {
+      const m = D1.walkMove(F), r = D1.applyMove(V.s, me(), m, false), b = D1.score(V.s).total[me()], a = D1.score(r.ns).total[me()];
+      say = '<b>Shrine on ' + coord(m.target) + '</b> · collect ' + (r.captured.length ? r.captured.map((x) => discDot(x) + ' ' + D1.discName(x)).join(', ') : 'nothing') + ' · score ' + b + ' → ' + a;
+    } else if (F.phase === 'pull') say = '<b>Out of shrines:</b> tap one of yours (amber) to move here.';
+    else if (F.phase === 'target') say = '<b>That space is taken:</b> tap a highlighted stack next to it.';
+    else { const left = F.cnt - F.path.length; say = (F.relays ? '<b>Surge!</b> ' : '') + 'Steps left <b>' + left + '</b> · offerings <b>' + F.gifts + '</b>' + (left > 1 ? ' · next drops ' + discDot(F.hand[F.path.length]) : ' · next step: your god comes to rest'); }
+    bar.innerHTML = '<span class="say">' + say + '</span><div class="acts">' + undo + restart + (F.phase === 'done' ? '<button class="bbtn go" data-do="go">Go</button>' : '') + '</div>';
+  }
+  function drawFinal(over) {
+    const box = $('.final');
+    if (!over || !V.final) { box.hidden = true; return; }
+    const f = V.final, w = f.winners;
+    const youWin = w.length === 1 && w[0] === me() && !isBot(me());
+    const title = w.length > 1 ? 'A shared victory' : youWin ? 'You are crowned by the sky' : clean(V.players[w[0]].name) + ' is crowned by the sky';
+    box.hidden = false;
+    box.innerHTML = '<h3>' + esc(title) + (f.tiebreak ? ' <small style="font-family:var(--f-body);font-size:14px;color:var(--ink-dim)">(tiebreak: most earth collected)</small>' : '') + '</h3>' +
+      '<p>Night falls: ' + nameOf(V.s.ender) + ' could not gather earth in round ' + V.s.round + ', and Day One is over.</p>' +
+      '<div class="tablewrap"><table><tr><th>God</th><th>Mastery</th><th>Stars</th><th>Peaks</th><th>Favour</th><th>Collected</th><th>Total</th></tr>' +
+      f.order.map((q) => '<tr class="' + (w.includes(q) ? 'win' : '') + '"><td><span class="el"><span class="pchip" style="background:' + PCOL[q].col + '"></span>' + nameOf(q) + '</span></td><td>' + f.el[q] + '</td><td>' + f.cores[q] + '</td><td>' + f.pl[q] + '</td><td>' + f.gp[q] + '</td><td>' + f.caps[q] + '</td><td><b>' + f.total[q] + '</b></td></tr>').join('') +
+      '</table></div><p style="font-size:13px">Leave to play again. The map stays up so you can look it over.</p>';
+  }
+
+  /* ---------------- taps ---------------- */
+  function onClick(e) {
+    if (!V || A.running) return;
+    const land = e.target.closest('[data-el]');
+    if (land && !land.disabled) { if (myTurn() && !U.submitted && (U.mode === 'pick' || (U.mode === 'aim' && !U.clicks.length))) { U.c = +land.dataset.el; draw(); } return; }
+    const btn = e.target.closest('[data-do]');
+    if (btn && !btn.disabled) {
+      const d = btn.dataset.do;
+      if (d === 'undo') { if (U.pull !== undefined) U.pull = undefined; else U.clicks.pop(); }
+      else if (d === 'restart') { U.clicks = []; U.pull = undefined; }
+      else if (d === 'repick') { U.mode = 'pick'; U.origin = null; U.clicks = []; U.pull = undefined; }
+      else if (d === 'go') { submit(); return; }
+      lastHeld = null; draw(); return;
+    }
+    const h = e.target.closest('#board [data-i]'); if (!h) return;
+    const i = +h.dataset.i;
+    $('.hexinfo').innerHTML = hexInfo(i, displayState()); hoverI = i;
+    if (!myTurn() || U.submitted) return;
+    if (U.mode === 'pick') { if (U.legal.includes(i)) { enterAim(i); lastHeld = null; draw(); } return; }
+    if (U.mode === 'aim') {
+      const F = U.F || computeWalk();
+      if (F.next.includes(i)) { if (F.phase === 'pull') U.pull = i; else U.clicks.push(i); draw(); }
+      else if (!U.clicks.length && U.legal.includes(i) && i !== U.origin) { enterAim(i); lastHeld = null; draw(); }
+    }
+  }
+  function submit() {
+    const F = U.F; if (!F || F.phase !== 'done') return;
+    U.submitted = true; clearTimeout(U.subT);
+    const r = API.act({ type: 'move', o: U.origin, c: U.c, clicks: U.clicks.slice(), pull: U.pull === undefined ? null : U.pull });
+    if (r && !r.ok) { U.submitted = false; draw(); return; }
+    if (U.submitted) { draw(); U.subT = setTimeout(() => { if (U.submitted && myTurn()) { U.submitted = false; draw(); } }, 6000); }   // an online move that never arrived: let the player try again
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !V || !myTurn() || U.submitted || A.running || U.mode !== 'aim') return;
+    if (U.pull !== undefined) U.pull = undefined; else if (U.clicks.length) U.clicks.pop(); else if (U.legal.length > 1) U.mode = 'pick'; else return;
+    lastHeld = null; draw();
+  });
+
+  /* ---------------- moves arriving: every seat replays the last move step by step ---------------- */
+  function applyStep(Dst, st, p) {
+    if (st.t === 'add') { for (let j = 0; j < st.k; j++) Dst.st[st.i].push({ c: st.c }); Dst.supply[st.c] -= st.k; }
+    else if (st.t === 'lift') { Dst.st[st.i] = []; if (Dst.owner[st.i] >= 0) Dst.cat[st.i] = 0; }
+    else if (st.t === 'drop') Dst.st[st.i].push(st.d);
+    else if (st.t === 'gift') { D1.offerDisc(Dst, st.i, st.d, st.to); if (V.cfg.giftPts) Dst.giftPts[p]++; }
+    else if (st.t === 'capture') { const d = Dst.st[st.i].pop(); if (d) D1.collect(Dst, p, d); Dst.caps[p]++; }
+    else if (st.t === 'pull') { Dst.owner[st.i] = -1; Dst.outs[p] = Dst.outs[p].filter((x) => x !== st.i); }
+    else if (st.t === 'claim') { Dst.owner[st.i] = st.p; Dst.cat[st.i] = Dst.st[st.i].length; Dst.ship[st.p] = st.i; Dst.outs[st.p] = Dst.outs[st.p].concat([st.i]); }
+    else if (st.t === 'seal') Dst.sealed[st.i] = st.w;
+  }
+  function startAnim(v) {
+    const L = v.last, p = L.p, steps = L.steps, Dst = D1.clone(L.before);
+    let k = 0, hand = [], lifted = false; const path = [steps[0].i];
+    const advance = (st) => {
+      if (st.t === 'lift') { hand = Dst.st[st.i].slice(); lifted = true; }
+      applyStep(Dst, st, p);
+      if (st.t === 'drop' || st.t === 'gift') hand.shift();
+      if (st.t === 'move') { hand = []; lifted = false; }
+      if (st.t === 'lift' && st.i !== path[path.length - 1]) path.push(st.i);
+      if (st.t === 'drop' || st.t === 'gift' || st.t === 'move') path.push(st.i);
+    };
+    if (p === v.seat && U.submitted) {   // you already walked this move yourself: only show what happens where your god rests
+      let j = -1; steps.forEach((st, x) => { if (st.t === 'move') j = x; });
+      for (; k <= j; k++) advance(steps[k]);
+    }
+    const gen = ++A.gen;
+    A.running = true; A.p = p; A.disp = Dst; lastHeld = null;
+    const tick = () => {
+      if (gen !== A.gen) return;
+      if (k >= steps.length) { endAnim(); return; }
+      const st = steps[k++];
+      advance(st);
+      A.ov = { hide: p, legal: [], hits: [], anim: { trail: path.slice(), held: { i: path[path.length - 1], hand: hand.slice(), q: p, lifted: lifted && hand.length > 0 }, flash: st.t === 'gift' ? st.i : null } };
+      draw();
+      A.timer = setTimeout(tick, st.t === 'drop' || st.t === 'gift' || st.t === 'move' ? SPEED : SPEED * 2);
+    };
+    tick();
+  }
+  function endAnim() {
+    A.running = false; A.ov = null; A.disp = null; A.tail = Date.now() + 350; lastHeld = null;
+    const nv = A.pending; A.pending = null;
+    if (nv) take(nv); else { syncTurn(); draw(); }
+  }
+  function syncTurn() {
+    const key = V.seq + ':' + V.s.cur + ':' + V.s.over;
+    if (key !== U.key) { U.key = key; U.submitted = false; clearTimeout(U.subT); resetTurn(); }
+  }
+  function take(v) {
+    const gk = v.board.seed + ':' + v.P + ':' + v.players.map((p) => p.name).join('|');
+    if (gk !== gameKey) {   // a new game in this tab
+      gameKey = gk; A.gen++; clearTimeout(A.timer); A.running = false; A.pending = null; A.ov = null;
+      shownSeq = v.last ? v.last.seq : null; U.key = null; U.submitted = false; lastHeld = null; hoverI = null;
+      V = v; ROOT.innerHTML = ''; syncTurn(); draw(); return;
+    }
+    V = v; D1.bindView(V);
+    if (v.last && v.last.seq !== shownSeq) { shownSeq = v.last.seq; startAnim(v); return; }
+    syncTurn(); draw();
+  }
+  function render(el, v, api) {
+    ROOT = el; API = api;
+    if (A.running) { A.pending = v; return; }   // let the move being shown finish first
+    take(v);
+  }
+
+  /* ---------------- rules text (the original rulebook) ---------------- */
+  const RULES_HTML =
+    '<p><em>Before the first dawn there was only sea. Then the young gods woke, and the sky gave them one day to make a world. Each god carries earth across the water, raises islands where it walks, and builds shrines to claim them. The sky watches: it favours gods who are generous with each other, and when night falls it crowns the masters of each land.</em></p>' +
+    '<p><b>Setup.</b> The board is a 6 × 7 sea. Ten peak tiles sit on the printed marks where three spaces meet, and fallen stars (worth 1–3) are shuffled onto the star spots. With 2 or 3 players, play only inside the dashed line and leave the shallows outside it empty (no tiles or stars there).</p>' +
+    '<p>Each player takes a god, a favour cube and their shrines (7 / 6 / 5 / 4 with 2 / 3 / 4 / 5 players). The board has 5 numbered start spaces: the first player starts on 1, the second on 2, and so on, with one shrine on the space and their god standing on it. Put an elder altar (grey) on every numbered space nobody is using inside the play area (2 players: spaces 3 and 5; 3 or 4 players: space 5; 5 players: none).</p>' +
+    '<p>The earth of creation: 7 / 8 / 10 / 10 discs of each of the five lands (Fire, Forest, Shore, Reef, Stone) for 2 / 3 / 4 / 5 players. Each player takes a mastery board and puts a marker at 0 on each land’s track.</p>' +
+    '<p><b>1. Gather earth.</b> Top up the stack under your god to 2 discs of one land from the earth of creation (if it already holds 2 or more, add 1). Your god stands on top. If your god can’t travel from there, start from one of your other shrines instead.</p>' +
+    '<p><b>2. Walk the sea.</b> Lift the whole stack and carry it one space at a time, in any direction, dropping the bottom disc on each space you enter. You can’t enter the same space twice in a turn. Peaks stand on corners, so they never block the way. Your god comes to rest last, on a space with no shrine.</p>' +
+    '<p><b>3. Offerings.</b> A disc that would drop onto a rival’s shrine is an offering. It lands on top of their shrine (their island grows) and they move that land’s marker up 1 on their mastery board. The sky rewards you: move your favour cube 1 step along the sun’s path. A fallen star offered goes straight to them. Give rivals what they don’t need. A disc dropped on an elder altar is an offering too: you gain 1 favour, nobody’s mastery moves, and a star dropped there returns to the sky (the box).</p>' +
+    '<p><b>4. Surge (once per turn).</b> If your god comes to rest on a stack of 2 or more discs with no shrine, and the stack holds the land you gathered this turn, that land surges under you. Collect its top disc, add 1 disc of your land, and walk again.</p>' +
+    '<p><b>5. Raise a shrine.</b> Collect the top disc where your god comes to rest (an empty space gives nothing), then slip a shrine under your god. If all your shrines are already on the sea, move one of them here instead; the stack it stood on stays behind.</p>' +
+    '<p><b>6. Name a peak.</b> Each peak touches exactly 3 spaces. The moment all 3 hold shrines, the god with the most shrines there names it and takes the peak tile off the board (3 points). If gods tie, nobody can agree on a name and the tile returns to the box. After that, those shrines are free to move on to the next peak.</p>' +
+    '<p><b>Collecting.</b> Whenever you collect an earth disc (the top disc where your god comes to rest, or the top disc in a surge), move that land’s marker up 1 on your mastery board (tracks stop at 25) and return the disc to the earth of creation. Stars you keep.</p>' +
+    '<p><b>Nightfall.</b> Earth only leaves the earth of creation for the sea, and only comes back when someone collects it, so it slowly runs out as the islands grow. Night falls the moment a god cannot gather earth, because no land has enough discs left. Then the sky crowns the masters.</p>' +
+    '<p><b>Mastery:</b> for each land, the god furthest along its track scores 10 and the clear second scores 5. If gods tie for the most, each of them scores 5 and there is no second place. <b>Fallen stars</b> score their printed value. <b>Favour:</b> 1 point for every offering you made (your cube on the sun’s path). <b>Peaks:</b> 3 points for each peak you named. A peak still unnamed at nightfall goes to the god with the most shrines around it (a tie scores nothing). <b>Tiebreak:</b> most earth collected.</p>';
+
+  const mastDiscs = (() => {   // five wooden discs in a row, one per land, spaced so none touch
+    let g = ''; ELEM.forEach((e, k) => { g += discSVG(16 + k * 30, 20, 11, 4.6, 5, e.col, e.edge, e.edge); });
+    return '<svg class="discs" width="152" height="34" viewBox="0 0 152 34" aria-hidden="true">' + g + '</svg>';
+  })();
+
+  // read-only peek for automated checks
+  window.DayOneUI = { get state() { return { mode: U.mode, phase: U.F && U.F.phase, next: U.F ? U.F.next.slice() : [], legal: U.legal.slice(), clicks: U.clicks.length, running: A.running, mine: !!V && myTurn() && !U.submitted, over: !!V && V.s.over, seq: V && V.seq, ships: V ? V.s.ship.slice() : [], me: V ? V.seat : 0 }; } };
+
+  DevTable.mount(document.getElementById('app'), {
+    id: 'day-one', title: 'Day One', blurb: '2–5 players · 30–45 minutes',
+    mast: '<h1>Day One</h1><p class="tag">The world’s first day. Young gods carry earth across an empty sea, raise the first islands, and win the favour of the sky before nightfall.</p>' + mastDiscs,
+    minPlayers: 2, maxPlayers: 5, defaultPlayers: 3, botNames: D1.BOT_NAMES,
+    botNote: 'Each bot weighs every walk it can make and how the next god could answer it.',
+    create: (players, opts) => new D1.Game(players, opts),
+    render,
+    rules: RULES_HTML,
+  });
+})();
+</script>
+</body>
+</html>
