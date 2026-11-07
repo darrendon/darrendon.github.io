@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cut the video to the voiceover: python3 align.py voiceover.m4a
+"""Cut the video to the voiceover: python3 align.py voiceover.m4a\nIf cues.json is here (a hand cut to the recording), it is used instead of the pause-finding below.
 Finds the pauses between the script's paragraphs (the longest silences), writes timing.json (one scene per
 paragraph, each starting in the middle of the pause before it) and ../abducted-pitch.vtt (one caption per
 sentence, timed by its share of the paragraph's speech)."""
@@ -7,6 +7,16 @@ import sys, re, json, subprocess, os
 HERE = os.path.dirname(os.path.abspath(__file__)); VID = os.path.dirname(HERE)
 SCRIPT = [p.strip() for p in open(os.path.join(HERE, 'script.txt')).read().split('\n\n') if p.strip()]
 src = sys.argv[1]
+CUES = os.path.join(HERE, 'cues.json')
+if os.path.exists(CUES):   # a hand cut to the recording wins over pause-finding (used when the read strays from script.txt)
+    C = json.load(open(CUES)); LEAD = 0.6
+    bounds = [0.0] + [LEAD + (a + b) / 2 for a, b in C['gaps']] + [LEAD + C['speech_end'] + 2.2]
+    durs = [round(b - a, 3) for a, b in zip(bounds, bounds[1:])]
+    json.dump({'durations': durs, 'lead': LEAD, 'source': os.path.basename(src)}, open(os.path.join(HERE, 'timing.json'), 'w'), indent=1)
+    fmt = lambda t: '%02d:%02d:%06.3f' % (t // 3600, t % 3600 // 60, t % 60)
+    vtt = 'WEBVTT\n\n' + ''.join(f'{i + 1}\n{fmt(a + LEAD)} --> {fmt(b + LEAD)}\n{t}\n\n' for i, (a, b, t) in enumerate(C['cues']))
+    open(os.path.join(VID, 'abducted-pitch.vtt'), 'w').write(vtt)
+    print('from cues.json; scenes:', durs, 'total', round(sum(durs), 2)); raise SystemExit
 dur = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout)
 log = subprocess.run(['ffmpeg', '-i', src, '-af', 'silencedetect=noise=-34dB:d=0.25', '-f', 'null', '-'], capture_output=True, text=True).stderr
 starts = [float(x) for x in re.findall(r'silence_start: ([\d.]+)', log)]; ends = [float(x) for x in re.findall(r'silence_end: ([\d.]+)', log)]

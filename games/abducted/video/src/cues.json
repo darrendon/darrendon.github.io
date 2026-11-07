@@ -1,0 +1,29 @@
+{
+ "_note": "Cut by hand to Darren's recording (Abducted_Pitch_Video_Audio.aup4): times are seconds into the voiceover. 'gaps' are the pauses between paragraphs (one scene each); 'cues' are the captions.",
+ "speech_end": 70.05,
+ "gaps": [[5.55, 6.55], [14.70, 15.35], [20.65, 21.25], [31.80, 32.35], [43.95, 45.00], [51.55, 52.30], [58.25, 58.85], [64.75, 65.20]],
+ "cues": [
+  [0.65, 5.55, "In Abducted, everyone at the table knows which team you're on.\nExcept you."],
+  [6.55, 9.65, "Your card faces out in a stand: Human or Alien."],
+  [10.05, 11.80, "You can read every card but your own,"],
+  [11.80, 14.70, "so the only way to learn your team is to decide who to believe."],
+  [15.35, 18.00, "Each round, the Town Leader splits the town in two,"],
+  [18.30, 20.65, "and everyone votes on which party goes out searching."],
+  [21.25, 25.00, "The searchers secretly play Transmit if they think they're an Alien,"],
+  [25.00, 27.30, "or Jam if they think they're Human,"],
+  [27.50, 28.90, "and the majority scores."],
+  [29.40, 31.80, "Guess wrong, and you just scored for the other side."],
+  [32.35, 35.40, "Then the Lookout sends one searcher to check out the light."],
+  [36.30, 40.30, "They mix their card with the top of the deck and keep one, blind."],
+  [40.40, 43.95, "They might come back… different."],
+  [45.00, 47.00, "So your friends are telling you what you are."],
+  [47.25, 48.60, "So are your enemies."],
+  [49.10, 51.55, "And after the next abduction, they might have swapped places."],
+  [52.30, 56.60, "First team to five wins, and you win if the card in your stand is on that team,"],
+  [56.60, 58.25, "no matter how you played."],
+  [58.85, 61.40, "Fifty cards and twelve stands in a tuck box."],
+  [61.95, 64.75, "Five to twelve players, fifteen to twenty-five minutes."],
+  [65.20, 66.20, "Abducted."],
+  [66.20, 70.05, "Play it in your browser at darrendon.com, or email me for a prototype."]
+ ]
+}
