@@ -1,17 +1,17 @@
-Abducted. A social deduction game where everyone knows which team you're on, except you.
+In Abducted, everyone at the table knows which team you're on. Except you.
 
-Your card sits in a stand, facing out. Human or Alien. You can see everyone's card but your own.
+Your card faces out in a stand: Human or Alien. You can read every card but your own, so the only way to learn your team is to decide who to believe.
 
-Each round, the Town Leader splits the town into two parties, and everyone else votes on which one goes out searching.
+Each round, the Town Leader splits the town in two, and everyone votes on which party goes out searching.
 
-The search party secretly plays Transmit if they think they're an Alien, or Jam if they think they're Human. The majority scores for that side.
+The searchers secretly play Transmit if they think they're an Alien, or Jam if they think they're Human, and the majority scores. Guess wrong, and you just scored for the other side.
 
-Then the Lookout sends one searcher to check out the light. They mix their card with one from the deck and keep one without looking. They might have just switched sides.
+Then the Lookout sends one searcher to check out the light. They mix their card with the top of the deck and keep one, blind. They might come back... different.
 
-So everyone's trying to convince you what you are, and some of them are lying.
+So your friends are telling you what you are. So are your enemies. And after the next abduction, they might have swapped places.
 
-First team to five wins, and you win if your card is on that team at the end.
+First team to five wins, and you win if the card in your stand is on that team, no matter how you played.
 
-Just cards and stands in a tuck box. Five to twelve players, fifteen to twenty-five minutes.
+Fifty cards and twelve stands in a tuck box. Five to twelve players, fifteen to twenty-five minutes.
 
 Abducted. Play it in your browser at darrendon.com, or email me for a prototype.
