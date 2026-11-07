@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Abducted art</title>
+<!-- One piece of flat art at print size: ?p=team&t=H|A&v=0-3 | back | split&s=saucer|cow | leader | score | box-front | box-side | box-end -->
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>html,body{margin:0;background:#fff}svg{display:block}</style>
+<script src="art.js"></script></head><body>
+<div id="a"></div>
+<script>
+const q = new URLSearchParams(location.search), p = q.get('p') || 'team';
+const A = window.AbArt;
+const svg = { team: () => A.team(q.get('t') || 'H', +(q.get('v') || 0)), back: A.back, split: () => A.split(q.get('s') || 'saucer'), leader: A.leader, score: A.scorecard,
+  'box-front': A.boxFront, 'box-side': A.boxSide, 'box-end': A.boxEnd }[p]();
+document.getElementById('a').innerHTML = svg;
+document.fonts.ready.then(() => { window.__done = true; });
+</script></body></html>

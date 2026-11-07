@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Abducted — rules</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css?v=8bd6e31d">
+<style>
+/* Source for abducted-rules.pdf: US Letter portrait, no margins, backgrounds on. Two pages. */
+:root{--ink:#1B1E33;--night:#1E2447;--hum:#EE8A2B;--ali:#8FCB3F;--beam:#D8F27A;--lilac:#B7BCD6;--soft:#555A78;--line:#D3D7E8;--accent:#3D4C9E;--panel:#F1F3FA}
+*{box-sizing:border-box}
+@page{size:8.5in 11in;margin:0}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:#fff;position:relative;overflow:hidden;padding:.55in .6in .5in;color:var(--ink);
+  font:10.2pt/1.4 Jost,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none;break-after:page}}
+.band{margin:-.55in -.6in .22in;padding:.36in .6in .3in;background:var(--night);color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:.3in;position:relative}
+.band h1{margin:0;font:400 46pt/1 Righteous;letter-spacing:.04em;color:var(--beam)}
+.band p{margin:.08in 0 0;font-size:12pt;color:var(--lilac);max-width:4.4in}
+.band img{width:1.15in;transform:rotate(4deg);border-radius:3px;box-shadow:0 10px 16px -8px rgba(0,0,0,.7)}
+.band .by{font:600 8.5pt/1 Jost;letter-spacing:.24em;text-transform:uppercase;color:var(--beam);margin-top:.14in}
+h2{font:400 14pt/1.1 Righteous;letter-spacing:.03em;color:var(--accent);margin:.16in 0 .05in}
+h2:first-child{margin-top:0}
+p{margin:0 0 .07in}
+b{font-weight:600}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.34in}
+.goal{background:var(--panel);border-left:5px solid var(--hum);border-radius:6px;padding:.12in .16in;font-size:11.4pt;margin-bottom:.06in}
+.comp{display:grid;grid-template-columns:repeat(5,.95in);justify-content:space-between;gap:.12in;margin:.06in 0 .06in}
+.comp figure{margin:0;text-align:center;font-size:9pt;line-height:1.25;color:var(--soft)}
+.comp img{width:100%;border-radius:4px;display:block;margin-bottom:.05in;box-shadow:0 4px 8px -5px rgba(0,0,0,.5)}
+.comp b{display:block;color:var(--ink);font-size:9.6pt}
+table.setup{border-collapse:collapse;width:100%;font-size:10pt;margin:.04in 0 .08in}
+.setup th,.setup td{border-bottom:1px solid var(--line);padding:3px 4px;text-align:center}
+.setup th:first-child,.setup td:first-child{text-align:left}
+.setup th{font-weight:600;color:var(--soft);font-size:9pt}
+ol.turn{margin:.04in 0 0;padding:0;list-style:none;counter-reset:t}
+ol.turn li{counter-increment:t;position:relative;padding:0 0 .1in .46in}
+ol.turn li::before{content:counter(t);position:absolute;left:0;top:-.02in;width:.32in;height:.32in;border-radius:50%;background:var(--hum);color:var(--ink);display:grid;place-items:center;font:400 12pt/1 Righteous}
+ol.turn li b.h{display:block;font:400 12pt/1.15 Righteous;letter-spacing:.02em;color:var(--night);margin-bottom:.02in}
+.ex{display:flex;gap:.1in;align-items:center;margin:.06in 0 .02in}
+.ex img{width:.62in;border-radius:3px}
+.ex span{font-size:9.4pt;color:var(--soft)}
+.tip{background:var(--night);color:#E3E6F3;border-radius:8px;padding:.12in .16in;font-size:10.2pt;margin-top:.12in}
+.tip b{color:var(--beam);font-weight:400;font-family:Righteous;letter-spacing:.03em}
+.foot{position:absolute;left:.6in;right:.6in;bottom:.32in;display:flex;justify-content:space-between;font-size:8.6pt;color:var(--soft);border-top:1px solid var(--line);padding-top:.06in}
+.faq p{font-size:10.2pt}
+.faqrow{margin-top:.1in;border-top:1px solid var(--line);padding-top:.12in}
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="band">
+    <div>
+      <h1>ABDUCTED</h1>
+      <p>A social deduction game for 5–12 players, about 15 minutes. Everyone knows which side you’re on except you.</p>
+      <div class="by">by Darren Don</div>
+    </div>
+    <img src="/games/abducted/img/box-front-480.webp" alt="">
+  </div>
+  <div class="goal"><b>The goal.</b> Score points for your side, Human or Alien, by getting the beamed-up half to vote your way. The first side to 5 points wins, and you win if your card shows that side when the game ends. The catch: your own card faces away from you.</div>
+
+  <h2>Components</h2>
+  <div class="comp">
+    <figure><img src="/games/abducted/img/face-H0-240.webp" alt=""><b>12 Human cards</b>four characters, three of each</figure>
+    <figure><img src="/games/abducted/img/face-A1-240.webp" alt=""><b>12 Alien cards</b>four characters, three of each</figure>
+    <figure><img src="/games/abducted/img/split-saucer-240.webp" alt=""><b>12 split cards</b>Saucer on one side, Cow on the other</figure>
+    <figure><img src="/games/abducted/img/leader-240.webp" alt=""><b>1 Mothership</b>the leader’s card</figure>
+    <figure><img src="/games/abducted/img/score-240.webp" alt=""><b>1 score card</b>plus 2 cubes</figure>
+  </div>
+  <p>Also: 12 plastic card stands.</p>
+
+  <div class="cols">
+    <div>
+      <h2>Setup</h2>
+      <p>1. With <b>N players</b>, take N Human cards and N Alien cards and shuffle them together. Return the rest to the box.</p>
+      <p>2. Deal one card face down to each player. Without looking at it, put it in your stand so it <b>faces everyone else</b>. You can read every other player’s card, never your own.</p>
+      <p>3. Put the other N cards face down in a pile in the middle. Nobody knows what’s in it.</p>
+      <p>4. Give everyone a split card. Put both cubes on 0 of the score card.</p>
+      <p>5. A random player takes the Mothership and leads the first turn.</p>
+    </div>
+    <div>
+      <h2>Cards by player count</h2>
+      <p>Always N of each: 5 players use 5 Human and 5 Alien cards, 12 players use all 24. Half the cards you use are dealt, and the other half wait in the middle.</p>
+      <div class="tip"><b>Table talk.</b> Say anything, at any time: tell people what they are, lie, make deals, accuse. The one rule: never show anyone their own card.</div>
+      <h2>Your card</h2>
+      <p>The card in your stand is your side. It can change during the game, whenever someone possesses you, and you won’t see it happen. Only the card in your stand at the end decides whether you win.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Abducted · rules</span><span>1</span></div>
+</section>
+
+<section class="page">
+  <div class="cols">
+    <div>
+      <h2>A turn</h2>
+      <ol class="turn">
+        <li><b class="h">Possess</b>The leader must possess another player. Take a random card from the middle and swap it into that player’s stand without letting them see it, then shuffle their old card into the middle. They might have just changed sides.</li>
+        <li><b class="h">Split</b>The leader splits the whole table, themselves included, into two halves as evenly as possible, telling each player which side of their split card to show: <b>Saucer</b> or <b>Cow</b>.
+          <div class="ex"><img src="/games/abducted/img/split-saucer-240.webp" alt=""><img src="/games/abducted/img/split-cow-240.webp" alt=""><span>With 7 players, one half has 3 and the other 4.</span></div></li>
+        <li><b class="h">Beam up</b>The player to the leader’s left picks which half is beamed up. Then they flip the top card of the middle face up for everyone to see. It stays face up, out of the game.</li>
+        <li><b class="h">Thumbs</b>On three, everyone in the beamed-up half votes at once: <b>thumbs up for Human</b>, <b>thumbs down for Alien</b>. The majority scores 1 point for that side. A tie scores nothing.</li>
+        <li><b class="h">Pass the Mothership</b>to the left. That player leads the next turn.</li>
+      </ol>
+      <h2>The leader’s choices</h2>
+      <p><b>Possess</b> someone whose card helps you if it flips. <b>Split</b> the table so the people you trust land together. The player who picks the half has the last word, so the leader can’t control everything.</p>
+    </div>
+    <div>
+      <h2>Winning</h2>
+      <p>The game ends the moment a side reaches <b>5 points</b>. Everyone takes their card out of its stand and looks at it. If your card shows the winning side, you win, along with everyone else on that side. It doesn’t matter which side you voted for.</p>
+      <h2>What you know</h2>
+      <p>The deck always holds the same number of Humans and Aliens. You can see every card in a stand except yours, plus every card flipped from the middle, so you can count. But the middle is never all face up, so counting gets you close and never certain. The rest comes from what people tell you, and how they vote.</p>
+      <h2>Why vote one way</h2>
+      <p>You want your side to score, so vote for the side you believe you’re on. If you’ve got it wrong, you’re scoring for the other team.</p>
+      <p>Everyone else knows what you are. Your teammates want you to know it; your opponents want you to believe the opposite. Listen to who says what, and remember that a possession can turn a friend into an enemy without either of you knowing.</p>
+      <h2>Shorter or longer games</h2>
+      <p>Play to <b>4 points</b> for a quick game, or <b>6</b> for a longer one.</p>
+      <div class="tip"><b>Playing online?</b> Abducted is playable in your browser at darrendon.com/games/abducted, with a tutorial, bots, and online tables you can join with a five-letter code. Bots count cards, and will tell you what you are, truthfully or not.</div>
+    </div>
+  </div>
+  <div class="faqrow">
+    <div class="faq cols">
+      <div>
+      <h2>Questions</h2>
+      <p><b>Can I possess myself?</b> No. The leader must possess another player, every turn.</p>
+      <p><b>What if the middle is empty?</b> Skip the possession or the flip, whichever needs a card.</p>
+      <p><b>Can I tell someone what their card is?</b> Yes, truthfully or not. You just can’t show them.</p>
+      </div>
+      <div>
+      <p><b>What does the flipped card tell me?</b> It’s one fewer unknown card. If it’s an Alien, there’s one fewer Alien left that could be in your stand.</p>
+      <p><b>Does voting reveal anything?</b> Only what each voter believes. Watch it: someone voting Human over and over thinks they’re Human, which tells you who has been talking to them.</p>
+    </div>
+  </div>
+  </div>
+  <div class="foot"><span>Abducted · rules · by Darren Don · darren@darrendon.com</span><span>2</span></div>
+</section>
+<script>
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>

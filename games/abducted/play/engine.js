@@ -24,7 +24,7 @@
       this.middle = deck.slice(N);         // face down
       this.flipped = [];
       this.score = { H: 0, A: 0 };
-      this.leader = Math.floor(rnd() * N);
+      this.leader = opts.firstLeader != null ? opts.firstLeader : Math.floor(rnd() * N);
       this.turn = 0; this.log = []; this.talk = [];
       this.startTurn();
     }
@@ -68,7 +68,7 @@
         if (seat !== this.chooser) return { ok: false, error: nm(this.chooser) + ' is picking which half is beamed up.' };
         if (a.type !== 'choose' || (a.half !== 'A' && a.half !== 'B')) return { ok: false, error: 'Pick a half.' };
         this.chosen = a.half;
-        this.say(nm(seat) + ' beams up the ' + (a.half === 'A' ? 'first' : 'second') + ' half: ' + this.half[a.half].map(nm).join(', ') + '.');
+        this.say(nm(seat) + ' beams up the ' + (a.half === 'A' ? 'Saucer' : 'Cow') + ' half: ' + this.half[a.half].map(nm).join(', ') + '.');
         if (RULES.flipEachTurn && this.middle.length) { const c = this.middle.pop(); this.flipped.push(c); this.say('Flipped from the middle: ' + NAME[c.t] + '.'); }
         this.phase = 'vote';
         this.botTalk();

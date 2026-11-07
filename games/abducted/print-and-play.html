@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Abducted — print and play</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css?v=8bd6e31d">
+<style>
+/* Source for abducted-print-and-play.pdf (emailed on request, not published): US Letter portrait, no margins, backgrounds on.
+   One rules page, then five sheets of up to nine poker cards, each followed by its backs mirrored for a long-edge duplex flip. */
+:root{--ink:#1B1E33;--night:#1E2447;--hum:#EE8A2B;--beam:#D8F27A;--lilac:#B7BCD6;--soft:#555A78;--line:#D3D7E8;--accent:#3D4C9E}
+*{box-sizing:border-box}
+@page{size:8.5in 11in;margin:0}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:#fff;position:relative;overflow:hidden;color:var(--ink);font:10.4pt/1.42 Jost,system-ui,sans-serif;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none;break-after:page}}
+.rules{padding:.6in .65in}
+.rules h1{margin:0;font:400 38pt/1 Righteous;letter-spacing:.04em;color:var(--night)}
+.rules .sub{margin:.06in 0 .2in;color:var(--soft);font-size:11.5pt}
+.rules h2{font:400 14pt/1.1 Righteous;color:var(--accent);margin:.18in 0 .05in;letter-spacing:.03em}
+.rules p,.rules li{margin:0 0 .06in}
+.rules ol{margin:0;padding-left:1.2em}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.35in}
+.print{background:#F1F3FA;border-radius:8px;padding:.14in .18in;margin-top:.18in;font-size:10pt}
+.print b{color:var(--accent)}
+/* card sheets: 3 x 3 poker cards, centred, with crop marks in the margins */
+.grid{position:absolute;left:calc((8.5in - 7.5in) / 2);top:calc((11in - 10.5in) / 2);width:7.5in;height:10.5in;display:grid;grid-template-columns:repeat(3,2.5in);grid-template-rows:repeat(3,3.5in)}
+.grid img,.grid i{width:2.5in;height:3.5in;display:block}
+.grid i{background:#fff}
+.marks{position:absolute;inset:0;pointer-events:none}
+.label{position:absolute;left:0;right:0;bottom:.08in;text-align:center;font-size:7.5pt;color:#999}
+</style>
+</head>
+<body>
+<section class="page rules">
+  <h1>ABDUCTED</h1>
+  <p class="sub">Print and play · 5–12 players · about 15 minutes · by Darren Don</p>
+  <div class="cols">
+    <div>
+      <h2>Setup</h2>
+      <ol>
+        <li>With N players, shuffle N Human and N Alien cards together.</li>
+        <li>Deal one face down to each player. Without looking, stand it so it faces everyone else: you can read every card but your own.</li>
+        <li>The other N cards go face down in the middle.</li>
+        <li>Everyone takes a split card. Put the score cubes (any two tokens) on 0. A random player takes the Mothership.</li>
+      </ol>
+      <h2>A turn</h2>
+      <ol>
+        <li><b>Possess.</b> The leader swaps another player’s card for a random card from the middle, without them seeing, and shuffles the old card into the middle.</li>
+        <li><b>Split.</b> The leader splits the whole table, themselves included, into a Saucer half and a Cow half, as evenly as possible.</li>
+        <li><b>Beam up.</b> The player to the leader’s left picks a half, then flips the top middle card face up. It stays out of the game.</li>
+        <li><b>Thumbs.</b> On three, the beamed-up half votes: thumbs up for Human, down for Alien. The majority scores 1 for that side; a tie scores nothing.</li>
+        <li>Pass the Mothership left.</li>
+      </ol>
+    </div>
+    <div>
+      <h2>Winning</h2>
+      <p>The first side to 5 points wins. Everyone looks at their own card: if it shows the winning side, you win.</p>
+      <h2>Table talk</h2>
+      <p>Say anything, true or not. Never show anyone their own card.</p>
+      <h2>What’s in the kit</h2>
+      <p>24 team cards (12 Human, 12 Alien), 12 split cards (Saucer one side, Cow the other), the Mothership and the score card.</p>
+      <div class="print"><b>Printing.</b> Print pages 2–11 double-sided, flipping on the long edge, on card stock if you can. Every card sheet is followed by its backs. Cut on the crop marks. For stands, use any card stands, or fold a 4 × 3.5 in strip of card into a tent and lean the card against it.</div>
+    </div>
+  </div>
+</section>
+<div id="sheets"></div>
+<script>
+const T = '/games/abducted/img/src/tex/';
+const team = []; for (let i = 0; i < 12; i++) team.push('face-H' + (i % 4), 'face-A' + (i % 4));
+// each sheet: up to nine fronts and their matching backs (null = blank)
+const sheets = [
+  { f: team.slice(0, 9), b: Array(9).fill('back') },
+  { f: team.slice(9, 18), b: Array(9).fill('back') },
+  { f: [...team.slice(18, 24), 'leader', 'score'], b: [...Array(6).fill('back'), null, null] },
+  { f: Array(9).fill('split-saucer'), b: Array(9).fill('split-cow') },
+  { f: Array(3).fill('split-saucer'), b: Array(3).fill('split-cow') },
+];
+const marks = () => {
+  // crop marks at every card edge, in the page margins only
+  const L = 48, T0 = 48, X = [0, 240, 480, 720].map((v) => L + v), Y = [0, 336, 672, 1008].map((v) => T0 + v); let o = '';
+  for (const x of X) { o += `<line x1="${x}" y1="0" x2="${x}" y2="${T0 - 6}"/><line x1="${x}" y1="${T0 + 1008 + 6}" x2="${x}" y2="1056"/>`; }
+  for (const y of Y) { o += `<line x1="0" y1="${y}" x2="${L - 6}" y2="${y}"/><line x1="${L + 720 + 6}" y1="${y}" x2="816" y2="${y}"/>`; }
+  return `<svg class="marks" viewBox="0 0 816 1056" stroke="#777" stroke-width=".8">${o}</svg>`;
+};
+const cell = (n) => n ? `<img src="${T}${n}.jpg" alt="">` : '<i></i>';
+let h = '', page = 2;
+for (const s of sheets) {
+  const f = [...s.f]; while (f.length < 9) f.push(null);
+  const b = [...s.b]; while (b.length < 9) b.push(null);
+  h += `<section class="page"><div class="grid">${f.map(cell).join('')}</div>${marks()}<div class="label">Abducted · print and play · page ${page++}</div></section>`;
+  // backs: each row mirrored left to right, so they line up after a long-edge flip
+  const m = []; for (let r = 0; r < 3; r++) m.push(...b.slice(r * 3, r * 3 + 3).reverse());
+  h += `<section class="page"><div class="grid">${m.map(cell).join('')}</div>${marks()}<div class="label">Abducted · print and play · page ${page++} (backs)</div></section>`;
+}
+document.getElementById('sheets').innerHTML = h;
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>
