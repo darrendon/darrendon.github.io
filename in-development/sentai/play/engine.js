@@ -8,16 +8,17 @@
     colorsFor: (n) => n + 1,            // colors in play = Heroes + 1
     hand: 15,                           // cards dealt to each Hero
     missDiscard: 2,                     // cards each Hero discards when a combo falls short
+    order: 'line',                      // 'line': every monster face up in a fixed order · 'pick': the lead picks from the act
     maxAdd: 2,                          // cards a Hero may add per turn
     actDraws: { 2: [3, 3, 4], 3: [3, 4, 5], 4: [4, 4, 4] },   // Boss cards dealt face up for each act
     // Boss deck: per act, [type, [need with 2, 3, 4 Heroes], name]
     boss: [
-      [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 2, 3], 'Inkbats'],
+      [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
        ['color', [2, 2, 2], 'Static Swarm'], ['set', [3, 3, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
       [['run', [3, 3, 4], 'Tiderazor'], ['run', [3, 3, 4], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
        ['color', [3, 3, 4], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 2, 3], 'Twin Oni']],
-      [['run', [4, 4, 6], 'Megalith Rex'], ['run', [3, 4, 5], 'Ironhorn Titan'], ['color', [3, 5, 6], 'Starmaw'],
-       ['color', [3, 4, 5], 'Doom Pagoda'], ['set', [3, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
+      [['run', [4, 4, 6], 'Megalith Rex'], ['run', [3, 4, 5], 'Ironhorn Titan'], ['color', [3, 5, 5], 'Starmaw'],
+       ['color', [3, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
     ],
   };
   const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Pink'];
@@ -80,9 +81,11 @@
       this.done = 0; this.fights = 0; this.misses = 0; this.hist = [];
       this.lead = Math.floor(rnd() * this.N);
       this.log = []; this.result = null; this.outcome = null; this.enc = null;
-      this.say('Act I begins: ' + this.row.map((b) => b.name).join(', ') + '.');
-      this.phase = 'pick';
+      this.mode = (opts && opts.order) || RULES.order;
+      if (this.mode === 'line') { this.say('The monsters line up: ' + this.acts.flat().map((b) => b.name).join(', ') + '.'); this.startFight(this.row[0]); }
+      else { this.say('Act I begins: ' + this.row.map((b) => b.name).join(', ') + '.'); this.phase = 'pick'; }
     }
+    upcoming() { return this.row.filter((b) => !this.enc || b !== this.enc.boss).concat(...this.acts.slice(this.actNo + 1)); }
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
     over() { return this.phase === 'over'; }
 
@@ -90,7 +93,8 @@
       const order = []; for (let k = 0; k < this.N; k++) order.push((this.lead + k) % this.N);
       this.enc = { boss, st: { type: boss.type, cards: [] }, order, at: 0, plays: [] };
       this.phase = 'build'; this.result = null;
-      this.say(this.players[this.lead].name + ' picks ' + boss.name + ': a ' + TYPE[boss.type] + ' of ' + boss.need + '.');
+      this.say(this.mode === 'line' ? boss.name + ' attacks: it wants a ' + TYPE[boss.type] + ' of ' + boss.need + '. ' + this.players[this.lead].name + ' leads.'
+        : this.players[this.lead].name + ' picks ' + boss.name + ': a ' + TYPE[boss.type] + ' of ' + boss.need + '.');
     }
     turnSeat() { return this.phase === 'build' ? this.enc.order[this.enc.at] : this.phase === 'pick' ? this.lead : -1; }
     need() { return this.enc.boss.need - this.enc.st.cards.length; }
@@ -200,10 +204,10 @@
           return;
         }
         this.row = this.acts[this.actNo].slice();
-        this.say('Act ' + ['I', 'II', 'III'][this.actNo] + ' begins: ' + this.row.map((b) => b.name).join(', ') + '.');
+        this.say('Act ' + ['I', 'II', 'III'][this.actNo] + ' begins.');
       }
       this.enc = null; this.result = null;
-      this.phase = 'pick';
+      if (this.mode === 'line') this.startFight(this.row[0]); else this.phase = 'pick';
     }
     lose(seat, how) {
       this.phase = 'over'; this.outcome = { win: false, seat, how };
@@ -222,7 +226,7 @@
           discardCount: this.phase === 'discard' ? this.discardCount(i) : 0 })),
         hand: this.hands[seat].slice(),
         turn, legal: this.legalIds(seat),
-        row: this.row.slice(),
+        row: this.row.slice(), upcoming: this.upcoming(), mode: this.mode,
         enc: e && {
           boss: e.boss, cards: e.st.cards.slice(), need: this.need(), order: e.order.slice(), at: e.at,
           plays: e.plays.map((p) => ({ seat: p.seat, pass: !!p.pass, n: p.cards.length })),

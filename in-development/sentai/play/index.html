@@ -14,7 +14,7 @@
   .c0{--c:#E2482F;--cd:#A92E1B}.c1{--c:#2E5FAE;--cd:#1D3F7A}.c2{--c:#F0B429;--cd:#9A6A10}.c3{--c:#3B9562;--cd:#256B43}.c4{--c:#EC8AA2;--cd:#B65C74}
   .a0{--a:#7A5BA6}.a1{--a:#D76A3C}.a2{--a:#2B2440}
 
-  .st{display:grid;gap:14px;max-width:1100px;margin:0 auto}
+  .st{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;max-width:1100px;margin:0 auto}
   .panel{background:var(--t-card);border:1px solid var(--t-line);border-radius:12px;padding:14px}
   .panel h3{margin:0 0 10px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-muted)}
 
@@ -39,6 +39,9 @@
   button.mc:hover{transform:translateY(-2px);box-shadow:0 0 0 3px #F0B429}
   button.mc:focus-visible{box-shadow:0 0 0 3px #F0B429}
   .mc.dim{opacity:.45}
+  .line{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
+  .line .mc{flex:0 0 156px;scroll-snap-align:start}
+  .line .mc.next{box-shadow:0 0 0 3px #F0B429}
   .mc.on{box-shadow:0 0 0 3px #F0B429}
 
   /* the monster being fought */
@@ -125,6 +128,7 @@
     return opts.length ? 'Next card: a ' + opts.join(' or a ') + ', any color.' : 'The run can’t grow any further.';
   }
   function mine(l, nm) {
+    if (l.endsWith(' ' + nm + ' leads.')) return l.slice(0, -(nm.length + 7)) + 'You lead.';
     if (!l.startsWith(nm + ' ')) return l;
     return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes/, 'pass').replace(/^picks /, 'pick ').replace(/^discards /, 'discard ').replace(/their last/, 'your last');
   }
@@ -173,9 +177,8 @@
       row = '<div class="panel"><h3>' + ACT[v.act] + ' · ' + (myPick ? 'Pick which monster to fight' : esc(P[v.lead].name) + ' picks which monster to fight') + '</h3>' +
         (myPick ? '<p class="prompt">Every monster here has to be faced before the act ends. You go first in the fight you pick.</p>' : '') +
         '<div class="row">' + v.row.map((b) => mini(b, '', myPick ? 'button' : 'div')).join('') + '</div></div>';
-    } else if (e && v.phase !== 'over') {
-      const rest = v.row.filter((b) => b.key !== e.boss.key);
-      if (rest.length) row = '<div class="panel"><h3>Still to face in ' + ACT[v.act] + '</h3><div class="row">' + rest.map((b) => mini(b, 'dim')).join('') + '</div></div>';
+    } else if (v.phase !== 'over' && v.upcoming.length) {
+      row = '<div class="panel"><h3>Coming up, in order</h3><div class="line">' + v.upcoming.map((b, i) => mini(b, i ? '' : 'next')).join('') + '</div></div>';
     }
 
     // the fight
@@ -247,8 +250,8 @@
     create: (players, opts) => new S.Game(players, opts),
     render,
     rules:
-      '<p><b>Hold the line.</b> Each act deals its monsters face up: 10 across three acts with 2 Heroes, 12 with 3 or 4. Get through all three acts and the squad wins.</p>' +
-      '<p><b>Pick a fight.</b> The lead Hero picks which monster to face next. It wants a Run (climbing ranks, any color), a Set (one rank) or a Color (one color, any ranks) of a certain size. Starting with the lead, each Hero adds 1 or 2 cards that fit, or passes.</p>' +
+      '<p><b>Hold the line.</b> Every monster is face up in a line from the start, Act I first: 10 with 2 Heroes, 12 with 3 or 4. You always know what’s coming. Get through the line and the squad wins.</p>' +
+      '<p><b>Fight the next one.</b> Each monster wants a Run (climbing ranks, any color), a Set (one rank) or a Color (one color, any ranks) of a certain size. Starting with the lead, each Hero adds 1 or 2 cards that fit, or passes. The lead passes left after every fight.</p>' +
       '<p><b>Beat it.</b> Complete the combo and the monster is defeated. Those cards are spent.</p>' +
       '<p><b>Miss it.</b> If the combo falls short, the monster gets away, every card in it goes back to the Hero who added it, and every Hero discards 2 cards face up. Everyone now knows who holds what came back.</p>' +
       '<p><b>Your hand is your health.</b> Nobody draws. If any Hero’s hand runs out, from playing or discarding, the Boss wins.</p>' +
