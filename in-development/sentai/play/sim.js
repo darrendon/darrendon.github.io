@@ -8,7 +8,7 @@ for (let n = 2; n <= 4; n++) {
     let steps = 0;
     while (!game.over() && steps++ < 2000) if (!game.botStep()) break;
     if (!game.over()) { stuck++; continue; }
-    misses += game.misses; encs += game.done + (game.outcome.win ? 0 : 1);
+    misses += game.misses; encs += game.fights;
     if (game.outcome.win) wins++; else if (/played/.test(game.outcome.how)) byPlay++; else byDiscard++;
   }
   console.log(`${n} Heroes: squad wins ${(100 * wins / G).toFixed(0)}% · lost by playing last card ${(100 * byPlay / G).toFixed(0)}% · lost to a miss ${(100 * byDiscard / G).toFixed(0)}% · misses ${(100 * misses / encs).toFixed(0)}% of encounters${stuck ? ' · STUCK ' + stuck : ''}`);

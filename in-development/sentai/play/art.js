@@ -1,6 +1,6 @@
 /* Sentai — the art, drawn as SVG strings so the box, the page and the playable build share one source.
    Flat retro poster style: warm paper, a few bold inks, chunky geometric figures, a little grain.
-   SentaiArt.emblem(color), .hero(color, pose), .monster(key), .box(), .scene() */
+   SentaiArt.emblem(color), .robot(), .partSVG(color), .monster(key), .box() */
 (function (root) {
   'use strict';
   const P = {
@@ -122,36 +122,101 @@
   }
   const monsterSVG = (key, attrs) => svg('0 0 100 100', monster(key), attrs);
 
+
+  /* ---------- the combined robot: five parts, one per Hero color, in a shared 100×140 frame ----------
+     Red: head and chest · Blue: the arm on the viewer's left · Yellow: the right arm · Green and Pink: the legs */
+  const STEEL = '#8E8A9B', STEEL2 = '#B9B5C4', GOLD = '#F0B429';
+  const flip = (inner, m) => m ? `<g transform="matrix(-1 0 0 1 100 0)">${inner}</g>` : inner;
+  const PART = [
+    function red() {
+      const c = P.hero[0], d = P.heroDark[0], k = P.ink, w = P.white;
+      let s = '';
+      // neck and waist joints
+      s += `<rect x="44" y="24" width="12" height="8" fill="${STEEL}"/>`;
+      // torso: broad chest tapering to the waist, with a darker side plane
+      s += `<path d="M27 31 L73 31 L69 58 L63 70 L37 70 L31 58Z" fill="${c}"/>`;
+      s += `<path d="M50 31 L73 31 L69 58 L63 70 L50 70Z" fill="${d}" opacity=".35"/>`;
+      s += `<path d="M31 36 L44 36 L44 52 L34 52Z M69 36 L56 36 L56 52 L66 52Z" fill="${d}" opacity=".55"/>`;
+      // abdomen bands
+      s += `<rect x="40" y="56" width="20" height="3" rx="1.2" fill="${k}" opacity=".7"/><rect x="41" y="61.5" width="18" height="3" rx="1.2" fill="${k}" opacity=".7"/>`;
+      // chest core with the flame
+      s += `<circle cx="50" cy="44" r="8.5" fill="${w}"/><circle cx="50" cy="44" r="8.5" fill="none" stroke="${GOLD}" stroke-width="1.8"/>` + emblem(0, c, 43.2, 37.2, 13.6);
+      // belt
+      s += `<rect x="35" y="69" width="30" height="6" rx="1.5" fill="${k}"/><rect x="45.5" y="68.2" width="9" height="7.6" rx="1.6" fill="${GOLD}"/>`;
+      // head: helmet, crest, visor, face grille
+      s += `<path d="M38 15 Q38 5 50 5 Q62 5 62 15 L62 22 Q62 27 57 27 L43 27 Q38 27 38 22Z" fill="${c}"/>`;
+      s += `<path d="M50 13 L34 1.5 L39 0.5 L50 8 L61 0.5 L66 1.5Z" fill="${GOLD}"/>`;
+      s += `<path d="M40 14.5 L60 14.5 L58 19.5 L42 19.5Z" fill="${k}"/><path d="M43 16 L48 16" stroke="${w}" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>`;
+      s += `<rect x="44" y="20.5" width="12" height="5" rx="1.2" fill="${STEEL2}"/><path d="M46.5 21.5 V24.5 M50 21.5 V24.5 M53.5 21.5 V24.5" stroke="${STEEL}" stroke-width="1"/>`;
+      return s;
+    },
+    function blue() { return arm(1, false); },
+    function yellow() { return arm(2, true); },
+    function green() { return leg(3, false); },
+    function pink() { return leg(4, true); },
+  ];
+  function arm(ci, m) {
+    const c = P.hero[ci], d = P.heroDark[ci], w = P.white;
+    let s = '';
+    s += `<rect x="15" y="44" width="10" height="16" fill="${STEEL}"/>`;                              // upper arm
+    s += `<path d="M11 60 L29 60 L27.5 85 L12.5 85Z" fill="${c}"/><path d="M20 60 L29 60 L27.5 85 L20 85Z" fill="${d}" opacity=".4"/>`; // forearm
+    s += `<rect x="13" y="65" width="14" height="3" rx="1.2" fill="${d}"/>`;
+    s += `<path d="M13 85 L27 85 L28 95 Q28 98 25 98 L15 98 Q12 98 12 95Z" fill="${STEEL2}"/><path d="M15 89 H25 M15 93 H25" stroke="${STEEL}" stroke-width="1.2"/>`; // fist
+    s += `<path d="M8 32 Q8 26 15 26 L28 26 Q32 26 32 30 L32 44 Q32 47 29 47 L11 47 Q8 47 8 44Z" fill="${c}"/>`;  // shoulder
+    s += `<path d="M20 26 L28 26 Q32 26 32 30 L32 44 Q32 47 29 47 L20 47Z" fill="${d}" opacity=".35"/>`;
+    s += ci === 1 ? `<path d="M9 27 Q12 18 18 22 Q22 15 28 21 L27 26 L10 26Z" fill="${d}"/>` : `<path d="M10 26 L14 15 L18 22 L23 13 L27 26Z" fill="${d}"/>`; // fin
+    let out = flip(s, m);
+    const ex = m ? 100 - 20 - 6.5 : 20 - 6.5;
+    out += `<circle cx="${m ? 80 : 20}" cy="37" r="7.2" fill="${w}"/>` + emblem(ci, c, ex, 30.5, 13) + `<circle cx="${m ? 80 : 20}" cy="74" r="4.6" fill="${w}"/>` + emblem(ci, c, (m ? 80 : 20) - 3.6, 70.4, 7.2);
+    return out;
+  }
+  function leg(ci, m) {
+    const c = P.hero[ci], d = P.heroDark[ci], w = P.white;
+    let s = '';
+    s += `<rect x="38" y="74" width="10" height="7" fill="${STEEL}"/>`;                                 // hip
+    s += `<path d="M34 80 L49 80 L48 100 L35 100Z" fill="${c}"/><path d="M42 80 L49 80 L48 100 L42 100Z" fill="${d}" opacity=".35"/>`; // thigh
+    s += `<path d="M34.5 110 L48.5 110 L49.5 128 L33.5 128Z" fill="${c}"/><path d="M42 110 L48.5 110 L49.5 128 L42 128Z" fill="${d}" opacity=".35"/>`; // shin
+    s += `<rect x="35.5" y="115" width="12" height="2.6" rx="1" fill="${d}"/><rect x="35.5" y="120" width="12" height="2.6" rx="1" fill="${d}"/>`;
+    s += `<path d="M30 128 L50 128 L51 134 Q51 137 48 137 L29 137 Q26 137 26.5 134Z" fill="${STEEL2}"/><rect x="26.5" y="134" width="24.5" height="3" rx="1.2" fill="${STEEL}"/>`; // foot
+    s += `<path d="M32 99 Q32 97 34 97 L49 97 Q51 97 51 99 L51 110 Q51 112 49 112 L34 112 Q32 112 32 110Z" fill="${d}"/>`; // knee guard
+    let out = flip(`<g transform="translate(-4 0)">${s}</g>`, m);
+    const kx = m ? 100 - 37.5 : 37.5;
+    out += `<circle cx="${kx}" cy="104.5" r="5.6" fill="${w}"/>` + emblem(ci, c, kx - 4.4, 100.1, 8.8);
+    return out;
+  }
+  // where each part sits in the 100×140 frame, padded to a card's shape (5:7)
+  const PART_BOX = [[22, -1, 56, 78], [-13, 9, 66, 92], [47, 9, 66, 92], [9.5, 71.5, 50, 70], [40.5, 71.5, 50, 70]];
+  const robot = () => PART.map((f) => f()).join('');
+  const partSVG = (c, attrs) => svg(PART_BOX[c].join(' '), PART[c](), attrs);
+
   /* ---------- grain + halftone, shared by the big pieces ---------- */
   const DEFS = `<defs>
     <filter id="sg" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .12  0 0 0 0 .1  0 0 0 0 .16  0 0 0 .55 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
     <pattern id="dots" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".55" fill="${P.ink}" opacity=".16"/></pattern>
   </defs>`;
 
-  /* ---------- the box front, 100×100: title, the final boss in a rising sun, the squad on the horizon ---------- */
+  /* ---------- the box front, 100×100: title, the combined robot facing the final boss under a rising sun ---------- */
   function box() {
     let s = DEFS + `<rect width="100" height="100" fill="${P.paper}"/>`;
-    // sun and rays
     let rays = '';
+    const cx = 50, cy = 62;
     for (let i = 0; i < 18; i++) {
-      const a0 = (i / 18) * Math.PI * 2, a1 = a0 + Math.PI / 18, R = 90;
-      rays += `<path d="M50 54 L${(50 + R * Math.cos(a0)).toFixed(2)} ${(54 + R * Math.sin(a0)).toFixed(2)} L${(50 + R * Math.cos(a1)).toFixed(2)} ${(54 + R * Math.sin(a1)).toFixed(2)}Z"/>`;
+      const a0 = (i / 18) * Math.PI * 2, a1 = a0 + Math.PI / 18, R = 100;
+      rays += `<path d="M${cx} ${cy} L${(cx + R * Math.cos(a0)).toFixed(2)} ${(cy + R * Math.sin(a0)).toFixed(2)} L${(cx + R * Math.cos(a1)).toFixed(2)} ${(cy + R * Math.sin(a1)).toFixed(2)}Z"/>`;
     }
     s += `<g fill="${P.paper2}">${rays}</g>`;
-    s += `<circle cx="50" cy="54" r="24" fill="${P.hero[0]}"/><circle cx="50" cy="54" r="24" fill="url(#dots)"/>`;
-    // the final boss rising behind the horizon, kept clear of the title and the squad
-    s += `<g transform="translate(29 33) scale(.42)">${monster(17)}</g>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="21" fill="${P.hero[0]}"/><circle cx="${cx}" cy="${cy}" r="21" fill="url(#dots)"/>`;
     // horizon
-    s += `<rect x="0" y="73" width="100" height="27" fill="${P.ink}"/><rect x="0" y="73" width="100" height="1.4" fill="${P.hero[2]}"/>`;
-    // the squad, spaced so no two figures touch
-    const xs = [6.5, 24.5, 42.5, 60.5, 78.5], poses = ['stand', 'up', 'point', 'up', 'stand'], order = [1, 3, 0, 2, 4];
-    xs.forEach((x, i) => { s += `<g transform="translate(${x} 75.6) scale(.21)">${hero(order[i], poses[i])}</g>`; });
+    s += `<rect x="0" y="86" width="100" height="14" fill="${P.ink}"/><rect x="0" y="86" width="100" height="1.2" fill="${P.hero[2]}"/>`;
+    // the robot on the left, the boss on the right, a clear gap between them
+    s += `<g transform="translate(6 30.6) scale(.4)">${robot()}</g>`;
+    s += `<g transform="translate(57.5 51.2) scale(.36)">${monster(17)}</g>`;
     s += `<rect width="100" height="100" filter="url(#sg)" opacity=".5"/>`;
     return s;
   }
   // card face (HTML) used by the playable build
-  const cardHTML = (c, cls) => `<span class="sc c${c.c}${cls ? ' ' + cls : ''}" data-id="${c.id}"><b>${c.r}</b>${svg('0 0 24 24', emblem(c.c, 'currentColor'), ' class="se" aria-hidden="true"')}<b class="br">${c.r}</b></span>`;
+  const cardHTML = (c, cls) => `<span class="sc c${c.c}${cls ? ' ' + cls : ''}" data-id="${c.id}"><b>${c.r}</b>${svg('0 0 24 24', emblem(c.c, 'currentColor'), ' class="se" aria-hidden="true"')}${partSVG(c.c, ' class="pa" aria-hidden="true"')}<b class="br">${c.r}</b></span>`;
 
-  const api = { P, EMB, emblem, hero, heroSVG, monster, monsterSVG, box, DEFS, svg, cardHTML, MONSTERS: M };
+  const api = { P, EMB, emblem, hero, heroSVG, monster, monsterSVG, box, DEFS, svg, cardHTML, MONSTERS: M, PART, PART_BOX, robot, partSVG };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.SentaiArt = api;
 })(typeof window !== 'undefined' ? window : globalThis);
