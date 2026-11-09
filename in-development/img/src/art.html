@@ -7,6 +7,7 @@
      &view=scene (1600×1000: box on its own backdrop, for cards and page heroes) or &view=box (box front only, 900×900).
      Rendered to webp by shoot.py. -->
 <link rel="stylesheet" href="/assets/css/fonts.css">
+<script src="/in-development/sentai/play/art.js"></script>
 <style>
   html,body{margin:0}
   body{width:1600px;height:1000px;overflow:hidden;font-family:Jost,sans-serif}
@@ -122,6 +123,14 @@ const A = {
     </svg>
     <div class="ttl" style="top:8%;font:400 11cqw/.92 Righteous,sans-serif;color:#1F4E66">POLAR BEAR<br>MARKET</div>
     <div class="by" style="color:#E9F3F6;bottom:3.6%">by Darren Don</div>`,
+  },
+  /* Sentai: the squad on the horizon, the final boss rising in the sun (drawn by /in-development/sentai/play/art.js) */
+  sentai: {
+    bg: 'radial-gradient(120% 90% at 40% 35%,#F2C46A,#C8492E)',
+    svg: `<svg viewBox="0 0 100 100">${SentaiArt.box()}</svg>
+    <div class="ttl" style="top:6.5%;font:900 17cqw/1 Archivo,sans-serif;color:#1F1A2B;letter-spacing:.01em;transform:skewX(-9deg)">SENTAI</div>
+    <div class="ttl" style="top:24%;font:700 3.2cqw/1 Jost;letter-spacing:.3em;color:#A92E1B;text-transform:uppercase">Hold the line together</div>
+    <div class="by" style="color:#F3E7CF;bottom:3.4%">by Darren Don</div>`,
   },
 };
 const a = A[g];

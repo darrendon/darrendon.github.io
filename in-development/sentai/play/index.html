@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sentai · Play online</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/dev-table.css">
+<style>
+  body{--t-bg:#F3E7CF;--t-card:#FFF6E4;--t-ink:#1F1A2B;--t-muted:#6A5F57;--t-line:#E2CFAB;--t-accent:#E2482F;--t-accent-ink:#fff;--t-mast:#1F1A2B;--t-mast-ink:#F3E7CF}
+  .dt-mast h1{font-family:Archivo,Jost,sans-serif;font-weight:900;letter-spacing:.01em;color:#F0B429;transform:skewX(-9deg);transform-origin:left}
+  .c0{--c:#E2482F;--cd:#A92E1B}.c1{--c:#2E5FAE;--cd:#1D3F7A}.c2{--c:#F0B429;--cd:#9A6A10}.c3{--c:#3B9562;--cd:#256B43}.c4{--c:#EC8AA2;--cd:#B65C74}
+
+  .st{display:grid;gap:14px;max-width:1100px;margin:0 auto}
+  .panel{background:var(--t-card);border:1px solid var(--t-line);border-radius:12px;padding:14px}
+  .panel h3{margin:0 0 10px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-muted)}
+
+  /* the rising Boss stack */
+  .track{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .pip{width:16px;height:22px;border-radius:4px;background:var(--a);opacity:.35;position:relative}
+  .pip.done{opacity:1}.pip.now{opacity:1;outline:3px solid var(--t-ink);outline-offset:1px}
+  .pip.done::after{content:"";position:absolute;left:5px;top:5px;width:4px;height:8px;border:solid #FFF6E4;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .pip.miss::after{border:0;width:auto;height:auto;content:"×";left:0;right:0;top:0;text-align:center;font:800 15px/22px Jost;transform:none;color:#FFF6E4}
+  .a0{--a:#7A5BA6}.a1{--a:#D76A3C}.a2{--a:#2B2440}
+  .track .lbl{font-size:13px;color:var(--t-muted);margin-left:6px}
+
+  /* boss card */
+  .boss{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--a);color:#FFF6E4;border-radius:14px;padding:14px 16px;position:relative;overflow:hidden}
+  .boss::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1.5px 1.5px,rgba(255,246,228,.14) 1px,transparent 1.5px) 0 0/8px 8px;pointer-events:none}
+  .boss .mon{width:clamp(92px,18vw,140px);aspect-ratio:1;background:rgba(255,246,228,.12);border-radius:50%;display:grid;place-items:center;position:relative}
+  .boss .mon svg{width:100%;height:100%}
+  .boss .act{font:700 11.5px/1 Jost;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
+  .boss .nm{font:900 clamp(22px,4vw,32px)/1.05 Archivo,Jost;margin:6px 0 4px;transform:skewX(-6deg);transform-origin:left}
+  .boss .req{font:600 clamp(16px,2.6vw,19px)/1.3 Jost}
+  .boss .req b{font:900 1.35em/1 Archivo;color:#F0B429}
+  .slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;position:relative}
+  .slot{width:40px;height:56px;border-radius:7px;border:2px dashed rgba(255,246,228,.55)}
+  .rule{font-size:13px;opacity:.85;margin-top:8px}
+
+  /* cards */
+  .sc{--w:52px;width:var(--w);height:calc(var(--w) * 1.42);border-radius:8px;background:#FFF6E4;border:3px solid var(--c);color:var(--c);position:relative;display:inline-grid;place-items:center;flex:none;box-shadow:0 2px 0 rgba(31,26,43,.18)}
+  .sc b{position:absolute;left:5px;top:3px;font:900 calc(var(--w) * .36)/1 Archivo,Jost;color:var(--cd)}
+  .sc b.br{left:auto;top:auto;right:5px;bottom:3px;transform:rotate(180deg)}
+  .sc .se{width:52%;height:auto}
+  .sc.sm{--w:40px;border-width:2.5px}
+  .slots .sc{--w:40px;border-width:2.5px}
+  .hand{display:flex;flex-wrap:wrap;gap:7px}
+  button.cardb{all:unset;cursor:pointer;border-radius:9px;transition:transform .12s}
+  button.cardb:focus-visible{outline:3px solid var(--t-ink);outline-offset:2px}
+  .hand.live .cardb.no{opacity:.38;cursor:default}
+  .hand.live .cardb.ok .sc{box-shadow:0 0 0 2px var(--t-ink),0 4px 0 rgba(31,26,43,.25)}
+  .cardb.sel{transform:translateY(-8px)}
+  .cardb.sel .sc{box-shadow:0 0 0 3px #F0B429,0 6px 0 rgba(31,26,43,.3)!important}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .prompt{font-size:15.5px;margin:0 0 10px}
+
+  /* squad */
+  .squad{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:8px}
+  .hero{display:grid;grid-template-columns:42px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:2px solid transparent;background:#fff}
+  .hero.turn{border-color:var(--t-ink)}
+  .hero .hd{width:42px;height:42px;border-radius:50%;background:var(--c);overflow:hidden;display:grid;place-items:center}
+  .hero .hd svg{width:150%;height:auto;margin-top:62%}
+  .hero .who{font-size:14.5px;line-height:1.2;min-width:0}
+  .hero .who small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t-muted);font-size:12.5px}
+  .hp{font:900 24px/1 Archivo;color:var(--t-ink);text-align:right}
+  .hp small{display:block;font:600 10px/1 Jost;letter-spacing:.12em;text-transform:uppercase;color:var(--t-muted);margin-top:2px}
+  .hero.low .hp{color:#C2392C}
+
+  .banner{border-radius:12px;padding:14px 16px;background:#1F1A2B;color:#F3E7CF;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:space-between}
+  .banner b{font:900 22px/1.1 Archivo;color:#F0B429;transform:skewX(-6deg);display:inline-block}
+  .banner.bad b{color:#EC8AA2}
+  .banner p{margin:0;font-size:15px}
+  .cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+  @media (max-width:860px){.cols{grid-template-columns:1fr}}
+  .log{font-size:13.5px;color:var(--t-muted);max-height:220px;overflow:auto}
+  .log p{margin:0 0 3px}
+  @media (max-width:520px){.boss{grid-template-columns:1fr;text-align:left}.boss .mon{width:96px;position:absolute;right:12px;top:12px}.boss .nm{padding-right:100px}.sc{--w:46px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="/assets/js/dev-table.js"></script>
+<script src="art.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  'use strict';
+  const S = window.Sentai, A = window.SentaiArt, esc = DevTable.esc;
+  const ACT = ['Act I', 'Act II', 'Act III'], TYPE = S.TYPE, COL = S.COLORS;
+  let sel = [], key = '';
+
+  const card = (c, cls) => A.cardHTML(c, cls);
+  const head = (h) => A.svg('-6 -2 58 74', A.hero(h, 'stand'));
+  function comboState(e) { return { type: e.type, cards: e.cards, rank: e.rank, color: e.color, lo: e.lo, hi: e.hi }; }
+  function addTo(st, c) {
+    const t = Object.assign({}, st, { cards: st.cards.slice() });
+    if (!t.cards.length) { t.rank = c.r; t.color = c.c; t.lo = t.hi = c.r; } else { t.lo = Math.min(t.lo, c.r); t.hi = Math.max(t.hi, c.r); }
+    t.cards.push(c); return t;
+  }
+  function mine(l, nm) {
+    if (!l.startsWith(nm + ' ')) return l;
+    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes/, 'pass').replace(/their last/, 'your last');
+  }
+  function describe(e) {
+    if (!e.cards.length) return 'Any card starts it.';
+    if (e.type === 'set') return 'Every card must be a ' + e.rank + '.';
+    if (e.type === 'color') return 'Every card must be ' + COL[e.color] + '.';
+    const opts = [e.lo - 1, e.hi + 1].filter((r) => r >= 1 && r <= 12);
+    return opts.length ? 'Next card: a ' + opts.join(' or a ') + ', any color.' : 'The run can’t grow any further.';
+  }
+
+  function render(el, v, api) {
+    const me = v.seat, P = v.players, e = v.enc;
+    const k = v.phase + ':' + v.done;
+    if (k !== key) { sel = []; key = k; }
+    const myTurn = v.phase === 'build' && v.turn === me;
+    const iDiscard = v.phase === 'discard' && P[me].needsDiscard;
+
+    // status
+    const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
+      : v.phase === 'discard' ? (iDiscard ? 'Missed! Discard a card' : 'Waiting for discards…')
+      : v.phase === 'result' ? (v.result.met ? 'Combo complete!' : 'Everyone discarded')
+      : myTurn ? 'Your turn: add 1–2 cards or pass' : P[v.turn].name + '’s turn';
+    api.status('Encounter ' + Math.min(v.done + 1, v.total) + ' of ' + v.total + ' · ' + status);
+
+    // track of the rising stack
+    const acts = []; v.acts.forEach((n, a) => { for (let i = 0; i < n; i++) acts.push(a); });
+    const track = '<div class="track" aria-label="Boss stack">' + acts.map((a, i) => '<span class="pip a' + a + (i < v.hist.length ? ' done' + (v.hist[i] ? '' : ' miss') : '') + (i === v.done && i >= v.hist.length && v.phase !== 'over' ? ' now' : '') + '" title="' + ACT[a] + '"></span>').join('') +
+      '<span class="lbl">' + v.misses + ' missed · ' + (v.total - v.hist.length) + ' to go</span></div>';
+
+    // banner
+    let banner = '';
+    if (v.phase === 'over') {
+      const o = v.outcome;
+      banner = '<div class="banner' + (o.win ? '' : ' bad') + '"><div><b>' + (o.win ? 'The squad holds the line!' : (o.seat === me ? 'You are down' : esc(P[o.seat].name) + ' is down')) + '</b><p>' + (o.win ? 'Every monster in the stack is defeated with ' + v.misses + ' miss' + (v.misses === 1 ? '' : 'es') + '.' : (o.seat === me ? 'You ' + esc(o.how.replace('their', 'your')) : 'They ' + esc(o.how)) + ', so the Boss wins. Leave the table to try again.') + '</p></div></div>';
+    } else if (v.phase === 'result') {
+      banner = '<div class="banner' + (v.result.met ? '' : ' bad') + '"><div><b>' + (v.result.met ? esc(e.boss.name) + ' is defeated!' : 'The combo fell short') + '</b><p>' + (v.result.met ? 'Next monster coming up…' : 'Every Hero discarded a card' + (v.result.myDiscard ? ' (you dropped your ' + esc(S.cardName(v.result.myDiscard)) + ')' : '') + '. Next monster coming up…') + '</p></div></div>';
+    }
+
+    // boss card
+    let boss = '';
+    if (e) {
+      const need = e.boss.need, filled = e.cards.length;
+      boss = '<div class="boss a' + e.boss.act + '"><div class="mon">' + A.monsterSVG(e.boss.key) + '</div><div><span class="act">' + ACT[e.boss.act] + '</span><div class="nm">' + esc(e.boss.name) + '</div>' +
+        '<div class="req">Wants a ' + TYPE[e.boss.type] + ' of <b>' + need + '</b></div>' +
+        '<div class="slots">' + e.cards.map((c) => card(c)).join('') + Array.from({ length: Math.max(0, need - filled) }, () => '<span class="slot"></span>').join('') + '</div>' +
+        (v.phase === 'build' ? '<div class="rule">' + esc(describe(e)) + '</div>' : '') + '</div></div>';
+    }
+
+    // my hand and actions
+    let main = '';
+    const st = e ? comboState(e) : null;
+    const canPick = (c) => {
+      if (myTurn) {
+        if (sel.includes(c.id)) return true;
+        if (sel.length >= Math.min(v.maxAdd, e.need)) return false;
+        let t = st; for (const id of sel) t = addTo(t, v.hand.find((x) => x.id === id));
+        return S.fits(t, c);
+      }
+      return iDiscard;
+    };
+    const live = myTurn || iDiscard;
+    const hand = '<div class="hand' + (live ? ' live' : '') + '">' + v.hand.map((c) => { const ok = live && canPick(c); return '<button type="button" class="cardb ' + (ok ? 'ok' : 'no') + (sel.includes(c.id) ? ' sel' : '') + '" data-id="' + c.id + '" data-k="h' + c.id + '" aria-label="' + esc(S.cardName(c)) + '"' + (ok ? '' : ' aria-disabled="true"') + '>' + card(c) + '</button>'; }).join('') + '</div>';
+    if (myTurn) {
+      const anyLegal = v.legal.length > 0;
+      main = '<h3>Your hand · ' + v.hand.length + ' cards</h3><p class="prompt">' + (anyLegal ? 'Tap 1 or 2 cards that fit, then add them. Or pass: you keep your cards, but if the combo falls short, everyone discards one.' : 'Nothing in your hand fits this combo. You have to pass.') + (v.hand.length <= 2 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + '</p>' + hand +
+        '<div class="acts"><button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass">Pass</button></div>';
+    } else if (iDiscard) {
+      main = '<h3>Your hand · ' + v.hand.length + ' cards</h3><p class="prompt">The combo fell short. <b>Discard 1 card</b> of your choice.' + (v.hand.length === 1 ? ' It’s your last card, so the squad will fall.' : '') + '</p>' + hand +
+        '<div class="acts"><button class="dt-btn go" data-do="discard"' + (sel.length === 1 ? '' : ' disabled') + '>Discard</button></div>';
+    } else {
+      main = '<h3>Your hand · ' + v.hand.length + ' cards</h3>' + hand;
+    }
+
+    // squad
+    const squad = '<div class="squad">' + P.map((p, i) => {
+      const play = e && e.plays.find((x) => x.seat === i);
+      const note = v.phase === 'discard' ? (p.needsDiscard ? 'discarding…' : 'discarded') : play ? (play.pass ? 'passed' : 'added ' + play.n) : e && v.phase === 'build' && i === v.turn ? 'thinking…' : COL[p.hero] + ' Hero';
+      return '<div class="hero c' + p.hero + (i === v.turn ? ' turn' : '') + (p.count <= 2 ? ' low' : '') + '"><span class="hd">' + head(p.hero) + '</span><span class="who">' + esc(p.name) + (i === me && !/^you$/i.test(p.name) ? ' (you)' : '') + '<small>' + note + '</small></span><span class="hp">' + p.count + '<small>cards</small></span></div>';
+    }).join('') + '</div>';
+
+    DevTable.flip(el, () => {
+      el.innerHTML = '<div class="st">' + track + banner + boss + '<div class="cols"><div class="panel">' + main + '</div><div class="panel"><h3>The squad</h3>' + squad + '<h3 style="margin-top:14px">What happened</h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(mine(l, P[me].name)) + '</p>').join('') + '</div></div></div></div>';
+    });
+
+    el.querySelectorAll('button.cardb.ok').forEach((b) => b.addEventListener('click', () => {
+      const id = +b.dataset.id;
+      if (iDiscard) sel = sel.includes(id) ? [] : [id];
+      else if (sel.includes(id)) sel = sel.slice(0, sel.indexOf(id));
+      else sel.push(id);
+      render(el, v, api);
+    }));
+    el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
+      const d = b.dataset.do;
+      if (d === 'add') api.act({ type: 'add', cards: sel });
+      if (d === 'pass') api.act({ type: 'pass' });
+      if (d === 'discard') api.act({ type: 'discard', card: sel[0] });
+      sel = [];
+    }));
+  }
+
+  DevTable.mount(document.getElementById('app'), {
+    id: 'sentai', title: 'Sentai', blurb: '2–4 players · 20–30 minutes · cooperative',
+    minPlayers: 2, maxPlayers: 4, defaultPlayers: 3, botNames: S.BOT_NAMES,
+    botNote: 'Bot teammates pass when they can’t spare cards and a teammate can cover, and play their least useful cards first.',
+    create: (players, opts) => new S.Game(players, opts),
+    render,
+    rules:
+      '<p><b>Hold the line.</b> You and your squad face a rising stack of monsters: 10 with 2 Heroes, 12 with 3 or 4. Defeat every one and the squad wins.</p>' +
+      '<p><b>Build a combo.</b> Each monster wants a Run (climbing ranks, any color), a Set (one rank) or a Color (one color, any ranks) of a certain size. In turn, each Hero adds 1 or 2 cards that fit, or passes.</p>' +
+      '<p><b>Miss and everyone pays.</b> If the combo falls short after everyone has had a turn, every Hero discards a card of their choice.</p>' +
+      '<p><b>Your hand is your health.</b> Cards never come back. If any Hero’s hand runs out, from playing or discarding, the Boss wins.</p>' +
+      '<p><b>Colors.</b> The deck uses one more color than there are Heroes, 14 cards each.</p>',
+  });
+})();
+</script>
+</body>
+</html>

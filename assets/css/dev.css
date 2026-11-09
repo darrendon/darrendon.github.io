@@ -4,12 +4,14 @@
 .d-jib{--d-bg:#EEEFF5;--d-ink:#25272E;--d-accent:#898FA9;--d-accent-ink:#fff;--d-line:#D5D7E3;--d-art:#A9AEC6}
 .d-abd{--d-bg:#E7E9F2;--d-ink:#1E2447;--d-accent:#5C6CC4;--d-accent-ink:#fff;--d-line:#CDD1E3;--d-art:#262C53}
 .d-pbm{--d-bg:#E5F0F4;--d-ink:#1F4E66;--d-accent:#2E6E8E;--d-accent-ink:#fff;--d-line:#C4DCE5;--d-art:#A6CBDA}
+.d-sen{--d-bg:#F3E7CF;--d-ink:#1F1A2B;--d-accent:#E2482F;--d-accent-ink:#fff;--d-line:#E2CFAB;--d-art:#E2A04A}
 
 /* section intro */
 .dev-hero .lede{max-width:60ch}
 
 /* cards */
 .dev-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,2vw,24px)}
+@media (min-width:761px){.dev-grid>.dev-card:last-child:nth-child(odd){grid-column:1/-1;grid-template-columns:minmax(0,.42fr) minmax(0,1.58fr)}}
 @media (max-width:760px){.dev-grid{grid-template-columns:1fr}}
 .dev-card{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
 .dev-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px -24px rgba(0,0,0,.45)}
@@ -27,8 +29,9 @@
 .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--d-accent,var(--orange))}
 
 /* the In Development row on /games/ */
-.dev-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,18px)}
-@media (max-width:960px){.dev-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dev-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(12px,1.6vw,18px)}
+@media (max-width:960px){.dev-strip{grid-template-columns:repeat(6,minmax(0,1fr))}.dev-strip>*{grid-column:span 2}.dev-strip>:nth-child(-n+2){grid-column:span 3}}
+@media (max-width:560px){.dev-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.dev-strip>:nth-child(n){grid-column:span 1}.dev-strip>:first-child{grid-column:span 2}}
 .dev-mini{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .2s}
 .dev-mini:hover{transform:translateY(-2px)}
 .dev-mini img{aspect-ratio:16/10;object-fit:cover;width:100%}

@@ -10,6 +10,26 @@ e = html.escape
 ARROW = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
 GAMES = [
+  dict(slug='sentai', title='Sentai', cls='d-sen',
+       hook='A cooperative card game. Your squad builds one combo at a time against a rising stack of monsters, and every card you play is one you never get back.',
+       card='Each monster wants a Run, a Set or a Color. Add one or two cards, or pass and trust your team. Miss and everyone discards. If anyone’s hand runs out, the Boss wins.',
+       specs=[('Players', '2–4'), ('Time', '20–30 min'), ('Genre', 'Cooperative · Shedding')],
+       now='Whether passing feels like a real gamble, and whether the monster stack is the right length at every squad size.',
+       steps=[('Deal the squad in', 'Use one more color than there are Heroes, each color ranked 1–12, and deal everyone 14 cards. The rest go back in the box unseen.'),
+              ('Stack the monsters', 'Shuffle each act’s Boss cards separately and stack them with Act I on top and Act III at the bottom: 10 monsters with 2 Heroes, 12 with 3 or 4.'),
+              ('Build one combo', 'Flip a monster. It wants a <b>Run</b> (climbing ranks, any color), a <b>Set</b> (one rank) or a <b>Color</b> (one color, any ranks), with a size printed for each squad size. In turn, each Hero adds 1 or 2 cards that fit, or passes.'),
+              ('Miss and everyone pays', 'If the combo is still short after everyone has had a turn, every Hero discards a card of their choice. Cards played are gone either way.'),
+              ('Your hand is your health', 'Nobody ever draws. The moment any Hero’s hand is empty, from playing or discarding, the Boss wins.'),
+              ('Hold the line', 'Get through the last monster in the stack and the squad wins together.')],
+       play=dict(modes=[('Play against bots', 'One to three bot teammates.'), ('Host an online table', 'Two to four Heroes, with a five-letter code. Bots fill empty seats.')]),
+       fb=[dict(q='How much fun was it?', type='scale', lo='Not for me', hi='Loved it'),
+           dict(q='How often was choosing between adding cards and passing a hard choice?', type='scale', lo='Never', hi='Every turn'),
+           dict(q='Did the squad feel like it was working together?', type='choice', options=['Yes, every combo', 'Somewhat', 'Everyone played their own game']),
+           dict(q='The monsters were…', type='choice', options=['Too easy', 'About right', 'Too hard']),
+           dict(q='Discarding after a miss felt…', type='choice', options=['Too harsh', 'About right', 'Too soft']),
+           dict(q='How many Heroes played, and did you win?', type='text', rows=2),
+           dict(q='What moment from the game stuck with you?', type='text'),
+           dict(q='What would you change?', type='text')]),
   dict(slug='slipstream', title='Slipstream', cls='d-slip',
        hook='A game of chicken. Race to the cliff edge, and the rider who stops closest without going over wins.',
        card='Everyone picks the same few speed cards in secret. Play one fast and hope nobody else did, or play it safe. Slipstreams can carry you right off the edge.',
@@ -252,7 +272,7 @@ def build_game(g):
   </section>
 '''
     fbj = json.dumps(g['fb'], ensure_ascii=False).replace('</', '<\\/')
-    others = ''.join(f'<a class="dev-mini {o["cls"]}" href="/in-development/{o["slug"]}/"><img src="{img(o, "scene", 640)}" alt="" loading="lazy" width="640" height="400"><b>{e(o["title"])}</b><span>{" · ".join(v + (" Players" if k == "Players" else "") for k, v in o["specs"] if k in ("Players", "Genre"))}</span></a>' for o in GAMES if o is not g)
+    others = ''.join(f'<a class="dev-mini {o["cls"]}" href="/in-development/{o["slug"]}/"><img src="{img(o, "scene", 640)}" alt="" loading="lazy" width="640" height="400"><b>{e(o["title"])}</b><span>{" · ".join(v + (" Players" if k == "Players" else "") for k, v in o["specs"] if k in ("Players", "Genre"))}</span></a>' for o in (GAMES[GAMES.index(g) + 1:] + GAMES[:GAMES.index(g)])[:3])
     out += f'''
   <section class="d-sec" id="feedback" aria-labelledby="fb-h">
     <div class="wrap">
