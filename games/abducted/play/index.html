@@ -81,6 +81,73 @@
   .coach{background:var(--mustard);color:var(--ink);border-radius:14px;padding:12px 14px}
   .coach span{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
   .coach p{margin:0;font-size:15px;font-weight:500}
+
+  /* ---- phones (desktop above 900px is untouched) ---- */
+  @media (max-width:899px){
+    /* lobby: 44px tap targets */
+    .dt-tabs button,.dt-card select,.dt-card input,.dt-btn{min-height:44px}
+    .dt-top .dt-btn.sm{min-height:40px}
+    /* the table: room above and below so the top and bottom seats aren't cut off, bigger seats and type */
+    .table{margin:30px auto 16px}
+    .table[data-n="5"] .seat,.table[data-n="6"] .seat{width:25%}
+    .table[data-n="7"] .seat,.table[data-n="8"] .seat{width:22%}
+    .table[data-n="9"] .seat,.table[data-n="10"] .seat{width:20%}
+    .table[data-n="11"] .seat,.table[data-n="12"] .seat{width:18.5%}
+    .seat .cw{width:66%}
+    .table[data-n="11"] .seat .cw,.table[data-n="12"] .seat .cw{width:68%}
+    /* big tables get a taller oval so seats down the sides don't stack into each other */
+    .table[data-n="9"],.table[data-n="10"]{aspect-ratio:1/1.12}
+    .table[data-n="11"],.table[data-n="12"]{aspect-ratio:1/1.2}
+    .nm{font-size:12px;padding:1px 5px}
+    /* party and done tags sit on the card's bottom corner instead of in a row under the name */
+    .tags{position:absolute;right:-3px;bottom:21px;min-height:0;z-index:2}
+    .tag{font-size:11.5px;line-height:18px;min-width:18px;text-align:center;padding:0 5px;box-shadow:0 1px 0 rgba(0,0,0,.35)}
+    .tag.p2{line-height:16px}
+    .felt{gap:6px}
+    .felt .round{font-size:12px}
+    .score .lab{font-size:12px}
+    .pip{width:11px;height:11px}
+    .deckrow{font-size:12.5px}
+    .role{width:24px;height:24px}
+    /* the move you have to make is a bar pinned to the bottom of the screen, in thumb reach */
+    .panel.action .row{position:fixed;left:0;right:0;bottom:0;z-index:30;justify-content:center;gap:10px;margin:0;
+      padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+      background:rgba(20,27,63,.95);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--mustard);box-shadow:0 -12px 30px -14px rgba(0,0,0,.6)}
+    .panel.action .row .b{flex:1 1 0;max-width:260px;min-height:50px;font-size:16px}
+    .panel.action .row::before{content:attr(data-hint);flex:0 0 100%;text-align:center;font-size:14px;font-weight:700;color:var(--cream);line-height:1.3}
+    .panel.action .row[data-hint=""]::before{display:none}
+    .panel.action .sigpick{gap:14px}
+    .panel.action .sigpick button{width:76px}
+    .dt-board:has(.panel.action .row){padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+    .dt-board:has(.sigpick){padding-bottom:calc(160px + env(safe-area-inset-bottom))}
+    body:has(.panel.action .row) .dt-toast{bottom:calc(108px + env(safe-area-inset-bottom))}
+    body:has(.sigpick) .dt-toast{bottom:calc(150px + env(safe-area-inset-bottom))}
+    .log{max-height:none}
+    .panel .kicker,.coach span{font-size:12px}
+    .tag{font-size:12px}
+  }
+  /* phones held sideways: table and panel side by side, the table no taller than the screen */
+  @media (max-width:1023px) and (orientation:landscape) and (max-height:520px){
+    .ab{grid-template-columns:minmax(0,calc(100dvh - 112px)) minmax(0,1fr);gap:14px}
+    .table,.table[data-n]{aspect-ratio:1;max-width:calc(100dvh - 112px);margin:20px auto 18px}
+    .table[data-n] .seat{width:19%}
+    .table[data-n="5"] .seat,.table[data-n="6"] .seat{width:23%}
+    .seat .cw{width:66%}
+    .nm{font-size:11px}
+    .felt{gap:4px}
+    .felt .round{font-size:10.5px}
+    .score .lab{font-size:10.5px}
+    .score{gap:3px 6px}
+    .pip{width:9px;height:9px}
+    .deckrow{font-size:11px}
+    /* the controls stay in the side column, which scrolls on its own beside the table */
+    .panel.action .row{position:static;padding:0;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;justify-content:flex-start}
+    .panel.action .row::before{display:none}
+    .dt-board:has(.panel.action .row),.dt-board:has(.sigpick){padding-bottom:clamp(10px,2vw,20px)}
+    body:has(.panel.action .row) .dt-toast,body:has(.sigpick) .dt-toast{bottom:calc(18px + env(safe-area-inset-bottom))}
+    .side{max-height:calc(100dvh - 66px);overflow-y:auto;position:sticky;top:58px;padding-bottom:8px}
+    .dt-mast{padding-right:130px!important}
+  }
 </style>
 </head>
 <body>
@@ -133,36 +200,36 @@
     // the action panel
     const waiting = v.required.filter((s) => !v.acted.includes(s));
     const waitTxt = waiting.length ? 'Waiting on ' + (waiting.length === 1 ? nm(waiting[0]) : waiting.length + ' players') + '.' : '';
-    let title = '', body = '', ctrls = '';
+    let title = '', body = '', ctrls = '', hint = '';   // hint: the one-line prompt shown in the phone action bar
     if (over) {
       const mine = v.cards[me].t, won = mine === v.winner;
       body = '<div class="panel action win"><div class="big dela">' + TEAMS[v.winner].toUpperCase() + ' WIN</div><p>Your card: <b>' + TEAM[mine] + '</b>. ' + (won ? 'You win!' : 'You lose.') + '</p><p style="color:var(--t-muted)">Winners: ' + P.filter((p, i) => v.cards[i].t === v.winner).map((p) => esc(p.name)).join(', ') + '. Leave to play again.</p></div>';
     } else {
       if (v.phase === 'split') {
         title = 'Split the town';
-        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round, so those seats are dimmed.' : ''); ctrls = '<button class="b primary" data-do="split"' + (pick === null ? ' disabled' : '') + '>Lock in the split</button>'; }
+        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round, so those seats are dimmed.' : ''); ctrls = '<button class="b primary" data-do="split"' + (pick === null ? ' disabled' : '') + '>Lock in the split</button>'; hint = pick === null ? 'Tap the player who starts Party 1' : 'Party 1 starts with ' + P[pick].name; }
         else body = nm(v.leader) + ' is splitting the town into two search parties.';
       } else if (v.phase === 'vote') {
         title = 'Which party searches?';
         if (v.leader === me) body = 'Everyone else is voting. You break ties. ' + waitTxt;
         else if (v.mine !== null) body = 'You voted for Party ' + v.mine + '. ' + waitTxt;
-        else { body = 'Hold up 1 or 2: pick the party you want to send out.'; ctrls = '<button class="b" data-do="vote" data-v="1">Party 1</button><button class="b" data-do="vote" data-v="2">Party 2</button>'; }
+        else { body = 'Hold up 1 or 2: pick the party you want to send out.'; hint = 'Vote for the party you want searching'; ctrls = '<button class="b" data-do="vote" data-v="1">Party 1</button><button class="b" data-do="vote" data-v="2">Party 2</button>'; }
       } else if (v.phase === 'tiebreak') {
         title = 'Tied vote';
-        if (v.leader === me) { body = 'The vote tied. You decide which party searches.'; ctrls = '<button class="b" data-do="vote" data-v="1">Send Party 1</button><button class="b" data-do="vote" data-v="2">Send Party 2</button>'; }
+        if (v.leader === me) { body = 'The vote tied. You decide which party searches.'; hint = 'Tied vote: you decide'; ctrls = '<button class="b" data-do="vote" data-v="1">Send Party 1</button><button class="b" data-do="vote" data-v="2">Send Party 2</button>'; }
         else body = 'The vote tied ' + v.votes[1] + '–' + v.votes[2] + '. ' + nm(v.leader) + ' is breaking the tie.';
       } else if (v.phase === 'signal') {
         title = 'Party ' + v.party + ' is searching';
         if (v.searchers.includes(me)) {
           if (v.mine !== null) body = 'You played ' + (v.mine === 'T' ? 'Transmit' : 'Jam') + '. ' + waitTxt;
-          else { body = 'Play Transmit if you think you’re an Alien, Jam if you think you’re Human. Nobody sees which.'; ctrls = '<div class="sigpick"><button data-do="sig" data-v="T" aria-label="Transmit"><img src="' + img('signal-T') + '" alt=""></button><button data-do="sig" data-v="J" aria-label="Jam"><img src="' + img('signal-J') + '" alt=""></button></div>'; }
+          else { body = 'Play Transmit if you think you’re an Alien, Jam if you think you’re Human. Nobody sees which.'; hint = 'Transmit if you think you’re an Alien, Jam if Human'; ctrls = '<div class="sigpick"><button data-do="sig" data-v="T" aria-label="Transmit"><img src="' + img('signal-T') + '" alt=""></button><button data-do="sig" data-v="J" aria-label="Jam"><img src="' + img('signal-J') + '" alt=""></button></div>'; }
         } else body = 'The search party is choosing signals in secret. ' + waitTxt;
       } else if (v.phase === 'abduct') {
         title = '“Go check out that light”';
-        if (v.lookout === me) { body = 'You’re the Lookout. Tap one searcher to send toward the light.'; ctrls = '<button class="b coral" data-do="abduct"' + (pick === null ? ' disabled' : '') + '>Send them</button>'; }
+        if (v.lookout === me) { body = 'You’re the Lookout. Tap one searcher to send toward the light.'; ctrls = '<button class="b coral" data-do="abduct"' + (pick === null ? ' disabled' : '') + '>Send them</button>'; hint = pick === null ? 'Tap a searcher to send to the light' : 'Send ' + P[pick].name + ' to the light?'; }
         else body = nm(v.lookout) + ' is picking a searcher to abduct.';
       }
-      body = '<div class="panel action"><div class="kicker">Round ' + v.round + '</div><h3 class="dela">' + title + '</h3><p>' + body + '</p>' + (ctrls ? '<div class="row">' + ctrls + '</div>' : '') + '</div>';
+      body = '<div class="panel action"><div class="kicker">Round ' + v.round + '</div><h3 class="dela">' + title + '</h3><p>' + body + '</p>' + (ctrls ? '<div class="row" data-hint="' + esc(hint) + '">' + ctrls + '</div>' : '') + '</div>';
     }
     const L = v.last;
     const result = L ? '<div class="panel"><div class="kicker">Round ' + L.round + ' result</div><p class="result"><span class="big dela">' + TEAMS[L.scored].toUpperCase() + ' SCORE</span></p><div class="played">' + Array(L.T).fill(img('signal-T')).concat(Array(L.J).fill(img('signal-J'))).map((s) => '<img src="' + s + '" alt="">').join('') + '</div><p>Party ' + L.party + ': ' + L.T + ' Transmit, ' + L.J + ' Jam' + (L.flip ? '. Tie: the flipped card was ' + TEAM[L.flip] + '.' : '.') + '</p></div>' : '';
@@ -181,7 +248,7 @@
     } else if (TUT && v.round === 3 && !tutDone) { tutDone = true; api.toast('That’s the whole game. First team to 5 wins.'); }
 
     DevTable.flip(el, () => {
-      el.innerHTML = '<div class="ab"><div class="table" role="group" aria-label="The table">' + felt + seats + '</div><div class="side">' + coach + body + result + note +
+      el.innerHTML = '<div class="ab"><div class="table" data-n="' + n + '" role="group" aria-label="The table">' + felt + seats + '</div><div class="side">' + coach + body + result + note +
         '<div class="panel"><div class="kicker">Table log</div><ul class="log">' + v.log.slice().reverse().map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul></div></div></div>';
     }, 600);
 

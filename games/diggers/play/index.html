@@ -503,6 +503,114 @@ button:disabled { opacity: .55; cursor: default; }
 .fx-hide { visibility: hidden; }
 @media (min-width: 760px) { .seat { padding-right: 66px; } .pile { width: 36px; height: 50px; right: 13px; } }
 @media (max-width: 459px) { .seat { padding-right: 40px; } .pile { width: 22px; height: 31px; right: 7px; } .pile b { min-width: 16px; height: 16px; font-size: 10.5px; line-height: 16px; right: -5px; bottom: -6px; } }
+
+/* ---- phones, take two: narrow camps stack their counts, plank names wrap instead of clipping, results scroll and fit,
+   and small targets (end bones, slots, buttons) get finger-sized hit areas. Desktop is untouched. ---- */
+.overlay { align-items: flex-start; overflow-y: auto; overscroll-behavior: contain;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+.overlay > .modal { margin: auto; }
+.site.h { container: plank / inline-size; }
+@container plank (max-width: 150px) {
+  .site .board b { white-space: normal; text-align: center; line-height: 1.05; letter-spacing: .02em; padding-inline: 6px; font-size: clamp(8.5px, 10.5cqw, 11.5px); }
+}
+@media (max-width: 559px) {
+  .table:not(.t2) .seat:not(.wide) { padding-right: 7px; }
+  .table:not(.t2) .seat:not(.wide) .pile { top: auto; bottom: 7px; right: 6px; transform: none; width: 18px; height: 25px; }
+  .table:not(.t2) .seat:not(.wide) .pile i:nth-child(2) { transform: translate(-2px, -2px); } .table:not(.t2) .seat:not(.wide) .pile i:nth-child(3) { transform: translate(-4px, -4px); }
+  .table:not(.t2) .seat:not(.wide) .pile b { min-width: 15px; height: 15px; font-size: 10px; line-height: 15px; right: -5px; bottom: -5px; padding: 0 3px; }
+  .table:not(.t2) .seat:not(.wide) .meta .sep { display: none; }
+  .table:not(.t2) .seat:not(.wide) .meta .m1, .table:not(.t2) .seat:not(.wide) .meta .m2 { display: block; padding-right: 20px; }
+  .table:not(.t2) .seat:not(.wide) .meta .m1 { padding-right: 0; }
+  .table:not(.t2) .seat:not(.wide) .name { overflow-wrap: anywhere; }
+}
+@media (max-width: 459px) {
+  .modal { padding: 14px 12px; gap: 10px; }
+  .modal h2 { font-size: 22px; }
+  .scores { font-size: 13.5px; }
+  .scores th { font-size: 10.5px; letter-spacing: .01em; }
+  .scores th, .scores td { padding: 5px 2px; }
+  .scores td:first-child { padding-left: 0; }
+}
+@media (max-width: 359px) { .scores th { font-size: 9.5px; } .scores { font-size: 12.5px; } }
+@media (max-width: 759px) { .site.v .board { padding: 11px 3px; } }
+@media (max-width: 400px) {
+  .table:not(.t2) .center .seasons { gap: 3px; flex-wrap: wrap; }
+  .table:not(.t2) .center .seasons span { padding: 1px 5px; font-size: 11px; }
+}
+@media (max-width: 359px) { .table:not(.t2) .center .seasons span { padding: 1px 4px; font-size: 10.5px; } }
+@media (pointer: coarse) {
+  .slot { position: relative; } .slot::before { content: ""; position: absolute; inset: -6px -8px; }
+  .site .card.edge { overflow: visible; } .site .card.edge::after { content: ""; position: absolute; inset: -7px; }
+}
+@media (pointer: coarse) and (max-width: 759px) {
+  button { min-height: 40px; }
+  button.mini, .top button, .hand-head .actions button, .lseat button, .coach .actions button { min-height: 36px; }
+  .coach button.link { min-height: 0; }
+}
+/* landscape phones: the table on the left; title, status and your rock face in a column on the right, so it all fits one screen */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  .wrap.in-game { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); column-gap: 10px; row-gap: 6px; align-items: start; max-width: none;
+    padding: 6px max(10px, env(safe-area-inset-right)) 20px max(10px, env(safe-area-inset-left)); }
+  .wrap.in-game > * { grid-column: 2; min-width: 0; }
+  .wrap.in-game > .table { grid-column: 1; grid-row: 1 / span 5; }
+  .wrap.in-game > .log, .wrap.in-game > details, .wrap.in-game > .catalogue { grid-column: 1 / -1; }
+  .wrap.in-game .top { padding: 5px 10px; }
+  .wrap.in-game .top h1 { font-size: 22px; } .wrap.in-game .top .eyebrow { font-size: 11px; }
+  .wrap.in-game .top button { padding: 4px 10px; font-size: 12.5px; }
+  .wrap.in-game .status { min-height: 0; padding: 5px 10px; } .wrap.in-game .status .who { font-size: 15px; } .wrap.in-game .status .hint { font-size: 12px; line-height: 1.3; }
+  .wrap.in-game .coach { padding: 6px 10px; } .wrap.in-game .coach h3 { font-size: 16px; } .wrap.in-game .coach p { font-size: 12.5px; line-height: 1.3; }
+  .wrap.in-game .hand-wrap { container-type: inline-size; flex-direction: column; align-items: stretch; padding: 5px 10px 8px; gap: 2px; }
+  .wrap.in-game .hand-head { flex: none; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; padding-top: 0; min-height: 26px; flex-wrap: nowrap; }
+  .wrap.in-game .hand-head .eyebrow { font-size: 11.5px; } .wrap.in-game .hand-head .eyebrow .opt { display: none; }
+  .wrap.in-game .hand-head .actions { flex-wrap: nowrap; } .wrap.in-game .hand-head .actions button { padding: 4px 9px; font-size: 12.5px; }
+  .wrap.in-game .hand { --hc: min(58px, calc((100cqw - 26px) / 7 * 1.397)); gap: 4px; padding-top: 8px; min-height: calc(var(--hc) + 8px); }
+  .wrap.in-game .hand .card { height: var(--hc); width: calc(var(--hc) * .716); }
+  .wrap.in-game .slot { height: var(--hc); width: 10px; }
+  .wrap.in-game .hand-wrap:has(.slot) .hand .card, .wrap.in-game .hand-wrap:has(.slot) .slot { height: calc(var(--hc) * .85); }
+  .wrap.in-game .hand-wrap:has(.slot) .hand .card { width: calc(var(--hc) * .85 * .716); }
+  .wrap.in-game .netbar { padding: 5px 10px; }
+  .wrap.in-game .site .who .full { display: none; } .wrap.in-game .site .who .short { display: inline; }
+  .wrap.in-game .site .who { font-size: 10.5px; } .wrap.in-game .site.v .what { display: none; }
+  .wrap.in-game .site.v .who { font-size: 10px; letter-spacing: .03em; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .wrap.in-game .table:not(.t2) .seat:not(.wide) .meta .sep { display: none; }
+  .wrap.in-game .table:not(.t2) .seat:not(.wide) .meta .m1, .wrap.in-game .table:not(.t2) .seat:not(.wide) .meta .m2 { display: block; }
+  /* the table uses the phone sizes even where the window is 760+ wide */
+  .wrap.in-game .table { gap: 6px; }
+  .wrap.in-game .seat { flex-direction: column; flex-wrap: nowrap; align-items: stretch; padding: 5px 40px 5px 7px; gap: 1px; }
+  .wrap.in-game .seat .name { font-size: 13.5px; flex: none; } .wrap.in-game .seat .score { font-size: 17px; }
+  .wrap.in-game .seat .meta { font-size: 10.5px; line-height: 1.25; flex-basis: auto; } .wrap.in-game .seat .meta .opt { display: none; }
+  .wrap.in-game .turnflag { font-size: 11px; }
+  .wrap.in-game .pile { top: 50%; bottom: auto; transform: translateY(-50%); width: 22px; height: 31px; right: 7px; }
+  .wrap.in-game .pile b { min-width: 16px; height: 16px; font-size: 10.5px; line-height: 16px; right: -5px; bottom: -6px; }
+  .wrap.in-game .table:not(.t2) .seat:not(.wide) { padding-right: 7px; }
+  .wrap.in-game .table:not(.t2) .seat:not(.wide) .pile { top: auto; bottom: 7px; right: 6px; transform: none; width: 18px; height: 25px; }
+  .wrap.in-game .table:not(.t2) .seat:not(.wide) .meta .m2 { padding-right: 20px; }
+  .wrap.in-game .center { padding: 4px; gap: 0; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: center; column-gap: 6px; }
+  .wrap.in-game .center .big { font-size: 28px; } .wrap.in-game .center .small { font-size: 11px; line-height: 1.25; flex-basis: 100%; }
+  .wrap.in-game .center .small:nth-child(4) { display: none; } .wrap.in-game .center .seasons { flex-basis: 100%; justify-content: center; margin-top: 3px; }
+  .wrap.in-game .seasons span { font-size: 11px; padding: 1px 6px; }
+  .wrap.in-game .site { min-height: 84px; }
+  .wrap.in-game .site .side { min-height: 0; padding: 3px; gap: 1px; }
+  .wrap.in-game .site .meld { gap: 1px; min-height: 0; }
+  .wrap.in-game .site .what { font-size: 9.5px; }
+  .wrap.in-game .site .board { padding: 4px 6px; } .wrap.in-game .site .board b { font-size: 11.5px; letter-spacing: .04em; }
+  .wrap.in-game .site .board .untouched:not(.farnote) { display: none; } .wrap.in-game .site .board .farnote { font-size: 9.5px; }
+  .wrap.in-game .site .board .fxtag { font-size: 10px; padding: 1px 5px 0; }
+  .wrap.in-game .site .board .fxrule, .wrap.in-game .site .fxbanner span { font-size: 11px; } .wrap.in-game .site .fxbanner b { font-size: 10.5px; padding: 1px 4px 0; } .wrap.in-game .site .fxbanner { padding: 4px 4px 5px; }
+  .wrap.in-game .site.v { grid-template-rows: none; grid-template-columns: auto auto auto; }
+  .wrap.in-game .site.v.fx { grid-template-rows: auto 1fr; }
+  .wrap.in-game .site.v .meld { max-width: none; width: 49px; flex-wrap: wrap; justify-content: flex-start; }
+  .wrap.in-game .site.v .board { padding: 11px 3px; } .wrap.in-game .site.v .board b { font-size: 10px; letter-spacing: .03em; }
+  .wrap.in-game .site.v .board .untouched { display: none; }
+  .wrap.in-game .table .card { width: 24px; height: 34px; border-radius: 3px; }
+  .wrap.in-game .table .card .ix { min-width: 10px; } .wrap.in-game .table .card .ix.tl { left: 2px; top: 1px; } .wrap.in-game .table .card .ix b { font-size: 12px; } .wrap.in-game .table .card .ix svg { display: none; }
+  .wrap.in-game .site.far .card { width: 18px; height: 25px; border-radius: 2px; }
+  .wrap.in-game .site.far .card .ix b { font-size: 9px; } .wrap.in-game .site.far .what { display: none; }
+  .wrap.in-game .site.far.v .meld { width: 37px; }
+  .wrap.in-game .table.t2 > .cell:nth-child(1), .wrap.in-game .table.t2 > .cell:nth-child(7), .wrap.in-game .table.t2 > .cell:nth-child(9) { display: none; }
+  .wrap.in-game .table.t2 > .cell:nth-child(2) { grid-column: 1 / span 2; }
+  .wrap.in-game .table.t2 > .cell:nth-child(8) { grid-column: 1 / -1; }
+}
 </style>
 
 </head>
@@ -1479,7 +1587,7 @@ function seatHtml(i, wide = false) {
     <div class="pile n${Math.min(cap, 3)}" data-pile="${i}" title="${cap} captured fossil${cap === 1 ? "" : "s"}, face down" aria-hidden="true"><i></i><i></i><i></i><b>${cap}</b></div>
     <div class="name"><span class="dot"></span>${fullName(i)}${turn ? `<span class="turnflag">digging</span>` : ""}</div>
     <div class="score">${p.score < 0 ? "−" + -p.score : p.score}<span class="meta"> prestige</span></div>
-    <div class="meta">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"}<span class="opt"> in the rock</span> · ${p.cap || 0} captured<span class="opt"> this season</span>${seatTags(i)}</div>
+    <div class="meta"><span class="m1">${handCount(p)} fossil${handCount(p) === 1 ? "" : "s"}<span class="opt"> in the rock</span></span><span class="sep"> · </span><span class="m2">${p.cap || 0} captured<span class="opt"> this season</span>${seatTags(i)}</span></div>
   </div>`;
 }
 
@@ -1826,6 +1934,7 @@ const Motion = (() => {
 
 function render() {
   if (!root) return;
+  root.classList.toggle("in-game", !!G);
   if (!G) { Motion.reset(); root.innerHTML = net ? lobbyHtml() : ui.invite ? inviteHtml() : setupHtml(); return; }
   const before = Motion.capture();
   root.innerHTML = `<div class="top"><div><div class="eyebrow">${tut ? "Field lesson" : net ? `Online table · ${G.n} diggers` : `${G.n} diggers`}${G.adv ? " · site effects" : ""}</div><h1>Diggers</h1></div>
@@ -1842,11 +1951,11 @@ function onAct(t) {
   const guest = net && net.kind === "guest";
   if (act === "pickn") { ui.setupN = +t.dataset.n; return render(); }
   if (act === "advtoggle") { ui.adv = !ui.adv; return render(); }
-  if (act === "start" || act === "again") { tut = null; G = newGame(act === "again" ? G.n : ui.setupN, [0], act === "again" ? G.adv : ui.adv); resetUi(); render(); return scheduleBot(); }
+  if (act === "start" || act === "again") { tut = null; G = newGame(act === "again" ? G.n : ui.setupN, [0], act === "again" ? G.adv : ui.adv); resetUi(); render(); window.scrollTo(0, 0); return scheduleBot(); }
   if (act === "tutorial") { clearTimeout(botTimer); botTimer = null; startTutorial(); resetUi(); render(); return window.scrollTo(0, 0); }
   if (act === "tutnext") { tut.step++; return render(); }
   if (act === "tutskip") { tut = null; render(); return scheduleBot(); }
-  if (act === "setup") { clearTimeout(botTimer); botTimer = null; tut = null; G = null; resetUi(); return render(); }
+  if (act === "setup") { clearTimeout(botTimer); botTimer = null; tut = null; G = null; resetUi(); render(); return window.scrollTo(0, 0); }
   if (act === "nextround") { tut = null; nextRound(G); resetUi(); render(); return scheduleBot(); }
   if (!G) return;
   const me = G.players[0];
