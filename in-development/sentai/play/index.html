@@ -42,6 +42,9 @@
   .line{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
   .line .mc{flex:0 0 156px;scroll-snap-align:start}
   .line .mc.next{box-shadow:0 0 0 3px #F0B429}
+  .mc.fd{background:repeating-linear-gradient(135deg,var(--a) 0 8px,color-mix(in srgb,var(--a) 82%,#000) 8px 16px)}
+  .mc .bk{width:54px;height:54px;border-radius:50%;border:2px dashed rgba(255,246,228,.6);display:grid;place-items:center;font:900 24px/1 Archivo;color:rgba(255,246,228,.85)}
+  @media (max-width:520px){.mc .bk{width:40px;height:40px;font-size:18px}}
   .mc.on{box-shadow:0 0 0 3px #F0B429}
 
   /* the monster being fought */
@@ -177,8 +180,11 @@
       row = '<div class="panel"><h3>' + ACT[v.act] + ' · ' + (myPick ? 'Pick which monster to fight' : esc(P[v.lead].name) + ' picks which monster to fight') + '</h3>' +
         (myPick ? '<p class="prompt">Every monster here has to be faced before the act ends. You go first in the fight you pick.</p>' : '') +
         '<div class="row">' + v.row.map((b) => mini(b, '', myPick ? 'button' : 'div')).join('') + '</div></div>';
-    } else if (v.phase !== 'over' && v.upcoming.length) {
-      row = '<div class="panel"><h3>Coming up, in order</h3><div class="line">' + v.upcoming.map((b, i) => mini(b, i ? '' : 'next')).join('') + '</div></div>';
+    } else if (v.phase !== 'over') {
+      const later = v.acts.map((a, i) => ({ i, n: a.n })).filter((a) => a.i > v.act);
+      const tiles = v.upcoming.map((b, i) => mini(b, i ? '' : 'next')).join('') +
+        later.map((a) => '<div class="mc fd a' + a.i + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[a.i] + '</b><span>' + a.n + ' monsters, face down</span></span></div>').join('');
+      if (tiles) row = '<div class="panel"><h3>' + (v.upcoming.length ? 'Still to come in ' + ACT[v.act] + ', in order' : 'Last monster of ' + ACT[v.act]) + '</h3><div class="line">' + tiles + '</div></div>';
     }
 
     // the fight
@@ -246,11 +252,11 @@
   DevTable.mount(document.getElementById('app'), {
     id: 'sentai', title: 'Sentai', blurb: '2–4 players · 20–30 minutes · cooperative',
     minPlayers: 2, maxPlayers: 4, defaultPlayers: 3, botNames: S.BOT_NAMES,
-    botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, the monster line and cards they’ve seen come back.',
+    botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, this act’s monsters and cards they’ve seen come back.',
     create: (players, opts) => new S.Game(players, opts),
     render,
     rules:
-      '<p><b>Hold the line.</b> Every monster is face up in a line from the start, Act I first: 10 with 2 Heroes, 12 with 3 or 4. You always know what’s coming. Get through the line and the squad wins.</p>' +
+      '<p><b>Hold the line.</b> Each act’s monsters are dealt face up in a line when that act begins, so you always know what’s coming this act, but not after it. 10 monsters across three acts with 2 Heroes, 12 with 3 or 4. Get through Act III and the squad wins.</p>' +
       '<p><b>Fight the next one.</b> Each monster wants a Run (climbing ranks, any color), a Set (one rank) or a Color (one color, any ranks) of a certain size. Starting with the lead, each Hero adds 1 or 2 cards that fit, or passes. The lead passes left after every fight.</p>' +
       '<p><b>Beat it.</b> Complete the combo and the monster is defeated. Those cards are spent.</p>' +
       '<p><b>Miss it.</b> If the combo falls short, the monster gets away, every card in it goes back to the Hero who added it, and every Hero discards 2 cards face up. Everyone now knows who holds what came back.</p>' +

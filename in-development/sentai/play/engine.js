@@ -85,10 +85,11 @@
       this.log = []; this.result = null; this.outcome = null; this.enc = null;
       this.mode = (opts && opts.order) || RULES.order;
       this.simple = !!(opts && opts.simple);           // true: the old one-step bots
-      if (this.mode === 'line') { this.say('The monsters line up: ' + this.acts.flat().map((b) => b.name).join(', ') + '.'); this.startFight(this.row[0]); }
+      if (this.mode === 'line') { this.say('Act I lines up: ' + this.row.map((b) => b.name).join(', ') + '.'); this.startFight(this.row[0]); }
       else { this.say('Act I begins: ' + this.row.map((b) => b.name).join(', ') + '.'); this.phase = 'pick'; }
     }
-    upcoming() { return this.row.filter((b) => !this.enc || b !== this.enc.boss).concat(...this.acts.slice(this.actNo + 1)); }
+    // only the act being played is face up
+    upcoming() { return this.row.filter((b) => !this.enc || b !== this.enc.boss); }
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
     over() { return this.phase === 'over'; }
 
@@ -207,7 +208,7 @@
           return;
         }
         this.row = this.acts[this.actNo].slice();
-        this.say('Act ' + ['I', 'II', 'III'][this.actNo] + ' begins.');
+        this.say('Act ' + ['I', 'II', 'III'][this.actNo] + ' lines up: ' + this.row.map((b) => b.name).join(', ') + '.');
       }
       this.enc = null; this.result = null;
       if (this.mode === 'line') this.startFight(this.row[0]); else this.phase = 'pick';
@@ -383,7 +384,15 @@
       return out;
     });
   }
-  const lineOf = (g) => g.row.concat(...g.acts.slice(g.actNo + 1));
+  // The face-up act, then a guess at each face-down act drawn from that act's six Boss cards.
+  function lineOf(g) {
+    let line = g.row.slice();
+    for (let a = g.actNo + 1; a < g.acts.length; a++) {
+      const deck = RULES.boss[a].map(([type, need]) => ({ type, need: need[g.N - 2] }));
+      line = line.concat(shuffle(deck).slice(0, g.acts[a].length));
+    }
+    return line;
+  }
   function stOf(e) { const st = { type: e.st.type, n: 0 }; for (const c of e.st.cards) fAdd(st, c); return st; }
 
   /* Every legal way to add 1 or 2 cards, plus passing. */
@@ -410,9 +419,9 @@
     const simple = g.botPlay(seat);
     const skey = simple.slice().sort().join(',');
     const score = new Float64Array(opts.length);
-    const e = g.enc, line = lineOf(g);
+    const e = g.enc;
     for (let k = 0; k < samples; k++) {
-      const deal = determinize(g, seat);
+      const deal = determinize(g, seat), line = lineOf(g);
       opts.forEach((o, i) => {
         const hands = deal.slice();
         const st = stOf(e);
@@ -441,9 +450,8 @@
     if (k === 1) ranked.forEach((a) => opts.push([a]));
     else for (let i = 0; i < ranked.length; i++) for (let j = i + 1; j < ranked.length; j++) opts.push([ranked[i], ranked[j]]);
     const score = new Float64Array(opts.length);
-    const line = lineOf(g);
     for (let s = 0; s < samples; s++) {
-      const deal = determinize(g, seat);
+      const deal = determinize(g, seat), line = lineOf(g);
       // teammates still to discard do so the simple way
       for (const p of g.pendingDiscard) if (p !== seat) deal[p] = simpleDiscard(deal[p], g.discardCount(p));
       opts.forEach((o, i) => {
