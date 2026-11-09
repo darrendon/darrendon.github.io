@@ -266,6 +266,83 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .tnote h3{font-size:17px;letter-spacing:.8px;margin:2px 0 4px}
 .tnote p{margin:0 0 6px;font-size:14.5px;line-height:1.42;max-width:74ch}.tnote p:last-child{margin:0}
 .tnote b{color:var(--gold)}
+
+/* ---------------- phones and narrow screens (desktop layout above 980px is untouched) ---------------- */
+@media (max-width:980px){
+  /* one column: what you act on comes first. Sending: your dice, then the rivals' jobs you send to, your own job last.
+     Crew and pay: your job right under the scores. Rival jobs still pair up two-across when there's room. */
+  main{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:10px;align-content:start}
+  main>*{grid-column:1/-1;margin-bottom:0!important}
+  #sheets{display:contents}
+  #sheets>.sheet{grid-column:auto}
+  #sheets>.sheet.me{grid-column:1/-1}
+  main>.score{order:1}
+  #sheets>.sheet.me{order:2}
+  #hand{order:3}
+  #sheets>.sheet:not(.me){order:4}
+  main:has(#hand:not(.hide)) #sheets>.sheet.me{order:5}
+}
+@media (max-width:640px){
+  /* compact top bar: name, job and Leave on one row, the phase on its own row */
+  .top{gap:2px 10px;padding:6px 12px 7px}
+  .top h1{font-size:16px;letter-spacing:.8px}
+  .top .job{font-size:11px;letter-spacing:.6px;flex:1 1 0;min-width:0;white-space:normal;line-height:1.25}
+  .top::before{content:"";order:8;flex:1 1 100%;height:0}   /* row break: phase, timer and table code go underneath */
+  .top .phase{order:9;flex:1 1 auto;min-width:0;font-size:13.5px;line-height:1.25}
+  .top .timer{order:10;font-size:17px;min-width:0}
+  .top .tcode{order:11;font-size:11px;letter-spacing:1.5px}
+  .top .btn{margin-left:auto;padding:6px 12px;min-height:34px}
+  main{padding:10px 10px 16px}
+  /* a job's place name trims at its end ("THE NIGHT B…") instead of losing its first letters */
+  .sheet .hd .tgt{display:block;text-align:right;text-overflow:ellipsis}
+  .sheet .hd .tgt svg{display:inline-block;vertical-align:-2px;margin-right:4px}
+  /* action bar: the hint across the top, the buttons side by side underneath, primary on the right under your thumb */
+  .actions{padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));gap:8px}
+  .actions .hint{flex:1 1 100%;min-width:0;font-size:13.5px;line-height:1.35}
+  .actions .btn{min-height:44px;flex:1 1 0;padding:9px 12px}
+  .actions .btn.red{flex:2 1 0}
+  .actions .muted{flex:1 1 100%}
+  /* bigger dice to tap */
+  #hand .die{width:40px;height:40px;padding:6px;border-radius:8px}
+  #hand .die i{width:7px;height:7px}
+  #hand .dice{gap:9px}
+  .sheet.me .kept .die{width:38px;height:38px;padding:6px}
+  .sheet.me .kept .die i{width:6.5px;height:6.5px}
+  .sheet.me .kept{gap:8px}
+  .feed{min-height:110px;max-height:240px}
+  .quick button{font-size:12px;padding:7px 9px}
+  .chatbox input,.chatbox .btn{min-height:42px}
+  .tabs button{min-height:44px;padding:10px 14px}
+  .btn{min-height:42px}
+  .btn.sm{min-height:34px}
+  select,input{min-height:42px}
+  .seat button{min-height:32px;padding:5px 9px}
+  .masthead h1{font-size:32px}
+  /* summary and final standings: nearly full screen, buttons always in reach */
+  .modal{padding:8px;align-items:stretch}
+  .modal .box{max-height:none;height:100%;padding:14px 14px 0;display:flex;flex-direction:column}
+  .modal .box>.row:last-child{position:sticky;bottom:0;margin:auto -14px 0!important;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1.5px solid var(--line);z-index:1}
+  .modal .box>.row:last-child .btn{flex:1 1 0;min-height:44px}
+  .sumgrid{grid-template-columns:1fr}
+}
+@media (max-width:380px){
+  .top h1{font-size:14px}
+  .top .job{font-size:10px}
+  .masthead h1{font-size:28px}
+}
+/* phones on their side: little height, so nothing sticks and the coach gets out of the way */
+@media (max-height:500px) and (orientation:landscape){
+  .top{position:static}
+  aside{position:static;max-height:none}
+  .actions{padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px))}
+  .actions .btn{min-height:38px}
+  .actions .hint{font-size:13px}
+  .coach{padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px))}
+  .coach h3{font-size:15px;margin-bottom:1px}
+  .coach p{font-size:13px;line-height:1.35}
+  .coach .c-txt{flex-basis:300px}
+  .modal .box{max-height:94vh}
+}
 </style>
 </head>
 <body>
@@ -679,6 +756,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   function bind(s) { s.onUpdate(() => { view = s.view(); if (view) render(); }); }
   function showGame(code) {
     $('lobby').classList.add('hide'); $('game').classList.remove('hide');
+    window.scrollTo(0, 0);   // phones scroll the lobby down to reach "Deal me in"; open the table at its top, not partway down
     $('t-code').textContent = code ? 'TABLE ' + code : '';
     view = session.view(); if (view) render();
   }
