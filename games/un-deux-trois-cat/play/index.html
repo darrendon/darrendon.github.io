@@ -227,6 +227,55 @@ button{font:inherit;color:inherit}
 .glog li.miss .res{color:var(--bad)}
 .glog li.me{box-shadow:inset 0 0 0 1px var(--felt-3)}
 .glog .gn{margin:0;font-size:12px;color:var(--muted)}
+/* ---------- phones: while the table is up (body.ingame), the page is exactly one screen tall ----------
+   Portrait: a one-row header, the table filling what's left, the message bar below it at a fixed height
+   (so the table never jumps when a message appears). Short landscape: table on the left, messages on the right.
+   Desktop and tablets are untouched (the pitch videos are filmed at 1920x1080). */
+@media (max-width:700px){
+  .btn{min-height:44px}
+  .btn.primary{min-height:48px}
+  .seg button{min-height:44px;min-width:44px}
+  .txtin{min-height:44px;font-size:16px}               /* 16px stops iOS zooming into the field */
+  .keys,.toy .key{display:none}                         /* keyboard help: no keyboard here */
+  .panel{padding:18px 16px}
+}
+@media (max-width:700px), (max-height:520px) and (orientation:landscape){
+  body.ingame .wrap{height:100vh;height:100dvh;padding-block:max(6px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-bottom,0px));gap:8px}
+  body.ingame .top{flex-wrap:nowrap}
+  body.ingame .brand{display:none}
+  body.ingame .meta{flex:1;flex-wrap:nowrap;justify-content:flex-end;min-width:0}
+  body.ingame .meta #roundPill{margin-right:auto}
+  body.ingame .pill{font-size:11px;padding:5px 9px;white-space:nowrap}
+  body.ingame .meta .btn{min-height:40px;padding:6px 12px}
+  body.ingame .play{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:8px}
+  body.ingame .board{flex:1 1 auto;height:auto!important;min-height:0;max-height:none;aspect-ratio:auto}
+  body.ingame .side{flex:none;gap:8px}
+  body.ingame .banner{min-height:calc(2.7em + 18px);font-size:15px;padding:9px 14px;line-height:1.35}   /* two lines, so a longer message does not nudge the table */
+  body.ingame .banner:empty{display:grid;visibility:hidden}
+  body.ingame.tut .banner:empty{display:none}
+  body.ingame .coach{padding:12px 14px;gap:8px}
+  body.ingame .coach p{font-size:14.5px;line-height:1.4}
+  body.ingame .coach .btn.primary{min-height:44px}
+  body.ingame.tut .board{min-height:max(300px,60vh)}  /* a long coach note on a small phone scrolls, the table stays readable */
+  body.ingame .glog{height:118px;max-height:none;overflow:auto;padding:10px 12px;flex:none}   /* fixed: a growing list would shrink the table mid-round */
+  body.ingame .glog .gn{display:none}
+}
+@media (max-width:380px){ body.ingame #modePill{display:none} }
+@media (max-height:520px) and (orientation:landscape){
+  body.ingame .wrap{max-width:none;gap:6px;padding-block:6px}
+  body.ingame .play{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,30%);gap:12px;align-items:stretch}
+  body.ingame .board{height:100%!important}
+  body.ingame .side{min-height:0;overflow:auto;justify-content:flex-start}
+  body.ingame .banner{min-height:0}
+  body.ingame .banner:empty{display:none}
+  body.ingame .glog{height:auto;min-height:0;flex:1 1 auto}
+  body.ingame .keys,body.ingame .toy .key{display:none}
+  body.ingame.tut .board{min-height:0}
+  body.ingame .coach{padding:10px 12px;gap:6px}
+  body.ingame .coach .who{font-size:11px}
+  body.ingame .coach p{font-size:13px;line-height:1.35}
+  body.ingame .coach .btn.primary{min-height:40px;padding:7px 16px}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -1121,21 +1170,32 @@ function longRows(P){
   if (P === 5) return {bottom: [0, 4], top: [1, 2, 3]};
   return {bottom: [1, 0, 5], top: [2, 3, 4]};
 }
+function wideCols(P){
+  // a wide, short table (a phone on its side): seats down the left edge (you at the bottom) and the right edge,
+  // clockwise from you, so the little height there is goes to the cards and toys instead of top and bottom rows
+  const nl = Math.ceil(P / 2), all = Array.from({length: P}, (_, k) => k);
+  return {left: all.slice(0, nl), right: all.slice(nl)};
+}
 function place(){
   const b = $("board"), P = S.players.length;
   if (!b || !P) return;
   const W = b.clientWidth, H = b.clientHeight;
   if (!W || !H) return;
   const F = S.sudden ? 1 : S.flips;
-  b.classList.toggle("compact", W < 440);
+  b.classList.toggle("compact", W < 440 || H < 380);
   const labels = [...$("seats").children];
   const lw = S.players.map((_, k) => labels[k] ? labels[k].offsetWidth : 120), lh = S.players.map((_, k) => labels[k] ? labels[k].offsetHeight : 36);
   const LH = Math.max(30, ...lh), LW = Math.max(60, ...lw);
-  const long = W / H < 0.95, cx = W / 2, cy = H / 2, felt = $("felt");
-  const ex = long ? W / 2 - 8 : W / 2 - Math.min(LW / 2, W * 0.07) - 8, ey = H / 2 - LH / 2 - 6;
-  Object.assign(felt.style, {left: cx - ex + "px", top: cy - ey + "px", width: 2 * ex + "px", height: 2 * ey + "px", borderRadius: long ? Math.min(ex, 110) + "px" : "50%"});
+  const long = W / H < 0.95, wide = !long && W / H > 1.6 && H < 420, cx = W / 2, cy = H / 2, felt = $("felt");
+  const ex = long ? W / 2 - 8 : wide ? W / 2 - LW / 2 - 6 : W / 2 - Math.min(LW / 2, W * 0.07) - 8, ey = wide ? H / 2 - 8 : H / 2 - LH / 2 - 6;
+  Object.assign(felt.style, {left: cx - ex + "px", top: cy - ey + "px", width: 2 * ex + "px", height: 2 * ey + "px",
+    borderRadius: long ? Math.min(ex, 110) + "px" : wide ? Math.min(ey, 110) + "px" : "50%"});
   let seats;
-  if (long){
+  if (wide){
+    const cols = wideCols(P); seats = new Array(P);
+    cols.left.forEach((k, j, a) => { seats[k] = {x: lw[k] / 2 + 2, y: H * (1 - (j + .5) / a.length), ux: -1, uy: 0}; });
+    cols.right.forEach((k, j, a) => { seats[k] = {x: W - lw[k] / 2 - 2, y: H * (j + .5) / a.length, ux: 1, uy: 0}; });
+  } else if (long){
     const rows = longRows(P); seats = new Array(P);
     rows.bottom.forEach((k, j, a) => { seats[k] = {x: W * (j + .5) / a.length, y: H - lh[k] / 2 - 2, ux: 0, uy: 1}; });
     rows.top.forEach((k, j, a) => { seats[k] = {x: W * (j + .5) / a.length, y: lh[k] / 2 + 2, ux: 0, uy: -1}; });
@@ -1149,7 +1209,7 @@ function place(){
   const s0 = Math.min(W, H);
   let sol = null;
   for (let sc = 1; sc > 0.3; sc *= 0.95){
-    const t = Math.min(104, long ? Math.min(W * 0.25, H * 0.15) : s0 * 0.17) * sc, cw = Math.min(96, s0 * 0.15) * sc, ch = cw * 1.4, gap = 5 + 5 * sc;
+    const t = Math.min(104, long ? Math.min(W * 0.25, H * 0.15) : wide ? H * 0.27 : s0 * 0.17) * sc, cw = Math.min(96, wide ? H * 0.2 : s0 * 0.15) * sc, ch = cw * 1.4, gap = 5 + 5 * sc;
     const ring = t * 1.2, toyPos = {cat: {x: cx, y: cy}};
     OBJ.forEach((o, i) => { const a = (-90 + i * 72) * Math.PI / 180; toyPos[o] = {x: cx + Math.cos(a) * ring, y: cy + Math.sin(a) * ring}; });
     const items = Object.values(toyPos).map(q => ({x: q.x, y: q.y, w: t, h: t, r: t / 2}));
@@ -1166,12 +1226,14 @@ function place(){
       return {label: s, face, pile};
     });
     seatPos.forEach((q, k) => items.push({x: q.label.x, y: q.label.y, w: lw[k], h: lh[k]}, {x: q.face.x, y: q.face.y, w: fw, h: ch}, {x: q.pile.x, y: q.pile.y, w: cw, h: ch}));
-    let ok = items.every(r => r.x - r.w / 2 >= 0 && r.x + r.w / 2 <= W && r.y - r.h / 2 >= 0 && r.y + r.h / 2 <= H);
-    for (let i = 0; ok && i < items.length; i++) for (let j = i + 1; j < items.length; j++){
-      if (clash(items[i], items[j], 3)){ ok = false; break; }
-    }
-    sol = {t, cw, ch, toyPos, seatPos, ok};
-    if (ok) break;
+    // badness = pieces off the board + pairs that touch; 0 is a clean fit
+    let bad = items.filter(r => !(r.x - r.w / 2 >= 0 && r.x + r.w / 2 <= W && r.y - r.h / 2 >= 0 && r.y + r.h / 2 <= H)).length;
+    for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) if (clash(items[i], items[j], 3)) bad++;
+    const cand = {t, cw, ch, toyPos, seatPos, ok: !bad, bad};
+    // nothing fits cleanly (e.g. six seats on a 320px phone, where the seat labels alone collide): keep the
+    // largest scale with the fewest clashes, rather than shrinking every card and toy to the minimum
+    if (!sol || bad < sol.bad) sol = cand;
+    if (!bad) break;
   }
   S.layoutOk = sol.ok; S.seatDir = sol.seatPos.map(q => ({ux: q.label.ux, uy: q.label.uy}));
   b.style.setProperty("--t", sol.t.toFixed(1) + "px"); b.style.setProperty("--cw", sol.cw.toFixed(1) + "px"); b.style.setProperty("--ch", sol.ch.toFixed(1) + "px");
@@ -1478,6 +1540,11 @@ function coach(html, buttons, spot){
   (buttons || []).forEach(([id, , , fn]) => $(id).addEventListener("click", fn));
   $("grab").classList.toggle("spot", !!spot);
   if (buttons && buttons.length) $(buttons[0][0]).focus({preventScroll: true});
+  // on a small phone a long note can push its button just below the screen: bring the button into view
+  if (buttons && buttons.length) requestAnimationFrame(() => {        // (after the phone layout has switched on)
+    const btn = $(buttons[0][0]);
+    if (btn && document.body.classList.contains("ingame") && btn.getBoundingClientRect().bottom > innerHeight) btn.scrollIntoView({block: "end", behavior: "smooth"});
+  });
 }
 function startTutorial(){
   clearTimers();
@@ -2123,6 +2190,18 @@ $("pauseBtn").addEventListener("click", () => {
 if (![1,2,3,4,5].includes(S.opp)) S.opp = 3;
 if (!DIFF[S.diff]) S.diff = "easy";
 renderToys(); syncSetup(); showExample();
+{ // body.ingame while the table is the whole screen (no setup, lobby or end panel): the phone layout keys off it.
+  // Switching screens scrolls back to the top, so a phone never opens a game or the results half scrolled away.
+  const panels = ["setup", "end", "lobby"].map($);
+  const sync = () => {
+    const g = panels.every(el => el.hidden), was = document.body.classList.contains("ingame");
+    document.body.classList.toggle("ingame", g);
+    if (g !== was || !$("end").hidden) window.scrollTo(0, 0);
+  };
+  const mo = new MutationObserver(sync);
+  panels.forEach(el => mo.observe(el, {attributes: true, attributeFilter: ["hidden"]}));
+  sync();
+}
 if (window.ResizeObserver) new ResizeObserver(() => place()).observe($("board")); else window.addEventListener("resize", place);
 if (document.fonts) document.fonts.ready.then(place);
 if (/[?&#]tutorial\b/.test(location.search + location.hash)) startTutorial();
