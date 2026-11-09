@@ -10,6 +10,7 @@
     missDiscard: 2,                     // cards each Hero discards when a combo falls short
     order: 'line',                      // 'line': every monster face up in a fixed order · 'pick': the lead picks from the act
     maxAdd: 2,                          // cards a Hero may add per turn
+    lookahead: 24,                      // imagined deals a bot plays out before each move
     actDraws: { 2: [3, 3, 4], 3: [3, 4, 5], 4: [4, 4, 4] },   // Boss cards dealt face up for each act
     // Boss deck: per act, [type, [need with 2, 3, 4 Heroes], name]
     boss: [
@@ -72,6 +73,7 @@
       shuffle(deck);
       this.hands = this.players.map((_, i) => deck.slice(i * RULES.hand, (i + 1) * RULES.hand).sort(byCard));
       this.boxed = deck.length - this.N * RULES.hand;
+      this.box = deck.slice(this.N * RULES.hand);   // never seen in play
       this.known = this.players.map(() => []);      // cards everyone saw bounce back to each Hero
       // each act: its Boss cards are drawn, then dealt face up when the act begins
       this.acts = RULES.actDraws[this.N].map((k, a) =>
@@ -82,6 +84,7 @@
       this.lead = Math.floor(rnd() * this.N);
       this.log = []; this.result = null; this.outcome = null; this.enc = null;
       this.mode = (opts && opts.order) || RULES.order;
+      this.simple = !!(opts && opts.simple);           // true: the old one-step bots
       if (this.mode === 'line') { this.say('The monsters line up: ' + this.acts.flat().map((b) => b.name).join(', ') + '.'); this.startFight(this.row[0]); }
       else { this.say('Act I begins: ' + this.row.map((b) => b.name).join(', ') + '.'); this.phase = 'pick'; }
     }
@@ -252,15 +255,16 @@
       }
       if (this.phase === 'build') {
         const s = this.turnSeat(); if (!this.players[s].bot) return false;
-        const ids = this.botPlay(s);
+        const ids = this.simple ? this.botPlay(s) : chooseBuild(this, s, RULES.lookahead);
         this.act(s, ids.length ? { type: 'add', cards: ids } : { type: 'pass' });
         return true;
       }
       if (this.phase === 'discard') {
         const s = this.pendingDiscard.find((x) => this.players[x].bot);
         if (s == null) return false;
-        let h = this.hands[s].slice(); const out = [];
-        for (let k = 0; k < this.discardCount(s); k++) { const w = Game.worst(h); out.push(w.id); h = h.filter((x) => x !== w); }
+        let out;
+        if (this.simple) { let h = this.hands[s].slice(); out = []; for (let k = 0; k < this.discardCount(s); k++) { const w = Game.worst(h); out.push(w.id); h = h.filter((x) => x !== w); } }
+        else out = chooseDiscard(this, s, RULES.lookahead);
         this.act(s, { type: 'discard', cards: out });
         return true;
       }
@@ -299,6 +303,160 @@
       return out;
     }
   }
+
+
+  /* ---------- look-ahead bots ----------
+     Before each play or discard, a bot imagines deals of the cards it can't see (its own hand, the monster line
+     and cards it saw come back are all it uses), plays each option out to the end with the simple bot, and keeps
+     the option that wins most often. */
+  /* ---------- fast combo helpers (same rules as the engine) ---------- */
+  function fAdd(st, c) {
+    if (!st.n) { st.rank = c.r; st.color = c.c; st.lo = st.hi = c.r; }
+    else { if (c.r < st.lo) st.lo = c.r; if (c.r > st.hi) st.hi = c.r; }
+    st.n++;
+  }
+  const fOk = (st, c) => !st.n || (st.type === 'set' ? c.r === st.rank : st.type === 'color' ? c.c === st.color : c.r === st.lo - 1 || c.r === st.hi + 1);
+  function fUseful(card, hand) { let u = 0; for (const c of hand) if (c !== card && (c.r === card.r || c.c === card.c || c.r - card.r === 1 || card.r - c.r === 1)) u++; return u; }
+  function fWorst(cards, hand) { let w = cards[0], wu = 1e9; for (const c of cards) { const u = fUseful(c, hand); if (u < wu) { wu = u; w = c; } } return w; }
+  function fPotential(hand, st, card) {
+    const t = { type: st.type, n: st.n, rank: st.rank, color: st.color, lo: st.lo, hi: st.hi }; fAdd(t, card);
+    let k = 0; for (const c of hand) if (c !== card && fOk(t, c)) k++; return k;
+  }
+
+  /* The simple bot, as a rollout policy: add as many fitting cards as allowed, least useful first. */
+  function simplePlay(hand, st, need) {
+    let want = Math.min(2, need, hand.length - 1);
+    const out = [];
+    let h = hand;
+    while (want-- > 0) {
+      let best = null;
+      if (!st.n) { let bp = -1; for (const c of h) { const p = fPotential(h, st, c); if (p > bp) { bp = p; best = c; } } }
+      else { const legal = h.filter((c) => fOk(st, c)); if (!legal.length) break; best = fWorst(legal, h); }
+      if (!best) break;
+      fAdd(st, best); out.push(best); h = h.filter((x) => x !== best);
+    }
+    return out;
+  }
+  function simpleDiscard(hand, k) { let h = hand; for (let i = 0; i < k && h.length; i++) { const w = fWorst(h, h); h = h.filter((x) => x !== w); } return h; }
+
+  /* Play a determinized state out to the end. s = { N, hands, line, lead, st, at, plays } where line[0] is
+     the monster being fought (st/at/plays describe that fight so far). Returns 1 for a squad win. */
+  function rollout(s) {
+    const N = s.N, hands = s.hands, line = s.line;
+    let lead = s.lead, st = s.st, at = s.at, plays = s.plays, li = s.li || 0;
+    while (li < line.length) {
+      const m = line[li];
+      if (!st) { st = { type: m.type, n: 0 }; at = 0; plays = []; }
+      while (at < N && st.n < m.need) {
+        const p = (lead + at) % N;
+        const h = hands[p];
+        if (h.length > 1 && h.some((c) => fOk(st, c))) {
+          const cs = simplePlay(h, st, m.need - st.n);
+          if (cs.length) { hands[p] = h.filter((x) => !cs.includes(x)); plays.push(p, cs); }
+        }
+        at++;
+      }
+      if (st.n >= m.need) {
+        for (let i = 0; i < N; i++) if (!hands[i].length) return 0;
+      } else {
+        for (let i = 0; i < plays.length; i += 2) hands[plays[i]] = hands[plays[i]].concat(plays[i + 1]);
+        for (let i = 0; i < N; i++) { hands[i] = simpleDiscard(hands[i], 2); if (!hands[i].length) return 0; }
+      }
+      li++; lead = (lead + 1) % N; st = null;
+    }
+    return 1;
+  }
+
+  /* A possible deal of the cards this seat can't see, consistent with what it knows. */
+  function determinize(g, seat) {
+    const knownIds = new Set(); g.known.forEach((k, i) => { if (i !== seat) k.forEach((c) => knownIds.add(c.id)); });
+    const pool = [];
+    g.hands.forEach((h, i) => { if (i !== seat) for (const c of h) if (!knownIds.has(c.id)) pool.push(c); });
+    for (const c of g.box) pool.push(c);
+    shuffle(pool);
+    let k = 0;
+    return g.hands.map((h, i) => {
+      if (i === seat) return h.slice();
+      const kn = g.known[i].filter((c) => h.some((x) => x.id === c.id));
+      const out = kn.slice();
+      while (out.length < h.length) out.push(pool[k++]);
+      return out;
+    });
+  }
+  const lineOf = (g) => g.row.concat(...g.acts.slice(g.actNo + 1));
+  function stOf(e) { const st = { type: e.st.type, n: 0 }; for (const c of e.st.cards) fAdd(st, c); return st; }
+
+  /* Every legal way to add 1 or 2 cards, plus passing. */
+  function buildOptions(g, seat) {
+    const hand = g.hands[seat], need = g.need(), st = stOf(g.enc), opts = [[]], seen = new Set();
+    for (const a of hand) {
+      if (!fOk(st, a) || hand.length < 2) continue;
+      opts.push([a]);
+      if (need < 2 || hand.length < 3) continue;
+      const t = Object.assign({}, st); fAdd(t, a);
+      for (const b of hand) {
+        if (b === a || !fOk(t, b)) continue;
+        const key = Math.min(a.id, b.id) + ':' + Math.max(a.id, b.id);
+        if (seen.has(key)) continue; seen.add(key); opts.push([a, b]);
+      }
+    }
+    return opts;
+  }
+
+  /* Score each option over the same imagined deals; ties go to the simple bot's choice. */
+  function chooseBuild(g, seat, samples) {
+    const opts = buildOptions(g, seat);
+    if (opts.length === 1) return [];
+    const simple = g.botPlay(seat);
+    const skey = simple.slice().sort().join(',');
+    const score = new Float64Array(opts.length);
+    const e = g.enc, line = lineOf(g);
+    for (let k = 0; k < samples; k++) {
+      const deal = determinize(g, seat);
+      opts.forEach((o, i) => {
+        const hands = deal.slice();
+        const st = stOf(e);
+        const plays = [];
+        e.plays.forEach((p) => { if (p.cards.length) plays.push(p.seat, p.cards); });
+        if (o.length) { hands[seat] = hands[seat].filter((c) => !o.includes(c)); for (const c of o) fAdd(st, c); plays.push(seat, o); }
+        score[i] += rollout({ N: g.N, hands, line, li: 0, lead: g.lead, st, at: e.at + 1, plays });
+      });
+    }
+    let best = 0;
+    opts.forEach((o, i) => {
+      const isSimple = o.map((c) => c.id).sort().join(',') === skey;
+      const s = score[i] + (isSimple ? 0.5 : 0);
+      const b = score[best] + (opts[best].map((c) => c.id).sort().join(',') === skey ? 0.5 : 0);
+      if (s > b) best = i;
+    });
+    return opts[best].map((c) => c.id);
+  }
+
+  /* Discards: compare pairs drawn from the least useful cards. */
+  function chooseDiscard(g, seat, samples) {
+    const hand = g.hands[seat], k = g.discardCount(seat);
+    if (hand.length <= k) return hand.map((c) => c.id);
+    const ranked = hand.slice().sort((a, b) => fUseful(a, hand) - fUseful(b, hand)).slice(0, 7);
+    const opts = [];
+    if (k === 1) ranked.forEach((a) => opts.push([a]));
+    else for (let i = 0; i < ranked.length; i++) for (let j = i + 1; j < ranked.length; j++) opts.push([ranked[i], ranked[j]]);
+    const score = new Float64Array(opts.length);
+    const line = lineOf(g);
+    for (let s = 0; s < samples; s++) {
+      const deal = determinize(g, seat);
+      // teammates still to discard do so the simple way
+      for (const p of g.pendingDiscard) if (p !== seat) deal[p] = simpleDiscard(deal[p], g.discardCount(p));
+      opts.forEach((o, i) => {
+        const hands = deal.slice();
+        hands[seat] = hands[seat].filter((c) => !o.includes(c));
+        if (hands.some((h) => !h.length)) return;
+        score[i] += rollout({ N: g.N, hands, line, li: 0, lead: (g.lead + 1) % g.N, st: null });
+      });
+    }
+    let best = 0; opts.forEach((_, i) => { if (score[i] > score[best]) best = i; });
+    return opts[best].map((c) => c.id);
+  }
+
 
   const api = { RULES, COLORS, TYPE, BOT_NAMES, Game, fits, cardName };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Sentai = api;

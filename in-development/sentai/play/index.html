@@ -246,7 +246,7 @@
   DevTable.mount(document.getElementById('app'), {
     id: 'sentai', title: 'Sentai', blurb: '2–4 players · 20–30 minutes · cooperative',
     minPlayers: 2, maxPlayers: 4, defaultPlayers: 3, botNames: S.BOT_NAMES,
-    botNote: 'Bot teammates add every card that fits (cards come back if the combo falls short) and play their least useful cards first.',
+    botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, the monster line and cards they’ve seen come back.',
     create: (players, opts) => new S.Game(players, opts),
     render,
     rules:
