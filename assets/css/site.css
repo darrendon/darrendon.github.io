@@ -452,3 +452,30 @@ a.chip:hover{border-color:var(--orange)}
 
 /* Closing "Let's talk" band: white card */
 .band{background:#FFFFFF;border:1px solid var(--line);box-shadow:0 14px 34px -24px rgba(31,34,48,.35)}
+
+/* De-templated homepage and games page (Nov 2026): plain facts line, no eyebrow labels, simple lists */
+.feature .facts{margin:16px 26px 0;padding:12px 0;border-top:1px solid var(--g-line,var(--line));border-bottom:1px solid var(--g-line,var(--line));font-size:14.5px;line-height:1.5;color:var(--g-ink,var(--ink))}
+.meet2 h2{font-size:clamp(32px,4.4vw,54px);font-weight:600;letter-spacing:-.01em}
+.feature .go{display:none}
+.mast .signed-line{margin-top:clamp(22px,3vw,32px);padding-top:16px;border-top:1px solid var(--line);font-size:16px;line-height:1.55;color:var(--muted);max-width:44ch}
+.mast .signed-line a{color:var(--ink);font-weight:600}
+.principles{gap:14px}
+.principles li{display:block}
+.principles .n{display:none}
+.principles b{display:inline;font-size:inherit;font-weight:700;margin:0}
+.principles b::after{content:" "}
+.principles div p{display:inline;color:var(--muted)}
+.favs-lead{font-size:15px;color:var(--muted);margin:22px 0 8px}
+.meet2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:start}
+.meet2 > div > p{margin-top:14px;max-width:46ch;color:var(--muted)}
+.shows-h{font-size:20px;font-weight:600;margin:0 0 6px}
+.show-rows{list-style:none;margin:0;padding:0}
+.show-rows li{display:grid;grid-template-columns:8.5em minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.show-rows .when{color:var(--muted);font-size:14.5px}
+.show-rows .where{grid-column:2;color:var(--muted);font-size:14.5px}
+.show-rows b{grid-column:2;grid-row:1;font-weight:600}
+.show-rows a{grid-column:3;grid-row:1 / span 2;align-self:center;font-size:14.5px;font-weight:600;color:var(--orange-text);white-space:nowrap}
+@media (max-width:860px){.meet2{grid-template-columns:1fr}}
+@media (max-width:420px){.show-rows li{grid-template-columns:minmax(0,1fr) auto}.show-rows .when{grid-column:1}.show-rows b,.show-rows .where{grid-column:1;grid-row:auto}.show-rows a{grid-row:1 / span 3;grid-column:2}}
+.pnp-line{margin-top:16px;font-size:15px;color:var(--muted)}
+.pnp-line a{font-weight:600}
