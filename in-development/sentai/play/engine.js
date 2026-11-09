@@ -1,6 +1,6 @@
 /* Sentai — rules engine and bots. Runs in the browser (window.Sentai) and in node
    (module.exports), so bot-only games can be checked headless: node sim.js
-   Every number a playtest might tune lives in RULES. */
+   Every tunable number lives in RULES. */
 (function (root) {
   'use strict';
   const RULES = {
