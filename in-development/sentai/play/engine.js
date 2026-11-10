@@ -10,9 +10,11 @@
     colorsFor: (n) => n + 1,            // colors in play = Heroes + 1
     hand: 14,                           // cards dealt to each Hero
     missDiscard: 2,                     // Gorvax: cards each Hero discards when a combo falls short
-    strikeDiscard: 3,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
+    strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
     maxAdd: 2,                          // cards a Hero may add per turn
-    enragedAny: true,                   // Vael: an enraged head takes any card
+    enragedAny: false,                  // Vael: an enraged head takes any card (tried; too easy)
+    rageRounds: 1,                      // Vael: rounds a head can stay enraged before it strikes
+    starveStrike: false,                // Vael: an enraged head strikes only after a round in which nobody fed it
     lookahead: 24,                      // imagined deals a bot plays out before each move
     actDraws: { 2: [3, 3, 4], 3: [3, 4, 5], 4: [4, 4, 4] },   // Boss cards drawn for each act
     bosses: {
@@ -32,12 +34,12 @@
         name: 'Vael, the Hydra',
         // per act: [type, [need with 2, 3, 4 Heroes], name, hex]
         acts: [
-          [['run', [2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 3, 3], 'Mirefang', 'spite'], ['color', [2, 3, 3], 'Sallowmaw', 'coil'],
-           ['combine', [2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 3, 3], 'Ashtongue', 'venom']],
-          [['run', [3, 3, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 4], 'Ropeneck', 'split'], ['color', [2, 3, 4], 'Bilefang', 'venom'],
-           ['combine', [2, 3, 4], 'Coilmaw', 'coil'], ['set', [2, 3, 4], 'Gravejaw', 'brood'], ['set', [2, 3, 4], 'Smokeneck', 'spite']],
-          [['run', [3, 3, 5], 'Crownfang', 'venom'], ['run', [3, 3, 5], 'Doomcoil', 'coil'], ['color', [3, 3, 5], 'Nightmaw', 'hunger'],
-           ['combine', [3, 3, 5], 'Wyrmspite', 'split'], ['set', [2, 3, 5], 'Old Fang', 'spite'], ['set', [2, 3, 5], 'Hexmother', 'brood']],
+          [['run', [2, 2, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3], 'Sallowmaw', 'coil'],
+           ['combine', [2, 2, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3], 'Ashtongue', 'venom']],
+          [['run', [2, 3, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 3], 'Ropeneck', 'split'], ['color', [2, 3, 3], 'Bilefang', 'venom'],
+           ['combine', [2, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 2, 3], 'Gravejaw', 'brood'], ['set', [2, 2, 3], 'Smokeneck', 'spite']],
+          [['run', [3, 3, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4], 'Nightmaw', 'hunger'],
+           ['combine', [2, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
         ],
       },
     },
@@ -69,27 +71,29 @@
 
   /* ---------- combos ---------- */
   // a combo: { type, n, rank, color, lo, hi }  (the cards themselves are kept beside it)
-  const newCombo = (type) => ({ type, n: 0 });
-  const fitsC = (st, c) => !st.n || (st.type === 'set' ? c.r === st.rank : st.type === 'color' ? c.c === st.color : st.type === 'combine' ? !(st.mask & (1 << c.c)) : c.r === st.lo - 1 || c.r === st.hi + 1);
+  const newCombo = (type, need) => ({ type, need, n: 0 });
+  const fitsC = (st, c) => !st.n || (st.type === 'set' ? c.r === st.rank : st.type === 'color' ? c.c === st.color : st.type === 'combine' ? !(st.mask & (1 << c.c))
+    : !(st.rmask & (1 << c.r)) && Math.max(st.hi, c.r) - Math.min(st.lo, c.r) < st.need);   // a Run: new rank, and it all still fits in a row of `need`
   function addC(st, c) {
-    if (!st.n) { st.rank = c.r; st.color = c.c; st.lo = st.hi = c.r; st.mask = 0; }
+    if (!st.n) { st.rank = c.r; st.color = c.c; st.lo = st.hi = c.r; st.mask = 0; st.rmask = 0; }
     else { if (c.r < st.lo) st.lo = c.r; if (c.r > st.hi) st.hi = c.r; }
-    st.mask |= 1 << c.c;
+    st.mask |= 1 << c.c; st.rmask |= 1 << c.r;
     st.n++;
   }
-  const copyC = (st) => ({ type: st.type, n: st.n, rank: st.rank, color: st.color, lo: st.lo, hi: st.hi, mask: st.mask });
+  const copyC = (st) => ({ type: st.type, need: st.need, n: st.n, rank: st.rank, color: st.color, lo: st.lo, hi: st.hi, mask: st.mask, rmask: st.rmask });
   // what a wild card becomes on this combo (null if it can't be wild here)
   function wildAs(st, c) {
     if (!st.n) return null;
     if (st.type === 'set') return { r: st.rank, c: c.c };
     if (st.type === 'color') return { r: c.r, c: st.color };
     if (st.type === 'combine') { for (const k of [c.c, 0, 1, 2, 3, 4]) if (!(st.mask & (1 << k))) return { r: c.r, c: k }; return null; }
-    if (st.hi < RULES.ranks) return { r: st.hi + 1, c: c.c };
-    if (st.lo > 1) return { r: st.lo - 1, c: c.c };
+    for (let r = st.lo + 1; r < st.hi; r++) if (!(st.rmask & (1 << r))) return { r, c: c.c };     // fill a gap first
+    if (st.hi - st.lo + 1 < st.need && st.hi < RULES.ranks) return { r: st.hi + 1, c: c.c };
+    if (st.hi - st.lo + 1 < st.need && st.lo > 1) return { r: st.lo - 1, c: c.c };
     return null;
   }
   // public helper for the page: does card c fit a combo shaped like the view's combo?
-  function fits(e, c) { const st = { type: e.type, n: e.cards ? e.cards.length : e.n, rank: e.rank, color: e.color, lo: e.lo, hi: e.hi, mask: e.mask || 0 }; if (e.cards && !('mask' in e)) for (const x of e.cards) st.mask |= 1 << x.c; return fitsC(st, c); }
+  function fits(e, c) { const st = { type: e.type, need: e.total, n: e.cards ? e.cards.length : e.n, rank: e.rank, color: e.color, lo: e.lo, hi: e.hi, mask: 0, rmask: 0 }; if (e.cards) for (const x of e.cards) { st.mask |= 1 << x.c; st.rmask |= 1 << x.r; } return fitsC(st, c); }
 
   /* ---------- small card heuristics, shared by every bot ---------- */
   function useful(card, hand) { let u = 0; for (const c of hand) if (c !== card && (c.r === card.r || c.c === card.c || c.r - card.r === 1 || card.r - c.r === 1)) u++; return u; }
@@ -110,31 +114,41 @@
   function simpleDiscard(hand, k) { let h = hand; for (let i = 0; i < k && h.length; i++) { const w = worst(h, h); h = h.filter((x) => x !== w); } return h; }
   const HEXW = { hunger: 6, venom: 5, coil: 2, split: 2, brood: 4, spite: -1 };
 
-  /* The simple Hydra policy, on plain data. s: { N, hands, slots, lead, at, lastHead, cmd }
-     Returns { head, cards } or null to pass. */
+  /* The simple Hydra policy, on plain data. s: { N, hands, slots, lead, at, lastHeads, cmd }
+     Returns { parts: [{ head, cards }] } — up to 2 cards on one head, or 1 card on each — or null to pass. */
   function hydraPick(s, p) {
     const hand = s.hands[p];
     if (hand.length < 2) return null;
     const base = s.cmd === p && p === s.lead ? 3 : RULES.maxAdd;
     const atIdx = (p - s.lead + s.N) % s.N;
-    let best = null, bs = -1e9;
+    const opts = [];
     s.slots.forEach((x, h) => {
-      if (!x || x.st.n >= x.m.need || (x.m.hex === 'split' && s.lastHead === h)) return;
+      if (!x || x.st.n >= x.m.need || (x.m.hex === 'split' && s.lastHeads.includes(h))) return;
       const anyCard = x.enr && RULES.enragedAny;
       if (!anyCard && !hand.some((c) => fitsC(x.st, c))) return;
       const per = x.m.hex === 'coil' ? 1 : RULES.maxAdd;
       let laterCap = 0; for (let k = atIdx + 1; k < s.N; k++) laterCap += Math.min(per, Math.max(0, s.hands[(s.lead + k) % s.N].length - 1));
       const rem = x.m.need - x.st.n, can = Math.min(x.m.hex === 'coil' ? 1 : base, rem, hand.length - 1);
       if (can <= 0) return;
-      const nextRound = x.enr ? 0 : s.N * per;
+      const roundsLeft = x.enr ? RULES.rageRounds - (x.rage || 0) : RULES.rageRounds;
+      const nextRound = RULES.starveStrike && x.enr ? 99 : roundsLeft * s.N * per;
       if (rem > can + laterCap + nextRound) return;      // can't be finished in time: don't feed it
-      const sc = (rem <= can ? 100 : 0) + (x.enr ? 40 : 0) + HEXW[x.m.hex] - rem;
-      if (sc > bs) { bs = sc; best = { head: h, can, anyCard }; }
+      const urgency = (x.enr ? (RULES.starveStrike && x.fed ? 5 : 40) : 0) + HEXW[x.m.hex] - rem;
+      opts.push({ h, x, can, anyCard, rem, urgency, full: (rem <= can ? 100 : 0) + urgency, one: (rem <= 1 ? 100 : 0) + urgency });
     });
-    if (!best) return null;
-    const st = copyC(s.slots[best.head].st);
-    const cards = best.anyCard ? hand.slice().sort((a, b) => useful(a, hand) - useful(b, hand)).slice(0, best.can) : simplePlay(hand, st, best.can);
-    return cards.length ? { head: best.head, cards } : null;
+    if (!opts.length) return null;
+    const pickCards = (o, k, from) => o.anyCard ? from.slice().sort((a, b) => useful(a, from) - useful(b, from)).slice(0, k) : simplePlay(from, copyC(o.x.st), k);
+    let best = opts.reduce((a, b) => (b.full > a.full ? b : a));
+    // one card to each head, when that does more: finishing one head and helping the other, or both enraged
+    if (opts.length === 2 && hand.length >= 3) {
+      const [a, b] = opts, split = a.one + b.one;
+      if (split > best.full + 20) {
+        const ca = pickCards(a, 1, hand), cb = ca.length ? pickCards(b, 1, hand.filter((c) => c !== ca[0])) : [];
+        if (ca.length && cb.length) return { parts: [{ head: a.h, cards: ca }, { head: b.h, cards: cb }] };
+      }
+    }
+    const cards = pickCards(best, best.can, hand);
+    return cards.length ? { parts: [{ head: best.h, cards }] } : null;
   }
 
   class Game {
@@ -183,7 +197,7 @@
       if (this.boss === 'vael' && head != null && this.slots[head] && this.slots[head].boss.hex === 'coil') return 1;
       return seat === this.lead && seat === this.heroOf('command') ? 3 : RULES.maxAdd;
     }
-    splitBlocked(head) { return this.boss === 'vael' && this.slots[head] && this.slots[head].boss.hex === 'split' && this.round.lastHead === head; }
+    splitBlocked(head) { return this.boss === 'vael' && this.slots[head] && this.slots[head].boss.hex === 'split' && this.round.lastHeads.includes(head); }
     canWild(seat) { return seat === this.heroOf('overcharge') && !this.used.overcharge; }
     canBeacon(seat) { return seat === this.heroOf('beacon') && this.beaconAct !== this.actNo && this.phase === 'build' && seat === this.turnSeat(); }
     turnSeat() { return this.phase !== 'build' ? -1 : this.boss === 'vael' ? (this.lead + this.round.at) % this.N : this.enc.order[this.enc.at]; }
@@ -192,7 +206,7 @@
     /* ---------- Gorvax: one monster at a time ---------- */
     startFight(boss) {
       const order = []; for (let k = 0; k < this.N; k++) order.push((this.lead + k) % this.N);
-      this.enc = { boss, st: newCombo(boss.type), cards: [], order, at: 0, plays: [] };
+      this.enc = { boss, st: newCombo(boss.type, boss.need), cards: [], order, at: 0, plays: [] };
       this.phase = 'build'; this.result = null;
       this.say(boss.name + ' attacks: it wants a ' + TYPE[boss.type] + ' of ' + boss.need + '. ' + this.players[this.lead].name + ' leads.');
     }
@@ -209,12 +223,12 @@
         if (!this.pile.length) continue;
         const b = Object.assign({}, this.pile.shift());
         this.seen.add(b.key);
-        this.slots[i] = { boss: b, st: newCombo(b.type), cards: [], plays: [], enraged: false };
+        this.slots[i] = { boss: b, st: newCombo(b.type, b.need), cards: [], plays: [], enraged: false };
         this.say('A head grows: ' + b.name + ' wants a ' + TYPE[b.type] + ' of ' + b.need + ' (' + HEX[b.hex].name + ').');
       }
     }
     startRound() {
-      this.round = { at: 0, lastHead: null, plays: [] };
+      this.round = { at: 0, lastHeads: [], plays: [] };
       this.phase = 'build'; this.result = null;
       this.say('New round. ' + this.players[this.lead].name + ' leads.');
     }
@@ -238,7 +252,7 @@
         if (a.type === 'beacon') return this.beacon(seat, a.card | 0);
         if (a.type === 'pass') {
           this.say(this.players[seat].name + ' passes.');
-          if (this.boss === 'vael') { this.round.plays.push({ seat, pass: true }); this.round.lastHead = null; } else this.enc.plays.push({ seat, pass: true, cards: [] });
+          if (this.boss === 'vael') { this.round.plays.push({ seat, pass: true }); this.round.lastHeads = []; } else this.enc.plays.push({ seat, pass: true, cards: [] });
           this.nextTurn(); return { ok: true };
         }
         if (a.type !== 'add') return { ok: false, error: 'Add cards or pass.' };
@@ -283,41 +297,57 @@
       return { ok: true };
     }
 
+    /* a: { type:'add', head, cards, wild } or, on the Hydra, { type:'add', parts:[{ head, cards }, ...], wild }
+       — 1 or 2 cards to one head, or 1 card to each head. */
     add(seat, a) {
       const hand = this.hands[seat], vael = this.boss === 'vael';
-      const head = vael ? a.head | 0 : 0;
-      const tgt = vael ? this.slots[head] : this.enc;
-      if (!tgt) return { ok: false, error: 'There’s no head there.' };
-      if (vael && this.splitBlocked(head)) return { ok: false, error: 'Split: you can’t feed this head right after the Hero before you did.' };
-      const ids = (a.cards || []).map((x) => x | 0);
-      const max = this.maxAdd(seat, vael ? head : null), rem = tgt.boss.need - tgt.st.n;
-      if (!ids.length || ids.length > max) return { ok: false, error: 'Add 1' + (max > 1 ? '–' + max : '') + ' card' + (max > 1 ? 's' : '') + '.' };
+      const parts = (vael && Array.isArray(a.parts) ? a.parts : [{ head: vael ? a.head | 0 : 0, cards: a.cards }])
+        .map((p) => ({ head: p.head | 0, ids: (p.cards || []).map((x) => x | 0) })).filter((p) => p.ids.length);
+      if (!parts.length) return { ok: false, error: 'Pick a card to add.' };
+      if (parts.length > (vael ? 2 : 1)) return { ok: false, error: 'Too many targets.' };
+      if (parts.length === 2 && (parts[0].head === parts[1].head || parts.some((p) => p.ids.length !== 1))) return { ok: false, error: 'To feed both heads, add 1 card to each.' };
+      const ids = parts.flatMap((p) => p.ids);
       if (new Set(ids).size !== ids.length) return { ok: false, error: 'Pick different cards.' };
-      if (ids.length > rem) return { ok: false, error: 'That combo only needs ' + rem + ' more.' };
       if (ids.length >= hand.length) return { ok: false, error: 'You have to keep at least one card.' };
       const wild = a.wild == null ? null : a.wild | 0;
       if (wild != null && (!ids.includes(wild) || !this.canWild(seat))) return { ok: false, error: 'You can’t use Overcharge now.' };
-      const st = copyC(tgt.st), placed = [];
-      for (const id of ids) {
-        const c = hand.find((x) => x.id === id);
-        if (!c) return { ok: false, error: 'You don’t have that card.' };
-        if (id === wild) {
-          const v = wildAs(st, c);
-          if (!v) return { ok: false, error: 'Overcharge needs a combo already started, with room to grow.' };
-          const w = { id: c.id, c: v.c, r: v.r, wild: true, real: c };
-          addC(st, w); placed.push(w);
-        } else {
-          if (!(vael && tgt.enraged && RULES.enragedAny) && !fitsC(st, c)) return { ok: false, error: cardName(c) + ' doesn’t fit that combo.' };
-          addC(st, c); placed.push(c);
+      const plan = [];
+      for (const p of parts) {
+        const tgt = vael ? this.slots[p.head] : this.enc;
+        if (!tgt) return { ok: false, error: 'There’s no head there.' };
+        if (vael && this.splitBlocked(p.head)) return { ok: false, error: 'Split: you can’t feed ' + tgt.boss.name + ' right after the Hero before you did.' };
+        const max = this.maxAdd(seat, vael ? p.head : null), rem = tgt.boss.need - tgt.st.n;
+        if (p.ids.length > max) return { ok: false, error: 'Add at most ' + max + ' card' + (max > 1 ? 's' : '') + ' to ' + (vael ? tgt.boss.name : 'the combo') + '.' };
+        if (p.ids.length > rem) return { ok: false, error: 'That combo only needs ' + rem + ' more.' };
+        const st = copyC(tgt.st), placed = [];
+        for (const id of p.ids) {
+          const c = hand.find((x) => x.id === id);
+          if (!c) return { ok: false, error: 'You don’t have that card.' };
+          if (id === wild) {
+            const v = wildAs(st, c);
+            if (!v) return { ok: false, error: 'Overcharge needs a combo already started, with room to grow.' };
+            const w = { id: c.id, c: v.c, r: v.r, wild: true, real: c };
+            addC(st, w); placed.push(w);
+          } else {
+            if (!(vael && tgt.enraged && RULES.enragedAny) && !fitsC(st, c)) return { ok: false, error: cardName(c) + ' doesn’t fit that combo.' };
+            addC(st, c); placed.push(c);
+          }
         }
+        plan.push({ p, tgt, st, placed });
       }
       if (wild != null) { this.used.overcharge = true; this.say(this.players[seat].name + ' uses Overcharge.'); }
-      tgt.st = st; tgt.cards = tgt.cards.concat(placed);
+      for (const { tgt, st, placed } of plan) {
+        tgt.st = st; tgt.cards = tgt.cards.concat(placed);
+        tgt.plays.push({ seat, cards: placed }); tgt.fed = true;
+        this.say(this.players[seat].name + ' adds ' + placed.map(cardName).join(' and ') + (vael ? ' to ' + tgt.boss.name : '') + '.');
+      }
       this.hands[seat] = hand.filter((c) => !ids.includes(c.id));
       this.forget(seat, ids);
-      tgt.plays.push({ seat, cards: placed });
-      this.say(this.players[seat].name + ' adds ' + placed.map(cardName).join(' and ') + (vael ? ' to ' + tgt.boss.name : '') + '.');
-      if (vael) { this.round.plays.push({ seat, head, n: placed.length }); this.round.lastHead = head; this.nextTurn(); return { ok: true }; }
+      if (vael) {
+        this.round.plays.push({ seat, parts: plan.map(({ p, placed }) => ({ head: p.head, n: placed.length })) });
+        this.round.lastHeads = plan.map(({ p }) => p.head);
+        this.nextTurn(); return { ok: true };
+      }
       if (this.need() <= 0) { this.resolve(); return { ok: true }; }
       this.nextTurn(); return { ok: true };
     }
@@ -358,9 +388,11 @@
       this.slots.forEach((x, i) => {
         if (!x) return;
         if (x.st.n >= x.boss.need) res.cut.push(i);
-        else if (x.enraged) res.struck.push(i);
+        else if (x.enraged && (x.rage || 0) >= RULES.rageRounds) { if (!RULES.starveStrike || !x.fed) res.struck.push(i); }
+        else if (x.enraged) x.rage = (x.rage || 0) + 1;
         else res.enraged.push(i);
       });
+      this.slots.forEach((x) => { if (x) x.fed = false; });
       const hungry = this.slots.filter((x, i) => x && x.boss.hex === 'hunger' && !res.cut.includes(i) && !res.struck.includes(i)).length;
       for (const i of res.cut) {
         const x = this.slots[i];
@@ -380,8 +412,8 @@
         this.slots[i] = null;
       }
       for (const i of res.enraged) {
-        const x = this.slots[i]; x.enraged = true;
-        if (x.boss.hex === 'brood') { x.boss.need++; x.boss.brooded = true; this.say(x.boss.name + ' is enraged and Brood makes it need ' + x.boss.need + '.'); }
+        const x = this.slots[i]; x.enraged = true; x.rage = 1;
+        if (x.boss.hex === 'brood') { x.boss.need++; x.st.need++; x.boss.brooded = true; this.say(x.boss.name + ' is enraged and Brood makes it need ' + x.boss.need + '.'); }
         else this.say(x.boss.name + ' is enraged.');
       }
       for (let k = 0; k < hungry; k++) {
@@ -452,7 +484,7 @@
     /* what one seat may see */
     view(seat) {
       const turn = this.turnSeat(), vael = this.boss === 'vael';
-      const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })) });
+      const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, total: x.boss.need, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })) });
       return {
         seat, boss: this.boss, bossName: RULES.bosses[this.boss].name, phase: this.phase, colors: this.colors, total: this.total, done: this.done, misses: this.misses, fights: this.fights,
         boxed: this.boxed, maxAdd: this.maxAdd(seat), maxAddHead: vael ? [this.maxAdd(seat, 0), this.maxAdd(seat, 1)] : null, act: this.actNo, lead: this.lead, powers: this.powers,
@@ -471,7 +503,7 @@
           plays: this.enc.plays.map((p) => ({ seat: p.seat, pass: !!p.pass, n: p.cards.length })) }),
         heads: vael ? this.slots.map(combo) : null,
         pile: vael ? this.pile.length : 0,
-        round: vael ? { at: this.round.at, lastHead: this.round.lastHead, plays: this.round.plays.slice() } : null,
+        round: vael ? { at: this.round.at, lastHeads: this.round.lastHeads.slice(), plays: this.round.plays.slice() } : null,
         result: this.result && {
           met: this.result.met, bounced: this.result.bounced || [],
           cut: this.result.cutHeads || [], struck: this.result.struckHeads || [], enraged: (this.result.enraged || []).map((i) => this.slots[i] && this.slots[i].boss.name).filter(Boolean), hunger: this.result.hunger || [], spite: this.result.spite || [],
@@ -492,7 +524,7 @@
         const w = this.botWild(s);
         if (w) { this.act(s, w); return true; }
         const pick = this.simple ? this.simplePick(s) : chooseBuild(this, s, RULES.lookahead);
-        if (pick && pick.cards.length) { const r = this.act(s, { type: 'add', head: pick.head, cards: pick.cards }); if (r.ok) return true; }
+        if (pick && pick.parts.some((x) => x.cards.length)) { const r = this.act(s, { type: 'add', parts: pick.parts, head: pick.parts[0].head, cards: pick.parts[0].cards }); if (r.ok) return true; }
         this.act(s, { type: 'pass' });
         return true;
       }
@@ -518,18 +550,18 @@
     }
     fast() {   // the public shape of the table, for policies and rollouts
       return { N: this.N, hands: this.hands, lead: this.lead, cmd: this.heroOf('command'), steady: this.heroOf('steady'),
-        at: this.boss === 'vael' ? this.round.at : 0, lastHead: this.boss === 'vael' ? this.round.lastHead : null,
-        slots: this.boss === 'vael' ? this.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: x.st, enr: x.enraged }) : null };
+        at: this.boss === 'vael' ? this.round.at : 0, lastHeads: this.boss === 'vael' ? this.round.lastHeads : [],
+        slots: this.boss === 'vael' ? this.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: x.st, enr: x.enraged, rage: x.rage || 0 }) : null };
     }
     simplePick(s) {
       if (this.boss === 'vael') {
         const p = hydraPick(this.fast(), s);
-        return p && { head: p.head, cards: p.cards.map((c) => c.id) };
+        return p && { parts: p.parts.map((x) => ({ head: x.head, cards: x.cards.map((c) => c.id) })) };
       }
       const hand = this.hands[s];
       if (!hand.some((c) => fitsC(this.enc.st, c)) || hand.length < 2) return null;
       const st = copyC(this.enc.st);
-      return { head: 0, cards: simplePlay(hand, st, Math.min(this.maxAdd(s), this.need(), hand.length - 1)).map((c) => c.id) };
+      return { parts: [{ head: 0, cards: simplePlay(hand, st, Math.min(this.maxAdd(s), this.need(), hand.length - 1)).map((c) => c.id) }] };
     }
     /* Overcharge: use it when it finishes a combo this turn. */
     botWild(s) {
@@ -561,7 +593,7 @@
     let lead = s.lead, st = s.st, at = s.at, plays = s.plays, li = s.li || 0;
     while (li < line.length) {
       const m = line[li];
-      if (!st) { st = newCombo(m.type); at = 0; plays = []; }
+      if (!st) { st = newCombo(m.type, m.need); at = 0; plays = []; }
       while (at < N && st.n < m.need) {
         const p = (lead + at) % N, h = hands[p];
         if (h.length > 1 && h.some((c) => fitsC(st, c))) {
@@ -581,19 +613,21 @@
   }
   function rolloutV(s) {   // Vael
     const N = s.N, hands = s.hands, pile = s.pile;
-    const slots = s.slots.map((x) => x && { m: Object.assign({}, x.m), st: copyC(x.st), enr: x.enr, last: x.last });
-    let lead = s.lead, at = s.at, lastHead = s.lastHead, pi = 0;
-    const st = { N, hands, slots, lead, at, lastHead, cmd: s.cmd };
-    const growF = () => { for (let i = 0; i < 2; i++) if (!slots[i] && pi < pile.length) { const m = Object.assign({}, pile[pi++]); slots[i] = { m, st: newCombo(m.type), enr: false, last: -1 }; } };
+    const slots = s.slots.map((x) => x && { m: Object.assign({}, x.m), st: copyC(x.st), enr: x.enr, rage: x.rage || 0, fed: x.fed, last: x.last });
+    let lead = s.lead, at = s.at, lastHeads = s.lastHeads || [], pi = 0;
+    const st = { N, hands, slots, lead, at, lastHeads, cmd: s.cmd };
+    const growF = () => { for (let i = 0; i < 2; i++) if (!slots[i] && pi < pile.length) { const m = Object.assign({}, pile[pi++]); slots[i] = { m, st: newCombo(m.type, m.need), enr: false, last: -1 }; } };
     if (s.fresh) growF();
     for (let guard = 0; guard < 80; guard++) {
       if (!slots[0] && !slots[1]) return 1;
       st.lead = lead;
       for (; at < N; at++) {
-        const p = (lead + at) % N; st.at = at; st.lastHead = lastHead;
+        const p = (lead + at) % N; st.at = at; st.lastHeads = lastHeads;
         const pick = hydraPick(st, p);
-        if (pick) { const x = slots[pick.head]; for (const c of pick.cards) addC(x.st, c); x.last = p; hands[p] = hands[p].filter((c) => !pick.cards.includes(c)); lastHead = pick.head; }
-        else lastHead = null;
+        if (pick) {
+          lastHeads = [];
+          for (const part of pick.parts) { const x = slots[part.head]; for (const c of part.cards) addC(x.st, c); x.last = p; x.fed = true; hands[p] = hands[p].filter((c) => !part.cards.includes(c)); lastHeads.push(part.head); }
+        } else lastHeads = [];
       }
       // end of round
       const counts = new Array(N).fill(0);
@@ -601,14 +635,16 @@
       for (let i = 0; i < 2; i++) {
         const x = slots[i]; if (!x) continue;
         if (x.st.n >= x.m.need) { if (x.m.hex === 'spite' && x.last >= 0) counts[x.last]++; slots[i] = null; }
-        else if (x.enr) { const cost = RULES.strikeDiscard + (x.m.hex === 'venom' ? 1 : 0); for (let p = 0; p < N; p++) counts[p] += cost; slots[i] = null; }
-        else { x.enr = true; if (x.m.hex === 'brood') x.m.need++; if (x.m.hex === 'hunger') hungry++; }
+        else if (x.enr && x.rage < RULES.rageRounds) { x.rage++; }
+        else if (x.enr) { if (!RULES.starveStrike || !x.fed) { const cost = RULES.strikeDiscard + (x.m.hex === 'venom' ? 1 : 0); for (let p = 0; p < N; p++) counts[p] += cost; slots[i] = null; } }
+        else { x.enr = true; x.rage = 1; if (x.m.hex === 'brood') { x.m.need++; x.st.need++; } if (x.m.hex === 'hunger') hungry++; }
       }
+      for (const x of slots) if (x) x.fed = false;
       for (let k = 0; k < hungry; k++) { let t = 0, most = -Infinity; for (let j = 0; j < N; j++) { const p = (lead + j) % N, n = hands[p].length - counts[p]; if (n > most) { most = n; t = p; } } counts[t]++; }
       if (s.steady >= 0 && counts[s.steady] > 0) counts[s.steady]--;
       for (let p = 0; p < N; p++) if (counts[p]) { hands[p] = simpleDiscard(hands[p], counts[p]); if (!hands[p].length) return 0; }
       growF();
-      lead = (lead + 1) % N; at = 0; lastHead = null;
+      lead = (lead + 1) % N; at = 0; lastHeads = [];
     }
     return 0;
   }
@@ -637,27 +673,28 @@
   }
   /* Every legal way to add cards (up to the seat's limit) to each target, plus passing. */
   function buildOptions(g, seat) {
-    const hand = g.hands[seat], opts = [];
+    const hand = g.hands[seat], opts = [{ parts: [] }];
     const vael = g.boss === 'vael';
-    opts.push({ head: 0, cards: [] });
-    const heads = vael ? [0, 1] : [0];
-    for (const h of heads) {
+    const singles = {};
+    for (const h of vael ? [0, 1] : [0]) {
       if (!g.legalFor(seat, h).length) continue;
       const x = vael ? g.slots[h] : g.enc, rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, hand.length - 1);
       const seen = new Set();
       if (vael && x.enraged && RULES.enragedAny) {
         const pool = hand.slice().sort((a, b) => useful(a, hand) - useful(b, hand)).slice(0, 6);
+        singles[h] = pool.slice(0, 4);
         (function pickAny(start, picked) {
-          if (picked.length) opts.push({ head: h, cards: picked });
+          if (picked.length) opts.push({ parts: [{ head: h, cards: picked }] });
           if (picked.length >= cap) return;
           for (let i = start; i < pool.length; i++) pickAny(i + 1, picked.concat(pool[i]));
         })(0, []);
         continue;
       }
+      singles[h] = hand.filter((c) => fitsC(x.st, c));
       (function grow(st, picked) {
         if (picked.length) {
           const key = picked.map((c) => c.id).sort((a, b) => a - b).join(':');
-          if (!seen.has(key)) { seen.add(key); opts.push({ head: h, cards: picked }); }
+          if (!seen.has(key)) { seen.add(key); opts.push({ parts: [{ head: h, cards: picked }] }); }
         }
         if (picked.length >= cap || opts.length > 90) return;
         for (const c of hand) {
@@ -666,29 +703,34 @@
         }
       })(copyC(x.st), []);
     }
+    // one card to each head (the least useful few that fit each)
+    if (vael && singles[0] && singles[1] && hand.length >= 3) {
+      const top = (cs) => cs.slice().sort((a, b) => useful(a, hand) - useful(b, hand)).slice(0, 4);
+      for (const a of top(singles[0])) for (const b of top(singles[1])) if (a !== b) opts.push({ parts: [{ head: 0, cards: [a] }, { head: 1, cards: [b] }] });
+    }
     return opts;
   }
+  const optCards = (o) => o.parts.flatMap((p) => p.cards);
   function stateAfter(g, deal, future, seat, o) {
-    const hands = deal.slice();
-    if (o.cards.length) hands[seat] = hands[seat].filter((c) => !o.cards.includes(c));
+    const hands = deal.slice(), used = optCards(o);
+    if (used.length) hands[seat] = hands[seat].filter((c) => !used.includes(c));
     const base = { N: g.N, hands, lead: g.lead, cmd: g.heroOf('command'), steady: g.heroOf('steady') };
     if (g.boss === 'vael') {
-      const slots = g.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: copyC(x.st), enr: x.enraged, last: x.plays.length ? x.plays[x.plays.length - 1].seat : -1 });
-      if (o.cards.length) { for (const c of o.cards) addC(slots[o.head].st, c); slots[o.head].last = seat; }
-      return Object.assign(base, { slots, pile: future, at: g.round.at + 1, lastHead: o.cards.length ? o.head : null });
+      const slots = g.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: copyC(x.st), enr: x.enraged, rage: x.rage || 0, fed: !!x.fed, last: x.plays.length ? x.plays[x.plays.length - 1].seat : -1 });
+      for (const p of o.parts) { for (const c of p.cards) addC(slots[p.head].st, c); slots[p.head].last = seat; slots[p.head].fed = true; }
+      return Object.assign(base, { slots, pile: future, at: g.round.at + 1, lastHeads: o.parts.map((p) => p.head) });
     }
     const e = g.enc, st = copyC(e.st), plays = [];
     e.plays.forEach((p) => { if (p.cards.length) plays.push(p.seat, p.cards.map((c) => c.real || c)); });
-    if (o.cards.length) { for (const c of o.cards) addC(st, c); plays.push(seat, o.cards); }
+    if (used.length) { for (const c of used) addC(st, c); plays.push(seat, used); }
     return Object.assign(base, { line: g.row.concat(future), li: 0, st, at: e.at + 1, plays });
   }
   function chooseBuild(g, seat, samples) {
     const opts = buildOptions(g, seat);
-    if (!opts.length) return null;
-    if (opts.length === 1) return { head: opts[0].head, cards: opts[0].cards.map((c) => c.id) };
-    const simple = g.simplePick(seat);
-    const skey = simple ? simple.head + '/' + simple.cards.slice().sort((a, b) => a - b).join(',') : '0/';
-    const keyOf = (o) => (o.cards.length ? o.head : 0) + '/' + o.cards.map((c) => c.id).sort((a, b) => a - b).join(',');
+    const out = (o) => ({ parts: o.parts.map((p) => ({ head: p.head, cards: p.cards.map((c) => c.id) })) });
+    if (opts.length === 1) return out(opts[0]);
+    const keyOf = (parts) => parts.map((p) => p.head + ':' + p.cards.map((c) => (typeof c === 'number' ? c : c.id)).sort((a, b) => a - b).join(',')).sort().join('|');
+    const simple = g.simplePick(seat), skey = simple ? keyOf(simple.parts) : '';
     const score = new Float64Array(opts.length);
     const run = g.boss === 'vael' ? rolloutV : rolloutG;
     for (let k = 0; k < samples; k++) {
@@ -696,8 +738,8 @@
       opts.forEach((o, i) => { score[i] += run(stateAfter(g, deal, future, seat, o)); });
     }
     let best = 0, bs = -1;
-    opts.forEach((o, i) => { const s = score[i] + (keyOf(o) === skey ? 0.5 : 0); if (s > bs) { bs = s; best = i; } });
-    return { head: opts[best].head, cards: opts[best].cards.map((c) => c.id) };
+    opts.forEach((o, i) => { const sc = score[i] + (keyOf(o.parts) === skey ? 0.5 : 0); if (sc > bs) { bs = sc; best = i; } });
+    return out(opts[best]);
   }
   /* Discards: compare small sets drawn from the least useful cards. */
   function chooseDiscard(g, seat, samples) {
@@ -717,8 +759,8 @@
         if (hands.some((h) => !h.length)) return;
         const base = { N: g.N, hands, lead: (g.lead + 1) % g.N, cmd: g.heroOf('command'), steady: g.heroOf('steady') };
         if (g.boss === 'vael') {
-          const slots = g.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: copyC(x.st), enr: x.enraged, last: x.plays.length ? x.plays[x.plays.length - 1].seat : -1 });
-          score[i] += rolloutV(Object.assign(base, { slots, pile: future, at: 0, lastHead: null, fresh: true }));
+          const slots = g.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: copyC(x.st), enr: x.enraged, rage: x.rage || 0, fed: !!x.fed, last: x.plays.length ? x.plays[x.plays.length - 1].seat : -1 });
+          score[i] += rolloutV(Object.assign(base, { slots, pile: future, at: 0, lastHeads: [], fresh: true }));
         } else score[i] += rolloutG(Object.assign(base, { line: g.row.concat(future), li: 0, st: null }));
       });
     }
