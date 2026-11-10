@@ -89,7 +89,7 @@
   ];
   const HEXMARK = {
     hunger: 'M-3.5 -1.5 Q0 3.5 3.5 -1.5', venom: 'M0 -3.6 Q3 0 0 3.4 Q-3 0 0 -3.6Z', coil: 'M-3 0 A3 3 0 1 1 0 3 A1.6 1.6 0 1 1 1.4 1.2',
-    split: 'M-3.4 -3 L0 0 L3.4 -3 M0 0 V3.6', thorns: 'M-3.6 2.6 L-2 -2.6 L0 2.6 L2 -2.6 L3.6 2.6', regrow: 'M-3 1.5 A3 3 0 1 1 0 3 M-3 1.5 L-3.6 -1.2 M-3 1.5 L-0.4 1',
+    split: 'M-3.4 -3 L0 0 L3.4 -3 M0 0 V3.6', brood: 'M0 -3.4 V3.4 M-3.4 0 H3.4', spite: 'M-3.6 2.6 L-2 -2.6 L0 2.6 L2 -2.6 L3.6 2.6',
   };
   function hydraHead(i, hex) {
     const [sc, belly, acc, frill, eyes, open] = H[i];

@@ -145,19 +145,23 @@
   const actOf = (k) => Math.floor((k % 18) / 6);
   function addTo(st, c) {
     const t = Object.assign({}, st, { cards: st.cards.slice() });
-    if (!t.cards.length) { t.rank = c.r; t.color = c.c; t.lo = t.hi = c.r; } else { t.lo = Math.min(t.lo, c.r); t.hi = Math.max(t.hi, c.r); }
+    if (!t.cards.length) { t.rank = c.r; t.color = c.c; t.lo = t.hi = c.r; t.mask = 0; } else { t.lo = Math.min(t.lo, c.r); t.hi = Math.max(t.hi, c.r); }
+    t.mask = (t.mask || 0) | (1 << c.c);
     t.cards.push(c); return t;
   }
   function wildAs(t, c) {
     if (!t.cards.length) return null;
     if (t.type === 'set') return { r: t.rank, c: c.c };
     if (t.type === 'color') return { r: c.r, c: t.color };
+    if (t.type === 'combine') { for (const k of [c.c, 0, 1, 2, 3, 4]) if (!(t.mask & (1 << k))) return { r: c.r, c: k }; return null; }
     if (t.hi < 12) return { r: t.hi + 1, c: c.c };
     if (t.lo > 1) return { r: t.lo - 1, c: c.c };
     return null;
   }
   function describe(e) {
+    if (e.enraged) return 'Enraged: any card fits now.';
     if (!e.cards.length) return 'Any card starts it.';
+    if (e.type === 'combine') { const used = COL.filter((_, i) => e.mask & (1 << i)); return 'Every card must be a different color. Used so far: ' + used.join(', ') + '.'; }
     if (e.type === 'set') return 'Every card must be a ' + e.rank + '.';
     if (e.type === 'color') return 'Every card must be ' + COL[e.color] + '.';
     const opts = [e.lo - 1, e.hi + 1].filter((r) => r >= 1 && r <= 12);
@@ -214,9 +218,10 @@
       if (vael) {
         const bits = [];
         if (r.cut.length) bits.push(r.cut.map((b) => esc(b.name)).join(' and ') + (r.cut.length > 1 ? ' are' : ' is') + ' cut off.');
-        if (r.struck.length) bits.push(r.struck.map((b) => esc(b.name)).join(' and ') + ' struck: its cards are lost.');
+        if (r.struck.length) bits.push(r.struck.map((b) => esc(b.name)).join(' and ') + ' struck: its cards are lost and every Hero discards 3.');
         if (r.enraged.length) bits.push(r.enraged.map(esc).join(' and ') + (r.enraged.length > 1 ? ' are' : ' is') + ' enraged.');
         if (r.hunger.length) bits.push('Hunger takes a card from ' + r.hunger.map(nm).join(' and ') + '.');
+        if (r.spite.length) bits.push('Spite takes a card from ' + r.spite.map(nm).join(' and ') + '.');
         const bad = r.struck.length > 0;
         banner = '<div class="banner' + (bad ? ' bad' : '') + '"><div><b>' + (r.cut.length && !bad ? 'Heads off!' : bad ? 'The Hydra strikes' : 'The heads hold') + '</b><p>' + (bits.join(' ') || 'Nothing was finished this round.') + discLine(r) + '</p></div></div>';
       } else {
@@ -235,14 +240,14 @@
         const pick = myTurn && (v.legal[h].length || (v.canWild && x.cards.length));
         const tag = pick ? 'button' : 'div';
         return '<' + tag + (pick ? ' type="button" data-head="' + h + '"' : '') + ' class="head a' + x.boss.act + (x.enraged ? ' enr' : '') + (tgt === h ? ' tgt' : '') + '"><div class="mon">' + A.monsterSVG(x.boss.key, ' aria-hidden="true"', x.boss.hex) + '</div><div><span class="act">' + ACT[x.boss.act] + ' head</span><div class="nm">' + esc(x.boss.name) + '</div>' +
-          '<div class="req">Wants a ' + TYPE[x.type] + ' of <b>' + x.boss.need + '</b>' + (x.boss.regrown ? ' (Regrow +1)' : '') + '</div>' + slots(x) +
+          '<div class="req">Wants a ' + TYPE[x.type] + ' of <b>' + x.boss.need + '</b>' + (x.boss.brooded ? ' (Brood +1)' : '') + '</div>' + slots(x) +
           '<div class="hx"><b>' + esc(S.HEX[x.boss.hex].name) + ':</b> ' + esc(S.HEX[x.boss.hex].text) + '</div>' +
           (myTurn && tgt === h ? '<div class="rule">' + esc(describe(x)) + '</div>' : '') + '</div></' + tag + '>';
       }).join('') + '</div>';
       const later = v.acts.map((a, i) => ({ i, n: a.n })).filter((a) => a.i > v.act);
       row = '<div class="panel"><h3>Still to grow</h3><div class="line">' +
         (v.pile ? '<div class="mc fd a' + v.act + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[v.act] + '</b><span>' + v.pile + ' head' + (v.pile === 1 ? '' : 's') + ' in the pile</span></span></div>' : '') +
-        later.map((a) => '<div class="mc fd a' + a.i + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[a.i] + '</b><span>' + a.n + ' heads, face down</span></span></div>').join('') + '</div><p class="rule" style="color:var(--t-muted)">A head that survives a round is enraged. If it survives another, it strikes: its cards are lost and every Hero discards 2.</p></div>';
+        later.map((a) => '<div class="mc fd a' + a.i + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[a.i] + '</b><span>' + a.n + ' heads, face down</span></span></div>').join('') + '</div><p class="rule" style="color:var(--t-muted)">A head that survives a round is enraged, and from then on any card fits it. If it survives another round, it strikes: its cards are lost and every Hero discards 3.</p></div>';
       if (!v.pile && !later.length) row = '';
     } else if (v.enc) {
       const e = v.enc;
@@ -258,13 +263,15 @@
     }
 
     // my hand
-    let tstate = T ? { type: T.type, cards: T.cards.slice(), rank: T.rank, color: T.color, lo: T.lo, hi: T.hi } : null;
+    let tstate = T ? { type: T.type, cards: T.cards.slice(), rank: T.rank, color: T.color, lo: T.lo, hi: T.hi, mask: T.mask || 0 } : null;
+    const tmax = vael && tgt != null ? v.maxAddHead[tgt] : v.maxAdd, anyFits = vael && T && T.enraged;
     if (T) for (const id of sel) { const c = v.hand.find((x) => x.id === id); const w = id === wildId ? wildAs(tstate, c) : null; tstate = addTo(tstate, w ? { id, r: w.r, c: w.c } : c); }
     const canPick = (c) => {
       if (beaconOn) return true;
       if (myTurn && T) {
         if (sel.includes(c.id)) return true;
-        if (sel.length >= Math.min(v.maxAdd, T.need) || sel.length >= v.hand.length - 1) return false;
+        if (sel.length >= Math.min(tmax, T.need) || sel.length >= v.hand.length - 1) return false;
+        if (anyFits) return true;
         if (wildOn && wildId == null && wildAs(tstate, c)) return true;
         return S.fits(tstate, c);
       }
@@ -278,11 +285,11 @@
       const tname = vael && T ? esc(T.boss.name) : 'the combo';
       const prompt = beaconOn ? 'Tap the card you want everyone to see.'
         : !T ? 'Nothing in your hand fits ' + (vael ? 'either head' : 'this combo') + '. You have to pass.'
-        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap a head to switch)' : '') + '. ' : '') + 'Tap up to ' + v.maxAdd + ' card' + (v.maxAdd === 1 ? '' : 's') + ' that fit, then add them.' + (vael ? ' Cards stay on the head until it’s cut or it strikes.' : ' If the combo falls short, everything added comes back, but everyone discards 2.');
+        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap a head to switch)' : '') + '. ' : '') + 'Tap up to ' + tmax + ' card' + (tmax === 1 ? '' : 's') + (anyFits ? ' (it’s enraged, so any card fits)' : ' that fit') + ', then add them.' + (vael ? ' Cards stay on the head until it’s cut or it strikes.' : ' If the combo falls short, everything added comes back, but everyone discards 2.');
       main += '<p class="prompt">' + prompt + (v.hand.length <= 3 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + (!v.canPass ? ' <b>Thorns: you lead, so you can’t pass.</b>' : '') + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
           : '<button class="dt-btn go" data-do="add"' + (sel.length && T ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass"' + (v.canPass ? '' : ' disabled') + '>Pass</button>' +
-            (v.canWild && T ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
+            (v.canWild && T && !anyFits ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
             (v.canBeacon ? '<button class="dt-btn" data-do="beacon">Beacon: show a card</button>' : '')) + '</div>';
     } else if (iRiptide) {
       main += '<p class="prompt">The squad is about to discard (' + v.riptide.counts.map((n, i) => nm(i) + ' ' + n).join(', ') + '). <b>Use Riptide so nobody discards?</b> You can only use it once.</p>' + hand +
@@ -345,10 +352,10 @@
     create: (players, opts) => new S.Game(players, opts),
     render,
     rules:
-      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each.</p>' +
-      '<p><b>Combos.</b> A Run climbs in rank, any color. A Set is one rank. A Color is one color, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
+      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 14 cards each.</p>' +
+      '<p><b>Combos.</b> A Run climbs in rank, any color. A Set is one rank. A Color is one color, any ranks. A Combine is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
       '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, and every Hero discards 2 face up. Get through Act III to win.</p>' +
-      '<p><b>Vael, the Hydra.</b> Two heads are out at once, each with a combo and a hex that’s in force while it’s out. On your turn, feed one head. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. Cut every head to win.</p>' +
+      '<p><b>Vael, the Hydra.</b> Two heads are out at once, each with a combo and a hex that’s in force while it’s out. On your turn, feed one head. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged, and any card fits it from then on. If it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 3. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an act): show a card.</p>',
   });
 })();
