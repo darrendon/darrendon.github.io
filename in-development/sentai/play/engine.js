@@ -12,6 +12,7 @@
     missDiscard: 2,                     // Gorvax: cards each Hero discards when a combo falls short
     strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
     maxAdd: 2,                          // cards a Hero may add per turn
+    heads: 2,                           // Vael: heads out at once
     enragedAny: false,                  // Vael: an enraged head takes any card (tried; too easy)
     rageRounds: 1,                      // Vael: rounds a head can stay enraged before it strikes
     starveStrike: false,                // Vael: an enraged head strikes only after a round in which nobody fed it
@@ -39,7 +40,7 @@
           [['run', [2, 3, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 3], 'Ropeneck', 'split'], ['color', [2, 3, 3], 'Bilefang', 'venom'],
            ['combine', [2, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 2, 3], 'Gravejaw', 'brood'], ['set', [2, 2, 3], 'Smokeneck', 'spite']],
           [['run', [3, 3, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4], 'Nightmaw', 'hunger'],
-           ['combine', [2, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
+           ['combine', [3, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
         ],
       },
     },
@@ -140,8 +141,9 @@
     const pickCards = (o, k, from) => o.anyCard ? from.slice().sort((a, b) => useful(a, from) - useful(b, from)).slice(0, k) : simplePlay(from, copyC(o.x.st), k);
     let best = opts.reduce((a, b) => (b.full > a.full ? b : a));
     // one card to each head, when that does more: finishing one head and helping the other, or both enraged
-    if (opts.length === 2 && hand.length >= 3) {
-      const [a, b] = opts, split = a.one + b.one;
+    if (opts.length >= 2 && hand.length >= 3) {
+      let a = null, b = null, split = -Infinity;
+      for (let i = 0; i < opts.length; i++) for (let j = i + 1; j < opts.length; j++) if (opts[i].one + opts[j].one > split) { a = opts[i]; b = opts[j]; split = a.one + b.one; }
       if (split > best.full + 20) {
         const ca = pickCards(a, 1, hand), cb = ca.length ? pickCards(b, 1, hand.filter((c) => c !== ca[0])) : [];
         if (ca.length && cb.length) return { parts: [{ head: a.h, cards: ca }, { head: b.h, cards: cb }] };
@@ -180,7 +182,7 @@
       this.log = []; this.result = null; this.outcome = null; this.enc = null; this.penalty = null;
       this.seen = new Set();
       if (this.boss === 'vael') {
-        this.pile = this.acts[0].slice(); this.slots = [null, null];
+        this.pile = this.acts[0].slice(); this.slots = new Array(RULES.heads).fill(null);
         this.say('Vael rises. Act I begins.');
         this.grow(); this.startRound();
       } else {
@@ -214,7 +216,7 @@
 
     /* ---------- Vael: two heads, one round at a time ---------- */
     grow() {
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < this.slots.length; i++) {
         if (this.slots[i]) continue;
         if (!this.pile.length && this.actNo < this.acts.length - 1) {
           this.actNo++; this.pile = this.acts[this.actNo].slice();
@@ -243,7 +245,7 @@
       }
       return this.hands[seat].filter((c) => fitsC(this.enc.st, c)).map((c) => c.id);
     }
-    canAddAny(seat) { return this.boss === 'vael' ? [0, 1].some((h) => this.legalFor(seat, h).length) : this.legalFor(seat, 0).length > 0; }
+    canAddAny(seat) { return this.boss === 'vael' ? this.slots.some((_, h) => this.legalFor(seat, h).length) : this.legalFor(seat, 0).length > 0; }
 
     act(seat, a) {
       a = a || {};
@@ -427,7 +429,7 @@
     }
     finishRound() {
       this.grow();
-      if (!this.slots[0] && !this.slots[1]) {
+      if (this.slots.every((x) => !x)) {
         this.phase = 'over'; this.outcome = { win: true };
         this.say('The last head falls. The squad wins!');
         return;
@@ -494,7 +496,7 @@
           needsDiscard: this.phase === 'discard' && this.pendingDiscard.includes(i),
           discardCount: this.phase === 'discard' ? this.discardCount(i) : 0 })),
         hand: this.hands[seat].slice(),
-        turn, legal: vael ? [this.legalFor(seat, 0), this.legalFor(seat, 1)] : [this.legalFor(seat, 0)],
+        turn, legal: vael ? this.slots.map((_, h) => this.legalFor(seat, h)) : [this.legalFor(seat, 0)],
         canPass: true,
         canWild: this.phase === 'build' && seat === turn && this.canWild(seat), canBeacon: this.canBeacon(seat),
         riptide: this.phase === 'riptide' ? { seat: this.heroOf('riptide'), counts: this.penalty.counts.slice() } : null,
@@ -567,7 +569,7 @@
     botWild(s) {
       if (!this.canWild(s)) return null;
       const hand = this.hands[s];
-      const targets = this.boss === 'vael' ? [0, 1].filter((h) => this.slots[h] && !this.splitBlocked(h)).map((h) => ({ h, x: this.slots[h] })) : [{ h: 0, x: this.enc }];
+      const targets = this.boss === 'vael' ? this.slots.map((_, h) => h).filter((h) => this.slots[h] && !this.splitBlocked(h)).map((h) => ({ h, x: this.slots[h] })) : [{ h: 0, x: this.enc }];
       for (const { h, x } of targets) {
         const rem = x.boss.need - x.st.n, max = this.maxAdd(s, this.boss === 'vael' ? h : null);
         if (!x.st.n || rem > max || hand.length <= rem) continue;
@@ -616,10 +618,10 @@
     const slots = s.slots.map((x) => x && { m: Object.assign({}, x.m), st: copyC(x.st), enr: x.enr, rage: x.rage || 0, fed: x.fed, last: x.last });
     let lead = s.lead, at = s.at, lastHeads = s.lastHeads || [], pi = 0;
     const st = { N, hands, slots, lead, at, lastHeads, cmd: s.cmd };
-    const growF = () => { for (let i = 0; i < 2; i++) if (!slots[i] && pi < pile.length) { const m = Object.assign({}, pile[pi++]); slots[i] = { m, st: newCombo(m.type, m.need), enr: false, last: -1 }; } };
+    const growF = () => { for (let i = 0; i < slots.length; i++) if (!slots[i] && pi < pile.length) { const m = Object.assign({}, pile[pi++]); slots[i] = { m, st: newCombo(m.type, m.need), enr: false, last: -1 }; } };
     if (s.fresh) growF();
     for (let guard = 0; guard < 80; guard++) {
-      if (!slots[0] && !slots[1]) return 1;
+      if (slots.every((x) => !x)) return 1;
       st.lead = lead;
       for (; at < N; at++) {
         const p = (lead + at) % N; st.at = at; st.lastHeads = lastHeads;
@@ -632,12 +634,13 @@
       // end of round
       const counts = new Array(N).fill(0);
       let hungry = 0;
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < slots.length; i++) {
         const x = slots[i]; if (!x) continue;
-        if (x.st.n >= x.m.need) { if (x.m.hex === 'spite' && x.last >= 0) counts[x.last]++; slots[i] = null; }
-        else if (x.enr && x.rage < RULES.rageRounds) { x.rage++; }
-        else if (x.enr) { if (!RULES.starveStrike || !x.fed) { const cost = RULES.strikeDiscard + (x.m.hex === 'venom' ? 1 : 0); for (let p = 0; p < N; p++) counts[p] += cost; slots[i] = null; } }
-        else { x.enr = true; x.rage = 1; if (x.m.hex === 'brood') { x.m.need++; x.st.need++; } if (x.m.hex === 'hunger') hungry++; }
+        if (x.st.n >= x.m.need) { if (x.m.hex === 'spite' && x.last >= 0) counts[x.last]++; slots[i] = null; continue; }
+        if (x.enr && x.rage < RULES.rageRounds) { x.rage++; }
+        else if (x.enr) { if (!RULES.starveStrike || !x.fed) { const cost = RULES.strikeDiscard + (x.m.hex === 'venom' ? 1 : 0); for (let p = 0; p < N; p++) counts[p] += cost; slots[i] = null; continue; } }
+        else { x.enr = true; x.rage = 1; if (x.m.hex === 'brood') { x.m.need++; x.st.need++; } }
+        if (x.m.hex === 'hunger') hungry++;
       }
       for (const x of slots) if (x) x.fed = false;
       for (let k = 0; k < hungry; k++) { let t = 0, most = -Infinity; for (let j = 0; j < N; j++) { const p = (lead + j) % N, n = hands[p].length - counts[p]; if (n > most) { most = n; t = p; } } counts[t]++; }
@@ -676,7 +679,7 @@
     const hand = g.hands[seat], opts = [{ parts: [] }];
     const vael = g.boss === 'vael';
     const singles = {};
-    for (const h of vael ? [0, 1] : [0]) {
+    for (const h of vael ? g.slots.map((_, i) => i) : [0]) {
       if (!g.legalFor(seat, h).length) continue;
       const x = vael ? g.slots[h] : g.enc, rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, hand.length - 1);
       const seen = new Set();
@@ -704,9 +707,11 @@
       })(copyC(x.st), []);
     }
     // one card to each head (the least useful few that fit each)
-    if (vael && singles[0] && singles[1] && hand.length >= 3) {
-      const top = (cs) => cs.slice().sort((a, b) => useful(a, hand) - useful(b, hand)).slice(0, 4);
-      for (const a of top(singles[0])) for (const b of top(singles[1])) if (a !== b) opts.push({ parts: [{ head: 0, cards: [a] }, { head: 1, cards: [b] }] });
+    if (vael && hand.length >= 3) {
+      const top = (cs) => cs.slice().sort((a, b) => useful(a, hand) - useful(b, hand)).slice(0, g.slots.length > 2 ? 3 : 4);
+      const hs = Object.keys(singles).map(Number);
+      for (let i = 0; i < hs.length; i++) for (let j = i + 1; j < hs.length; j++)
+        for (const a of top(singles[hs[i]])) for (const b of top(singles[hs[j]])) if (a !== b) opts.push({ parts: [{ head: hs[i], cards: [a] }, { head: hs[j], cards: [b] }] });
     }
     return opts;
   }

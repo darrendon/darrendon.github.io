@@ -194,7 +194,7 @@
     const targets = vael ? v.heads : [v.enc];
     if (myTurn) {
       const ok = (h) => v.legal[h] && (v.legal[h].length || (v.canWild && targets[h] && targets[h].cards.length));
-      if (tgt == null || !ok(tgt)) tgt = vael ? [0, 1].find(ok) : 0;
+      if (tgt == null || !ok(tgt)) tgt = vael ? targets.map((_, i) => i).find(ok) : 0;
       if (tgt === undefined) tgt = null;
     } else tgt = null;
     const T = tgt != null ? targets[tgt] : null;
