@@ -76,7 +76,53 @@
     ['#22303F', '#4E6478', '#E2482F', 'wyrm', 2, 2, 1],    // Eclipse Wyrm
     ['#5A2140', '#9A4A70', '#F0B429', 'tower', 2, 3, 1],   // Emperor Gorvax
   ];
-  function monster(key) {
+
+  /* Vael's heads: a serpent neck rising from the bottom edge, with a hex mark on the brow.
+     [scales, belly, accent, frill (0 none, 1 fins, 2 spikes, 3 crown), eyes 1–3, jaw open 0–1] */
+  const H = [
+    ['#4F7A4A', '#9FC08E', '#F0B429', 1, 2, 1], ['#5E6B3A', '#A9B57A', '#E2482F', 0, 2, 0], ['#7A8F3E', '#C8D48C', '#2B2440', 2, 1, 1],
+    ['#2F6F6A', '#8CC9C0', '#F3E7CF', 1, 2, 0], ['#3E5F4A', '#91B89A', '#EC8AA2', 2, 3, 1], ['#55604A', '#A4AE94', '#F0B429', 0, 2, 1],
+    ['#2E5E6E', '#7FB6C4', '#F0B429', 2, 2, 1], ['#3B4E7A', '#8C9CC8', '#E2482F', 1, 2, 0], ['#4A3F7A', '#9A8CC8', '#F0B429', 2, 1, 1],
+    ['#2F5A78', '#86AECB', '#EC8AA2', 1, 3, 1], ['#5A4A72', '#A598C2', '#F3E7CF', 0, 2, 1], ['#38606A', '#8DB3B8', '#E2482F', 2, 2, 0],
+    ['#3A2A4E', '#7E6A9E', '#F0B429', 3, 2, 1], ['#2A2E48', '#6E7498', '#E2482F', 2, 3, 1], ['#46243E', '#93608A', '#F0B429', 2, 1, 1],
+    ['#2B3A3E', '#6F8A8E', '#EC8AA2', 1, 2, 1], ['#3E2A2A', '#8E6A62', '#F0B429', 2, 2, 0], ['#4A1E3A', '#9A4E78', '#F0B429', 3, 3, 1],
+  ];
+  const HEXMARK = {
+    hunger: 'M-3.5 -1.5 Q0 3.5 3.5 -1.5', venom: 'M0 -3.6 Q3 0 0 3.4 Q-3 0 0 -3.6Z', coil: 'M-3 0 A3 3 0 1 1 0 3 A1.6 1.6 0 1 1 1.4 1.2',
+    split: 'M-3.4 -3 L0 0 L3.4 -3 M0 0 V3.6', thorns: 'M-3.6 2.6 L-2 -2.6 L0 2.6 L2 -2.6 L3.6 2.6', regrow: 'M-3 1.5 A3 3 0 1 1 0 3 M-3 1.5 L-3.6 -1.2 M-3 1.5 L-0.4 1',
+  };
+  function hydraHead(i, hex) {
+    const [sc, belly, acc, frill, eyes, open] = H[i];
+    const ink = P.ink, w = P.white;
+    let b = '';
+    // neck
+    b += `<path d="M30 100 Q24 74 40 60 Q50 52 46 44 L64 44 Q70 58 60 70 Q48 82 56 100Z" fill="${sc}"/>`;
+    b += `<path d="M38 100 Q34 80 46 68 Q54 60 54 50" fill="none" stroke="${belly}" stroke-width="7" stroke-linecap="round"/>`;
+    b += `<path d="M40 92 h8 M41 84 h8 M45 76 h7" stroke="${sc}" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>`;
+    // frill behind the head
+    if (frill === 1) b += `<path d="M30 30 L14 20 L22 36 L10 42 L28 44Z M76 30 L92 20 L84 36 L96 42 L78 44Z" fill="${acc}"/>`;
+    if (frill === 2) b += `<path d="M34 22 L30 4 L42 18 L50 0 L58 18 L70 4 L66 22Z" fill="${acc}"/>`;
+    if (frill === 3) b += `<path d="M32 22 L28 2 L38 14 L44 -2 L50 12 L56 -2 L62 14 L72 2 L68 22Z" fill="${P.hero[2]}"/><circle cx="50" cy="8" r="2.6" fill="${P.hero[0]}"/>`;
+    // head: a broad wedge with a snout
+    b += `<path d="M26 34 Q26 16 50 16 Q74 16 74 34 Q74 44 66 50 L60 56 Q50 60 40 56 L34 50 Q26 44 26 34Z" fill="${sc}"/>`;
+    b += `<path d="M34 46 Q50 54 66 46 L62 54 Q50 60 38 54Z" fill="${belly}"/>`;
+    // nostrils
+    b += `<circle cx="45" cy="50" r="1.3" fill="${ink}"/><circle cx="55" cy="50" r="1.3" fill="${ink}"/>`;
+    // eyes
+    const xs = eyes === 1 ? [50] : eyes === 2 ? [39, 61] : [36, 50, 64], r = eyes === 1 ? 6.4 : eyes === 2 ? 5.4 : 4.4, ey = 33;
+    xs.forEach((x) => { b += `<ellipse cx="${x}" cy="${ey}" rx="${r}" ry="${r * .8}" fill="${P.hero[2]}"/><rect x="${x - r * .18}" y="${ey - r * .7}" width="${r * .36}" height="${r * 1.4}" rx="${r * .18}" fill="${ink}"/>`; });
+    b += `<path d="M${xs[0] - r - 3} ${ey - r - 1} L${xs[xs.length - 1] + r + 3} ${ey - r - 1} L50 ${ey - r * .3}Z" fill="${ink}" opacity=".85"/>`;
+    // jaw and fangs
+    if (open) {
+      b += `<path d="M38 56 Q50 70 62 56 Q50 62 38 56Z" fill="${ink}"/><path d="M41 57 L43 63 L45 58Z M55 58 L57 63 L59 57Z" fill="${w}"/>`;
+      b += `<path d="M48 64 Q50 70 47 72 M52 64 Q50 70 53 72" stroke="${P.hero[0]}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+    } else b += `<path d="M40 57 L42 61 L44 58Z M56 58 L58 61 L60 57Z" fill="${w}"/>`;
+    // hex mark on the brow
+    if (hex && HEXMARK[hex]) b += `<g transform="translate(50 22)"><circle r="5.4" fill="${ink}"/><path d="${HEXMARK[hex]}" fill="${hex === 'venom' ? acc : 'none'}" stroke="${acc}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+    return b;
+  }
+  function monster(key, hex) {
+    if (key >= 18) return hydraHead(key - 18, hex);
     const [body, belly, acc, shape, eyes, horns, size] = M[key];
     const ink = P.ink, w = P.white;
     let s = '';
@@ -120,7 +166,7 @@
     s += g(b);
     return s;
   }
-  const monsterSVG = (key, attrs) => svg('0 0 100 100', monster(key), attrs);
+  const monsterSVG = (key, attrs, hex) => svg('0 0 100 100', monster(key, hex), attrs);
 
 
   /* ---------- the combined robot: five parts, one per Hero color, in a shared 100×140 frame ----------
@@ -217,6 +263,6 @@
   // card face (HTML) used by the playable build
   const cardHTML = (c, cls) => `<span class="sc c${c.c}${cls ? ' ' + cls : ''}" data-id="${c.id}"><b>${c.r}</b>${svg('0 0 24 24', emblem(c.c, 'currentColor'), ' class="se" aria-hidden="true"')}${partSVG(c.c, ' class="pa" aria-hidden="true"')}<b class="br">${c.r}</b></span>`;
 
-  const api = { P, EMB, emblem, hero, heroSVG, monster, monsterSVG, box, DEFS, svg, cardHTML, MONSTERS: M, PART, PART_BOX, robot, partSVG };
+  const api = { P, EMB, emblem, hero, heroSVG, monster, monsterSVG, box, DEFS, svg, cardHTML, MONSTERS: M, HEADS: H, hydraHead, PART, PART_BOX, robot, partSVG };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.SentaiArt = api;
 })(typeof window !== 'undefined' ? window : globalThis);

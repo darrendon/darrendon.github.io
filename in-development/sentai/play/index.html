@@ -101,6 +101,30 @@
   .log{font-size:13.5px;color:var(--t-muted);max-height:220px;overflow:auto}
   .log p{margin:0 0 3px}
   @media (max-width:520px){.boss{grid-template-columns:1fr;text-align:left}.boss .mon{width:96px;position:absolute;right:12px;top:12px}.boss .nm{padding-right:100px}.sc{--w:50px}.row{grid-template-columns:1fr 1fr}.mc{grid-template-columns:40px 1fr;padding:7px}.mc svg{width:40px;height:40px}}
+
+  /* the Hydra: two heads side by side */
+  .heads{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:700px){.heads{grid-template-columns:1fr}}
+  .head{all:unset;box-sizing:border-box;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--a);color:#FFF6E4;border-radius:14px;padding:12px 14px;position:relative;overflow:hidden;border:3px solid transparent;transition:transform .15s}
+  .head.empty{background:transparent;border:2px dashed var(--t-line);color:var(--t-muted);display:block;text-align:center;padding:28px}
+  button.head{cursor:pointer}
+  button.head:hover,button.head:focus-visible{border-color:#F0B429}
+  .head.tgt{border-color:#F0B429;box-shadow:0 0 0 3px rgba(240,180,41,.35)}
+  .head.enr{transform:rotate(-1.2deg)}
+  .head.enr::after{content:"ENRAGED";position:absolute;right:10px;top:10px;font:900 11px/1 Archivo,Jost;letter-spacing:.12em;background:#E2482F;color:#fff;padding:5px 7px;border-radius:5px}
+  .head .mon{width:88px;height:88px;background:rgba(255,246,228,.12);border-radius:50%;display:grid;place-items:center}
+  .head .mon svg{width:100%;height:100%}
+  .head .nm{font:900 21px/1.05 Archivo,Jost;transform:skewX(-6deg);transform-origin:left;margin:2px 0 3px}
+  .head .req{font:600 15px/1.3 Jost}.head .req b{font:900 1.3em/1 Archivo;color:#F0B429}
+  .head .hx{font-size:13px;margin-top:6px;background:rgba(0,0,0,.22);border-radius:7px;padding:5px 8px;line-height:1.35}
+  .head .hx b{color:#F0B429}
+  .head .slots{margin-top:8px}.head .slots .sc{--w:38px}.head .slot{width:38px;height:53px}
+  .wild{position:relative}.wild::after{content:"⚡";position:absolute;right:-4px;top:-6px;font-size:14px}
+  .pw{display:inline-block;font:700 11px/1.2 Jost;letter-spacing:.04em;padding:3px 6px;border-radius:5px;background:#1F1A2B;color:#F3E7CF;margin-top:3px}
+  .pw.used{opacity:.4;text-decoration:line-through}
+  .mypw{font-size:14px;background:#fff;border:1px solid var(--t-line);border-radius:9px;padding:8px 10px;margin:0 0 10px}
+  .mypw b{font-family:Archivo,Jost}
+  .dt-btn.on{background:#F0B429;color:#1F1A2B;border-color:#F0B429}
 </style>
 </head>
 <body>
@@ -113,15 +137,24 @@
   'use strict';
   const S = window.Sentai, A = window.SentaiArt, esc = DevTable.esc;
   const ACT = ['Act I', 'Act II', 'Act III'], TYPE = S.TYPE, COL = S.COLORS;
-  let sel = [], key = '';
+  let sel = [], key = '', tgt = null, wildOn = false, wildId = null, beaconOn = false;
 
-  const card = (c) => A.cardHTML(c);
+  const card = (c) => c.wild ? '<span class="wild">' + A.cardHTML(c.real) + '</span>' : A.cardHTML(c);
   const avatar = (h) => A.partSVG(h);
   const chip = (c) => '<span class="kc c' + c.c + '" title="' + esc(S.cardName(c)) + '">' + c.r + '</span>';
+  const actOf = (k) => Math.floor((k % 18) / 6);
   function addTo(st, c) {
     const t = Object.assign({}, st, { cards: st.cards.slice() });
     if (!t.cards.length) { t.rank = c.r; t.color = c.c; t.lo = t.hi = c.r; } else { t.lo = Math.min(t.lo, c.r); t.hi = Math.max(t.hi, c.r); }
     t.cards.push(c); return t;
+  }
+  function wildAs(t, c) {
+    if (!t.cards.length) return null;
+    if (t.type === 'set') return { r: t.rank, c: c.c };
+    if (t.type === 'color') return { r: c.r, c: t.color };
+    if (t.hi < 12) return { r: t.hi + 1, c: c.c };
+    if (t.lo > 1) return { r: t.lo - 1, c: c.c };
+    return null;
   }
   function describe(e) {
     if (!e.cards.length) return 'Any card starts it.';
@@ -133,135 +166,190 @@
   function mine(l, nm) {
     if (l.endsWith(' ' + nm + ' leads.')) return l.slice(0, -(nm.length + 7)) + 'You lead.';
     if (!l.startsWith(nm + ' ')) return l;
-    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes/, 'pass').replace(/^picks /, 'pick ').replace(/^discards /, 'discard ').replace(/their last/, 'your last');
+    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes/, 'pass').replace(/^discards /, 'discard ').replace(/^uses /, 'use ').replace(/^has /, 'have ').replace(/their last/, 'your last');
   }
-  const mini = (b, cls, tag) => '<' + (tag || 'div') + ' class="mc a' + b.act + (cls ? ' ' + cls : '') + '"' + (tag === 'button' ? ' type="button" data-pick="' + b.key + '"' : '') + '>' + A.monsterSVG(b.key, ' aria-hidden="true"') + '<span><b>' + esc(b.name) + '</b><span>' + TYPE[b.type] + ' of <em>' + b.need + '</em></span></span></' + (tag || 'div') + '>';
+  const mini = (b, cls) => '<div class="mc a' + b.act + (cls ? ' ' + cls : '') + '">' + A.monsterSVG(b.key, ' aria-hidden="true"') + '<span><b>' + esc(b.name) + '</b><span>' + TYPE[b.type] + ' of <em>' + b.need + '</em></span></span></div>';
+  const slots = (x) => '<div class="slots">' + x.cards.map(card).join('') + Array.from({ length: Math.max(0, x.need) }, () => '<span class="slot"></span>').join('') + '</div>';
 
   function render(el, v, api) {
-    const me = v.seat, P = v.players, e = v.enc;
-    const k = v.phase + ':' + v.fights;
-    if (k !== key) { sel = []; key = k; }
+    const me = v.seat, P = v.players, vael = v.boss === 'vael';
+    const k = v.phase + ':' + v.fights + ':' + (v.round ? v.round.at : v.enc ? v.enc.at : 0);
+    if (k !== key) { sel = []; key = k; wildOn = false; wildId = null; beaconOn = false; }
     const myTurn = v.phase === 'build' && v.turn === me;
-    const myPick = v.phase === 'pick' && v.lead === me;
     const iDiscard = v.phase === 'discard' && P[me].needsDiscard;
+    const iRiptide = v.phase === 'riptide' && v.riptide.seat === me;
     const dn = P[me].discardCount;
     const nm = (i) => i === me ? 'You' : esc(P[i].name);
+    const targets = vael ? v.heads : [v.enc];
+    if (myTurn) {
+      const ok = (h) => v.legal[h] && (v.legal[h].length || (v.canWild && targets[h] && targets[h].cards.length));
+      if (tgt == null || !ok(tgt)) tgt = vael ? [0, 1].find(ok) : 0;
+      if (tgt === undefined) tgt = null;
+    } else tgt = null;
+    const T = tgt != null ? targets[tgt] : null;
 
     const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
-      : v.phase === 'pick' ? (myPick ? 'Pick the next monster' : P[v.lead].name + ' is picking the next monster')
-      : v.phase === 'discard' ? (iDiscard ? 'Missed! Discard ' + dn : 'Waiting for discards…')
-      : v.phase === 'result' ? (v.result.met ? 'Combo complete!' : 'Everyone discarded')
-      : myTurn ? 'Your turn: add 1–2 cards or pass' : P[v.turn].name + '’s turn';
-    api.status(ACT[Math.min(v.act, 2)] + ' · ' + status);
+      : v.phase === 'riptide' ? (iRiptide ? 'Use Riptide?' : 'Waiting on Riptide…')
+      : v.phase === 'discard' ? (iDiscard ? 'Discard ' + dn : 'Waiting for discards…')
+      : v.phase === 'result' ? (vael ? 'End of the round' : v.result.met ? 'Combo complete!' : 'Everyone discarded')
+      : myTurn ? 'Your turn: add cards or pass' : P[v.turn].name + '’s turn';
+    api.status(v.bossName + ' · ' + ACT[Math.min(v.act, 2)] + ' · ' + status);
 
-    // progress: one pip per monster, grouped by act
+    // progress: one pip per Boss card, grouped by act
     const per = v.acts.map(() => []);
-    v.hist.forEach((h) => per[Math.floor(h.key / 6)].push(h.met));
-    const track = '<div class="track" aria-label="Monsters faced">' + v.acts.map((a, i) => '<span class="grp"><i>' + ACT[i] + '</i>' +
+    v.hist.forEach((h) => per[actOf(h.key)].push(h.met));
+    const track = '<div class="track" aria-label="Progress">' + v.acts.map((a, i) => '<span class="grp"><i>' + ACT[i] + '</i>' +
       Array.from({ length: a.n }, (_, j) => '<span class="pip a' + i + (j < per[i].length ? ' done' + (per[i][j] ? '' : ' miss') : '') + '"></span>').join('') + '</span>').join('') +
-      '<span class="lbl">' + v.done + ' defeated · ' + v.misses + ' got away</span></div>';
+      '<span class="lbl">' + v.done + (vael ? ' cut · ' + v.misses + ' struck' : ' defeated · ' + v.misses + ' got away') + '</span></div>';
 
+    // banner
     let banner = '';
+    const discLine = (r) => r.discards.length ? ' Discarded: ' + r.discards.map((x) => nm(x.seat) + ' ' + x.cards.map((c) => esc(S.cardName(c))).join(', ')).join(' · ') + '.' : '';
     if (v.phase === 'over') {
       const o = v.outcome;
       banner = '<div class="banner' + (o.win ? '' : ' bad') + '"><div><b>' + (o.win ? 'The squad holds the line!' : o.seat === me ? 'You are down' : esc(P[o.seat].name) + ' is down') + '</b><p>' +
-        (o.win ? 'You beat ' + v.done + ' of ' + v.total + ' monsters' + (v.misses ? '.' : ', a flawless run.') : (o.seat === me ? 'You ' + esc(o.how.replace('their', 'your')) : 'They ' + esc(o.how)) + ', so the Boss wins. Leave the table to try again.') + '</p></div></div>';
-    } else if (v.phase === 'result' || v.phase === 'discard') {
+        (o.win ? (vael ? 'Every head is cut' : 'You beat ' + v.done + ' of ' + v.total + ' monsters') + (v.misses ? '.' : ', a flawless run.') : (o.seat === me ? 'You ' + esc(o.how.replace('their', 'your')) : 'They ' + esc(o.how)) + ', so the Boss wins. Leave the table to try again.') + '</p></div></div>';
+    } else if (v.result && (v.phase === 'result' || v.phase === 'discard' || v.phase === 'riptide')) {
       const r = v.result;
-      const back = r.bounced.map((x) => nm(x.seat) + ' took back ' + x.cards.map((c) => esc(S.cardName(c))).join(' and ')).join('; ');
-      const disc = r.discards.map((x) => nm(x.seat) + ' ' + x.cards.map((c) => esc(S.cardName(c))).join(', ')).join(' · ');
-      banner = '<div class="banner' + (r.met ? '' : ' bad') + '"><div><b>' + (r.met ? esc(e.boss.name) + ' is defeated!' : esc(e.boss.name) + ' got away') + '</b><p>' +
-        (r.met ? 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards ' + v.missDiscard + '.' + (disc ? ' Discarded: ' + disc + '.' : '')) + '</p></div></div>';
+      if (vael) {
+        const bits = [];
+        if (r.cut.length) bits.push(r.cut.map((b) => esc(b.name)).join(' and ') + (r.cut.length > 1 ? ' are' : ' is') + ' cut off.');
+        if (r.struck.length) bits.push(r.struck.map((b) => esc(b.name)).join(' and ') + ' struck: its cards are lost.');
+        if (r.enraged.length) bits.push(r.enraged.map(esc).join(' and ') + (r.enraged.length > 1 ? ' are' : ' is') + ' enraged.');
+        if (r.hunger.length) bits.push('Hunger takes a card from ' + r.hunger.map(nm).join(' and ') + '.');
+        const bad = r.struck.length > 0;
+        banner = '<div class="banner' + (bad ? ' bad' : '') + '"><div><b>' + (r.cut.length && !bad ? 'Heads off!' : bad ? 'The Hydra strikes' : 'The heads hold') + '</b><p>' + (bits.join(' ') || 'Nothing was finished this round.') + discLine(r) + '</p></div></div>';
+      } else {
+        const back = r.bounced.map((x) => nm(x.seat) + ' took back ' + x.cards.map((c) => esc(S.cardName(c))).join(' and ')).join('; ');
+        const e = v.enc;
+        banner = '<div class="banner' + (r.met ? '' : ' bad') + '"><div><b>' + (r.met ? esc(e.boss.name) + ' is defeated!' : esc(e.boss.name) + ' got away') + '</b><p>' +
+          (r.met ? 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 2.' + discLine(r)) + '</p></div></div>';
+      }
     }
 
-    // the act's monsters
-    let row = '';
-    if (v.phase === 'pick') {
-      row = '<div class="panel"><h3>' + ACT[v.act] + ' · ' + (myPick ? 'Pick which monster to fight' : esc(P[v.lead].name) + ' picks which monster to fight') + '</h3>' +
-        (myPick ? '<p class="prompt">Every monster here has to be faced before the act ends. You go first in the fight you pick.</p>' : '') +
-        '<div class="row">' + v.row.map((b) => mini(b, '', myPick ? 'button' : 'div')).join('') + '</div></div>';
-    } else if (v.phase !== 'over') {
+    // the Boss area
+    let bossArea = '', row = '';
+    if (vael) {
+      bossArea = '<div class="heads">' + v.heads.map((x, h) => {
+        if (!x) return '<div class="head empty">No head here' + (v.pile ? '' : ' — the pile is empty') + '</div>';
+        const pick = myTurn && (v.legal[h].length || (v.canWild && x.cards.length));
+        const tag = pick ? 'button' : 'div';
+        return '<' + tag + (pick ? ' type="button" data-head="' + h + '"' : '') + ' class="head a' + x.boss.act + (x.enraged ? ' enr' : '') + (tgt === h ? ' tgt' : '') + '"><div class="mon">' + A.monsterSVG(x.boss.key, ' aria-hidden="true"', x.boss.hex) + '</div><div><span class="act">' + ACT[x.boss.act] + ' head</span><div class="nm">' + esc(x.boss.name) + '</div>' +
+          '<div class="req">Wants a ' + TYPE[x.type] + ' of <b>' + x.boss.need + '</b>' + (x.boss.regrown ? ' (Regrow +1)' : '') + '</div>' + slots(x) +
+          '<div class="hx"><b>' + esc(S.HEX[x.boss.hex].name) + ':</b> ' + esc(S.HEX[x.boss.hex].text) + '</div>' +
+          (myTurn && tgt === h ? '<div class="rule">' + esc(describe(x)) + '</div>' : '') + '</div></' + tag + '>';
+      }).join('') + '</div>';
       const later = v.acts.map((a, i) => ({ i, n: a.n })).filter((a) => a.i > v.act);
-      const tiles = v.upcoming.map((b, i) => mini(b, i ? '' : 'next')).join('') +
-        later.map((a) => '<div class="mc fd a' + a.i + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[a.i] + '</b><span>' + a.n + ' monsters, face down</span></span></div>').join('');
-      if (tiles) row = '<div class="panel"><h3>' + (v.upcoming.length ? 'Still to come in ' + ACT[v.act] + ', in order' : 'Last monster of ' + ACT[v.act]) + '</h3><div class="line">' + tiles + '</div></div>';
-    }
-
-    // the fight
-    let boss = '';
-    if (e && v.phase !== 'pick') {
-      const need = e.boss.need, filled = e.cards.length;
-      boss = '<div class="boss a' + e.boss.act + '"><div class="mon">' + A.monsterSVG(e.boss.key) + '</div><div><span class="act">' + ACT[e.boss.act] + '</span><div class="nm">' + esc(e.boss.name) + '</div>' +
-        '<div class="req">Wants a ' + TYPE[e.boss.type] + ' of <b>' + need + '</b></div>' +
-        '<div class="slots">' + e.cards.map((c) => card(c)).join('') + Array.from({ length: Math.max(0, need - filled) }, () => '<span class="slot"></span>').join('') + '</div>' +
+      row = '<div class="panel"><h3>Still to grow</h3><div class="line">' +
+        (v.pile ? '<div class="mc fd a' + v.act + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[v.act] + '</b><span>' + v.pile + ' head' + (v.pile === 1 ? '' : 's') + ' in the pile</span></span></div>' : '') +
+        later.map((a) => '<div class="mc fd a' + a.i + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[a.i] + '</b><span>' + a.n + ' heads, face down</span></span></div>').join('') + '</div><p class="rule" style="color:var(--t-muted)">A head that survives a round is enraged. If it survives another, it strikes: its cards are lost and every Hero discards 2.</p></div>';
+      if (!v.pile && !later.length) row = '';
+    } else if (v.enc) {
+      const e = v.enc;
+      bossArea = '<div class="boss a' + e.boss.act + '"><div class="mon">' + A.monsterSVG(e.boss.key) + '</div><div><span class="act">' + ACT[e.boss.act] + '</span><div class="nm">' + esc(e.boss.name) + '</div>' +
+        '<div class="req">Wants a ' + TYPE[e.boss.type] + ' of <b>' + e.boss.need + '</b></div>' + slots(e) +
         (v.phase === 'build' ? '<div class="rule">' + esc(describe(e)) + '</div>' : '') + '</div></div>';
+      if (v.phase !== 'over') {
+        const later = v.acts.map((a, i) => ({ i, n: a.n })).filter((a) => a.i > v.act);
+        const tiles = v.upcoming.map((b, i) => mini(b, i ? '' : 'next')).join('') +
+          later.map((a) => '<div class="mc fd a' + a.i + '"><span class="bk" aria-hidden="true">?</span><span><b>' + ACT[a.i] + '</b><span>' + a.n + ' monsters, face down</span></span></div>').join('');
+        if (tiles) row = '<div class="panel"><h3>' + (v.upcoming.length ? 'Still to come in ' + ACT[v.act] + ', in order' : 'Last monster of ' + ACT[v.act]) + '</h3><div class="line">' + tiles + '</div></div>';
+      }
     }
 
     // my hand
+    let tstate = T ? { type: T.type, cards: T.cards.slice(), rank: T.rank, color: T.color, lo: T.lo, hi: T.hi } : null;
+    if (T) for (const id of sel) { const c = v.hand.find((x) => x.id === id); const w = id === wildId ? wildAs(tstate, c) : null; tstate = addTo(tstate, w ? { id, r: w.r, c: w.c } : c); }
     const canPick = (c) => {
-      if (myTurn) {
+      if (beaconOn) return true;
+      if (myTurn && T) {
         if (sel.includes(c.id)) return true;
-        if (sel.length >= Math.min(v.maxAdd, e.need)) return false;
-        let t = e; for (const id of sel) t = addTo(t, v.hand.find((x) => x.id === id));
-        return S.fits(t, c);
+        if (sel.length >= Math.min(v.maxAdd, T.need) || sel.length >= v.hand.length - 1) return false;
+        if (wildOn && wildId == null && wildAs(tstate, c)) return true;
+        return S.fits(tstate, c);
       }
       return iDiscard;
     };
-    const live = myTurn || iDiscard;
+    const live = (myTurn && T) || iDiscard || beaconOn;
     const hand = '<div class="hand' + (live ? ' live' : '') + '">' + v.hand.map((c) => { const ok = live && canPick(c); return '<button type="button" class="cardb ' + (ok ? 'ok' : 'no') + (sel.includes(c.id) ? ' sel' : '') + '" data-id="' + c.id + '" data-k="h' + c.id + '" aria-label="' + esc(S.cardName(c)) + '"' + (ok ? '' : ' aria-disabled="true"') + '>' + card(c) + '</button>'; }).join('') + '</div>';
-    let main = '<h3>Your hand · ' + v.hand.length + ' cards</h3>';
+    const myPw = P[me].power;
+    let main = '<h3>Your hand · ' + v.hand.length + ' cards</h3>' + (myPw ? '<p class="mypw"><b>' + esc(myPw.name) + '</b> · ' + esc(myPw.kind) + (myPw.used ? ' · used' : '') + '<br>' + esc(myPw.text) + '</p>' : '');
     if (myTurn) {
-      main += '<p class="prompt">' + (v.legal.length ? 'Tap 1 or 2 cards that fit, then add them. If the combo falls short, everything added comes back to its Hero, but everyone discards ' + v.missDiscard + '.' : 'Nothing in your hand fits this combo. You have to pass.') + (v.hand.length <= 3 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + '</p>' + hand +
-        '<div class="acts"><button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass">Pass</button></div>';
+      const tname = vael && T ? esc(T.boss.name) : 'the combo';
+      const prompt = beaconOn ? 'Tap the card you want everyone to see.'
+        : !T ? 'Nothing in your hand fits ' + (vael ? 'either head' : 'this combo') + '. You have to pass.'
+        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap a head to switch)' : '') + '. ' : '') + 'Tap up to ' + v.maxAdd + ' card' + (v.maxAdd === 1 ? '' : 's') + ' that fit, then add them.' + (vael ? ' Cards stay on the head until it’s cut or it strikes.' : ' If the combo falls short, everything added comes back, but everyone discards 2.');
+      main += '<p class="prompt">' + prompt + (v.hand.length <= 3 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + (!v.canPass ? ' <b>Thorns: you lead, so you can’t pass.</b>' : '') + '</p>' + hand +
+        '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
+          : '<button class="dt-btn go" data-do="add"' + (sel.length && T ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass"' + (v.canPass ? '' : ' disabled') + '>Pass</button>' +
+            (v.canWild && T ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
+            (v.canBeacon ? '<button class="dt-btn" data-do="beacon">Beacon: show a card</button>' : '')) + '</div>';
+    } else if (iRiptide) {
+      main += '<p class="prompt">The squad is about to discard (' + v.riptide.counts.map((n, i) => nm(i) + ' ' + n).join(', ') + '). <b>Use Riptide so nobody discards?</b> You can only use it once.</p>' + hand +
+        '<div class="acts"><button class="dt-btn go" data-do="rip-yes">Use Riptide</button><button class="dt-btn" data-do="rip-no">Save it</button></div>';
     } else if (iDiscard) {
-      main += '<p class="prompt">The combo fell short. <b>Discard ' + dn + ' card' + (dn === 1 ? '' : 's') + '</b> of your choice. Everyone will see them.' + (v.hand.length <= dn ? ' That empties your hand, so the squad will fall.' : '') + '</p>' + hand +
+      main += '<p class="prompt"><b>Discard ' + dn + ' card' + (dn === 1 ? '' : 's') + '</b> of your choice. Everyone will see them.' + (v.hand.length <= dn ? ' That empties your hand, so the squad will fall.' : '') + '</p>' + hand +
         '<div class="acts"><button class="dt-btn go" data-do="discard"' + (sel.length === dn ? '' : ' disabled') + '>Discard ' + dn + '</button></div>';
     } else main += hand;
 
-    // squad, with the cards everyone has seen each Hero take back
+    // squad
     const squad = '<div class="squad">' + P.map((p, i) => {
-      const play = e && e.plays.find((x) => x.seat === i);
-      const note = v.phase === 'discard' ? (p.needsDiscard ? 'discarding…' : 'discarded')
-        : v.phase === 'pick' ? (i === v.lead ? 'picking…' : COL[p.hero] + ' Hero')
-        : play ? (play.pass ? 'passed' : 'added ' + play.n) : e && v.phase === 'build' && i === v.turn ? 'thinking…' : COL[p.hero] + ' Hero';
+      let note;
+      if (v.phase === 'discard') note = p.needsDiscard ? 'discarding…' : 'done';
+      else if (vael && v.round) { const pl = v.round.plays.find((x) => x.seat === i); note = pl ? (pl.pass ? 'passed' : 'fed ' + esc(v.heads[pl.head] ? v.heads[pl.head].boss.name : 'a head') + ' ' + pl.n) : v.phase === 'build' && i === v.turn ? 'thinking…' : (i === v.lead ? 'leads' : COL[p.hero] + ' Hero'); }
+      else { const pl = v.enc && v.enc.plays.find((x) => x.seat === i); note = pl ? (pl.pass ? 'passed' : 'added ' + pl.n) : v.phase === 'build' && i === v.turn ? 'thinking…' : COL[p.hero] + ' Hero'; }
       const known = i !== me && p.known.length ? '<div class="known">Holds ' + p.known.map(chip).join('') + '</div>' : '';
-      return '<div class="hero c' + p.hero + (i === v.turn ? ' turn' : '') + (p.count <= 3 ? ' low' : '') + '"><span class="hd">' + avatar(p.hero) + '</span><span class="who">' + esc(p.name) + (i === me && !/^you$/i.test(p.name) ? ' (you)' : '') + '<small>' + note + '</small></span><span class="hp">' + p.count + '<small>cards</small></span>' + known + '</div>';
+      const pw = p.power ? '<span class="pw' + (p.power.used ? ' used' : '') + '" title="' + esc(p.power.text) + '">' + esc(p.power.name) + '</span>' : '';
+      return '<div class="hero c' + p.hero + (i === v.turn ? ' turn' : '') + (p.count <= 3 ? ' low' : '') + '"><span class="hd">' + avatar(p.hero) + '</span><span class="who">' + esc(p.name) + (i === me && !/^you$/i.test(p.name) ? ' (you)' : '') + '<small>' + note + '</small>' + pw + '</span><span class="hp">' + p.count + '<small>cards</small></span>' + known + '</div>';
     }).join('') + '</div>';
 
     DevTable.flip(el, () => {
-      el.innerHTML = '<div class="st">' + track + banner + boss + row + '<div class="cols"><div class="panel">' + main + '</div><div class="panel"><h3>The squad</h3>' + squad + '<h3 style="margin-top:14px">What happened</h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(mine(l, P[me].name)) + '</p>').join('') + '</div></div></div></div>';
+      el.innerHTML = '<div class="st">' + track + banner + bossArea + row + '<div class="cols"><div class="panel">' + main + '</div><div class="panel"><h3>The squad</h3>' + squad + '<h3 style="margin-top:14px">What happened</h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(mine(l, P[me].name)) + '</p>').join('') + '</div></div></div></div>';
     });
 
     el.querySelectorAll('button.cardb.ok').forEach((b) => b.addEventListener('click', () => {
       const id = +b.dataset.id;
+      if (beaconOn) { beaconOn = false; api.act({ type: 'beacon', card: id }); return; }
       if (iDiscard) { if (sel.includes(id)) sel = sel.filter((x) => x !== id); else if (sel.length < dn) sel.push(id); else sel = sel.slice(1).concat(id); }
-      else if (sel.includes(id)) sel = sel.slice(0, sel.indexOf(id));
-      else sel.push(id);
+      else if (sel.includes(id)) { const at = sel.indexOf(id); if (wildId != null && sel.indexOf(wildId) >= at) wildId = null; sel = sel.slice(0, at); }
+      else {
+        const c = v.hand.find((x) => x.id === id);
+        if (wildOn && wildId == null && !S.fits(tstate, c)) wildId = id;
+        sel.push(id);
+      }
       render(el, v, api);
     }));
-    el.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => api.act({ type: 'pick', key: +b.dataset.pick })));
+    el.querySelectorAll('[data-head]').forEach((b) => b.addEventListener('click', () => { const h = +b.dataset.head; if (h !== tgt) { tgt = h; sel = []; wildId = null; } render(el, v, api); }));
     el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
       const d = b.dataset.do;
-      if (d === 'add') api.act({ type: 'add', cards: sel });
+      if (d === 'wild') { wildOn = !wildOn; if (!wildOn && wildId != null) { sel = sel.slice(0, sel.indexOf(wildId)); wildId = null; } render(el, v, api); return; }
+      if (d === 'beacon') { beaconOn = true; sel = []; render(el, v, api); return; }
+      if (d === 'beacon-off') { beaconOn = false; render(el, v, api); return; }
+      if (d === 'add') api.act({ type: 'add', head: tgt || 0, cards: sel, wild: wildId });
       if (d === 'pass') api.act({ type: 'pass' });
       if (d === 'discard') api.act({ type: 'discard', cards: sel });
-      sel = [];
+      if (d === 'rip-yes') api.act({ type: 'riptide', use: true });
+      if (d === 'rip-no') api.act({ type: 'riptide', use: false });
+      sel = []; wildId = null; wildOn = false;
     }));
   }
 
   DevTable.mount(document.getElementById('app'), {
     id: 'sentai', title: 'Sentai', blurb: '2–4 players · 20–30 minutes · cooperative',
     minPlayers: 2, maxPlayers: 4, defaultPlayers: 3, botNames: S.BOT_NAMES,
-    botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, this act’s monsters and cards they’ve seen come back.',
+    options: [
+      { key: 'boss', label: 'Boss', values: [['gorvax', 'Emperor Gorvax'], ['vael', 'Vael, the Hydra']], def: 'gorvax' },
+      { key: 'powers', label: 'Hero powers', values: [[0, 'Off'], [1, 'On']], def: 0 },
+    ],
+    botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, the face-up Boss cards and cards they’ve seen.',
     create: (players, opts) => new S.Game(players, opts),
     render,
     rules:
-      '<p><b>Hold the line.</b> Each act’s monsters are dealt face up in a line when that act begins, so you always know what’s coming this act, but not after it. 10 monsters across three acts with 2 Heroes, 12 with 3 or 4. Get through Act III and the squad wins.</p>' +
-      '<p><b>Fight the next one.</b> Each monster wants a Run (climbing ranks, any color), a Set (one rank) or a Color (one color, any ranks) of a certain size. Starting with the lead, each Hero adds 1 or 2 cards that fit, or passes. The lead passes left after every fight.</p>' +
-      '<p><b>Beat it.</b> Complete the combo and the monster is defeated. Those cards are spent.</p>' +
-      '<p><b>Miss it.</b> If the combo falls short, the monster gets away, every card in it goes back to the Hero who added it, and every Hero discards 2 cards face up. Everyone now knows who holds what came back.</p>' +
-      '<p><b>Your hand is your health.</b> Nobody draws. If any Hero’s hand runs out, from playing or discarding, the Boss wins.</p>' +
-      '<p><b>The deck.</b> One more color than there are Heroes, each ranked 1–12, and 15 cards each.</p>',
+      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each.</p>' +
+      '<p><b>Combos.</b> A Run climbs in rank, any color. A Set is one rank. A Color is one color, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
+      '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, and every Hero discards 2 face up. Get through Act III to win.</p>' +
+      '<p><b>Vael, the Hydra.</b> Two heads are out at once, each with a combo and a hex that’s in force while it’s out. On your turn, feed one head. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. Cut every head to win.</p>' +
+      '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an act): show a card.</p>',
   });
 })();
 </script>
