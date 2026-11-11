@@ -1,0 +1,52 @@
+/* Sentai — the cards, as printed. Everything scales from one variable (--w for Hero cards, --mw for Boss cards),
+   so a card looks the same in a hand, on the table, on the page and in the print files. */
+.c0{--c:#E2482F;--cd:#A92E1B}.c1{--c:#2E5FAE;--cd:#1D3F7A}.c2{--c:#F0B429;--cd:#9A6A10}.c3{--c:#3B9562;--cd:#256B43}.c4{--c:#EC8AA2;--cd:#B65C74}
+.a0{--a:#7A5BA6}.a1{--a:#D76A3C}.a2{--a:#2B2440}
+
+/* Hero cards: rank and emblem in the corners, the Hero's machine in the middle */
+.sc{--w:62px;width:var(--w);height:calc(var(--w)*1.4);border-radius:calc(var(--w)*.13);border:calc(var(--w)*.05) solid var(--c);color:var(--c);position:relative;display:inline-block;flex:none;box-shadow:0 2px 0 rgba(0,0,0,.28);overflow:hidden;
+  background:radial-gradient(circle at 50% 63%,color-mix(in srgb,var(--c) 24%,#FFF6E4) 0 44%,#FFF6E4 45%)}
+.sc .pa{position:absolute;left:5%;top:29%;width:90%;height:66%}
+.sc b{position:absolute;left:6%;top:2.5%;font:900 calc(var(--w)*.32)/1 Archivo,Jost,sans-serif;color:var(--cd);z-index:1}
+.sc b.br{display:none}
+.sc .se{position:absolute;right:6%;top:5%;width:calc(var(--w)*.25);height:auto;z-index:1}
+.sc.bk{border-color:#FFF6E4;background:#1F1A2B}
+.sc.bk svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* Boss cards: a cream border, the act's color, art, name, the combo, and its size for each squad */
+.mcard{--mw:132px;width:var(--mw);height:calc(var(--mw)*1.4);font-size:calc(var(--mw)/10);border-radius:.7em;background:#FFF6E4;padding:.42em;box-shadow:0 .3em 0 rgba(0,0,0,.28);position:relative;flex:none;box-sizing:border-box;text-align:center;color:#FFF6E4;line-height:1.2}
+.mcard *{box-sizing:border-box}
+.mcard .mf{height:100%;border-radius:.42em;background:var(--a);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.mcard .mf::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1px 1px,rgba(255,246,228,.1) .6px,transparent 1px) 0 0/.5em .5em;pointer-events:none}
+.mcard .mt{display:flex;justify-content:space-between;padding:.42em .6em .1em;font:700 .58em/1 Jost,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.9;position:relative}
+.mcard .art{flex:1 1 0;min-height:0;margin:.3em .5em .15em;border-radius:.4em;background:radial-gradient(circle at 50% 58%,#FFF6E4 0 38%,color-mix(in srgb,var(--a) 20%,#FFF6E4) 39%);position:relative;overflow:hidden}
+.mcard .art svg{position:absolute;inset:3% 0 0;width:100%;height:97%;display:block}
+.mcard .nm{font:900 1.04em/1.05 Archivo,Jost,sans-serif;transform:skewX(-6deg);padding:.18em .3em .05em;position:relative;white-space:nowrap}
+.mcard .nm.long{font-size:.84em;padding-top:.3em}
+.mcard .cb{display:flex;align-items:center;justify-content:center;gap:.4em;font:700 .66em/1 Jost,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.12em 0 .28em;position:relative}
+.mcard .cb .ci{width:2.9em;height:auto;display:block}
+.mcard .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:.28em;padding:0 .5em .5em;position:relative}
+.mcard .nu{border-radius:.34em;background:rgba(0,0,0,.26);padding:.22em 0 .14em;display:flex;flex-direction:column;align-items:center;gap:.16em}
+.mcard .nu i{display:flex;gap:.14em;height:.32em}
+.mcard .nu u{width:.32em;height:.32em;border-radius:50%;background:currentColor;opacity:.85;text-decoration:none}
+.mcard .nu b{font:900 1.3em/1 Archivo,Jost,sans-serif}
+.mcard .nu.on{background:#F0B429;color:#1F1A2B;box-shadow:0 0 0 .1em #FFF6E4}
+.mcard .hx{margin:0 .5em .5em;background:rgba(0,0,0,.3);border-radius:.34em;padding:.34em .45em;font:500 .56em/1.28 Jost,sans-serif;text-align:left;position:relative}
+.mcard .hx b{color:#F0B429;font-weight:800}
+.mcard.hydra .nums{padding-bottom:.32em}
+/* the small copies in the "up next" line: art, name and the three sizes */
+.mcard.sm .mt,.mcard.sm .cb span{display:none}
+.mcard.sm .nm{font-size:.98em}
+.mcard.sm .cb .ci{width:3.4em}
+/* Boss card backs */
+.mcard.mbk .mf{background:repeating-linear-gradient(135deg,var(--a) 0 .7em,color-mix(in srgb,var(--a) 80%,#000) .7em 1.4em);align-items:center;justify-content:center;gap:.3em}
+.mcard.mbk .mf::before{display:none}
+.mcard.mbk .ring{width:56%}.mcard.mbk .ring svg{width:100%;display:block}
+.mcard.mbk .bl{font:900 1.1em/1 Archivo,Jost,sans-serif;letter-spacing:.08em;text-transform:uppercase;transform:skewX(-6deg)}
+.mcard.mbk .bn{position:absolute;right:.5em;bottom:.4em;min-width:1.7em;height:1.7em;border-radius:1em;background:#FFF6E4;color:#1F1A2B;font:900 1em/1.7em Archivo,Jost,sans-serif}
+/* Hero power cards */
+.mcard.pwc .mf{background:var(--c)}
+.mcard.pwc .art{background:radial-gradient(circle at 50% 58%,#FFF6E4 0 40%,color-mix(in srgb,var(--c) 22%,#FFF6E4) 41%)}
+.mcard.pwc .hx{font-size:.62em;flex:none;min-height:4.6em}
+.mcard.pwc.c2 .mf,.mcard.pwc.c4 .mf{color:#1F1A2B}
+.mcard.pwc.c2 .hx,.mcard.pwc.c4 .hx{background:rgba(255,246,228,.55)}

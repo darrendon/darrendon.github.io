@@ -1,0 +1,62 @@
+/* Sentai skin, in the palette of the card art: warm paper, ink, Hero red and gold, and the three act colors. */
+.g-sen{
+  --g-bg:#FBF4E4; --g-panel:#F3E7CF; --g-panel-hi:#F8EFDB; --g-face:#FFFFFF;
+  --g-red:#C93A22;            /* the page accent slot: Hero red, darkened for text on paper */
+  --g-gold:#F0B429; --g-jade:#1F1A2B; --g-ink:#1F1A2B; --g-muted:#6A5F57; --g-line:#E2CFAB;
+  --sen-ink:#1F1A2B; --sen-red:#E2482F; --sen-gold:#F0B429; --sen-paper:#F3E7CF; --sen-felt:#1C3A31;
+  --sen-display:"Archivo","Arial Black",system-ui,sans-serif;
+}
+.g-sen .g-hero h1{font-family:var(--sen-display);font-weight:900;letter-spacing:.01em;line-height:.95;color:var(--sen-ink);text-shadow:4px 5px 0 var(--sen-gold);transform:skewX(-9deg);transform-origin:left;margin-bottom:12px}
+.g-sen .g-hero .tag em{font-style:normal;font-weight:600;color:var(--g-red)}
+.g-sen .pill{background:var(--sen-ink);color:var(--sen-gold)}
+.g-sen .pill::before{background:var(--sen-gold)}
+.g-sen.game .btn.red{background:var(--sen-red);border-color:var(--sen-red);color:#fff}
+
+.g-sen .viewer{background:var(--sen-felt);border-radius:14px;overflow:hidden}
+.g-sen .viewer .stage{aspect-ratio:16/10}
+.g-sen .viewer .stage img.poster{object-fit:cover;transition:opacity .25s}
+.g-sen .viewer .bar{background:var(--g-panel)}
+
+/* what the squad knows */
+.g-sen .seen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:clamp(20px,3vw,32px)}
+.g-sen .seen div{border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;background:var(--g-face);border:1px solid var(--g-line);color:var(--g-ink)}
+.g-sen .seen b{font-family:var(--sen-display);font-weight:900;font-size:22px;line-height:1.05;color:var(--g-red)}
+.g-sen .seen span{font-size:15px}
+.g-sen .seen .night{background:var(--sen-ink);color:var(--sen-paper);border-color:var(--sen-ink)}
+.g-sen .seen .night b{color:var(--sen-gold)}
+@media (max-width:820px){.g-sen .seen{grid-template-columns:1fr}}
+
+/* the cards */
+.g-sen .ranks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(6px,1.1vw,14px);margin-top:clamp(28px,4vw,44px)}
+.g-sen .ranks img{width:100%;height:auto;aspect-ratio:5/7;border-radius:6%/4.3%;box-shadow:0 8px 16px -10px rgba(31,26,43,.55);transition:transform .2s;display:block}
+.g-sen .ranks img:hover{transform:translateY(-6px) rotate(-2deg)}
+.g-sen .ranks img:nth-child(even):hover{transform:translateY(-6px) rotate(2deg)}
+@media (max-width:820px){.g-sen .ranks{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.g-sen .extras{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1.4vw,18px);margin-top:clamp(18px,2.6vw,28px)}
+.g-sen .extras figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.g-sen .extras img{width:100%;height:auto;aspect-ratio:5/7;border-radius:6%/4.3%;box-shadow:0 8px 16px -10px rgba(31,26,43,.55);display:block}
+.g-sen .extras figcaption{font-size:14px;color:var(--g-muted);line-height:1.35}
+.g-sen .extras figcaption b{display:block;color:var(--g-ink);font-size:15px}
+@media (max-width:820px){.g-sen .extras{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:480px){.g-sen .extras figcaption{font-size:12.5px}}
+
+.g-sen .boxart{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr);gap:clamp(18px,3vw,40px);align-items:center;margin-top:clamp(40px,6vw,72px)}
+.g-sen .boxart figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0;max-width:300px}
+.g-sen .boxart img{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 18px 30px -18px rgba(31,26,43,.7)}
+.g-sen .boxart figcaption{font-size:14.5px;color:var(--g-muted)}
+.g-sen .boxart figcaption b{display:block;color:var(--g-ink);font-size:16px}
+@media (max-width:700px){.g-sen .boxart{grid-template-columns:1fr}.g-sen .boxart figure{max-width:220px}}
+
+.g-sen .renders img{aspect-ratio:16/10}
+.g-sen .play-frame{background:var(--sen-felt);border-radius:14px;overflow:hidden}
+.g-sen .play-frame iframe{height:min(calc(100vh - 140px),1040px)}
+.g-sen .set{border-top-color:var(--sen-red)}
+.g-sen .set:nth-child(2){border-top-color:var(--sen-gold)}
+.g-sen .g-cta{background:var(--sen-ink)}
+.g-sen .g-cta h2{color:var(--sen-paper);font-family:var(--sen-display);font-weight:900}
+.g-sen .g-cta .btn.light{color:var(--sen-ink)}
+
+/* home page card */
+.feature.g-sen h3{font-family:var(--sen-display);font-weight:900;letter-spacing:.01em;color:var(--g-red)}
+.feature.g-sen .feature-art{background:#1C3A31;padding:0}
+.feature.g-sen .feature-art img{width:100%;height:100%;object-fit:cover}

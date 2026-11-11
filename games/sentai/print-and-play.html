@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sentai — print and play</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/games/sentai/play/cards.css">
+<style>
+/* Source for sentai-print-and-play.pdf (emailed on request, not published): US Letter portrait, no margins, backgrounds on.
+   One page of printing notes and the rules in brief, then twelve sheets of up to nine poker cards, each followed by its backs
+   mirrored for a long-edge duplex flip. The cards are drawn by play/art.js at print size. */
+:root{--ink:#1F1A2B;--red:#E2482F;--gold:#F0B429;--soft:#6A5F57;--line:#E2CFAB;--accent:#C93A22;--disp:Archivo,"Arial Black",sans-serif}
+*{box-sizing:border-box}
+@page{size:8.5in 11in;margin:0}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:#fff;position:relative;overflow:hidden;color:var(--ink);font:10.4pt/1.42 Jost,system-ui,sans-serif;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none;break-after:page}}
+.rules{padding:.6in .65in}
+.rules h1{margin:0;font:900 40pt/1 var(--disp);color:var(--ink);text-shadow:3px 3px 0 var(--gold);transform:skewX(-9deg);transform-origin:left}
+.rules .sub{margin:.08in 0 .2in;color:var(--soft);font-size:11.5pt}
+.rules h2{font:900 13pt/1.1 var(--disp);color:var(--accent);margin:.18in 0 .05in}
+.rules p,.rules li{margin:0 0 .06in}
+.rules ol{margin:0;padding-left:1.2em}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.35in}
+.print{background:#FBF4E4;border-radius:8px;padding:.14in .18in;margin-top:.18in;font-size:10pt}
+.print b{color:var(--accent)}
+/* card sheets: 3 x 3 poker cards, centred */
+.grid{position:absolute;left:calc((8.5in - 7.5in) / 2);top:calc((11in - 10.5in) / 2);width:7.5in;height:10.5in;display:grid;grid-template-columns:repeat(3,2.5in);grid-template-rows:repeat(3,3.5in)}
+.grid>*{width:2.5in;height:3.5in;display:block;overflow:hidden;outline:.4pt solid #C9C2B4;outline-offset:-.2pt}
+.grid .sc{--w:2.5in;width:2.5in;height:3.5in;border-radius:0;box-shadow:none;box-sizing:border-box}
+.grid .mcard{--mw:2.5in;font-size:.25in;border-radius:0;box-shadow:none}
+.label{position:absolute;left:0;right:0;bottom:.08in;text-align:center;font-size:7.5pt;color:#999}
+</style>
+</head>
+<body>
+<section class="page rules">
+  <h1>SENTAI</h1>
+  <p class="sub">Print and play · 2–4 players · 20–30 minutes · cooperative · by Darren Don</p>
+  <div class="cols">
+    <div>
+      <h2>Setup</h2>
+      <ol>
+        <li>Sort Emperor Gorvax’s 18 monsters into Act I, II and III by their backs. Shuffle each act and draw, face down: 3, 3 and 4 with 2 Heroes; 3, 4 and 5 with 3 Heroes; 4 each with 4 Heroes.</li>
+        <li>Use one more color than you have Heroes. Shuffle those Hero cards and deal 15 each. Leftovers go back in the box, unseen.</li>
+        <li>Lay the Act I monsters face up in a line. Pick a first lead.</li>
+        <li>From here on, no table talk: never say or hint at what you hold or want.</li>
+      </ol>
+      <h2>A fight</h2>
+      <ol>
+        <li>The front monster names a combo and its size for 2, 3 and 4 Heroes (the dots).</li>
+        <li>Starting with the lead, each Hero takes one turn: add 1 or 2 cards that fit, or pass.</li>
+        <li><b>Beaten:</b> the combo is complete. Discard the monster and the combo.</li>
+        <li><b>Missed:</b> the cards go back to whoever played them, every Hero discards 1 face up, and you fight it again.</li>
+        <li>The lead passes left after every fight.</li>
+      </ol>
+      <h2>Combos</h2>
+      <p><b>Run:</b> different ranks that fit in a row (gaps are fine while you build), any colors. <b>Set:</b> one rank. <b>Color:</b> one color. <b>Combine:</b> all different colors.</p>
+    </div>
+    <div>
+      <h2>Winning and losing</h2>
+      <p>Beat the last monster of Act III and the squad wins. If any Hero’s hand is ever empty, the Boss wins. You may never add your last card.</p>
+      <h2>Vael, the Hydra</h2>
+      <p>Deal 14 each. Keep two heads out (three with 3 or 4 Heroes). On your turn add 1 or 2 cards to one head, or 1 card each to two heads; cards stay put. After each round: a finished head is cut and replaced; an unfinished head turns sideways (enraged); an unfinished head that was already enraged strikes: it and its cards are discarded and every Hero discards 2. Each head’s hex lasts until the head is gone.</p>
+      <h2>Hero powers</h2>
+      <p>Optional and easier: deal each Hero one power card, face up.</p>
+      <div class="print"><b>Printing.</b> Print pages 2–25 double-sided at 100% (no scaling), flipping on the <b>long edge</b>, on card stock. Each odd sheet is nine card fronts and the next page is their backs. Cut along the grey lines. Or print the fronts only and sleeve the cards over opaque sleeves, keeping each act of Boss cards in its own pile. The full rulebook is at darrendon.com/games/sentai.</div>
+    </div>
+  </div>
+</section>
+<script src="/games/sentai/play/art.js"></script>
+<script src="/games/sentai/play/engine.js"></script>
+<script>
+(function () {
+  const A = SentaiArt, S = Sentai, cards = [];
+  for (let c = 0; c < 5; c++) for (let r = 1; r <= 12; r++) cards.push({ f: A.cardHTML({ c, r, id: c * 12 + r }), b: A.heroBackHTML(), n: 'Hero cards' });
+  for (const [boss, base] of [['gorvax', 0], ['vael', 18]]) S.RULES.bosses[boss].acts.forEach((act, a) => act.forEach((m, i) => {
+    const b = { key: base + a * 6 + i, act: a, type: m[0], name: m[2], needs: m[1], hex: m[3] || null };
+    cards.push({ f: A.bossCardHTML(b, 0, { hexText: b.hex ? S.HEX[b.hex] : null }), b: A.bossBackHTML(a, null), n: boss === 'gorvax' ? 'Emperor Gorvax' : 'Vael, the Hydra' });
+  }));
+  for (let c = 0; c < 5; c++) cards.push({ f: A.powerCardHTML(c), b: A.heroBackHTML(), n: 'Hero powers' });
+  // sheets of nine; Hero cards, Boss cards and powers each start a fresh sheet
+  const sheets = []; let cur = null;
+  for (const k of cards) { if (!cur || cur.cards.length === 9 || cur.n.split(' / ')[0] !== k.n && (k.n === 'Emperor Gorvax' || k.n === 'Hero powers')) { cur = { n: k.n, cards: [] }; sheets.push(cur); } else if (!cur.n.includes(k.n)) cur.n += ' / ' + k.n; cur.cards.push(k); }
+  let html = '', pg = 2;
+  sheets.forEach((sh, si) => {
+    const cells = Array.from({ length: 9 }, (_, i) => sh.cards[i] || null);
+    html += '<section class="page"><div class="grid">' + cells.map((k) => k ? k.f : '<i></i>').join('') + '</div><div class="label">Sentai · ' + sh.n + ' · fronts ' + (si + 1) + ' of ' + sheets.length + ' · page ' + (pg++) + '</div></section>';
+    // backs: each row mirrored left to right, for a long-edge flip
+    const back = []; for (let r = 0; r < 3; r++) for (let c = 2; c >= 0; c--) back.push(cells[r * 3 + c]);
+    html += '<section class="page"><div class="grid">' + back.map((k) => k ? k.b : '<i></i>').join('') + '</div><div class="label">Sentai · backs ' + (si + 1) + ' of ' + sheets.length + ' · page ' + (pg++) + '</div></section>';
+  });
+  document.body.insertAdjacentHTML('beforeend', html);
+  window.__pages = pg - 1;
+  document.fonts.load('900 20px Archivo').then(() => document.fonts.load('700 20px Jost')).then(() => document.fonts.ready).then(() => window.__done = true);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sentai — rules</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Source for sentai-rules.pdf: US Letter portrait, no margins, backgrounds on. Three pages. */
+:root{--ink:#1F1A2B;--red:#E2482F;--redd:#C93A22;--gold:#F0B429;--paper:#F3E7CF;--soft:#6A5F57;--line:#E2CFAB;--accent:#C93A22;--panel:#FBF4E4;--disp:Archivo,"Arial Black",sans-serif}
+*{box-sizing:border-box}
+@page{size:8.5in 11in;margin:0}
+html,body{margin:0;background:#8E9499}
+.page{width:8.5in;height:11in;margin:24px auto;background:#fff;position:relative;overflow:hidden;padding:.55in .6in .5in;color:var(--ink);
+  font:10.2pt/1.4 Jost,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media print{html,body{background:#fff}.page{margin:0;box-shadow:none;break-after:page}}
+.band{margin:-.55in -.6in .22in;padding:.36in .6in .3in;background:var(--ink);color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:.3in;position:relative}
+.band h1{margin:0;font:900 46pt/1 var(--disp);letter-spacing:.01em;color:var(--paper);text-shadow:3px 4px 0 var(--red);transform:skewX(-9deg);transform-origin:left}
+.band p{margin:.1in 0 0;font-size:12pt;color:#D9CDB6;max-width:4.6in}
+.band img{width:1.2in;transform:rotate(4deg);border-radius:3px;box-shadow:0 10px 16px -8px rgba(0,0,0,.7)}
+.band .by{font:600 8.5pt/1 Jost;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-top:.14in}
+h2{font:900 13pt/1.1 var(--disp);letter-spacing:.01em;color:var(--accent);margin:.16in 0 .05in}
+h2:first-child{margin-top:0}
+p{margin:0 0 .07in}
+b{font-weight:600}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.34in}
+.goal{background:var(--panel);border-left:5px solid var(--gold);border-radius:6px;padding:.12in .16in;font-size:11.4pt;margin-bottom:.06in}
+.comp{display:grid;grid-template-columns:repeat(6,.92in);justify-content:space-between;gap:.12in;margin:.06in 0 .06in}
+.comp figure{margin:0;text-align:center;font-size:9pt;line-height:1.25;color:var(--soft)}
+.comp img{width:100%;border-radius:4px;display:block;margin-bottom:.05in;box-shadow:0 4px 8px -5px rgba(0,0,0,.5)}
+.comp b{display:block;color:var(--ink);font-size:9.6pt}
+table{border-collapse:collapse;width:100%;font-size:10pt;margin:.04in 0 .08in}
+th,td{border-bottom:1px solid var(--line);padding:3px 4px;text-align:center;vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--soft);font-size:9pt}
+table.wide td:last-child,table.wide th:last-child{text-align:left}
+ol.turn{margin:.04in 0 0;padding:0;list-style:none;counter-reset:t}
+ol.turn li{counter-increment:t;position:relative;padding:0 0 .1in .46in}
+ol.turn li::before{content:counter(t);position:absolute;left:0;top:-.02in;width:.32in;height:.32in;border-radius:50%;background:var(--gold);color:var(--ink);display:grid;place-items:center;font:900 12pt/1 var(--disp)}
+ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);letter-spacing:.01em;color:var(--ink);margin-bottom:.02in}
+.ex{display:flex;gap:.1in;align-items:center;margin:.06in 0 .02in}
+.ex img{width:.62in;border-radius:3px}
+.ex span{font-size:9.4pt;color:var(--soft)}
+.tip{background:var(--ink);color:var(--paper);border-radius:8px;padding:.12in .16in;font-size:10.2pt;margin-top:.12in}
+.tip b{color:var(--gold);font-weight:900;font-family:var(--disp)}
+.foot{position:absolute;left:.6in;right:.6in;bottom:.32in;display:flex;justify-content:space-between;font-size:8.6pt;color:var(--soft);border-top:1px solid var(--line);padding-top:.06in}
+.faqrow{margin-top:.1in;border-top:1px solid var(--line);padding-top:.12in}
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="band">
+    <div>
+      <h1>SENTAI</h1>
+      <p>A cooperative card game for 2–4 players, 20–30 minutes. Nobody talks about their hand, and nobody ever draws. <i>Hold the line together.</i></p>
+      <div class="by">by Darren Don</div>
+    </div>
+    <img src="/games/sentai/img/box-front-480.webp" alt="">
+  </div>
+  <div class="goal"><b>The goal.</b> You are a squad of Heroes, each piloting a machine. Together, beat every monster the Boss sends across three acts. Your hand is your health: nobody ever draws, and if any Hero’s hand runs out, the whole squad loses.</div>
+
+  <h2>Components</h2>
+  <div class="comp">
+    <figure><img src="/games/sentai/img/hero-0-7-240.webp" alt=""><b>60 Hero cards</b>five colors, each 1–12</figure>
+    <figure><img src="/games/sentai/img/hero-back-240.webp" alt=""><b>Hero back</b>the same on all 60</figure>
+    <figure><img src="/games/sentai/img/boss-13-240.webp" alt=""><b>18 monsters</b>Emperor Gorvax’s deck</figure>
+    <figure><img src="/games/sentai/img/boss-26-240.webp" alt=""><b>18 heads</b>Vael, the Hydra’s deck</figure>
+    <figure><img src="/games/sentai/img/boss-back-1-240.webp" alt=""><b>Act backs</b>Act I, II and III</figure>
+    <figure><img src="/games/sentai/img/power-1-240.webp" alt=""><b>5 Hero powers</b>optional</figure>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h2>Setup</h2>
+      <p>1. Choose a Boss. <b>Emperor Gorvax</b> is the place to start. Sort his 18 cards into three decks by their backs: Act I, Act II and Act III.</p>
+      <p>2. Shuffle each act’s deck on its own and draw cards from it, face down, without looking. Return the rest to the box.</p>
+      <table>
+        <tr><th>Heroes</th><th>Act I</th><th>Act II</th><th>Act III</th><th>Colors</th></tr>
+        <tr><td>2</td><td>3</td><td>3</td><td>4</td><td>3</td></tr>
+        <tr><td>3</td><td>3</td><td>4</td><td>5</td><td>4</td></tr>
+        <tr><td>4</td><td>4</td><td>4</td><td>4</td><td>5</td></tr>
+      </table>
+      <p>3. Use <b>one more color than you have Heroes</b> (any colors). Shuffle those Hero cards and deal <b>15 to each Hero</b>. Any cards left over go back in the box, unseen.</p>
+      <p>4. Lay the Act I monsters <b>face up in a line</b>, in the order drawn. The later acts stay face down.</p>
+      <p>5. Pick a Hero at random to be the first <b>lead</b>.</p>
+    </div>
+    <div>
+      <h2>Reading a Boss card</h2>
+      <p>Every Boss card names a <b>combo</b> and prints its size three times: for 2, 3 and 4 Heroes (the dots). Use the number for your squad.</p>
+      <h2>The four combos</h2>
+      <table class="wide">
+        <tr><th>Combo</th><th>Cards that fit</th></tr>
+        <tr><td><b>Run</b></td><td>Different ranks, any colors, that all fit in a row as long as the number. Gaps are fine while you build: a Run of 3 can hold a 5 and a 7, waiting for the 6.</td></tr>
+        <tr><td><b>Set</b></td><td>All the same rank.</td></tr>
+        <tr><td><b>Color</b></td><td>All the same color, any ranks.</td></tr>
+        <tr><td><b>Combine</b></td><td>All different colors, any ranks.</td></tr>
+      </table>
+      <p>The first card played starts the combo, and every card after it has to fit with the cards already there.</p>
+      <div class="tip"><b>No table talk.</b> Never say or hint at what you hold, what you want played, or what you plan to do. Everything the squad learns comes from the cards.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Sentai · rules</span><span>1</span></div>
+</section>
+
+<section class="page">
+  <div class="cols">
+    <div>
+      <h2>A fight</h2>
+      <p>Fight the monsters in the line one at a time, from the front.</p>
+      <ol class="turn">
+        <li><b class="h">Build the combo</b>Starting with the lead and going left, each Hero takes <b>one turn</b>: add <b>1 or 2 cards</b> that fit to the shared combo, face up, or pass. Stop as soon as the combo reaches the monster’s number.
+          <div class="ex"><img src="/games/sentai/img/hero-1-4-240.webp" alt=""><img src="/games/sentai/img/hero-2-5-240.webp" alt=""><img src="/games/sentai/img/hero-3-6-240.webp" alt=""><span>A Run of 3: a 4, a 5 and a 6, in any colors.</span></div></li>
+        <li><b class="h">Beaten</b>If the combo is complete, the monster is beaten. Discard it and every card in the combo: those cards are spent.</li>
+        <li><b class="h">Or missed</b>If everyone has had a turn and the combo is short, the monster holds on. Every card in the combo goes back to the Hero who played it, so everyone now knows who holds those cards. Then <b>every Hero discards 1 card</b> of their choice, face up.</li>
+        <li><b class="h">Pass the lead</b>The lead passes to the left. After a miss, fight the <b>same monster again</b>. After a win, fight the next one in the line.</li>
+      </ol>
+      <p>When the line is empty, the act is over. Lay the next act’s monsters face up in a line and carry on.</p>
+    </div>
+    <div>
+      <h2>Winning and losing</h2>
+      <p><b>The squad wins</b> by beating the last monster of Act III.</p>
+      <p><b>The squad loses</b> the moment any Hero has no cards in hand. You may never add your last card to a combo, so a hand only runs out by discarding.</p>
+      <h2>What you know</h2>
+      <p>You can see this act’s monsters, every card in the combo, every discard, and how many cards each Hero holds. When a combo falls short you also see exactly which cards go back to which Hero: remember them.</p>
+      <p>You never see the cards left in the box, your teammates’ hands, or the monsters of the acts to come.</p>
+      <h2>Playing well</h2>
+      <p>The lead’s first card is a message: it picks the rank or the color, so lead something you think the others can follow. Adding a card to a combo that then falls short costs you nothing extra, because the card comes back. Holding back only saves cards when the squad would have won without you.</p>
+      <p>A missed monster never goes away. It costs the squad a card each and then has to be beaten anyway, so missing on purpose never helps.</p>
+      <div class="tip"><b>Easier or harder.</b> Add the Hero powers on the next page for an easier game. For a harder one, face Vael, the Hydra.</div>
+    </div>
+  </div>
+  <div class="faqrow">
+    <div class="cols">
+      <div>
+      <h2>Questions</h2>
+      <p><b>Do I have to add a card if I can?</b> No. You may always pass.</p>
+      <p><b>Can a Run go around from 12 to 1?</b> No. 12 is the highest rank and 1 the lowest.</p>
+      </div>
+      <div>
+      <p><b>Can a Combine be bigger than the colors in play?</b> No card asks for that: the largest Combine is one card of every color.</p>
+      <p><b>May I look through the discards?</b> Yes. Discards are face up and anyone may look at them at any time.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Sentai · rules</span><span>2</span></div>
+</section>
+
+<section class="page">
+  <div class="cols">
+    <div>
+      <h2>Vael, the Hydra</h2>
+      <p>A harder Boss. Set up as usual with Vael’s 18 cards, but deal <b>14 cards</b> to each Hero.</p>
+      <p>Grow <b>two heads</b> from the Act I pile with 2 Heroes, or <b>three heads</b> with 3 or 4 Heroes, side by side and face up. The rest of each act stays face down. Each head has a <b>hex</b>, in force from the moment the head appears until it is gone.</p>
+      <ol class="turn">
+        <li><b class="h">A round</b>Starting with the lead, each Hero takes one turn: add <b>1 or 2 cards to one head</b>, or <b>1 card each to two heads</b>, or pass. Cards stay on a head from round to round.</li>
+        <li><b class="h">Cut</b>At the end of the round, a head whose combo is complete is cut off. Discard it and its cards.</li>
+        <li><b class="h">Enrage</b>An unfinished head that is upright turns sideways: it is <b>enraged</b>.</li>
+        <li><b class="h">Strike</b>An unfinished head that was already enraged <b>strikes</b>. Discard it and the cards on it, and every Hero discards <b>2 cards</b>.</li>
+        <li><b class="h">Grow</b>Fill each empty space with a new head from the current act’s pile, then the next act’s. Pass the lead to the left.</li>
+      </ol>
+      <p>The squad wins when the last head is cut off or strikes, as long as every Hero still holds a card.</p>
+    </div>
+    <div>
+      <h2>The hexes</h2>
+      <table class="wide">
+        <tr><th>Hex</th><th>While this head is out</th></tr>
+        <tr><td><b>Hunger</b></td><td>At the end of each round, the Hero with the most cards discards 1. On a tie, the tied Hero nearest the lead, going left.</td></tr>
+        <tr><td><b>Venom</b></td><td>If this head strikes, every Hero discards 1 more.</td></tr>
+        <tr><td><b>Coil</b></td><td>No Hero may add more than 1 card a turn to this head.</td></tr>
+        <tr><td><b>Split</b></td><td>You can’t feed this head if the Hero just before you fed it.</td></tr>
+        <tr><td><b>Brood</b></td><td>When this head is enraged, it needs 1 more card.</td></tr>
+        <tr><td><b>Spite</b></td><td>When this head is cut, the Hero who added its last card discards 1.</td></tr>
+      </table>
+      <h2>Hero powers (optional)</h2>
+      <p>Shuffle the five power cards and deal one to each Hero, face up.</p>
+      <table class="wide">
+        <tr><th>Power</th><th>What it does</th></tr>
+        <tr><td><b>Command</b></td><td>Always on. When you lead, you may add up to 3 cards.</td></tr>
+        <tr><td><b>Riptide</b></td><td>Once a game. When the squad would discard, nobody does.</td></tr>
+        <tr><td><b>Overcharge</b></td><td>Once a game. One card you add fits the combo, whatever its rank and color.</td></tr>
+        <tr><td><b>Steady</b></td><td>Always on. Whenever the squad discards, you discard 1 fewer.</td></tr>
+        <tr><td><b>Beacon</b></td><td>Once an act. On your turn, show one card from your hand to everyone.</td></tr>
+      </table>
+      <div class="tip"><b>Playing online?</b> Sentai is playable in your browser at darrendon.com/games/sentai, with a tutorial, bot teammates, and online tables you can join with a five-letter code.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Sentai · rules · by Darren Don · darren@darrendon.com</span><span>3</span></div>
+</section>
+<script>
+Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => i.onload = i.onerror = r))).then(() => document.fonts.ready).then(() => window.__done = true);
+</script>
+</body>
+</html>

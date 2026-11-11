@@ -33,8 +33,8 @@
 .feature.g-udtc .feature-art { background: rgb(228, 220, 210); padding: 0px; }
 .feature.g-udtc .feature-art img { width: 100%; height: 100%; object-fit: cover; }
 
-/* from abducted.css */
-.g-abd { --g-bg: #FFF8EC; --g-panel: #F6EAD2; --g-panel-hi: #FBF2E0; --g-face: #FFFFFF; --g-red: #2E4BD8; --g-gold: #F6B92B; --g-jade: #1B2350; --g-ink: #1B1B2F; --g-muted: #5A5A72; --g-line: #EADCBF; --ab-night: #1B2350; --ab-hum: #F6B92B; --ab-ali: #2E4BD8; --ab-beam: #6EE7B7; --ab-coral: #E8553A; --ab-cream: #FFF4DE; --ab-display: "Dela Gothic One","Archivo","Arial Black",system-ui,sans-serif; }
-.feature.g-abd h3 { font-family: var(--ab-display); font-weight: 900; font-stretch: 112%; font-synthesis: none; letter-spacing: 0.01em; }
-.feature.g-abd .feature-art { background: rgb(20, 27, 63); padding: 0px; }
-.feature.g-abd .feature-art img { width: 100%; height: 100%; object-fit: cover; }
+/* from sentai.css */
+.g-sen { --g-bg: #FBF4E4; --g-panel: #F3E7CF; --g-panel-hi: #F8EFDB; --g-face: #FFFFFF; --g-red: #C93A22; --g-gold: #F0B429; --g-jade: #1F1A2B; --g-ink: #1F1A2B; --g-muted: #6A5F57; --g-line: #E2CFAB; --sen-ink: #1F1A2B; --sen-red: #E2482F; --sen-gold: #F0B429; --sen-paper: #F3E7CF; --sen-felt: #1C3A31; --sen-display: "Archivo","Arial Black",system-ui,sans-serif; }
+.feature.g-sen h3 { font-family: var(--sen-display); font-weight: 900; letter-spacing: 0.01em; color: var(--g-red); }
+.feature.g-sen .feature-art { background: rgb(28, 58, 49); padding: 0px; }
+.feature.g-sen .feature-art img { width: 100%; height: 100%; object-fit: cover; }

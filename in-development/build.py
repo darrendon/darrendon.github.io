@@ -10,29 +10,26 @@ e = html.escape
 ARROW = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
 GAMES = [
-  dict(slug='sentai', title='Sentai', cls='d-sen',
-       hook='A cooperative card game. Every Hero’s cards are their part of the squad’s giant robot, and nobody ever draws, so every card you spend against a monster is one you never get back.',
-       card='Each act’s monsters line up face up, so you know what’s coming this act. Add one or two cards to a Run, a Set, a Color or a Combine. Miss and the cards come back, everyone discards one, and you fight it again.',
-       specs=[('Players', '2–4'), ('Time', '20–30 min'), ('Genre', 'Cooperative · Shedding')],
-       now='Whether fighting a missed monster again makes an early miss feel like falling behind instead of losing, and whether seeing cards come back after a miss tells the squad enough about each other’s hands.',
-       steps=[('Deal the squad in', 'Use one more color than there are Heroes, each color ranked 1–12, and deal everyone 15 cards (14 against the Hydra). Each color is one part of the robot: the head and chest, an arm or a leg. From here on, no table talk.'),
-              ('Line them up', 'Each act shuffles its own deck of six monsters and draws a few, face down: 3, 3 and 4 with 2 Heroes, 3, 4 and 5 with 3, and 4 each with 4. When an act begins, lay its monsters face up in a line, so the squad can see that act’s fights coming but not the next act’s.'),
-              ('Fight the next one', 'The first monster in the act’s line wants a <b>Run</b> (ranks that fit in a row, any color, gaps allowed while building), a <b>Set</b> (one rank), a <b>Color</b> (one color, any ranks) or a <b>Combine</b> (all different colors), with a size printed for each squad size. Starting with the lead, each Hero adds 1 or 2 cards that fit, or passes.'),
-              ('Beat it or fight again', 'Complete the combo and the monster is defeated, and those cards are spent. Fall short and it holds on: every card goes back to the Hero who added it, so everyone knows who holds them, every Hero discards 1 face up, and you fight it again.'),
-              ('Your hand is your health', 'Nobody ever draws. The moment any Hero’s hand is empty, from playing or discarding, the Boss wins.'),
-              ('Hold the line', 'The lead passes left after every fight. Clear a line and the next act lines up. Beat every monster in Act III and the squad wins together.'),
-              ('Or face the Hydra', 'Swap in Vael’s deck and two heads are out at once (three with 3 or 4 Heroes), each with a hex that lasts until that head is gone. Each turn add 1 or 2 cards to one head, or 1 card each to two heads. Cards stay put. A head left standing enrages, and if it survives another round it strikes: its cards are lost and everyone discards 2.'),
-              ('Add Hero powers', 'Optionally, deal each Hero a power: Command, Riptide, Overcharge, Steady or Beacon. Each one is always on or used once.')],
-       play=dict(modes=[('Play against bots', 'One to three bot teammates.'), ('Host an online table', 'Two to four Heroes, with a five-letter code. Bots fill empty seats.')]),
+  dict(slug='abducted', title='Abducted', cls='d-abd',
+       hook='A social deduction game where everyone knows your team except you. Your card faces out, so the only way to learn your side is to decide who to believe.',
+       card='The Town Leader splits the town, a search party secretly Transmits or Jams, and the Lookout sends someone to check out the light. They might come back on the other side.',
+       specs=[('Players', '5–12'), ('Time', '15–25 min'), ('Genre', 'Social Deduction')],
+       now='Whether players can keep up with who is on which side as people get abducted, and how the game feels with 5 players compared with 12.',
+       steps=[('Cards face out', 'Shuffle the 10 Human and 10 Alien cards and deal one face down to each player, who stands it facing out <b>without looking</b>. You can read every card in town except your own. The rest are the deck. Everyone takes a Transmit and a Jam.'),
+              ('Split', 'The Town Leader lays the two split cards on the table to cut the town into two parties, as evenly as possible, and not the same way as last round.'),
+              ('Vote', 'On three, everyone except the Town Leader holds up 1 or 2 fingers. The party with more votes goes out searching. The Town Leader breaks ties.'),
+              ('Signal', 'Each searcher secretly plays <b>Transmit</b> if they think they’re an Alien, or <b>Jam</b> if they think they’re Human. Shuffle and reveal: the majority scores for its team. On a tie, flip the deck’s top card, and its team scores.'),
+              ('Check out that light', 'The Lookout points at one searcher. That player looks at their card and the deck’s top card, mixes them face down and stands one without looking. The other goes under the deck. Pass the Town Leader and Lookout cards clockwise.'),
+              ('Winning', 'The first team to 5 wins. Everyone looks at their own card: if it shows the winning team, you win. Say anything you like, but never show anyone their own card.')],
+       play=dict(url='/games/abducted/play/', modes=[('Learn to play', 'Two coached rounds at a six-player table.'), ('Play against bots', 'Four to eleven bots. They count cards, vote for parties that help their team and send their rivals toward the light.'), ('Host an online table', 'Join with a five-letter code and talk on a call. Bots fill empty seats.')]),
        fb=[dict(q='How much fun was it?', type='scale', lo='Not for me', hi='Loved it'),
-           dict(q='How often was choosing between adding cards and passing a hard choice?', type='scale', lo='Never', hi='Every turn'),
-           dict(q='How much did seeing the act’s monsters coming change what you played?', type='scale', lo='Not at all', hi='Every turn'),
-           dict(q='When a combo fell short, did seeing the cards come back help you read your teammates?', type='choice', options=['A lot', 'A little', 'Not really']),
-           dict(q='If you faced Vael, the Hydra, how did choosing which head to feed feel?', type='choice', options=['The best part', 'Fine', 'Confusing', 'Didn’t try it']),
-           dict(q='Did the squad feel like it was working together?', type='choice', options=['Yes, every combo', 'Somewhat', 'Everyone played their own game']),
-           dict(q='The monsters were…', type='choice', options=['Too easy', 'About right', 'Too hard']),
-           dict(q='How many Heroes played, and did you win?', type='text', rows=2),
-           dict(q='What would you change?', type='text')]),
+           dict(q='By the end, how sure were you of your own team?', type='scale', lo='No idea', hi='Certain'),
+           dict(q='How did it feel when someone was sent to check out the light?', type='choice', options=['The best part', 'Fine', 'Confusing']),
+           dict(q='As Town Leader, did splitting the town feel like a real decision?', type='choice', options=['Yes', 'Sometimes', 'Not really']),
+           dict(q='Did people tell you the truth about your card?', type='choice', options=['Mostly', 'About half the time', 'Rarely']),
+           dict(q='How many players, and how did that count feel?', type='text', rows=2),
+           dict(q='What would you change?', type='text'),
+           dict(q='Would you play it again?', type='choice', options=['Yes', 'Maybe', 'No'])]),
   dict(slug='slipstream', title='Slipstream', cls='d-slip',
        hook='A game of chicken. Race to the cliff edge, and the rider who stops closest without going over wins.',
        card='Everyone picks the same few speed cards in secret. Play one fast and hope nobody else did, or play it safe. Slipstreams can carry you right off the edge.',
@@ -253,15 +250,16 @@ def build_game(g):
   </section>
 '''
     if g['play']:
+        purl = g['play'].get('url') or url + 'play/'   # a build that lives elsewhere on the site
         modes = ''.join(f'<li><span class="t">{e(t)}</span>{e(d)}</li>' for t, d in g['play']['modes'])
         out += f'''
   <section class="d-sec" id="play" aria-labelledby="pl-h">
     <div class="wrap">
       <div class="head"><div><p class="label">Play</p><h2 id="pl-h">Play it now</h2></div><p>Then scroll down and tell me how it went.</p></div>
       <ol class="steps" style="margin-bottom:18px">{modes}</ol>
-      <div class="play-frame" id="frame"><iframe src="{url}play/" title="{e(g["title"])}, playable in your browser" loading="lazy" allow="fullscreen; clipboard-write"></iframe></div>
+      <div class="play-frame" id="frame"><iframe src="{purl}" title="{e(g["title"])}, playable in your browser" loading="lazy" allow="fullscreen; clipboard-write"></iframe></div>
       <div class="play-meta">
-        <div class="actions"><button class="btn" type="button" id="fs">Full screen</button><a class="btn" href="{url}play/" target="_blank" rel="noopener">Open in a new tab</a></div>
+        <div class="actions"><button class="btn" type="button" id="fs">Full screen</button><a class="btn" href="{purl}" target="_blank" rel="noopener">Open in a new tab</a></div>
       </div>
     </div>
   </section>

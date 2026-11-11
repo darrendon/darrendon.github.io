@@ -1,0 +1,60 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Sentai art</title>
+<!-- One piece of Sentai art at print proportions, drawn by /games/sentai/play/art.js and styled by cards.css:
+     ?p=hero-<color 0-4>-<rank 1-12> | hero-back | boss-<key 0-35> | boss-back-<act 0-2> | power-<color 0-4> | box-front | box-side | box-end
+     Cards are 292 x 408 css px (poker, full bleed, square corners: the 3D scene and the page round them); shoot.py captures them at 750 x 1050.
+     The box is a two-piece box, 4 x 5.5 x 1.25 in: front 520 x 715, side 163 x 715, end 520 x 163. -->
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/games/sentai/play/cards.css">
+<style>
+  html,body{margin:0;background:#fff}
+  #a{display:inline-block;line-height:0}
+  #a .sc{--w:292px;border-radius:0;box-shadow:none;height:408px;width:292px;box-sizing:border-box}
+  #a .mcard{--mw:292px;border-radius:0;box-shadow:none;height:408px;font-size:29.2px}
+  svg text{font-family:Archivo,Jost,sans-serif}
+</style></head><body>
+<div id="a"></div>
+<script src="/games/sentai/play/art.js"></script>
+<script src="/games/sentai/play/engine.js"></script>
+<script>
+const q = new URLSearchParams(location.search), p = q.get('p') || 'box-front';
+const A = SentaiArt, S = Sentai, P = A.P, el = document.getElementById('a');
+const B = (key) => { const boss = key >= 18 ? 'vael' : 'gorvax', k = key % 18, m = S.RULES.bosses[boss].acts[Math.floor(k / 6)][k % 6]; return { key, act: Math.floor(k / 6), type: m[0], name: m[2], needs: m[1], hex: m[3] || null }; };
+const tx = (x, y, t, size, fill, extra) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size}" fill="${fill}" ${extra || ''}>${t}</text>`;
+function rays(cx, cy, n, R) { let o = ''; for (let i = 0; i < n; i++) { const a0 = (i / n) * Math.PI * 2, a1 = a0 + Math.PI / n; o += `<path d="M${cx} ${cy} L${(cx + R * Math.cos(a0)).toFixed(2)} ${(cy + R * Math.sin(a0)).toFixed(2)} L${(cx + R * Math.cos(a1)).toFixed(2)} ${(cy + R * Math.sin(a1)).toFixed(2)}Z"/>`; } return o; }
+let m;
+if ((m = p.match(/^hero-(\d)-(\d+)$/))) el.innerHTML = A.cardHTML({ c: +m[1], r: +m[2], id: 0 });
+else if (p === 'hero-back') el.innerHTML = A.heroBackHTML();
+else if ((m = p.match(/^boss-back-(\d)$/))) el.innerHTML = A.bossBackHTML(+m[1], null);
+else if ((m = p.match(/^boss-(\d+)$/))) { const b = B(+m[1]); el.innerHTML = A.bossCardHTML(b, 0, { hexText: b.hex ? S.HEX[b.hex] : null }); }
+else if ((m = p.match(/^power-(\d)$/))) el.innerHTML = A.powerCardHTML(+m[1]);
+else if (p === 'box-front') {
+  // the combined robot facing Emperor Gorvax under a rising sun; the five machines line up below the horizon
+  const W = 100, H = 137.5, cx = 50, cy = 80;
+  let s = A.DEFS + `<rect width="${W}" height="${H}" fill="${P.paper}"/><g fill="${P.paper2}">${rays(cx, cy, 20, 130)}</g>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="25" fill="${P.hero[0]}"/><circle cx="${cx}" cy="${cy}" r="25" fill="url(#dots)"/>`;
+  s += `<rect x="0" y="104" width="${W}" height="${H - 104}" fill="${P.ink}"/><rect x="0" y="104" width="${W}" height="1.3" fill="${P.hero[2]}"/>`;
+  s += `<g transform="translate(4 45.6) scale(.42)">${A.robot()}</g>`;
+  s += `<g transform="translate(50 56.4) scale(.5)">${A.monster(17)}</g>`;
+  [0, 1, 2, 3, 4].forEach((c, i) => { s += `<g transform="translate(${5.5 + i * 18.4} 108.6) scale(.155)">${A.beast(c)}</g>`; });
+  s += tx(50, 26, 'SENTAI', 19.5, P.ink, 'font-weight="900" transform="skewX(-9)" dx="4.1"');
+  s += tx(50, 34.6, 'HOLD THE LINE TOGETHER', 3.5, P.heroDark[0], 'font-weight="700" style="letter-spacing:1.1px;font-family:Jost,sans-serif"');
+  s += tx(50, 130.4, 'A cooperative card game · 2–4 players · 20–30 min', 3, P.paper, 'font-weight="500" style="font-family:Jost,sans-serif"');
+  s += tx(50, 135.2, 'by Darren Don', 3, P.hero[2], 'font-weight="700" style="font-family:Jost,sans-serif;letter-spacing:.3px"');
+  s += `<rect width="${W}" height="${H}" filter="url(#sg)" opacity=".5"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="520" height="715">${s}</svg>`;
+} else if (p === 'box-side') {
+  let s = `<rect width="163" height="715" fill="${P.ink}"/><rect x="0" y="0" width="163" height="6" fill="${P.hero[2]}"/>`;
+  s += `<text transform="translate(110 357) rotate(-90) skewX(-9)" text-anchor="middle" font-size="96" font-weight="900" fill="${P.paper}">SENTAI</text>`;
+  [0, 1, 2, 3, 4].forEach((c, i) => { s += `<circle cx="81.5" cy="${60 + i * 0}" r="0"/>`; });
+  s += [0, 1, 2, 3, 4].map((c, i) => `<circle cx="${29.5 + i * 26}" cy="672" r="10.5" fill="${P.hero[c]}"/>` + A.emblem(c, P.cream, 29.5 + i * 26 - 6.6, 672 - 6.6, 13.2)).join('');
+  s += `<text x="81.5" y="44" text-anchor="middle" font-size="15" font-weight="700" fill="${P.hero[2]}" style="font-family:Jost,sans-serif">by Darren Don</text>`;
+  el.innerHTML = `<svg viewBox="0 0 163 715" width="163" height="715">${s}</svg>`;
+} else if (p === 'box-end') {
+  let s = `<rect width="520" height="163" fill="${P.ink}"/><rect x="0" y="0" width="520" height="6" fill="${P.hero[2]}"/>`;
+  s += `<text x="260" y="98" text-anchor="middle" font-size="84" font-weight="900" fill="${P.paper}" transform="skewX(-9)" dx="16">SENTAI</text>`;
+  s += `<text x="260" y="136" text-anchor="middle" font-size="16" font-weight="600" fill="${P.hero[2]}" style="font-family:Jost,sans-serif">2–4 players · 20–30 min · by Darren Don</text>`;
+  el.innerHTML = `<svg viewBox="0 0 520 163" width="520" height="163">${s}</svg>`;
+}
+document.fonts.load('900 20px Archivo').then(() => document.fonts.load('700 20px Jost')).then(() => document.fonts.ready).then(() => { window.__done = true; });
+</script></body></html>
