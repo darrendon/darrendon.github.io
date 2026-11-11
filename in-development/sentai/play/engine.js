@@ -26,9 +26,9 @@
         acts: [
           [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
            ['combine', [2, 2, 2], 'Static Swarm'], ['set', [3, 3, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
-          [['run', [3, 3, 5], 'Tiderazor'], ['run', [3, 3, 5], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
+          [['run', [3, 3, 4], 'Tiderazor'], ['run', [3, 3, 5], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
            ['combine', [3, 3, 4], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 2, 3], 'Twin Oni']],
-          [['run', [3, 5, 6], 'Megalith Rex'], ['run', [4, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
+          [['run', [3, 4, 6], 'Megalith Rex'], ['run', [4, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
            ['combine', [3, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
         ],
       },
@@ -89,7 +89,7 @@
     if (!st.n) return null;
     if (st.type === 'set') return { r: st.rank, c: c.c };
     if (st.type === 'color') return { r: c.r, c: st.color };
-    if (st.type === 'combine') { for (const k of [c.c, 0, 1, 2, 3, 4]) if (!(st.mask & (1 << k))) return { r: c.r, c: k }; return null; }
+    if (st.type === 'combine') { for (const k of [c.c, 0, 1, 2, 3, 4, 5, 6, 7]) if (!(st.mask & (1 << k))) return { r: c.r, c: k }; return null; }
     for (let r = st.lo + 1; r < st.hi; r++) if (!(st.rmask & (1 << r))) return { r, c: c.c };     // fill a gap first
     if (st.hi - st.lo + 1 < st.need && st.hi < RULES.ranks) return { r: st.hi + 1, c: c.c };
     if (st.hi - st.lo + 1 < st.need && st.lo > 1) return { r: st.lo - 1, c: c.c };
@@ -169,7 +169,7 @@
       this.colors = RULES.colorsFor(this.N);
       let id = 0;
       const deck = [];
-      for (let c = 0; c < this.colors; c++) for (let r = 1; r <= RULES.ranks; r++) deck.push({ id: id++, c, r });
+      for (let k = 0; k < (RULES.copies || 1); k++) for (let c = 0; c < this.colors; c++) for (let r = 1; r <= RULES.ranks; r++) deck.push({ id: id++, c, r });
       shuffle(deck);
       const handN = this.handSize = RULES.bosses[this.boss].hand || RULES.hand;
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
