@@ -181,7 +181,7 @@
       this.acts = RULES.actDraws[this.N].map((k, a) =>
         shuffle(B.acts[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[this.N - 2], name, hex: hex || null, key: keyBase + a * 6 + i }))).slice(0, k));
       this.total = this.acts.reduce((t, x) => t + x.length, 0);
-      this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = [];
+      this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = []; this.trash = [];   // trash: face-up discard pile, {c, seat}
       this.lead = Math.floor(rnd() * this.N);
       this.log = []; this.result = null; this.outcome = null; this.enc = null; this.penalty = null;
       this.seen = new Set();
@@ -286,6 +286,7 @@
         this.forget(seat, ids);
         this.pendingDiscard = this.pendingDiscard.filter((s) => s !== seat);
         this.result.discards[seat] = cs;
+        for (const c of cs) this.trash.push({ c, seat });
         if (!this.pendingDiscard.length) this.afterDiscards();
         return { ok: true };
       }
@@ -406,6 +407,7 @@
         this.say(x.boss.name + ' is cut off!');
         if (x.boss.hex === 'spite') { const last = x.plays[x.plays.length - 1].seat; counts[last]++; res.spite.push(last); this.say('Spite: ' + this.players[last].name + ' added the last card and discards 1.'); }
         res.cutHeads = (res.cutHeads || []).concat(x.boss);
+        for (const p of x.plays) for (const c of p.cards) this.trash.push({ c: c.real || c, seat: p.seat, spent: true });
         this.slots[i] = null;
       }
       for (const i of res.struck) {
@@ -415,6 +417,7 @@
         for (let p = 0; p < this.N; p++) counts[p] += cost;
         this.say(x.boss.name + ' strikes! Its ' + x.cards.length + ' card' + (x.cards.length === 1 ? ' is' : 's are') + ' lost and every Hero discards ' + cost + '.');
         res.struckHeads = (res.struckHeads || []).concat(x.boss);
+        for (const p of x.plays) for (const c of p.cards) this.trash.push({ c: c.real || c, seat: p.seat, spent: true });
         this.slots[i] = null;
       }
       for (const i of res.enraged) {
@@ -467,6 +470,7 @@
       done();
     }
     advance() {
+      if (this.enc && this.result && this.result.met) for (const p of this.enc.plays) for (const c of p.cards) this.trash.push({ c: c.real || c, seat: p.seat, spent: true });
       this.lead = (this.lead + 1) % this.N;
       if (this.boss === 'vael') { this.startRound(); return; }
       if (!this.row.length) {
@@ -490,10 +494,10 @@
     /* what one seat may see */
     view(seat) {
       const turn = this.turnSeat(), vael = this.boss === 'vael';
-      const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, total: x.boss.need, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })) });
+      const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, total: x.boss.need, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })), who: Object.fromEntries(x.plays.flatMap((p) => p.cards.map((c) => [c.id, p.seat]))) });
       return {
         seat, boss: this.boss, bossName: RULES.bosses[this.boss].name, phase: this.phase, colors: this.colors, total: this.total, done: this.done, misses: this.misses, fights: this.fights,
-        boxed: this.boxed, maxAdd: this.maxAdd(seat), maxAddHead: vael ? [this.maxAdd(seat, 0), this.maxAdd(seat, 1)] : null, act: this.actNo, lead: this.lead, powers: this.powers,
+        boxed: this.boxed, maxAdd: this.maxAdd(seat), maxAddHead: vael ? this.slots.map((_, h) => this.maxAdd(seat, h)) : null, act: this.actNo, lead: this.lead, powers: this.powers,
         players: this.players.map((p, i) => ({ name: p.name, bot: p.bot, hero: p.hero, count: this.hands[i].length,
           known: this.known[i].slice(),
           power: this.powers ? Object.assign({ used: (POWERS[p.hero].key === 'riptide' && this.used.riptide) || (POWERS[p.hero].key === 'overcharge' && this.used.overcharge) || (POWERS[p.hero].key === 'beacon' && this.beaconAct === this.actNo) }, POWERS[p.hero]) : null,
@@ -517,6 +521,7 @@
         },
         acts: this.acts.map((x, a) => ({ n: x.length })),
         hist: this.hist.slice(),
+        trash: this.trash.slice(-12), trashN: this.trash.length,
         outcome: this.outcome, log: this.log.slice(-20),
       };
     }
