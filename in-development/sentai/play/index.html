@@ -234,8 +234,8 @@
       } else {
         const back = r.bounced.map((x) => nm(x.seat) + ' took back ' + x.cards.map((c) => esc(S.cardName(c))).join(' and ')).join('; ');
         const e = v.enc;
-        banner = '<div class="banner' + (r.met ? '' : ' bad') + '"><div><b>' + (r.met ? esc(e.boss.name) + ' is defeated!' : esc(e.boss.name) + ' got away') + '</b><p>' +
-          (r.met ? 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 2.' + discLine(r)) + '</p></div></div>';
+        banner = '<div class="banner' + (r.met ? '' : ' bad') + '"><div><b>' + (r.met ? esc(e.boss.name) + ' is defeated!' : esc(e.boss.name) + ' holds on') + '</b><p>' +
+          (r.met ? 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 1, and you fight it again.' + discLine(r)) + '</p></div></div>';
       }
     }
 
@@ -293,7 +293,7 @@
       const tname = vael && T ? esc(T.boss.name) : 'the combo';
       const prompt = beaconOn ? 'Tap the card you want everyone to see.'
         : !T ? 'Nothing in your hand fits ' + (vael ? 'either head' : 'this combo') + '. You have to pass.'
-        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap the other head to switch)' : '') + '. Add 1 or 2 cards to one head, or 1 card to each. ' : 'Tap 1 or 2 cards that fit, then add them. ') + (vael ? 'Cards stay on a head until it’s cut or it strikes.' : 'If the combo falls short, everything added comes back, but everyone discards 2.');
+        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap the other head to switch)' : '') + '. Add 1 or 2 cards to one head, or 1 card to each. ' : 'Tap 1 or 2 cards that fit, then add them. ') + (vael ? 'Cards stay on a head until it’s cut or it strikes.' : 'If the combo falls short, everything added comes back, everyone discards 1, and you fight it again.');
       main += '<p class="prompt">' + prompt + (v.hand.length <= 3 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + (!v.canPass ? ' <b>Thorns: you lead, so you can’t pass.</b>' : '') + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
           : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass"' + (v.canPass ? '' : ' disabled') + '>Pass</button>' +
@@ -364,9 +364,9 @@
     create: (players, opts) => new S.Game(players, opts),
     render,
     rules:
-      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 14 cards each.</p>' +
+      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each (14 against the Hydra).</p>' +
       '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Color is one color, any ranks. A Combine is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
-      '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, and every Hero discards 2 face up. Get through Act III to win.</p>' +
+      '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in Act III to win.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once, each with a combo and a hex that’s in force while it’s out. On your turn, feed one head. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card to each. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an act): show a card.</p>',
   });

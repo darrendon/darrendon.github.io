@@ -8,10 +8,11 @@
   const RULES = {
     ranks: 12,                          // each color runs 1–12
     colorsFor: (n) => n + 1,            // colors in play = Heroes + 1
-    hand: 14,                           // cards dealt to each Hero
-    missDiscard: 2,                     // Gorvax: cards each Hero discards when a combo falls short
+    hand: 15,                           // cards dealt to each Hero (a Boss may say otherwise)
+    missDiscard: 1,                     // Gorvax: cards each Hero discards when a combo falls short
     strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
     maxAdd: 2,                          // cards a Hero may add per turn
+    replay: true,                       // Gorvax: a missed monster stays and is fought again
     heads: 2,                           // Vael: heads out at once
     enragedAny: false,                  // Vael: an enraged head takes any card (tried; too easy)
     rageRounds: 1,                      // Vael: rounds a head can stay enraged before it strikes
@@ -25,14 +26,15 @@
         acts: [
           [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
            ['combine', [2, 2, 2], 'Static Swarm'], ['set', [3, 3, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
-          [['run', [3, 3, 4], 'Tiderazor'], ['run', [3, 3, 4], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
+          [['run', [3, 3, 5], 'Tiderazor'], ['run', [3, 3, 5], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
            ['combine', [3, 3, 4], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 2, 3], 'Twin Oni']],
-          [['run', [3, 4, 6], 'Megalith Rex'], ['run', [3, 4, 5], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
+          [['run', [3, 5, 6], 'Megalith Rex'], ['run', [4, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
            ['combine', [3, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
         ],
       },
       vael: {
         name: 'Vael, the Hydra',
+        hand: 14,
         // per act: [type, [need with 2, 3, 4 Heroes], name, hex]
         acts: [
           [['run', [2, 2, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3], 'Sallowmaw', 'coil'],
@@ -169,8 +171,9 @@
       const deck = [];
       for (let c = 0; c < this.colors; c++) for (let r = 1; r <= RULES.ranks; r++) deck.push({ id: id++, c, r });
       shuffle(deck);
-      this.hands = this.players.map((_, i) => deck.slice(i * RULES.hand, (i + 1) * RULES.hand).sort(byCard));
-      this.box = deck.slice(this.N * RULES.hand);          // never seen in play
+      const handN = this.handSize = RULES.bosses[this.boss].hand || RULES.hand;
+      this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
+      this.box = deck.slice(this.N * handN);          // never seen in play
       this.boxed = this.box.length;
       this.known = this.players.map(() => []);             // cards everyone has seen each Hero holding
       const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
@@ -364,7 +367,7 @@
       const met = this.need() <= 0;
       this.fights++; this.hist.push({ key: this.enc.boss.key, met });
       this.result = { met, discards: {}, bounced: [] };
-      this.row = this.row.filter((b) => b !== this.enc.boss);   // beaten or not, the monster leaves
+      if (met || !RULES.replay) this.row = this.row.filter((b) => b !== this.enc.boss);   // beaten (or, without replay, missed): the monster leaves
       if (met) {
         this.done++;
         this.say('Combo complete! ' + this.enc.boss.name + ' is defeated.');
@@ -378,7 +381,7 @@
         this.known[p.seat] = this.known[p.seat].concat(real).sort(byCard);
         this.result.bounced.push({ seat: p.seat, cards: real });
       }
-      this.say('The combo falls short. ' + this.enc.boss.name + ' gets away. The cards go back to their Heroes.');
+      this.say('The combo falls short. ' + (RULES.replay ? this.enc.boss.name + ' stands its ground and must be fought again.' : this.enc.boss.name + ' gets away.') + ' The cards go back to their Heroes.');
       this.startPenalty(this.players.map(() => RULES.missDiscard), () => { this.phase = 'result'; });
     }
 
@@ -609,7 +612,8 @@
         for (let i = 0; i < plays.length; i += 2) hands[plays[i]] = hands[plays[i]].concat(plays[i + 1]);
         for (let i = 0; i < N; i++) { hands[i] = simpleDiscard(hands[i], RULES.missDiscard - (i === s.steady ? 1 : 0)); if (!hands[i].length) return 0; }
       }
-      li++; lead = (lead + 1) % N; st = null;
+      if (st.n >= m.need || !RULES.replay) li++;
+      lead = (lead + 1) % N; st = null;
     }
     return 1;
   }
