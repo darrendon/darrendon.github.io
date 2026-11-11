@@ -10,7 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); IMG = os.path.dirname(HERE); 
 URL = 'http://localhost:8123/games/sentai/img/src/'
 HEROES = ['hero-0-7', 'hero-1-4', 'hero-2-5', 'hero-3-6', 'hero-4-9', 'hero-0-2', 'hero-1-11', 'hero-2-12', 'hero-3-3', 'hero-4-1', 'hero-1-7', 'hero-3-7']
 BOSSES = ['boss-0', 'boss-2', 'boss-4', 'boss-8', 'boss-11', 'boss-12', 'boss-13', 'boss-17', 'boss-18', 'boss-26', 'boss-35']
-CARDS = HEROES + ['hero-back'] + BOSSES + ['boss-back-0', 'boss-back-1', 'boss-back-2'] + ['power-%d' % c for c in range(5)]
+CARDS = HEROES + ['hero-back'] + BOSSES + ['boss-back-%d' % i for i in range(6)] + ['power-%d' % c for c in range(5)]
 # (name, query, css width, css height, device scale): cards are 292 x 408 css px captured at 750 x 1050; the box is 4 x 5.5 x 1.25 in
 ART = [(c, 'p=' + c, 292, 408, 750 / 292) for c in CARDS] + [('box-front', 'p=box-front', 520, 715, 1.5), ('box-side', 'p=box-side', 163, 715, 1.5), ('box-end', 'p=box-end', 520, 163, 1.5)]
 SITE = dict({c: [240] for c in CARDS}, **{'box-front': [240, 480]})

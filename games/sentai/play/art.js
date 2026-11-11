@@ -7,7 +7,7 @@
     paper: '#F3E7CF', paper2: '#E9D9B8', ink: '#1F1A2B', cream: '#FFF6E4', white: '#FFFDF7', gray: '#C9C2B4',
     hero: ['#E2482F', '#2E5FAE', '#F0B429', '#3B9562', '#EC8AA2'],          // Red, Blue, Yellow, Green, Pink
     heroDark: ['#A92E1B', '#1D3F7A', '#B9821A', '#256B43', '#B65C74'],
-    act: ['#2F6B76', '#C8622F', '#2B2440'],                                  // Boss cards: Episode 1, Episode 2, the Finale
+    act: ['#2F6B76', '#C8622F', '#2B2440'],                                  // Boss cards: Season 1, Season 2, the Finale
   };
   // the five emblems, each in a 24×24 box: flame, wave, bolt, leaf, star
   const EMB = [
@@ -421,7 +421,7 @@
     return s;
   }
   /* ---------- cards as HTML, sized by one CSS variable so they print the same at any size (styles in cards.css) ---------- */
-  const TYPE_NAME = { run: 'Run', set: 'Set', color: 'Flush', combine: 'Roll Call' };
+  const TYPE_NAME = { run: 'Run', set: 'Set', color: 'Flush', combine: 'Rainbow' };
   // the little picture of each combo: abstract marks in one color, so they never suggest particular ranks or colors
   function comboIcon(type) {
     const k = 'currentColor';
@@ -436,11 +436,11 @@
      b: { key, act, type, name, needs: [2, 3, 4 Heroes], hex?, brooded? }   opts: { cls, attrs, hexText: { name, text } } */
   function bossCardHTML(b, n, opts) {
     opts = opts || {};
-    const ACTN = ['Episode 1', 'Episode 2', 'Finale'], needs = b.needs || [b.need, b.need, b.need];
+    const ACTN = ['Season 1', 'Season 2', 'Finale'], needs = b.needs || [b.need, b.need, b.need];
     const cells = needs.map((v, i) => `<span class="nu${n === i + 2 ? ' on' : ''}"><i>${'<u></u>'.repeat(i + 2)}</i><b>${v + (b.brooded && n === i + 2 ? '' : '')}</b></span>`).join('');
     const label = `${b.name}: ${TYPE_NAME[b.type]} of ${n ? (b.need != null ? b.need : needs[n - 2]) : needs.join(' / ')}`;
     return `<div class="mcard a${b.act}${b.hex ? ' hydra' : ''}${opts.cls ? ' ' + opts.cls : ''}" role="img" aria-label="${esc(label)}"${opts.attrs || ''}><div class="mf">` +
-      `<div class="mt"><span>${ACTN[b.act]}</span><span>${b.key >= 18 ? 'Vael' : 'Gorvax'}</span></div>` +
+      `<div class="mt"><span>${ACTN[b.act]}</span><span class="bm">${bossMark(b.key >= 18 ? 'vael' : 'gorvax')}${b.key >= 18 ? 'Vael' : 'Gorvax'}</span></div>` +
       `<div class="art">${monsterSVG(b.key, ' aria-hidden="true"', b.hex)}</div>` +
       `<div class="nm${b.name.length > 12 ? ' long' : ''}">${esc(b.name)}</div>` +
       `<div class="cb"><span>${TYPE_NAME[b.type]} of</span></div>` +
@@ -450,13 +450,25 @@
   }
   // card backs: Hero cards share one; Boss cards have one per act
   const heroBackHTML = (cls) => `<span class="sc bk${cls ? ' ' + cls : ''}">${svg('0 0 50 70', `<rect width="50" height="70" fill="${P.ink}"/><g fill="none" stroke="${P.cream}" stroke-width="1" opacity=".5"><rect x="4" y="4" width="42" height="62" rx="4"/></g>` + [0, 1, 2, 3, 4].map((c, i) => { const a = -Math.PI / 2 + i * Math.PI * 2 / 5; return `<circle cx="${(25 + 13 * Math.cos(a)).toFixed(1)}" cy="${(35 + 13 * Math.sin(a)).toFixed(1)}" r="5.4" fill="${P.hero[c]}"/>` + emblem(c, P.cream, 25 + 13 * Math.cos(a) - 3.4, 35 + 13 * Math.sin(a) - 3.4, 6.8); }).join('') + `<circle cx="25" cy="35" r="3" fill="${P.cream}"/>`, ' aria-hidden="true"')}</span>`;
-  const bossBackHTML = (act, label, opts) => `<div class="mcard mbk a${act}${opts && opts.cls ? ' ' + opts.cls : ''}"${opts && opts.attrs || ''}><div class="mf"><div class="ring">${svg('0 0 100 100', `<circle cx="50" cy="50" r="34" fill="none" stroke="${P.cream}" stroke-width="3" opacity=".8"/><path d="M50 22 L57 43 L79 43 L61 56 L68 78 L50 64 L32 78 L39 56 L21 43 L43 43Z" fill="${P.cream}" opacity=".9"/>`, ' aria-hidden="true"')}</div><div class="bl">${['Episode 1', 'Episode 2', 'Finale'][act]}</div>${label != null ? `<div class="bn">${label}</div>` : ''}</div></div>`;
+  // each Boss deck's mark, on its backs and in the corner of its fronts, so the two decks sort apart at a glance:
+  // Gorvax is a crown, Vael is three serpent heads
+  const BOSS_MARK = {
+    gorvax: (k) => `<path d="M17 72 L12 33 L32 51 L50 22 L68 51 L88 33 L83 72Z" fill="${k}"/><rect x="17" y="77" width="66" height="9" rx="2" fill="${k}"/><circle cx="12" cy="29" r="5" fill="${k}"/><circle cx="50" cy="17" r="5" fill="${k}"/><circle cx="88" cy="29" r="5" fill="${k}"/>`,
+    vael: (k, bg) => `<g fill="none" stroke="${k}" stroke-width="10" stroke-linecap="round"><path d="M50 92 V46"/><path d="M41 92 C41 72 25 68 25 50"/><path d="M59 92 C59 72 75 68 75 50"/></g>` +
+      [[25, 40, -24], [50, 33, 0], [75, 40, 24]].map(([x, y, a]) => `<g transform="translate(${x} ${y}) rotate(${a})"><path d="M0 -15 C9 -15 12 -6 11 2 L5 9 L-5 9 L-11 2 C-12 -6 -9 -15 0 -15Z" fill="${k}"/><path d="M-4 8 L-2.5 14 L-1 8Z M4 8 L2.5 14 L1 8Z" fill="${k}"/><circle cx="-4.6" cy="-3" r="2.3" fill="${bg || 'none'}"/><circle cx="4.6" cy="-3" r="2.3" fill="${bg || 'none'}"/></g>`).join(''),
+  };
+  const bossMark = (boss, fill, cls) => svg('0 0 100 100', BOSS_MARK[boss](fill || 'currentColor'), (cls ? ` class="${cls}"` : '') + ' aria-hidden="true"');
+  const BOSS_LABEL = { gorvax: 'Gorvax', vael: 'Vael' };
+  // opts.boss: 'gorvax' (default) or 'vael'
+  const bossBackHTML = (act, label, opts) => { opts = opts || {}; const boss = opts.boss || 'gorvax';
+    return `<div class="mcard mbk a${act} bk-${boss}${opts.cls ? ' ' + opts.cls : ''}"${opts.attrs || ''}><div class="mf"><div class="ring">${svg('0 0 100 100', `<circle cx="50" cy="50" r="40" fill="#FFF6E4"/><circle cx="50" cy="50" r="34" fill="none" stroke="${P.act[act]}" stroke-width="2.4"/><g transform="translate(50 52) scale(.5) translate(-50 -50)">${BOSS_MARK[boss](P.act[act], '#FFF6E4')}</g>`, ' aria-hidden="true"')}</div><div class="bb">${BOSS_LABEL[boss]}</div><div class="bl">${['Season 1', 'Season 2', 'Finale'][act]}</div>${label != null ? `<div class="bn">${label}</div>` : ''}</div></div>`; };
   // a Hero power card
-  const POWER_ART = [['Command', 'Always on', 'When you lead, you may add up to 3 cards.'], ['Riptide', 'Once a game', 'When the squad would discard, nobody does.'], ['Overcharge', 'Once a game', 'One card you add fits the combo, whatever its rank and color.'], ['Steady', 'Always on', 'Whenever the squad discards, you discard 1 fewer.'], ['Beacon', 'Once an episode', 'On your turn, show one card from your hand to everyone.']];
+  const POWER_ART = [['Command', 'Always on', 'When you lead, you may add up to 3 cards.'], ['Riptide', 'Once a game', 'When the squad would discard, nobody does.'], ['Overcharge', 'Once a game', 'One card you add fits the combo, whatever its rank and color.'], ['Steady', 'Always on', 'Whenever the squad discards, you discard 1 fewer.'], ['Beacon', 'Once a season', 'On your turn, show one card from your hand to everyone.']];
   const powerCardHTML = (c, cls) => `<div class="mcard pwc c${c}${cls ? ' ' + cls : ''}"><div class="mf"><div class="mt"><span>Hero power</span><span>${['Red', 'Blue', 'Yellow', 'Green', 'Pink'][c]}</span></div><div class="art">${beastSVG(c, ' aria-hidden="true"')}</div><div class="nm">${POWER_ART[c][0]}</div><div class="cb"><span>${POWER_ART[c][1]}</span></div><div class="hx">${POWER_ART[c][2]}</div></div></div>`;
   // card face (HTML) used by the playable build
-  const cardHTML = (c, cls) => `<span class="sc c${c.c}${cls ? ' ' + cls : ''}" data-id="${c.id}"><b>${c.r}</b>${svg('0 0 24 24', emblem(c.c, 'currentColor'), ' class="se" aria-hidden="true"')}${beastSVG(c.c, ' class="pa" aria-hidden="true"')}<b class="br">${c.r}</b></span>`;
+  const cardHTML = (c, cls) => { const ix = (k) => `<span class="ix ${k}"><b${c.r > 9 ? ' class="two"' : c.r === 6 || c.r === 9 ? ' class="un"' : ''}>${c.r}</b>${svg('0 0 24 24', emblem(c.c, 'currentColor'), ' aria-hidden="true"')}</span>`;
+    return `<span class="sc c${c.c}${cls ? ' ' + cls : ''}" data-id="${c.id}">${ix('tl')}${beastSVG(c.c, ' class="pa" aria-hidden="true"')}${ix('br')}</span>`; };
 
-  const api = { P, EMB, emblem, hero, heroSVG, monster, monsterSVG, box, DEFS, svg, cardHTML, MONSTERS: M, HEADS: H, hydraHead, PART, PART_BOX, robot, partSVG, BEAST, BEAST_NAME, beast, beastSVG, villain, mix, comboIcon, bossCardHTML, heroBackHTML, bossBackHTML, powerCardHTML };
+  const api = { P, EMB, emblem, hero, heroSVG, monster, monsterSVG, box, DEFS, svg, cardHTML, MONSTERS: M, HEADS: H, hydraHead, PART, PART_BOX, robot, partSVG, BEAST, BEAST_NAME, beast, beastSVG, villain, mix, comboIcon, bossCardHTML, bossMark, BOSS_MARK, heroBackHTML, bossBackHTML, powerCardHTML };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.SentaiArt = api;
 })(typeof window !== 'undefined' ? window : globalThis);

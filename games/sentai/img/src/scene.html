@@ -61,7 +61,7 @@
     const g = new THREE.Group();
     const e = new THREE.Mesh(cardEdge, edgeMat); e.position.z = -CT; e.castShadow = true; e.receiveShadow = true; g.add(e);
     const f = new THREE.Mesh(cardCap, await faceMat(face)); f.position.z = 0.002; f.receiveShadow = true; g.add(f);
-    const b = new THREE.Mesh(cardCap, await faceMat(backFace || (face.startsWith('boss-') && !face.startsWith('boss-back') ? 'boss-back-' + Math.floor((+face.slice(5, -4) % 18) / 6) + '.jpg' : 'hero-back.jpg'))); b.position.z = -CT - 0.002; b.rotation.y = Math.PI; b.receiveShadow = true; g.add(b);
+    const b = new THREE.Mesh(cardCap, await faceMat(backFace || (face.startsWith('boss-') && !face.startsWith('boss-back') ? 'boss-back-' + Math.floor(+face.slice(5, -4) / 6) + '.jpg' : 'hero-back.jpg'))); b.position.z = -CT - 0.002; b.rotation.y = Math.PI; b.receiveShadow = true; g.add(b);
     return g;
   }
   async function flat(face, x, z, yaw = 0, name) { const g = new THREE.Group(), b = await cardBody(face); b.rotation.x = -Math.PI / 2; b.position.y = CT + 0.001; g.add(b); g.position.set(x, 0, z); g.rotation.y = yaw; g.name = name || face; return add(g); }
@@ -129,7 +129,7 @@
     // everything in the box, flat: one Hero card of each color and their back; Gorvax's monsters and Vael's heads with the three act backs;
     // three of the five Hero powers; the box
     const GX = 2.85, GZ = 3.85, X0 = -5.2, Z0 = -5.6;
-    const rows = [['hero-0-7', 'hero-1-4', 'hero-2-5', 'hero-3-6', 'hero-4-9', 'hero-back'], ['boss-0', 'boss-8', 'boss-17', 'boss-18', 'boss-26', 'boss-35'], ['boss-back-0', 'boss-back-1', 'boss-back-2', 'power-0', 'power-2', 'power-4']];
+    const rows = [['hero-0-7', 'hero-1-4', 'hero-2-5', 'hero-3-6', 'hero-4-9', 'hero-back'], ['boss-0', 'boss-8', 'boss-17', 'boss-18', 'boss-26', 'boss-35'], ['boss-back-0', 'boss-back-4', 'boss-back-2', 'power-0', 'power-2', 'power-4']];
     for (const [r, row] of rows.entries()) for (const [c, n] of row.entries()) await flat(n + '.jpg', X0 + c * GX, Z0 + r * GZ, 0, n);
     await box(-10.6, -4.6, 0);
     frame([-12.8, 0, -7.6], [10.6, 5.5, 4.0], 62, 0, 0.97);

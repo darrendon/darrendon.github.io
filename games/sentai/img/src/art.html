@@ -1,7 +1,7 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><title>Sentai art</title>
 <!-- One piece of Sentai art at print proportions, drawn by /games/sentai/play/art.js and styled by cards.css:
-     ?p=hero-<color 0-4>-<rank 1-12> | hero-back | boss-<key 0-35> | boss-back-<act 0-2> | power-<color 0-4> | box-front | box-side | box-end
+     ?p=hero-<color 0-4>-<rank 1-12> | hero-back | boss-<key 0-35> | boss-back-<0-2 Gorvax, 3-5 Vael> | power-<color 0-4> | box-front | box-side | box-end
      Cards are 292 x 408 css px (poker, full bleed, square corners: the 3D scene and the page round them); shoot.py captures them at 750 x 1050.
      The box is a two-piece box, 4 x 5.5 x 1.25 in: front 520 x 715, side 163 x 715, end 520 x 163. -->
 <link rel="stylesheet" href="/assets/css/fonts.css">
@@ -25,35 +25,62 @@ function rays(cx, cy, n, R) { let o = ''; for (let i = 0; i < n; i++) { const a0
 let m;
 if ((m = p.match(/^hero-(\d)-(\d+)$/))) el.innerHTML = A.cardHTML({ c: +m[1], r: +m[2], id: 0 });
 else if (p === 'hero-back') el.innerHTML = A.heroBackHTML();
-else if ((m = p.match(/^boss-back-(\d)$/))) el.innerHTML = A.bossBackHTML(+m[1], null);
+else if ((m = p.match(/^boss-back-(\d)$/))) el.innerHTML = A.bossBackHTML(+m[1] % 3, null, { boss: +m[1] >= 3 ? 'vael' : 'gorvax' });
 else if ((m = p.match(/^boss-(\d+)$/))) { const b = B(+m[1]); el.innerHTML = A.bossCardHTML(b, 0, { hexText: b.hex ? S.HEX[b.hex] : null }); }
 else if ((m = p.match(/^power-(\d)$/))) el.innerHTML = A.powerCardHTML(+m[1]);
 else if (p === 'box-front') {
-  // the combined robot facing Emperor Gorvax under a rising sun; the five machines line up below the horizon
-  const W = 100, H = 137.5, cx = 50, cy = 80;
-  let s = A.DEFS + `<rect width="${W}" height="${H}" fill="${P.paper}"/><g fill="${P.paper2}">${rays(cx, cy, 20, 130)}</g>`;
-  s += `<circle cx="${cx}" cy="${cy}" r="25" fill="${P.hero[0]}"/><circle cx="${cx}" cy="${cy}" r="25" fill="url(#dots)"/>`;
-  s += `<rect x="0" y="104" width="${W}" height="${H - 104}" fill="${P.ink}"/><rect x="0" y="104" width="${W}" height="1.3" fill="${P.hero[2]}"/>`;
-  s += `<g transform="translate(4 45.6) scale(.42)">${A.robot()}</g>`;
-  s += `<g transform="translate(50 56.4) scale(.5)">${A.monster(17)}</g>`;
-  [0, 1, 2, 3, 4].forEach((c, i) => { s += `<g transform="translate(${5.5 + i * 18.4} 108.6) scale(.155)">${A.beast(c)}</g>`; });
-  s += tx(50, 26, 'SENTAI', 19.5, P.ink, 'font-weight="900" transform="skewX(-9)" dx="4.1"');
-  s += tx(50, 34.6, 'HOLD THE LINE TOGETHER', 3.5, P.heroDark[0], 'font-weight="700" style="letter-spacing:1.1px;font-family:Jost,sans-serif"');
-  s += tx(50, 130.4, 'A cooperative card game · 2–4 players · 20–30 min', 3, P.paper, 'font-weight="500" style="font-family:Jost,sans-serif"');
-  s += tx(50, 135.2, 'by Darren Don', 3, P.hero[2], 'font-weight="700" style="font-family:Jost,sans-serif;letter-spacing:.3px"');
-  s += `<rect width="${W}" height="${H}" filter="url(#sg)" opacity=".5"/>`;
+  // dusk over the city: the combined robot squares off with Emperor Gorvax in front of a striped setting sun,
+  // and the five machines charge in along the street below
+  const W = 100, H = 137.5, sky = ['#2B2440', '#3E2C52', '#5A3358', '#7E3B52'], gr = 99;
+  let s = A.DEFS;
+  sky.forEach((c, i) => { s += `<rect x="0" y="${[0, 30, 46, 58][i]}" width="${W}" height="${H}" fill="${c}"/>`; });
+  // stars
+  [[8, 9], [17, 31], [91, 12], [84, 33], [6, 44], [95, 47], [25, 6], [73, 6]].forEach(([x, y], i) => { s += `<circle cx="${x}" cy="${y}" r="${i % 3 ? .45 : .7}" fill="${P.cream}" opacity=".8"/>`; });
+  // the sun: bands of gold to red, cut by widening gaps toward the horizon
+  s += `<clipPath id="sun"><circle cx="50" cy="76" r="31"/></clipPath><g clip-path="url(#sun)">`;
+  [[45, P.hero[2]], [57, '#F08A2C'], [66, P.hero[0]], [76, '#C9363A']].forEach(([y, c], i, a) => { s += `<rect x="0" y="${y}" width="100" height="${(a[i + 1] ? a[i + 1][0] : 108) - y}" fill="${c}"/>`; });
+  [[70, 1], [77, 1.6], [83, 2.3], [88.5, 3], [93.5, 3.6]].forEach(([y, h]) => { s += `<rect x="0" y="${y}" width="100" height="${h}" fill="${sky[3]}"/>`; });
+  s += `</g>`;
+  // the skyline, two layers, with a few lit windows
+  const towers = (cs, base, col, win) => cs.map(([x, w, h]) => `<rect x="${x}" y="${base - h}" width="${w}" height="${h + 2}" fill="${col}"/>` + (win ? Array.from({ length: Math.floor(h / 4) }, (_, r) => Array.from({ length: Math.floor(w / 2.6) }, (_, c) => ((r * 7 + c * 3 + x) % 5 === 0) ? `<rect x="${(x + 1 + c * 2.6).toFixed(1)}" y="${base - h + 2 + r * 4}" width="1.1" height="1.6" fill="${P.hero[2]}" opacity=".85"/>` : '').join('')).join('') : '')).join('');
+  s += towers([[0, 7, 15], [6, 5, 22], [12, 8, 12], [21, 6, 18], [30, 9, 10], [62, 7, 13], [70, 5, 24], [76, 9, 16], [86, 6, 20], [93, 7, 11]], gr, '#4B2F4E', false);
+  s += towers([[-1, 9, 9], [9, 6, 14], [17, 7, 7], [26, 8, 11], [66, 8, 8], [75, 6, 13], [83, 9, 9], [93, 8, 15]], gr, '#241D33', true);
+  // the street
+  s += `<rect x="0" y="${gr}" width="${W}" height="${H - gr}" fill="${P.ink}"/><rect x="0" y="${gr}" width="${W}" height="1" fill="${P.hero[2]}"/>`;
+  for (let k = -6; k <= 6; k++) s += `<path d="M${50 + k * 3} ${gr + 1} L${50 + k * 20} ${H}" stroke="#2E2740" stroke-width=".7"/>`;
+  // the face-off, with clear air between them
+  s += `<g transform="translate(5.5 39.6) scale(.42)">${A.robot()}</g>`;
+  s += `<g transform="translate(47 44.5) scale(.56)">${A.monster(17)}</g>`;
+  // the five machines charging in, speed lines behind each
+  [0, 1, 2, 3, 4].forEach((c, i) => {
+    const x = 3.5 + i * 19, y = 101.5 + (i % 2) * 3.2;
+    s += `<g stroke="${P.hero[c]}" stroke-width=".7" stroke-linecap="round" opacity=".7"><path d="M${x - 1.5} ${y + 6} h-2.6"/><path d="M${x - .5} ${y + 9} h-3.6"/><path d="M${x - 1.5} ${y + 12} h-2.2"/></g>`;
+    s += `<g transform="translate(${x} ${y}) scale(.165)">${A.beast(c)}</g>`;
+  });
+  // title: cream letters with a red drop, the squad's five colors under it, then the tagline
+  const title = (dx, dy, fill) => `<text x="${50 + dx}" y="${25.5 + dy}" text-anchor="middle" font-size="22" font-weight="900" fill="${fill}" transform="skewX(-9)" dx="4.1">SENTAI</text>`;
+  s += title(.9, 1.1, P.hero[0]) + title(0, 0, P.cream);
+  [0, 1, 2, 3, 4].forEach((c, i) => { s += `<rect x="${21 + i * 11.8}" y="29.6" width="10.6" height="1.5" rx=".5" fill="${P.hero[c]}"/>`; });
+  s += tx(50, 37.4, 'FIGHT AS ONE', 3.9, P.hero[2], 'font-weight="700" style="letter-spacing:1.4px;font-family:Jost,sans-serif"');
+  s += tx(50, 129.8, 'A cooperative card game · 2–4 players · 20–30 min', 3, P.paper, 'font-weight="500" style="font-family:Jost,sans-serif"');
+  s += tx(50, 134.6, 'by Darren Don', 3, P.hero[2], 'font-weight="700" style="font-family:Jost,sans-serif;letter-spacing:.3px"');
+  s += `<rect width="${W}" height="${H}" filter="url(#sg)" opacity=".45"/>`;
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="520" height="715">${s}</svg>`;
 } else if (p === 'box-side') {
-  let s = `<rect width="163" height="715" fill="${P.ink}"/><rect x="0" y="0" width="163" height="6" fill="${P.hero[2]}"/>`;
-  s += `<text transform="translate(110 357) rotate(-90) skewX(-9)" text-anchor="middle" font-size="96" font-weight="900" fill="${P.paper}">SENTAI</text>`;
-  [0, 1, 2, 3, 4].forEach((c, i) => { s += `<circle cx="81.5" cy="${60 + i * 0}" r="0"/>`; });
-  s += [0, 1, 2, 3, 4].map((c, i) => `<circle cx="${29.5 + i * 26}" cy="672" r="10.5" fill="${P.hero[c]}"/>` + A.emblem(c, P.cream, 29.5 + i * 26 - 6.6, 672 - 6.6, 13.2)).join('');
+  let s = `<rect width="163" height="715" fill="#2B2440"/><rect x="0" y="560" width="163" height="155" fill="${P.ink}"/>`;
+  s += [0, 1, 2, 3, 4].map((c, i) => `<rect x="${12 + i * 28.6}" y="0" width="25" height="7" fill="${P.hero[c]}"/>`).join('');
   s += `<text x="81.5" y="44" text-anchor="middle" font-size="15" font-weight="700" fill="${P.hero[2]}" style="font-family:Jost,sans-serif">by Darren Don</text>`;
+  s += `<text transform="translate(115 330) rotate(-90) skewX(-9)" text-anchor="middle" font-size="94" font-weight="900" fill="${P.hero[0]}" dx="3" dy="3">SENTAI</text>`;
+  s += `<text transform="translate(115 330) rotate(-90) skewX(-9)" text-anchor="middle" font-size="94" font-weight="900" fill="${P.cream}">SENTAI</text>`;
+  s += `<text transform="translate(40 330) rotate(-90)" text-anchor="middle" font-size="17" font-weight="700" fill="${P.hero[2]}" style="font-family:Jost,sans-serif;letter-spacing:4px">FIGHT AS ONE</text>`;
+  s += [[0, 9, 580], [1, 59, 580], [2, 109, 580], [3, 34, 638], [4, 84, 638]].map(([c, x, y]) => `<g transform="translate(${x} ${y}) scale(.46)">${A.beast(c)}</g>`).join('');
   el.innerHTML = `<svg viewBox="0 0 163 715" width="163" height="715">${s}</svg>`;
 } else if (p === 'box-end') {
-  let s = `<rect width="520" height="163" fill="${P.ink}"/><rect x="0" y="0" width="520" height="6" fill="${P.hero[2]}"/>`;
-  s += `<text x="260" y="98" text-anchor="middle" font-size="84" font-weight="900" fill="${P.paper}" transform="skewX(-9)" dx="16">SENTAI</text>`;
-  s += `<text x="260" y="136" text-anchor="middle" font-size="16" font-weight="600" fill="${P.hero[2]}" style="font-family:Jost,sans-serif">2–4 players · 20–30 min · by Darren Don</text>`;
+  let s = `<rect width="520" height="163" fill="#2B2440"/>` + [0, 1, 2, 3, 4].map((c, i) => `<rect x="${i * 104}" y="0" width="104" height="7" fill="${P.hero[c]}"/>`).join('');
+  s += `<g transform="translate(14 32) scale(.82)">${A.beast(0)}</g><g transform="translate(424 32) scale(.82)">${A.beast(1)}</g>`;
+  s += `<text x="260" y="96" text-anchor="middle" font-size="66" font-weight="900" fill="${P.hero[0]}" transform="skewX(-9)" dx="17.5" dy="2.6">SENTAI</text>`;
+  s += `<text x="260" y="96" text-anchor="middle" font-size="66" font-weight="900" fill="${P.cream}" transform="skewX(-9)" dx="15">SENTAI</text>`;
+  s += `<text x="260" y="134" text-anchor="middle" font-size="14" font-weight="600" fill="${P.hero[2]}" style="font-family:Jost,sans-serif;letter-spacing:.4px">FIGHT AS ONE · 2–4 players · 20–30 min · by Darren Don</text>`;
   el.innerHTML = `<svg viewBox="0 0 520 163" width="520" height="163">${s}</svg>`;
 }
 document.fonts.load('900 20px Archivo').then(() => document.fonts.load('700 20px Jost')).then(() => document.fonts.ready).then(() => { window.__done = true; });

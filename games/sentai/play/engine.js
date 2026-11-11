@@ -70,11 +70,11 @@
     { key: 'riptide', name: 'Riptide', kind: 'Once a game', text: 'When the squad would discard, nobody does.' },
     { key: 'overcharge', name: 'Overcharge', kind: 'Once a game', text: 'One card you add fits the combo, whatever its rank and color.' },
     { key: 'steady', name: 'Steady', kind: 'Passive', text: 'Whenever the squad discards, you discard 1 fewer.' },
-    { key: 'beacon', name: 'Beacon', kind: 'Once an episode', text: 'On your turn, show one card from your hand to everyone.' },
+    { key: 'beacon', name: 'Beacon', kind: 'Once a season', text: 'On your turn, show one card from your hand to everyone.' },
   ];
   const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Pink'];
-  const TYPE = { run: 'Run', set: 'Set', color: 'Flush', combine: 'Roll Call' };   // color = one color; combine = all different colors
-  const ACTN = ['Episode 1', 'Episode 2', 'The Finale'];   // the three acts, as the players see them
+  const TYPE = { run: 'Run', set: 'Set', color: 'Flush', combine: 'Rainbow' };   // color = one color; combine = all different colors
+  const ACTN = ['Season 1', 'Season 2', 'The Finale'];   // the three acts, as the players see them
   const BOT_NAMES = ['Kenji', 'Aiko', 'Rio', 'Sora', 'Hana', 'Jun', 'Mika', 'Taro', 'Yumi', 'Ren'];
   const rnd = Math.random;
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
@@ -197,12 +197,12 @@
       this.seen = new Set();
       if (this.boss === 'vael') {
         this.pile = this.acts[0].slice(); this.slots = new Array(RULES.heads || RULES.bosses.vael.heads[this.N] || 2).fill(null);
-        this.say('Vael rises. Episode 1 begins.');
+        this.say('Vael rises. Season 1 begins.');
         this.grow(); this.startRound();
       } else {
         this.row = this.acts[0].slice();
         this.row.forEach((b) => this.seen.add(b.key));
-        this.say('Episode 1 lines up: ' + this.row.map((b) => b.name).join(', ') + '.');
+        this.say('Season 1 lines up: ' + this.row.map((b) => b.name).join(', ') + '.');
         this.startFight(this.row[0]);
       }
     }

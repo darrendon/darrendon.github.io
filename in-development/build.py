@@ -165,6 +165,9 @@ FOOT = '''
 <script src="/assets/js/site.js"></script>
 '''
 
+# every game named under "For fans of" links to its BoardGameGeek page
+BGG = {'Jibber Jabble': 438964, 'The Resistance': 41114, 'Hanabi': 98778}
+def comps(v): return ' · '.join(f'<a href="https://boardgamegeek.com/boardgame/{BGG[n]}" target="_blank" rel="noopener">{e(n)}</a>' if n in BGG else e(n) for n in v.split(' · '))
 def specs_meta(g): return ''.join(f'<li>{e(v)}{" Players" if k == "Players" else ""}</li>' for k, v in g['specs'] if k in ('Players', 'Time', 'Genre'))
 def img(g, name, w=None): return f'/in-development/{g["slug"]}/img/{name}{("-" + str(w)) if w else ""}.webp'
 
@@ -214,7 +217,7 @@ def build_index():
 def build_game(g):
     url = f'/in-development/{g["slug"]}/'
     out = head(f'{g["title"]} · In Development · Darren Don', g['hook'], url, img(g, 'scene'), 'dev ' + g['cls'])
-    specs = ''.join(f'<div class="spec"><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in g['specs'])
+    specs = ''.join(f'<div class="spec"><dt>{e(k)}</dt><dd>{comps(v) if k == "For fans of" else e(v)}</dd></div>' for k, v in g['specs'])
     acts = []
     if g['play']: acts.append('<a class="btn accent" href="#play">Play in your browser</a>')
     acts.append(f'<a class="btn{"" if g["play"] else " accent"}" href="#feedback">Give feedback</a>')

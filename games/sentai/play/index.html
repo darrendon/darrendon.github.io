@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <link rel="stylesheet" href="/assets/css/dev-table.css">
-<link rel="stylesheet" href="cards.css">
+<link rel="stylesheet" href="cards.css?v=c04041df">
 <style>
   body{--t-bg:#F3E7CF;--t-card:#FFF6E4;--t-ink:#1F1A2B;--t-muted:#6A5F57;--t-line:#E2CFAB;--t-accent:#E2482F;--t-accent-ink:#fff;--t-mast:#1F1A2B;--t-mast-ink:#F3E7CF;
     --felt:#24483F;--felt-d:#1A3730;--felt-ink:#EFE3C8;--felt-mute:#A9BFA9;--wood:#6B4329;--gold:#F0B429}
@@ -163,13 +163,13 @@
 <body>
 <div id="app"></div>
 <script src="/assets/js/dev-table.js"></script>
-<script src="art.js"></script>
-<script src="engine.js"></script>
+<script src="art.js?v=a3818800"></script>
+<script src="engine.js?v=f83a4e56"></script>
 <script>
 (function () {
   'use strict';
   const S = window.Sentai, A = window.SentaiArt, esc = DevTable.esc;
-  const ACT = ['Episode 1', 'Episode 2', 'Finale'], IN = ['Episode 1', 'Episode 2', 'the Finale'], TYPE = S.TYPE, COL = S.COLORS;
+  const ACT = ['Season 1', 'Season 2', 'Finale'], IN = ['Season 1', 'Season 2', 'the Finale'], TYPE = S.TYPE, COL = S.COLORS;
   const TUT = new URLSearchParams(location.search).has('tutorial');   // a coached first two monsters
   let tutDone = false;
   let sel = [], selHead = {}, key = '', tgt = null, wildOn = false, wildId = null, beaconOn = false;   // selHead: card id → head it's going to
@@ -323,7 +323,7 @@
     // left side: what's still face down
     const later = v.acts.map((a, i) => ({ i, n: a.n })).filter((a) => a.i > v.act);
     const decks = (vael && v.pile ? [{ i: v.act, n: v.pile, now: true }] : []).concat(later);
-    const left = '<div class="side l">' + (decks.length ? decks.map((d) => '<div class="pile">' + A.bossBackHTML(d.i, d.n, { attrs: ' data-anchor="deck' + d.i + '"' }) + '<span class="lbl">' + (d.now ? 'This episode’s pile' : 'Face down') + '</span></div>').join('')
+    const left = '<div class="side l">' + (decks.length ? decks.map((d) => '<div class="pile">' + A.bossBackHTML(d.i, d.n, { boss: v.boss, attrs: ' data-anchor="deck' + d.i + '"' }) + '<span class="lbl">' + (d.now ? 'This season’s pile' : 'Face down') + '</span></div>').join('')
       : '<div class="pile"><div class="spot"></div><span class="lbl">No monsters left face down</span></div>') + '</div>';
 
     // right side: the discard pile and the beaten monsters
@@ -503,11 +503,11 @@
     render,
     rules:
       '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each (14 against the Hydra).</p>' +
-      '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Flush is one color, any ranks. A Roll Call is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
-      '<p><b>Emperor Gorvax.</b> Each episode’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
-      '<p><b>Gorvax: fewer, bigger monsters (prototype).</b> Only 7 monsters a game (2, 2 and 3 per episode), and each asks for most of what the whole table can add in one go, so most fights come down to the last Hero. Deal 16 cards each (15 with 4 Heroes). Everything else is the same.</p>' +
+      '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Flush is one color, any ranks. A Rainbow is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
+      '<p><b>Emperor Gorvax.</b> Each season’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
+      '<p><b>Gorvax: fewer, bigger monsters (prototype).</b> Only 7 monsters a game (2, 2 and 3 per season), and each asks for most of what the whole table can add in one go, so most fights come down to the last Hero. Deal 16 cards each (15 with 4 Heroes). Everything else is the same.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or 4 Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
-      '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an episode): show a card.</p>',
+      '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once a season): show a card.</p>',
   });
   if (TUT) { const n = document.getElementById('dt-l-n'); if (n) n.value = '3'; const b = document.getElementById('dt-l-start'); if (b) b.click(); }
 })();

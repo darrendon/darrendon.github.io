@@ -3,17 +3,21 @@
 .c0{--c:#E2482F;--cd:#A92E1B}.c1{--c:#2E5FAE;--cd:#1D3F7A}.c2{--c:#F0B429;--cd:#9A6A10}.c3{--c:#3B9562;--cd:#256B43}.c4{--c:#EC8AA2;--cd:#B65C74}
 .a0{--a:#2F6B76}.a1{--a:#D76A3C}.a2{--a:#2B2440}
 
-/* Hero cards: rank and emblem in the corners, the Hero's machine in the middle */
+/* Hero cards: rank and emblem in two opposite corners (dual index), the Hero's machine in the middle */
 .sc{--w:62px;width:var(--w);height:calc(var(--w)*1.4);border-radius:calc(var(--w)*.13);border:calc(var(--w)*.05) solid var(--c);color:var(--c);position:relative;display:inline-block;flex:none;box-shadow:0 2px 0 rgba(0,0,0,.28);overflow:hidden;
   background:radial-gradient(circle at 50% 63%,color-mix(in srgb,var(--c) 24%,#FFF6E4) 0 44%,#FFF6E4 45%)}
-.sc .pa{position:absolute;left:5%;top:29%;width:90%;height:66%}
-.sc b{position:absolute;left:6%;top:2.5%;font:900 calc(var(--w)*.32)/1 Archivo,Jost,sans-serif;color:var(--cd);z-index:1}
-.sc b.br{display:none}
-.sc .se{position:absolute;right:6%;top:5%;width:calc(var(--w)*.25);height:auto;z-index:1}
+.sc .pa{position:absolute;left:13%;top:23%;width:74%;height:54%}
+.sc .ix{position:absolute;display:flex;flex-direction:column;align-items:center;gap:calc(var(--w)*.015);width:calc(var(--w)*.27);z-index:1}
+.sc .ix.tl{left:3.5%;top:2.5%}
+.sc .ix.br{right:3.5%;bottom:2.5%;transform:rotate(180deg)}
+.sc .ix b{font:900 calc(var(--w)*.3)/1 Archivo,Jost,sans-serif;color:var(--cd);letter-spacing:-.04em}
+.sc .ix b.two{font-size:calc(var(--w)*.235);letter-spacing:-.07em;margin-top:calc(var(--w)*.03)}
+.sc .ix b.un{text-decoration:underline;text-decoration-thickness:calc(var(--w)*.03);text-underline-offset:calc(var(--w)*.025)}
+.sc .ix svg{width:calc(var(--w)*.18);height:auto;display:block}
 .sc.bk{border-color:#FFF6E4;background:#1F1A2B}
 .sc.bk svg{position:absolute;inset:0;width:100%;height:100%}
 
-/* Boss cards: a cream border, the episode's color, art, name, the combo, and its size for each squad */
+/* Boss cards: a cream border, the season's color, art, name, the combo, and its size for each squad */
 .mcard{--mw:132px;width:var(--mw);height:calc(var(--mw)*1.4);font-size:calc(var(--mw)/10);border-radius:.7em;background:#FFF6E4;padding:.42em;box-shadow:0 .3em 0 rgba(0,0,0,.28);position:relative;flex:none;box-sizing:border-box;text-align:center;color:#FFF6E4;line-height:1.2}
 .mcard *{box-sizing:border-box}
 .mcard .mf{height:100%;border-radius:.42em;background:var(--a);display:flex;flex-direction:column;overflow:hidden;position:relative}
@@ -42,7 +46,10 @@
 /* Boss card backs */
 .mcard.mbk .mf{background:repeating-linear-gradient(135deg,var(--a) 0 .7em,color-mix(in srgb,var(--a) 88%,#000) .7em 1.4em);align-items:center;justify-content:center;gap:.3em}
 .mcard.mbk .mf::before{display:none}
-.mcard.mbk .ring{width:56%}.mcard.mbk .ring svg{width:100%;display:block}
+.mcard.mbk.bk-vael .mf{background:radial-gradient(circle at 50% 0,transparent .55em,color-mix(in srgb,var(--a) 86%,#000) .58em .66em,transparent .69em) 0 0/1.3em .9em,var(--a)}
+.mcard.mbk .ring{width:60%}.mcard.mbk .ring svg{width:100%;display:block;filter:drop-shadow(0 .12em 0 rgba(0,0,0,.25))}
+.mcard.mbk .bb{font:700 .62em/1 Jost,sans-serif;letter-spacing:.3em;text-transform:uppercase;padding-left:.3em;margin-top:.2em;opacity:.92}
+.mcard .mt .bm{display:inline-flex;align-items:center;gap:.35em}.mcard .mt .bm svg{width:1.25em;height:1.25em;display:block}
 .mcard.mbk .bl{font:900 1.1em/1 Archivo,Jost,sans-serif;letter-spacing:.08em;text-transform:uppercase;transform:skewX(-6deg)}
 .mcard.mbk .bn{position:absolute;right:.5em;bottom:.4em;min-width:1.7em;height:1.7em;border-radius:1em;background:#FFF6E4;color:#1F1A2B;font:900 1em/1.7em Archivo,Jost,sans-serif}
 /* Hero power cards */
