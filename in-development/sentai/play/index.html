@@ -124,6 +124,7 @@
   .prompt{font-size:15px;margin:0 0 10px;line-height:1.45}
   .prompt b{color:var(--gold)}
   .hand{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding-top:10px}
+  .hand.many{gap:6px}.hand.many .sc{--w:56px}
   button.cardb{all:unset;cursor:pointer;border-radius:9px;position:relative;transition:translate .14s}
   button.cardb:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   .hand.live .cardb.no{opacity:.4;cursor:default}
@@ -174,7 +175,7 @@
     .seat{grid-template-columns:auto auto;padding:6px 9px 6px 6px}
     .seat .hd{width:36px;height:36px}
     .seat .who small{max-width:96px}
-    .hand{gap:6px}
+    .hand{gap:6px}.hand.many{gap:5px}.hand.many .sc{--w:47px}
   }
 </style>
 </head>
@@ -410,7 +411,7 @@
       return iDiscard;
     };
     const live = (myTurn && T) || iDiscard || beaconOn;
-    const hand = '<div class="hand' + (live ? ' live' : '') + '" data-anchor="seat' + me + '">' + v.hand.map((c) => {
+    const hand = '<div class="hand' + (live ? ' live' : '') + (v.hand.length > 14 ? ' many' : '') + '" data-anchor="seat' + me + '">' + v.hand.map((c) => {
       const ok = live && canPick(c);
       return '<button type="button" class="cardb ' + (ok ? 'ok' : 'no') + (sel.includes(c.id) ? ' sel' : '') + '" data-id="' + c.id + '" aria-label="' + esc(S.cardName(c)) + '"' + (ok ? '' : ' aria-disabled="true"') + '>' + card(c, ' data-deal') +
         (vael && sel.includes(c.id) && v.heads[selHead[c.id]] ? '<i class="hb">' + esc(v.heads[selHead[c.id]].boss.name) + '</i>' : '') + '</button>';
@@ -496,6 +497,7 @@
     minPlayers: 2, maxPlayers: 4, defaultPlayers: 3, botNames: S.BOT_NAMES,
     options: [
       { key: 'boss', label: 'Boss', values: [['gorvax', 'Emperor Gorvax'], ['vael', 'Vael, the Hydra']], def: 'gorvax' },
+      { key: 'big', label: 'Gorvax deck', values: [[0, 'Standard'], [1, 'Fewer, bigger monsters']], def: 0 },
       { key: 'powers', label: 'Hero powers', values: [[0, 'Off'], [1, 'On']], def: 0 },
     ],
     botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, the face-up Boss cards and cards they’ve seen.',
@@ -505,6 +507,7 @@
       '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each (14 against the Hydra).</p>' +
       '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Color is one color, any ranks. A Combine is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
       '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in Act III to win.</p>' +
+      '<p><b>Gorvax: fewer, bigger monsters (prototype).</b> Only 7 monsters a game (2, 2 and 3 per act), and each asks for most of what the whole table can add in one go, so most fights come down to the last Hero. Deal 16 cards each (15 with 4 Heroes). Everything else is the same.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or 4 Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an act): show a card.</p>',
   });

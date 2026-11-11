@@ -22,6 +22,14 @@
     bosses: {
       gorvax: {
         name: 'Emperor Gorvax',
+        // prototype: fewer, bigger monsters (7 fights; each asks for most of what the table can add in one go)
+        big: {
+          hand: { 2: 16, 3: 16, 4: 15 },
+          draws: { 2: [2, 2, 3], 3: [2, 2, 3], 4: [2, 2, 3] },
+          needs: [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5], [2, 3, 4], [2, 3, 4],
+                  [4, 5, 6], [4, 5, 6], [3, 5, 6], [3, 4, 5], [3, 4, 4], [2, 3, 4],
+                  [4, 6, 6], [4, 6, 6], [4, 5, 6], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
+        },
         // per act: [type, [need with 2, 3, 4 Heroes], name]
         acts: [
           [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
@@ -172,14 +180,16 @@
       const deck = [];
       for (let k = 0; k < (RULES.copies || 1); k++) for (let c = 0; c < this.colors; c++) for (let r = 1; r <= RULES.ranks; r++) deck.push({ id: id++, c, r });
       shuffle(deck);
-      const handN = this.handSize = RULES.bosses[this.boss].hand || RULES.hand;
+      const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
+      this.big = this.boss === 'gorvax' && !!+opts.big;      // prototype: fewer, bigger monsters
+      this.defs = B.acts.map((act, a) => act.map((m, i) => this.big ? [m[0], B.big.needs[a * 6 + i], m[2], m[3]] : m));
+      const handN = this.handSize = this.big ? B.big.hand[this.N] : B.hand || RULES.hand;
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
       this.box = deck.slice(this.N * handN);          // never seen in play
       this.boxed = this.box.length;
       this.known = this.players.map(() => []);             // cards everyone has seen each Hero holding
-      const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
-      this.acts = RULES.actDraws[this.N].map((k, a) =>
-        shuffle(B.acts[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[this.N - 2], name, hex: hex || null, key: keyBase + a * 6 + i }))).slice(0, k));
+      this.acts = (this.big ? B.big.draws : RULES.actDraws)[this.N].map((k, a) =>
+        shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[this.N - 2], name, hex: hex || null, key: keyBase + a * 6 + i }))).slice(0, k));
       this.total = this.acts.reduce((t, x) => t + x.length, 0);
       this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = []; this.trash = [];   // trash: face-up discard pile, {c, seat}
       this.lead = Math.floor(rnd() * this.N);
@@ -665,7 +675,7 @@
   function futureOf(g) {
     const B = RULES.bosses[g.boss], base = g.boss === 'vael' ? 18 : 0;
     const out = [];
-    const unseen = (a) => shuffle(B.acts[a].map(([type, need, name, hex], i) => ({ type, need: need[g.N - 2], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key)));
+    const unseen = (a) => shuffle(g.defs[a].map(([type, need, name, hex], i) => ({ type, need: need[g.N - 2], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key)));
     if (g.boss === 'vael') out.push(...unseen(g.actNo).slice(0, g.pile.length));
     for (let a = g.actNo + 1; a < g.acts.length; a++) out.push(...unseen(a).slice(0, g.acts[a].length));
     return out;
