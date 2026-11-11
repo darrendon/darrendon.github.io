@@ -21,7 +21,7 @@ GAMES = [
               ('Beat it or fight again', 'Complete the combo and the monster is defeated, and those cards are spent. Fall short and it holds on: every card goes back to the Hero who added it, so everyone knows who holds them, every Hero discards 1 face up, and you fight it again.'),
               ('Your hand is your health', 'Nobody ever draws. The moment any Hero’s hand is empty, from playing or discarding, the Boss wins.'),
               ('Hold the line', 'The lead passes left after every fight. Clear a line and the next act lines up. Beat every monster in Act III and the squad wins together.'),
-              ('Or face the Hydra', 'Swap in Vael’s deck and two heads are out at once, each with a hex. Each turn add 1 or 2 cards to one head, or 1 card to each. Cards stay put. A head left standing enrages, and if it survives another round it strikes: its cards are lost and everyone discards 2.'),
+              ('Or face the Hydra', 'Swap in Vael’s deck and two heads are out at once (three with 3 or 4 Heroes), each with a hex that lasts until that head is gone. Each turn add 1 or 2 cards to one head, or 1 card each to two heads. Cards stay put. A head left standing enrages, and if it survives another round it strikes: its cards are lost and everyone discards 2.'),
               ('Add Hero powers', 'Optionally, deal each Hero a power: Command, Riptide, Overcharge, Steady or Beacon. Each one is always on or used once.')],
        play=dict(modes=[('Play against bots', 'One to three bot teammates.'), ('Host an online table', 'Two to four Heroes, with a five-letter code. Bots fill empty seats.')]),
        fb=[dict(q='How much fun was it?', type='scale', lo='Not for me', hi='Loved it'),

@@ -102,8 +102,8 @@
   .log p{margin:0 0 3px}
   @media (max-width:520px){.boss{grid-template-columns:1fr;text-align:left}.boss .mon{width:96px;position:absolute;right:12px;top:12px}.boss .nm{padding-right:100px}.sc{--w:50px}.row{grid-template-columns:1fr 1fr}.mc{grid-template-columns:40px 1fr;padding:7px}.mc svg{width:40px;height:40px}}
 
-  /* the Hydra: two heads side by side */
-  .heads{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  /* the Hydra: its heads side by side */
+  .heads{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:12px}
   @media (max-width:700px){.heads{grid-template-columns:1fr}}
   .head{all:unset;box-sizing:border-box;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--a);color:#FFF6E4;border-radius:14px;padding:12px 14px;position:relative;overflow:hidden;border:3px solid transparent;transition:transform .15s}
   .head.empty{background:transparent;border:2px dashed var(--t-line);color:var(--t-muted);display:block;text-align:center;padding:28px}
@@ -208,10 +208,10 @@
 
     // progress: one pip per Boss card, grouped by act
     const per = v.acts.map(() => []);
-    v.hist.forEach((h) => per[actOf(h.key)].push(h.met));
+    v.hist.forEach((h) => { if (vael || h.met) per[actOf(h.key)].push(h.met); });   // Gorvax: a miss is fought again, so only wins fill a pip
     const track = '<div class="track" aria-label="Progress">' + v.acts.map((a, i) => '<span class="grp"><i>' + ACT[i] + '</i>' +
       Array.from({ length: a.n }, (_, j) => '<span class="pip a' + i + (j < per[i].length ? ' done' + (per[i][j] ? '' : ' miss') : '') + '"></span>').join('') + '</span>').join('') +
-      '<span class="lbl">' + v.done + (vael ? ' cut · ' + v.misses + ' struck' : ' defeated · ' + v.misses + ' got away') + '</span></div>';
+      '<span class="lbl">' + v.done + (vael ? ' cut · ' + v.misses + ' struck' : ' defeated · ' + v.misses + (v.misses === 1 ? ' miss' : ' misses')) + '</span></div>';
 
     // banner
     let banner = '';
@@ -242,7 +242,7 @@
     // the Boss area
     let bossArea = '', row = '';
     if (vael) {
-      bossArea = '<div class="heads">' + v.heads.map((x, h) => {
+      bossArea = '<div class="heads" style="--n:' + v.heads.length + '">' + v.heads.map((x, h) => {
         if (!x) return '<div class="head empty">No head here' + (v.pile ? '' : ' — the pile is empty') + '</div>';
         const pick = myTurn && (v.legal[h].length || (v.canWild && x.cards.length));
         const tag = pick ? 'button' : 'div';
@@ -293,7 +293,7 @@
       const tname = vael && T ? esc(T.boss.name) : 'the combo';
       const prompt = beaconOn ? 'Tap the card you want everyone to see.'
         : !T ? 'Nothing in your hand fits ' + (vael ? 'either head' : 'this combo') + '. You have to pass.'
-        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap the other head to switch)' : '') + '. Add 1 or 2 cards to one head, or 1 card to each. ' : 'Tap 1 or 2 cards that fit, then add them. ') + (vael ? 'Cards stay on a head until it’s cut or it strikes.' : 'If the combo falls short, everything added comes back, everyone discards 1, and you fight it again.');
+        : (vael ? 'Feeding <b>' + tname + '</b>' + (v.heads.filter(Boolean).length > 1 ? ' (tap another head to switch)' : '') + '. Add 1 or 2 cards to one head, or 1 card each to two heads. ' : 'Tap 1 or 2 cards that fit, then add them. ') + (vael ? 'Cards stay on a head until it’s cut or it strikes.' : 'If the combo falls short, everything added comes back, everyone discards 1, and you fight it again.');
       main += '<p class="prompt">' + prompt + (v.hand.length <= 3 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + (!v.canPass ? ' <b>Thorns: you lead, so you can’t pass.</b>' : '') + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
           : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass"' + (v.canPass ? '' : ' disabled') + '>Pass</button>' +
@@ -367,7 +367,7 @@
       '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each (14 against the Hydra).</p>' +
       '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Color is one color, any ranks. A Combine is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
       '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in Act III to win.</p>' +
-      '<p><b>Vael, the Hydra.</b> Two heads are out at once, each with a combo and a hex that’s in force while it’s out. On your turn, feed one head. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card to each. Get through every head to win.</p>' +
+      '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or 4 Heroes), each with a combo and a hex that’s in force while it’s out. On your turn, feed one head. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an act): show a card.</p>',
   });
 })();

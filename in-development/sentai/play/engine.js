@@ -2,7 +2,7 @@
    (module.exports), so bot-only games can be checked headless: node sim.js
    Every tunable number lives in RULES. Two Bosses share one engine:
    Emperor Gorvax (a line of monsters, one fight at a time) and Vael, the Hydra
-   (two heads out at once, combos that stay put, heads that enrage). */
+   (two or three heads out at once, combos that stay put, heads that enrage). */
 (function (root) {
   'use strict';
   const RULES = {
@@ -13,7 +13,7 @@
     strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
     maxAdd: 2,                          // cards a Hero may add per turn
     replay: true,                       // Gorvax: a missed monster stays and is fought again
-    heads: 2,                           // Vael: heads out at once
+    heads: 0,                           // Vael: heads out at once (0 = what the Boss says for this squad size)
     enragedAny: false,                  // Vael: an enraged head takes any card (tried; too easy)
     rageRounds: 1,                      // Vael: rounds a head can stay enraged before it strikes
     starveStrike: false,                // Vael: an enraged head strikes only after a round in which nobody fed it
@@ -35,11 +35,12 @@
       vael: {
         name: 'Vael, the Hydra',
         hand: 14,
+        heads: { 2: 2, 3: 3, 4: 3 },
         // per act: [type, [need with 2, 3, 4 Heroes], name, hex]
         acts: [
           [['run', [2, 2, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3], 'Sallowmaw', 'coil'],
            ['combine', [2, 2, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3], 'Ashtongue', 'venom']],
-          [['run', [2, 3, 3], 'Thornscale', 'hunger'], ['run', [2, 2, 3], 'Ropeneck', 'split'], ['color', [2, 3, 3], 'Bilefang', 'venom'],
+          [['run', [2, 3, 3], 'Thornscale', 'hunger'], ['run', [2, 2, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3], 'Bilefang', 'venom'],
            ['combine', [2, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 2, 3], 'Gravejaw', 'brood'], ['set', [2, 2, 3], 'Smokeneck', 'spite']],
           [['run', [3, 3, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4], 'Nightmaw', 'hunger'],
            ['combine', [2, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
@@ -185,7 +186,7 @@
       this.log = []; this.result = null; this.outcome = null; this.enc = null; this.penalty = null;
       this.seen = new Set();
       if (this.boss === 'vael') {
-        this.pile = this.acts[0].slice(); this.slots = new Array(RULES.heads).fill(null);
+        this.pile = this.acts[0].slice(); this.slots = new Array(RULES.heads || RULES.bosses.vael.heads[this.N] || 2).fill(null);
         this.say('Vael rises. Act I begins.');
         this.grow(); this.startRound();
       } else {
@@ -310,7 +311,7 @@
         .map((p) => ({ head: p.head | 0, ids: (p.cards || []).map((x) => x | 0) })).filter((p) => p.ids.length);
       if (!parts.length) return { ok: false, error: 'Pick a card to add.' };
       if (parts.length > (vael ? 2 : 1)) return { ok: false, error: 'Too many targets.' };
-      if (parts.length === 2 && (parts[0].head === parts[1].head || parts.some((p) => p.ids.length !== 1))) return { ok: false, error: 'To feed both heads, add 1 card to each.' };
+      if (parts.length === 2 && (parts[0].head === parts[1].head || parts.some((p) => p.ids.length !== 1))) return { ok: false, error: 'To feed two heads, add 1 card to each.' };
       const ids = parts.flatMap((p) => p.ids);
       if (new Set(ids).size !== ids.length) return { ok: false, error: 'Pick different cards.' };
       if (ids.length >= hand.length) return { ok: false, error: 'You have to keep at least one card.' };
