@@ -27,7 +27,7 @@
           [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
            ['combine', [2, 2, 2], 'Static Swarm'], ['set', [3, 3, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
           [['run', [3, 3, 4], 'Tiderazor'], ['run', [3, 3, 5], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
-           ['combine', [3, 3, 4], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 2, 3], 'Twin Oni']],
+           ['combine', [3, 4, 5], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 2, 3], 'Twin Oni']],
           [['run', [3, 4, 6], 'Megalith Rex'], ['run', [4, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
            ['combine', [3, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
         ],
