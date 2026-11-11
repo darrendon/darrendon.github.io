@@ -56,6 +56,12 @@ button{font:inherit;color:inherit}
   background:radial-gradient(ellipse at 50% 42%,#5d4569 0%,#47334f 58%,#3a2945 100%);
   box-shadow:0 0 0 9px #7a5236,0 0 0 12px #5a3b26,0 22px 44px rgba(0,0,0,.5),inset 0 0 40px rgba(0,0,0,.35)}
 .layer{position:absolute;inset:0}
+/* the 3D table (table3d.js) draws the felt, the toys and every card; with it on, their flat drawings are clipped away
+   (clipped, not transparent: the game still measures them and animates their opacity) and only the labels stay */
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.board:not(.gl) #gl{visibility:hidden}
+.board.gl .felt,.board.gl .coaster,.board.gl .pile,.board.gl .card,.board.gl .pawswipe{clip-path:inset(100%)}
+.board.gl .toy{border-radius:50%}
 #table,#seats{pointer-events:none}
 
 .seat{position:absolute;transform:translate(-50%,-50%);z-index:1;display:flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px;
@@ -928,7 +934,9 @@ const RUNNING = new Set();
 function track(a){ RUNNING.add(a); const done = () => RUNNING.delete(a); a.addEventListener("finish", done); a.addEventListener("cancel", done); return a; }
 // resolves once every running motion has finished (or after ms, whichever comes first)
 function settled(ms){ return Promise.race([Promise.all([...RUNNING].map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, ms || 1500))]); }
-function inBoard(el){ const B = $("board").getBoundingClientRect(), r = el.getBoundingClientRect(); return {x: r.left + r.width / 2 - B.left, y: r.top + r.height / 2 - B.top, w: r.width, h: r.height}; }
+// where a piece is on the flat table. The 3D table shifts labels and toy buttons onto their on-screen spots (data-gx/gy); that comes off here
+function inBoard(el){ const B = $("board").getBoundingClientRect(), r = el.getBoundingClientRect(), g = el.closest("[data-gx]");
+  return {x: r.left + r.width / 2 - B.left - (g ? +g.dataset.gx : 0), y: r.top + r.height / 2 - B.top - (g ? +g.dataset.gy : 0), w: r.width, h: r.height}; }
 const cssPx = k => parseFloat(getComputedStyle($("board")).getPropertyValue(k)) || 0;
 // the discard lives under the cat's spot in the middle (wherever the cat itself is right now)
 const discardAt = () => { const c = $("toy-cat"); return c && c.style.left ? {x: parseFloat(c.style.left), y: parseFloat(c.style.top)} : null; };
@@ -945,7 +953,8 @@ function heldSpot(o){
   const cw = cssPx("--cw"), ch = cssPx("--ch"), t = cssPx("--t") || 1;
   const size = Math.min(cw * 1.04, ch * 1.02 / n), step = Math.min(size, ch / n);
   const dir = (S.seatDir && S.seatDir[i]) || {uy: 1};
-  return {x: parseFloat(pile.style.left), y: parseFloat(pile.style.top) + (k - (n - 1) / 2) * step, s: size / t, up: dir.uy > 0};
+  const along = (k - (n - 1) / 2) * step;                                    // several toys line up along the pile's long side
+  return {x: parseFloat(pile.style.left) + (dir.turn ? along : 0), y: parseFloat(pile.style.top) + (dir.turn ? 0 : along), s: size / t, up: dir.uy > 0};
 }
 function toyXform(el, q){
   if (!q) return "translate(-50%,-50%)";
@@ -1006,6 +1015,7 @@ function pawRun(sx, sy, tx, ty, h, frames, dur){
   if (!b || D < h) return null;
   const el = document.createElement("div"); el.className = "pawswipe"; el.innerHTML = pawSvg(D + h * 0.2, h);
   el.style.left = sx + "px"; el.style.top = sy - h / 2 + "px"; b.appendChild(el);
+  el._paw = {sx, sy, ang, len: D + h * 0.2, h};                             // for the 3D table's paw
   const a = track(el.animate(frames.map(([offset, along, opacity, easing]) => ({offset, opacity, easing: easing || "linear",
     transform: `rotate(${ang}deg) translateX(${(typeof along === "function" ? along(D) : along).toFixed(1)}px)`})), {duration: dur, fill: "both"}));
   a.onfinish = a.oncancel = () => el.remove();
@@ -1206,7 +1216,7 @@ function place(){
       return {x: Math.min(W - lw[k] / 2 - 2, Math.max(lw[k] / 2 + 2, cx + ux * R)), y: Math.min(H - lh[k] / 2 - 2, Math.max(lh[k] / 2 + 2, cy + uy * R)), ux, uy};
     });
   }
-  const s0 = Math.min(W, H);
+  const s0 = Math.min(W, H), rot3 = b.classList.contains("gl");
   let sol = null;
   for (let sc = 1; sc > 0.3; sc *= 0.95){
     const t = Math.min(104, long ? Math.min(W * 0.25, H * 0.15) : wide ? H * 0.27 : s0 * 0.17) * sc, cw = Math.min(96, wide ? H * 0.2 : s0 * 0.15) * sc, ch = cw * 1.4, gap = 5 + 5 * sc;
@@ -1216,16 +1226,20 @@ function place(){
     const fw = F * cw + (F - 1) * 6;
     const seatPos = seats.map((s, k) => {
       const L = {x: s.x, y: s.y, w: lw[k], h: lh[k]}, px = s.uy, py = -s.ux;   // (px, py) points to the player's right
-      const dp = sepAlong(px, py, (fw + cw) / 2 + gap, ch + gap);
-      let d = sepAlong(s.ux, s.uy, (lw[k] + fw) / 2 + gap, (lh[k] + ch) / 2 + gap), face, pile;
+      // on the 3D table cards face the player who holds them, so a side seat's cards and pile lie sideways
+      // (on a phone held sideways your own seat is at the side too, but your cards still read upright to you)
+      const turn = rot3 && Math.abs(s.ux) > Math.abs(s.uy) && !(wide && k === 0);
+      const fW = turn ? ch : fw, fH = turn ? fw : ch, pW = turn ? ch : cw, pH = turn ? cw : ch;
+      const dp = sepAlong(px, py, (fW + pW) / 2 + gap, (fH + pH) / 2 + gap);
+      let d = sepAlong(s.ux, s.uy, (lw[k] + Math.max(fW, pW)) / 2 + gap, (lh[k] + Math.max(fH, pH)) / 2 + gap), face, pile;
       for (let n = 0; n < 120; n++, d += 2){                                     // step in from the seat until card and pile clear the label
         const bx = s.x - s.ux * d, by = s.y - s.uy * d;
         face = {x: bx - px * dp / 2, y: by - py * dp / 2}; pile = {x: bx + px * dp / 2, y: by + py * dp / 2};
-        if (!clash(L, {...face, w: fw, h: ch}, gap) && !clash(L, {...pile, w: cw, h: ch}, gap)) break;
+        if (!clash(L, {...face, w: fW, h: fH}, gap) && !clash(L, {...pile, w: pW, h: pH}, gap)) break;
       }
-      return {label: s, face, pile};
+      return {label: s, face, pile, fW, fH, pW, pH, turn};
     });
-    seatPos.forEach((q, k) => items.push({x: q.label.x, y: q.label.y, w: lw[k], h: lh[k]}, {x: q.face.x, y: q.face.y, w: fw, h: ch}, {x: q.pile.x, y: q.pile.y, w: cw, h: ch}));
+    seatPos.forEach((q, k) => items.push({x: q.label.x, y: q.label.y, w: lw[k], h: lh[k]}, {x: q.face.x, y: q.face.y, w: q.fW, h: q.fH}, {x: q.pile.x, y: q.pile.y, w: q.pW, h: q.pH}));
     // badness = pieces off the board + pairs that touch; 0 is a clean fit
     let bad = items.filter(r => !(r.x - r.w / 2 >= 0 && r.x + r.w / 2 <= W && r.y - r.h / 2 >= 0 && r.y + r.h / 2 <= H)).length;
     for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) if (clash(items[i], items[j], 3)) bad++;
@@ -1235,10 +1249,12 @@ function place(){
     if (!sol || bad < sol.bad) sol = cand;
     if (!bad) break;
   }
-  S.layoutOk = sol.ok; S.seatDir = sol.seatPos.map(q => ({ux: q.label.ux, uy: q.label.uy}));
+  S.layoutOk = sol.ok; S.seatDir = sol.seatPos.map(q => ({ux: q.label.ux, uy: q.label.uy, turn: q.turn}));
   b.style.setProperty("--t", sol.t.toFixed(1) + "px"); b.style.setProperty("--cw", sol.cw.toFixed(1) + "px"); b.style.setProperty("--ch", sol.ch.toFixed(1) + "px");
   for (const o in sol.toyPos){ const el = $("toy-" + o); if (el){ el.style.left = sol.toyPos[o].x + "px"; el.style.top = sol.toyPos[o].y + "px"; } }
-  labels.forEach((el, k) => { const q = sol.seatPos[k]; if (q){ el.style.left = q.label.x + "px"; el.style.top = q.label.y + "px"; } });
+  labels.forEach((el, k) => { const q = sol.seatPos[k]; if (!q) return; el.style.left = q.label.x + "px"; el.style.top = q.label.y + "px";
+    // quarter turn (degrees clockwise) this seat's cards were laid out for; "fix": don't turn them any further
+    el.dataset.q = q.turn ? (q.label.ux < 0 ? 90 : -90) : wide && k === 0 ? 0 : q.label.uy < 0 ? 180 : 0; el.dataset.qfix = wide && k === 0 ? "1" : ""; });
   $("table").querySelectorAll(".pile").forEach(el => { const q = sol.seatPos[+el.dataset.seat]; if (!q) return; el.style.left = q.pile.x + "px"; el.style.top = q.pile.y + "px"; });
   $("table").querySelectorAll(".faces").forEach(el => { const q = sol.seatPos[+el.dataset.seat]; if (!q) return;
     el.style.left = q.face.x + "px"; el.style.top = q.face.y + "px";
@@ -1248,6 +1264,7 @@ function place(){
       c.style.setProperty("--fx", (q.pile.x - q.face.x - off).toFixed(1) + "px"); c.style.setProperty("--fy", (q.pile.y - q.face.y).toFixed(1) + "px"); }); });
   syncToys({animate: false, layout: true});
 }
+window.addEventListener("udtc3d", () => place());   // the 3D table has come on (or gone): lay out for it
 function banner(html){ $("banner").innerHTML = html === "&nbsp;" ? "" : html; }
 function updatePill(){
   $("roundPill").textContent = S.tut ? `Learn to play · ${Math.max(1, S.round)} of ${S.rounds}` : S.sudden ? "Sudden death" : `Round ${S.round} / ${S.rounds}`;
@@ -2220,5 +2237,6 @@ $("nameIn").value = NETX.cleanName(load("udtc-name", ""));
 }
 })();
 </script>
+<script src="/games/un-deux-trois-cat/play/table3d.js" defer></script>
 </body>
 </html>
