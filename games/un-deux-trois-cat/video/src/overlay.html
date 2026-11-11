@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Explainer overlay</title>
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Laid over the "Cards show every toy in every color" board (19.4-24.0 s) by build.py: the real toy appears under the
+   card in its own color, then the cat. 1280x720 at 1.5x. film.py adds .on to #mouse and #cat at the right frames. */
+html,body{margin:0;background:transparent;width:1280px;height:720px;overflow:hidden;font-family:Jost,Figtree,sans-serif}
+.g{position:absolute;opacity:0;transform:translateY(12px) scale(.94);transition:opacity .34s ease,transform .42s cubic-bezier(.2,.9,.3,1.2)}
+.on .g{opacity:1;transform:none}
+.on .g.late{transition-delay:.22s}
+.call{padding:10px 20px 12px 18px;border-radius:3px 10px 10px 3px;background:#21172a;border-left:5px solid #ffc94a;box-shadow:0 12px 26px rgba(40,25,20,.28);white-space:nowrap}
+.call b{display:block;font-weight:600;font-size:23px;line-height:1.15;color:#f4ebd8}
+.call span{display:block;margin-top:2px;font-size:16.5px;line-height:1.25;color:#c9badb}
+#mouse .toy{left:512px;top:497px;width:262px}
+#mouse .arrow{left:627px;top:458px;width:24px;height:40px}
+#mouse .call{right:784px;top:530px}
+#cat .toy{left:806px;top:462px;width:136px}
+#cat .call{left:946px;top:530px}
+img{display:block;width:100%}
+</style></head>
+<body>
+<div id="mouse">
+  <svg class="g arrow" viewBox="0 0 24 40"><path d="M12 2 V30 M3 22 L12 34 L21 22" fill="none" stroke="#e0a43a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="g toy"><img src="toy-mouse.png" alt=""></div>
+  <div class="g call late"><b>Grab the pink mouse</b><span>The toy on the table, not the card</span></div>
+</div>
+<div id="cat">
+  <div class="g toy"><img src="toy-cat.png" alt=""></div>
+  <div class="g call late"><b>Nothing in its own color?</b><span>Grab the cat</span></div>
+</div>
+</body></html>

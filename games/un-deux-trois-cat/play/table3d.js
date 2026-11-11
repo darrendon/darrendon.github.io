@@ -613,7 +613,7 @@ function boot() {
 
     if (dirty || hash !== lastHash) { lastHash = hash; dirty = false; renderer.render(scene, camera); window.__gl3dFrames = (window.__gl3dFrames || 0) + 1; }
   }
-  window.UDTC_3D = { project: (fx, fy) => project(wx(fx), 0, wz(fy)), ready: () => on };
+  window.UDTC_3D = { project: (fx, fy) => project(wx(fx), 0, wz(fy)), ready: () => on, build: BUILD };   // build: the toy models, for video/src/toys.html
   requestAnimationFrame(frame);
 }
 })();

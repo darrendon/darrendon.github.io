@@ -22,8 +22,8 @@ ARGS = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-
         "--remote-debugging-port=9334", "--window-size=1280,720", "--hide-scrollbars", "--mute-audio", "about:blank"]
 
 # segment -> first frame of the finished video it covers (30 fps). Each runs 10 frames into the next one for the crossfade.
-SEG = {"s1": 719, "s2": 1073, "s3": 1191, "s4": 1353, "s5": 1574, "s6": 1710, "s7": 2126}
-END = {"s1": 1073 + 9, "s2": 1191 + 9, "s3": 1353 + 9, "s4": 1574 + 9, "s5": 1710 + 9, "s6": 1865, "s7": 2267}
+SEG = {"x1": 582, "s1": 719, "s2": 1073, "s3": 1191, "s4": 1353, "s5": 1574, "s6": 1710, "s7": 2126}
+END = {"x1": 718, "s1": 1073 + 9, "s2": 1191 + 9, "s3": 1353 + 9, "s4": 1574 + 9, "s5": 1710 + 9, "s6": 1865, "s7": 2267}
 T = lambda seg, t: round(t * FPS) - SEG[seg]          # video time (s) -> frame number inside a segment
 
 HELPERS = r"""
@@ -83,15 +83,16 @@ class Shoot:
             except Exception: time.sleep(0.1)
         self.b = pw.chromium.connect_over_cdp("http://127.0.0.1:9334")
         self.tick = time.monotonic() * 1000
-    def page(self):
+    def page(self, url=URL):
         bc = self.b.new_browser_cdp_session()
         bc.send("Target.createTarget", {"url": "about:blank", "width": 1280, "height": 720, "enableBeginFrameControl": True})
         time.sleep(0.4)
         ctx = self.b.contexts[0]; self.cdp = ctx.new_cdp_session(ctx.pages[-1])
         self.cdp.send("HeadlessExperimental.enable")
         self.cdp.send("Emulation.setDeviceMetricsOverride", {"width": 1280, "height": 720, "deviceScaleFactor": 1.5, "mobile": False})
-        self.cdp.send("Page.navigate", {"url": URL})
+        self.cdp.send("Page.navigate", {"url": url})
         for _ in range(75): self.frame(); time.sleep(0.03)        # let the page, the fonts and the 3D table's textures arrive
+        if url != URL: return
         self.js(HELPERS)
         self.js("document.body.insertAdjacentHTML('beforeend','<span style=\"font:600 10px Jost;position:fixed;left:-99px\">a</span><span style=\"font:400 10px Jost;position:fixed;left:-99px\">a</span>')")
         for _ in range(30): self.frame(); time.sleep(0.03)
@@ -108,17 +109,17 @@ class Shoot:
         while not done and time.time() - t0 < 20: self.cdp.send("Runtime.evaluate", {"expression": "1"})
         self.tick += 1000 / FPS
         a = {"frameTimeTicks": self.tick, "interval": 1000 / FPS, "noDisplayUpdates": False}
-        if save: a["screenshot"] = {"format": "jpeg", "quality": 95}
+        if save: a["screenshot"] = {"format": "png"} if save.endswith(".png") else {"format": "jpeg", "quality": 95}
         r = self.cdp.send("HeadlessExperimental.beginFrame", a)
         if save:
             if not r.get("screenshotData"): raise SystemExit("no picture for " + save)
             open(save, "wb").write(base64.b64decode(r["screenshotData"]))
-    def run(self, events, first, last, seg=None):
+    def run(self, events, first, last, seg=None, ext="jpg"):
         """step frames first..last; events = {frame: js}; frames >= 0 are saved to build/<seg>/ when seg is given"""
         if seg: d = os.path.join(BUILD, seg); shutil.rmtree(d, ignore_errors=True); os.makedirs(d)
         for f in range(first, last + 1):
             for src in events.get(f, []): self.js(src)
-            self.frame(os.path.join(BUILD, seg, "%05d.jpg" % f) if seg and f >= 0 else None)
+            self.frame(os.path.join(BUILD, seg, ("%05d." + ext) % f) if seg and f >= 0 else None)
         if seg: print(seg, last + 1, "frames", flush=True)
     def close(self):
         try: self.b.close()
@@ -197,7 +198,16 @@ def paws(sh):
               (T(s, 72.9), "F.to('toy-cat',900,150,190)"), (T(s, 73.15), "F.grab('Otag','ball')"), (T(s, 74.0), "F.hide()")),
            flip - round(CHANT * FPS) - 20, END[s] - SEG[s], s)
 
-TAKES = {"main": main, "six": six, "end": end, "paws": paws}
+def explain(sh):
+    """Not gameplay: the toys that appear over the explainer board (overlay.html), as see-through frames from 19.4 s.
+    VO: "when you see a toy in its own color, grab it" 19.4; "if nothing's in its own color? Grab the cat" 21.8."""
+    sh.page(URL.split("/play/")[0] + "/video/src/overlay.html")
+    sh.cdp.send("Emulation.setDefaultBackgroundColorOverride", {"color": {"r": 0, "g": 0, "b": 0, "a": 0}})
+    s = "x1"
+    sh.run(ev((T(s, 19.45), "document.getElementById('mouse').className = 'on'"), (T(s, 21.75), "document.getElementById('cat').className = 'on'")),
+           0, END[s] - SEG[s], s, "png")
+
+TAKES = {"main": main, "six": six, "end": end, "paws": paws, "explain": explain}
 if __name__ == "__main__":
     os.makedirs(BUILD, exist_ok=True)
     for name in (sys.argv[1:] or list(TAKES)):

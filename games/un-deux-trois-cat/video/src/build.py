@@ -7,6 +7,7 @@ the published video (kept out of git; without it the published file itself is th
 compresses those shots once more). The voiceover is base.mp4's audio, copied untouched, so the picture is cut to it:
 frame numbers below are at 30 fps on the finished video.
 
+  explainer frames  582-718  (19.4-24.0 s): x1, the 3D mouse and cat laid over the base's card board (overlay.html)
   gameplay  frames  719-1865 (24.0-62.2 s): s1 chant and cat, s2 the fish, s3 two toys, s4 decoys, s5 six players, s6 result
   Cat Paw   frames 2126-2267 (70.9-75.6 s): s7
 Segments crossfade into each other over 10 frames, and into and out of the base over 10 frames (against a held base frame,
@@ -35,8 +36,18 @@ def new_frame(segs, f):
             return im
     raise SystemExit("no segment covers frame %d" % f)
 
+# The explainer board at 19.4-24.0 s: the real toys appear under the cards (film.py explain -> build/x1, see-through).
+# The base's own "grab the cat" box in that band is covered with the same band from a frame before it appears.
+OVER, BAND, CLEAN = "x1", 700, 630
+def explain(im, f, band):
+    if not SEG[OVER] <= f <= END[OVER]: return im
+    im = im.copy(); im.paste(band, (0, BAND))
+    ov = Image.open(os.path.join(BUILD, OVER, "%05d.png" % (f - SEG[OVER]))).convert("RGBA")
+    return Image.alpha_composite(im.convert("RGBA"), ov).convert("RGB")
+
 def main(crf):
-    held = {n: base_frame(n) for _, a, b in RUNS for n in (a, b)}
+    band = base_frame(CLEAN).crop((0, BAND, W, H))
+    held = {n: explain(base_frame(n), n, band) for _, a, b in RUNS for n in (a, b)}
     tmp = OUT + ".part.mp4"
     dec = subprocess.Popen(["ffmpeg", "-v", "error", "-i", BASE, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
     enc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", BASE,
@@ -46,6 +57,7 @@ def main(crf):
     while True:
         raw = dec.stdout.read(W * H * 3)
         if len(raw) < W * H * 3: break
+        if SEG[OVER] <= f <= END[OVER]: raw = explain(Image.frombytes("RGB", (W, H), raw), f, band).tobytes()
         for segs, a, b in RUNS:
             if a < f < b:
                 im = new_frame(segs, f)

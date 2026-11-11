@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>One toy, cut out</title>
+<style>html,body{margin:0;background:transparent}canvas{display:block}</style></head>
+<body>
+<div id="board" hidden></div>
+<script src="/assets/vendor/three.r128.min.js"></script>
+<script src="/games/un-deux-trois-cat/play/table3d.js"></script>
+<script>
+// ?toy=mouse|cat|…&az=…&el=…: one of the playable's felt toys on a transparent page with its shadow, for the video's explainer board
+(function () {
+  const q = new URLSearchParams(location.search), W = 900, H = 700;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(W, H); renderer.setPixelRatio(2); renderer.outputEncoding = THREE.sRGBEncoding; renderer.setClearColor(0, 0);
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xfff4e6, 0x9a8a78, 0.8));
+  const key = new THREE.DirectionalLight(0xfff1dc, 0.8); key.position.set(-5, 12, 7); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 9;
+  Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 40 }); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.22); fill.position.set(8, 6, 8); scene.add(fill);
+  const toy = window.UDTC_3D.build[q.get("toy") || "mouse"](); toy.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  toy.rotation.y = +(q.get("yaw") || 0); scene.add(toy);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.26 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  const box = new THREE.Box3().setFromObject(toy), c = box.getCenter(new THREE.Vector3()), r = box.getSize(new THREE.Vector3()).length() / 2;
+  const cam = new THREE.PerspectiveCamera(24, W / H, 0.5, 200), el = (+(q.get("el") || 34)) * Math.PI / 180, az = (+(q.get("az") || 0)) * Math.PI / 180;
+  const d = r / Math.sin(12 * Math.PI / 180) * 1.45;
+  cam.position.set(c.x + Math.sin(az) * Math.cos(el) * d, c.y + Math.sin(el) * d, c.z + Math.cos(az) * Math.cos(el) * d); cam.lookAt(c.x, c.y * 0.8, c.z);
+  renderer.render(scene, cam); window.__done = true;
+})();
+</script>
+</body></html>
