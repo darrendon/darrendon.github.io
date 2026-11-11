@@ -1302,7 +1302,7 @@ function startGame(){
   $("setup").hidden = true; $("end").hidden = true; $("meta").hidden = false;
   resetToys(false); renderSeats(); renderTable("backs"); updatePill();
   banner("Get ready…");
-  later(nextRound, 700);
+  if (!FILM) later(nextRound, 700);
 }
 function nextRound(){
   if (!S.live) return;
@@ -1334,7 +1334,11 @@ function flip(){
   else S.eligible.filter(p => !p.human).forEach(b => planBot(b, all));
   banner(S.sudden ? "Sudden death: only tied players may grab." : "&nbsp;");
 }
+/* ?film: the pitch video is filmed on this page by a script (video/src/film.py) that deals set cards and makes each
+   grab itself, so bots don't act and rounds don't start on their own. Nothing else changes. */
+const FILM = /[?&]film\b/.test(location.search);
 function planBot(bot, cards, opt){
+  if (FILM) return;
   const d = DIFF[(opt && opt.diff) || S.diff], isCat = S.legal.has("cat");
   let t = d.mean + d.sd*gauss() + d.perCard*cards.length + (isCat ? d.catExtra : 0);
   t = Math.max(.5, t);
@@ -1356,6 +1360,7 @@ function planBot(bot, cards, opt){
 const CLOSE_MS = 2500; // once someone scores, the other correct toys stay open this long
 // a bot that just scored may reach for another correct toy nobody holds yet, at its usual speed
 function botAgain(bot){
+  if (FILM) return;
   const d = DIFF[(O.on && O.sess && O.sess.diff) || S.diff];
   if (S.sudden || Math.random() >= d.again) return;
   later(() => {
@@ -1388,7 +1393,7 @@ function grab(p, target){
     const open = [...S.legal].filter(o => !S.taken.has(o));
     if (!open.length || S.eligible.every(q => S.out.has(q))) return resolve();
     if (S.scorers.length === 1) later(resolve, CLOSE_MS);
-    banner(`${p.human ? "<b>You</b> have" : `<b>${p.name}</b> has`} the ${NAME[target].toLowerCase()}. Still up for grabs: ${open.map(o => NAME[o].toLowerCase()).join(", ")}.`);
+    banner(`<span>${p.human ? "<b>You</b> have" : `<b>${p.name}</b> has`} the ${NAME[target].toLowerCase()}. Still up for grabs: ${open.map(o => NAME[o].toLowerCase()).join(", ")}.</span>`);
     refreshToys(); renderSeats();
     if (!p.human && !S.tut) botAgain(p);
     return;
@@ -1443,7 +1448,7 @@ function resolve(){
   }
   if (S.tut) return tutAfter();
   S.waiting = true;
-  if (!S.paused) later(advance, O.on ? 3200 : 2300);
+  if (!S.paused && !FILM) later(advance, O.on ? 3200 : 2300);
 }
 // "You (fish, 0.84s) scored." / "Katsu (ball, 1.21s · bird, 1.60s) scored 2 points." / "You and Katsu both scored."
 function scoreLine(rows){
@@ -1496,6 +1501,7 @@ function finish(winner){
   $("end").hidden = false; $("meta").hidden = true;
   banner("");
 }
+if (FILM) window.UDTC_FILM = {S, grab, nextRound, finish, syncSetup, save};
 function toSetup(){
   S.live = false; clearTimers(); S.resolved = true; endTutorial();
   $("end").hidden = true; $("setup").hidden = false; $("meta").hidden = true;
