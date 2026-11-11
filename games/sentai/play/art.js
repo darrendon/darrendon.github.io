@@ -7,7 +7,7 @@
     paper: '#F3E7CF', paper2: '#E9D9B8', ink: '#1F1A2B', cream: '#FFF6E4', white: '#FFFDF7', gray: '#C9C2B4',
     hero: ['#E2482F', '#2E5FAE', '#F0B429', '#3B9562', '#EC8AA2'],          // Red, Blue, Yellow, Green, Pink
     heroDark: ['#A92E1B', '#1D3F7A', '#B9821A', '#256B43', '#B65C74'],
-    act: ['#7A5BA6', '#D76A3C', '#2B2440'],                                  // Boss card backs: Act I, II, III
+    act: ['#2F6B76', '#C8622F', '#2B2440'],                                  // Boss cards: Episode 1, Episode 2, the Finale
   };
   // the five emblems, each in a 24×24 box: flame, wave, bolt, leaf, star
   const EMB = [
@@ -421,37 +421,38 @@
     return s;
   }
   /* ---------- cards as HTML, sized by one CSS variable so they print the same at any size (styles in cards.css) ---------- */
-  const TYPE_NAME = { run: 'Run', set: 'Set', color: 'Color', combine: 'Combine' };
-  // the little picture of each combo: three mini cards
+  const TYPE_NAME = { run: 'Run', set: 'Set', color: 'Flush', combine: 'Roll Call' };
+  // the little picture of each combo: abstract marks in one color, so they never suggest particular ranks or colors
   function comboIcon(type) {
-    const mini = (x, fill, t) => `<rect x="${x}" y="1" width="9" height="12" rx="1.6" fill="${fill}"/>` + (t ? `<text x="${x + 4.5}" y="10.2" text-anchor="middle" font-family="Archivo,Jost,sans-serif" font-weight="900" font-size="8" fill="${P.ink}">${t}</text>` : '');
-    const xs = [1, 11.5, 22], h = P.hero;
-    const body = type === 'run' ? xs.map((x, i) => mini(x, P.cream, 4 + i)).join('') : type === 'set' ? xs.map((x) => mini(x, P.cream, 7)).join('')
-      : type === 'color' ? xs.map((x) => mini(x, h[0])).join('') : xs.map((x, i) => mini(x, h[[0, 1, 2][i]])).join('');
-    return svg('0 0 32 14', body, ' class="ci" aria-hidden="true"');
+    const k = 'currentColor';
+    const body = type === 'run' ? `<rect x="2" y="9" width="6" height="5" rx="1.2" fill="${k}"/><rect x="11" y="5.5" width="6" height="8.5" rx="1.2" fill="${k}"/><rect x="20" y="2" width="6" height="12" rx="1.2" fill="${k}"/>`
+      : type === 'set' ? `<rect x="2" y="4" width="6" height="10" rx="1.2" fill="${k}"/><rect x="11" y="4" width="6" height="10" rx="1.2" fill="${k}"/><rect x="20" y="4" width="6" height="10" rx="1.2" fill="${k}"/>`
+      : type === 'color' ? `<circle cx="5" cy="8" r="3.4" fill="${k}"/><circle cx="14" cy="8" r="3.4" fill="${k}"/><circle cx="23" cy="8" r="3.4" fill="${k}"/>`
+      : `<circle cx="5" cy="8" r="3.4" fill="${k}"/><path d="M14 4.2 L17.6 11.4 H10.4Z" fill="${k}"/><rect x="19.8" y="4.8" width="6.4" height="6.4" rx=".8" fill="${k}"/>`;
+    return svg('0 0 28 16', body, ' class="ci" aria-hidden="true"');
   }
   const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   /* A Boss card as printed: act, art, name, the combo, and its size for 2, 3 and 4 Heroes. `n` marks the squad size in play.
      b: { key, act, type, name, needs: [2, 3, 4 Heroes], hex?, brooded? }   opts: { cls, attrs, hexText: { name, text } } */
   function bossCardHTML(b, n, opts) {
     opts = opts || {};
-    const ACTN = ['Act I', 'Act II', 'Act III'], needs = b.needs || [b.need, b.need, b.need];
+    const ACTN = ['Episode 1', 'Episode 2', 'Finale'], needs = b.needs || [b.need, b.need, b.need];
     const cells = needs.map((v, i) => `<span class="nu${n === i + 2 ? ' on' : ''}"><i>${'<u></u>'.repeat(i + 2)}</i><b>${v + (b.brooded && n === i + 2 ? '' : '')}</b></span>`).join('');
     const label = `${b.name}: ${TYPE_NAME[b.type]} of ${n ? (b.need != null ? b.need : needs[n - 2]) : needs.join(' / ')}`;
     return `<div class="mcard a${b.act}${b.hex ? ' hydra' : ''}${opts.cls ? ' ' + opts.cls : ''}" role="img" aria-label="${esc(label)}"${opts.attrs || ''}><div class="mf">` +
       `<div class="mt"><span>${ACTN[b.act]}</span><span>${b.key >= 18 ? 'Vael' : 'Gorvax'}</span></div>` +
       `<div class="art">${monsterSVG(b.key, ' aria-hidden="true"', b.hex)}</div>` +
       `<div class="nm${b.name.length > 12 ? ' long' : ''}">${esc(b.name)}</div>` +
-      `<div class="cb">${comboIcon(b.type)}<span>${TYPE_NAME[b.type]} of</span></div>` +
+      `<div class="cb"><span>${TYPE_NAME[b.type]} of</span></div>` +
       `<div class="nums">${cells}</div>` +
       (opts.hexText ? `<div class="hx"><b>${esc(opts.hexText.name)}</b> ${esc(opts.hexText.text)}</div>` : '') +
       `</div></div>`;
   }
   // card backs: Hero cards share one; Boss cards have one per act
   const heroBackHTML = (cls) => `<span class="sc bk${cls ? ' ' + cls : ''}">${svg('0 0 50 70', `<rect width="50" height="70" fill="${P.ink}"/><g fill="none" stroke="${P.cream}" stroke-width="1" opacity=".5"><rect x="4" y="4" width="42" height="62" rx="4"/></g>` + [0, 1, 2, 3, 4].map((c, i) => { const a = -Math.PI / 2 + i * Math.PI * 2 / 5; return `<circle cx="${(25 + 13 * Math.cos(a)).toFixed(1)}" cy="${(35 + 13 * Math.sin(a)).toFixed(1)}" r="5.4" fill="${P.hero[c]}"/>` + emblem(c, P.cream, 25 + 13 * Math.cos(a) - 3.4, 35 + 13 * Math.sin(a) - 3.4, 6.8); }).join('') + `<circle cx="25" cy="35" r="3" fill="${P.cream}"/>`, ' aria-hidden="true"')}</span>`;
-  const bossBackHTML = (act, label, opts) => `<div class="mcard mbk a${act}${opts && opts.cls ? ' ' + opts.cls : ''}"${opts && opts.attrs || ''}><div class="mf"><div class="ring">${svg('0 0 100 100', `<circle cx="50" cy="50" r="34" fill="none" stroke="${P.cream}" stroke-width="3" opacity=".8"/><path d="M50 22 L57 43 L79 43 L61 56 L68 78 L50 64 L32 78 L39 56 L21 43 L43 43Z" fill="${P.cream}" opacity=".9"/>`, ' aria-hidden="true"')}</div><div class="bl">${['Act I', 'Act II', 'Act III'][act]}</div>${label != null ? `<div class="bn">${label}</div>` : ''}</div></div>`;
+  const bossBackHTML = (act, label, opts) => `<div class="mcard mbk a${act}${opts && opts.cls ? ' ' + opts.cls : ''}"${opts && opts.attrs || ''}><div class="mf"><div class="ring">${svg('0 0 100 100', `<circle cx="50" cy="50" r="34" fill="none" stroke="${P.cream}" stroke-width="3" opacity=".8"/><path d="M50 22 L57 43 L79 43 L61 56 L68 78 L50 64 L32 78 L39 56 L21 43 L43 43Z" fill="${P.cream}" opacity=".9"/>`, ' aria-hidden="true"')}</div><div class="bl">${['Episode 1', 'Episode 2', 'Finale'][act]}</div>${label != null ? `<div class="bn">${label}</div>` : ''}</div></div>`;
   // a Hero power card
-  const POWER_ART = [['Command', 'Always on', 'When you lead, you may add up to 3 cards.'], ['Riptide', 'Once a game', 'When the squad would discard, nobody does.'], ['Overcharge', 'Once a game', 'One card you add fits the combo, whatever its rank and color.'], ['Steady', 'Always on', 'Whenever the squad discards, you discard 1 fewer.'], ['Beacon', 'Once an act', 'On your turn, show one card from your hand to everyone.']];
+  const POWER_ART = [['Command', 'Always on', 'When you lead, you may add up to 3 cards.'], ['Riptide', 'Once a game', 'When the squad would discard, nobody does.'], ['Overcharge', 'Once a game', 'One card you add fits the combo, whatever its rank and color.'], ['Steady', 'Always on', 'Whenever the squad discards, you discard 1 fewer.'], ['Beacon', 'Once an episode', 'On your turn, show one card from your hand to everyone.']];
   const powerCardHTML = (c, cls) => `<div class="mcard pwc c${c}${cls ? ' ' + cls : ''}"><div class="mf"><div class="mt"><span>Hero power</span><span>${['Red', 'Blue', 'Yellow', 'Green', 'Pink'][c]}</span></div><div class="art">${beastSVG(c, ' aria-hidden="true"')}</div><div class="nm">${POWER_ART[c][0]}</div><div class="cb"><span>${POWER_ART[c][1]}</span></div><div class="hx">${POWER_ART[c][2]}</div></div></div>`;
   // card face (HTML) used by the playable build
   const cardHTML = (c, cls) => `<span class="sc c${c.c}${cls ? ' ' + cls : ''}" data-id="${c.id}"><b>${c.r}</b>${svg('0 0 24 24', emblem(c.c, 'currentColor'), ' class="se" aria-hidden="true"')}${beastSVG(c.c, ' class="pa" aria-hidden="true"')}<b class="br">${c.r}</b></span>`;

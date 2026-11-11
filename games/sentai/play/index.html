@@ -169,7 +169,7 @@
 (function () {
   'use strict';
   const S = window.Sentai, A = window.SentaiArt, esc = DevTable.esc;
-  const ACT = ['Act I', 'Act II', 'Act III'], TYPE = S.TYPE, COL = S.COLORS;
+  const ACT = ['Episode 1', 'Episode 2', 'Finale'], IN = ['Episode 1', 'Episode 2', 'the Finale'], TYPE = S.TYPE, COL = S.COLORS;
   const TUT = new URLSearchParams(location.search).has('tutorial');   // a coached first two monsters
   let tutDone = false;
   let sel = [], selHead = {}, key = '', tgt = null, wildOn = false, wildId = null, beaconOn = false;   // selHead: card id → head it's going to
@@ -323,7 +323,7 @@
     // left side: what's still face down
     const later = v.acts.map((a, i) => ({ i, n: a.n })).filter((a) => a.i > v.act);
     const decks = (vael && v.pile ? [{ i: v.act, n: v.pile, now: true }] : []).concat(later);
-    const left = '<div class="side l">' + (decks.length ? decks.map((d) => '<div class="pile">' + A.bossBackHTML(d.i, d.n, { attrs: ' data-anchor="deck' + d.i + '"' }) + '<span class="lbl">' + (d.now ? 'This act’s pile' : 'Face down') + '</span></div>').join('')
+    const left = '<div class="side l">' + (decks.length ? decks.map((d) => '<div class="pile">' + A.bossBackHTML(d.i, d.n, { attrs: ' data-anchor="deck' + d.i + '"' }) + '<span class="lbl">' + (d.now ? 'This episode’s pile' : 'Face down') + '</span></div>').join('')
       : '<div class="pile"><div class="spot"></div><span class="lbl">No monsters left face down</span></div>') + '</div>';
 
     // right side: the discard pile and the beaten monsters
@@ -349,7 +349,7 @@
       arena = '<div class="fight">' + mcard(e.boss, '', ' data-from="deck' + e.boss.act + '"') +
         '<div class="combo"><span class="lbl">The combo · <b>' + (e.need > 0 ? e.need + ' to go' : 'complete') + '</b></span>' + slots(e) +
         (v.phase === 'build' ? '<p class="rule">' + esc(describe(e)) + '</p>' : '') + '</div></div>' +
-        (v.upcoming.length ? '<div class="upnext"><span class="lbl">Up next in ' + ACT[v.act] + ', in order</span><div class="line">' + v.upcoming.map((b, i) => mcard(b, 'sm' + (i ? '' : ' next'), ' data-from="deck' + b.act + '"')).join('') + '</div></div>' : '');
+        (v.upcoming.length ? '<div class="upnext"><span class="lbl">Up next in ' + IN[v.act] + ', in order</span><div class="line">' + v.upcoming.map((b, i) => mcard(b, 'sm' + (i ? '' : ' next'), ' data-from="deck' + b.act + '"')).join('') + '</div></div>' : '');
     } else arena = '<div class="spot" style="width:auto;height:160px">The table is clear.</div>';
 
     // what just happened, said across the table
@@ -436,7 +436,7 @@
     let coach = '';
     if (TUT && !vael && v.done < 2 && v.phase !== 'over') {
       const e = v.enc, t = e ? TYPE[e.boss.type] : '';
-      const what = { run: 'ranks that fit in a row, in any colors (gaps are fine while you build)', set: 'cards of one rank', color: 'cards of one color', combine: 'cards that are all different colors' }[e ? e.boss.type : 'run'];
+      const what = { run: 'ranks that fit in a row, in any colors (gaps are fine while you build)', set: 'cards of one rank', color: 'cards of one color', combine: 'one card of each color, all different' }[e ? e.boss.type : 'run'];
       const note = v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Tap 1 or 2 cards that fit and add them, or pass and keep your cards for later.'
           : 'You lead. ' + esc(e.boss.name) + ' wants a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. The gold number on its card is the one for your squad of ' + P.length + '. Your first card tells your teammates what to add, so pick one you think they can follow.')
         : v.phase === 'build' ? 'Your teammates are adding to the same combo. Nobody may talk about their hand, so what they play is all you learn about what they hold.'
@@ -444,7 +444,7 @@
         : v.result && v.result.met ? 'Combo complete! The monster is beaten and those cards are spent. Nobody ever draws: your hand is your health, and if any Hero runs out, the Boss wins.'
         : 'It held on. The lead passes to the next Hero and you fight it again.';
       coach = '<div class="coach"><span>Tutorial · monster ' + (v.done + 1) + ' of 2</span><p>' + note + '</p></div>';
-    } else if (TUT && !vael && v.done >= 2 && !tutDone) { tutDone = true; api.toast('That’s the whole game: beat every monster in all three acts.'); }
+    } else if (TUT && !vael && v.done >= 2 && !tutDone) { tutDone = true; api.toast('That’s the whole game: beat every monster through the Finale.'); }
 
     // where a card or monster went when it left the table area
     const trashIds = new Set(v.trash.map((t) => 'k' + t.c.id));
@@ -503,11 +503,11 @@
     render,
     rules:
       '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each (14 against the Hydra).</p>' +
-      '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Color is one color, any ranks. A Combine is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
-      '<p><b>Emperor Gorvax.</b> Each act’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in Act III to win.</p>' +
-      '<p><b>Gorvax: fewer, bigger monsters (prototype).</b> Only 7 monsters a game (2, 2 and 3 per act), and each asks for most of what the whole table can add in one go, so most fights come down to the last Hero. Deal 16 cards each (15 with 4 Heroes). Everything else is the same.</p>' +
+      '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Flush is one color, any ranks. A Roll Call is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
+      '<p><b>Emperor Gorvax.</b> Each episode’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
+      '<p><b>Gorvax: fewer, bigger monsters (prototype).</b> Only 7 monsters a game (2, 2 and 3 per episode), and each asks for most of what the whole table can add in one go, so most fights come down to the last Hero. Deal 16 cards each (15 with 4 Heroes). Everything else is the same.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or 4 Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
-      '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an act): show a card.</p>',
+      '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once an episode): show a card.</p>',
   });
   if (TUT) { const n = document.getElementById('dt-l-n'); if (n) n.value = '3'; const b = document.getElementById('dt-l-start'); if (b) b.click(); }
 })();
