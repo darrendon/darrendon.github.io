@@ -102,7 +102,7 @@ GAMES = [
        cards=[[('Who?', 'Robin Hood'), ('What?', 'Hourglass'), ('When?', 'Rush Hour'), ('Where?', 'Laundromat'), ('Why?', 'Bad Luck')],
               [('Who?', 'Sherlock Holmes'), ('What?', 'Boomerang'), ('When?', 'Graduation'), ('Where?', 'Submarine'), ('Why?', 'Boredom')],
               [('Who?', 'Amelia Earhart'), ('What?', 'Toaster'), ('When?', 'Thanksgiving'), ('Where?', 'Bowling Alley'), ('Why?', 'Jealousy')]],
-       play=None,
+       play=dict(modes=[('Deal a card', 'Everyone but the guesser looks. Hundreds of words shuffle into new cards, so the deck never runs out.'), ('Start the timer', 'One minute for the five words. Next card resets it.')]),
        fb=[dict(q='How much fun was it?', type='scale', lo='Not for me', hi='Loved it'),
            dict(q='Which kind of word was hardest to get your guesser to?', type='choice', options=['Who', 'What', 'When', 'Where', 'Why']),
            dict(q='Which kind of word was easiest?', type='choice', options=['Who', 'What', 'When', 'Where', 'Why']),

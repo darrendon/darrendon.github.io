@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2 Jibber 2 Jabble · Card dealer</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+  /* 2 Jibber 2 Jabble card dealer: one card on the table, a one-minute timer above it,
+     Start and Next below. The deck is five word pools shuffled separately, so it never runs out.
+     Card look matches the printed cards and the box: cream card, five colored bands, round badges. */
+  :root{
+    --bg:#EEEFF5; --ink:#2B1D14; --ink-dim:#5A4A3E; --card:#FFF4E0; --badge:#FFF8EC;
+    --who:#F28B66; --what:#F6C445; --when:#86D0AA; --where:#7CBDEB; --why:#C7A3EA;
+    --accent:#A35F05; --warn:#C2410C; --line:#D5D7E3;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:Jost,"Futura","Avenir Next",Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;min-height:100dvh;padding:16px 16px 18px;gap:14px}
+  .bar{width:100%;max-width:420px;display:flex;align-items:center;gap:12px}
+  .clock{flex:0 0 auto;font:400 34px/1 Righteous,Jost,sans-serif;font-variant-numeric:tabular-nums;min-width:3.2ch;text-align:right}
+  .track{flex:1 1 auto;height:12px;border-radius:99px;background:#fff;border:2px solid var(--ink);overflow:hidden}
+  .fill{height:100%;width:100%;background:var(--when);transform-origin:left center}
+  body.low .fill{background:var(--who)}
+  body.low .clock{color:var(--warn)}
+  body.up .clock{color:var(--warn)}
+
+  .table{flex:1 1 auto;width:100%;display:flex;align-items:center;justify-content:center;min-height:0}
+  .card{width:min(100%,360px,calc((100dvh - 190px) * .714));aspect-ratio:5/7;max-height:100%;
+    background:var(--card);border:2.5px solid var(--ink);border-radius:18px;padding:12px;
+    display:flex;flex-direction:column;gap:7px;box-shadow:0 18px 30px -20px rgba(43,29,20,.55);
+    container-type:inline-size}
+  .card.deal{animation:deal .32s cubic-bezier(.2,.8,.3,1)}
+  @keyframes deal{from{transform:translateX(26px) rotate(3deg);opacity:0}to{transform:none;opacity:1}}
+  body.up .card{animation:buzz .5s}
+  @keyframes buzz{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+  .top{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px;min-height:18px}
+  .top b{font:400 max(12px,4.4cqw)/1 Righteous,Jost,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+  .top span{font-size:max(12px,3.8cqw);font-weight:600;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .band{flex:1 1 0;min-height:0;display:flex;align-items:center;gap:3.5cqw;padding:0 3cqw 0 2cqw;
+    border:2px solid var(--ink);border-radius:12px}
+  .band:nth-of-type(2){background:var(--who)} .band:nth-of-type(3){background:var(--what)}
+  .band:nth-of-type(4){background:var(--when)} .band:nth-of-type(5){background:var(--where)}
+  .band:nth-of-type(6){background:var(--why)}
+  .q{flex:0 0 auto;width:18.5cqw;aspect-ratio:1;border-radius:50%;background:var(--badge);border:2px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:3.3cqw;letter-spacing:-.01em;line-height:1;white-space:nowrap}
+  .w{flex:1 1 auto;min-width:0;font:400 7.6cqw/1.02 Righteous,Jost,sans-serif;text-wrap:balance;overflow-wrap:break-word}
+
+  .controls{width:100%;max-width:420px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button{font:600 17px/1 Jost,sans-serif;min-height:52px;border-radius:12px;border:2.5px solid var(--ink);
+    background:#fff;color:var(--ink);cursor:pointer;padding:0 14px;touch-action:manipulation}
+  button.primary{background:var(--ink);color:var(--card)}
+  button:hover{filter:brightness(.96)} button.primary:hover{filter:brightness(1.25)}
+  button:active{transform:translateY(1px)}
+  button:focus-visible{outline:3px solid var(--where);outline-offset:2px}
+  .hint{margin:0;font-size:13px;color:var(--ink-dim);text-align:center}
+  @media (hover:none){.hint{display:none}}
+  @media (prefers-reduced-motion:reduce){.card.deal,body.up .card{animation:none}}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="clock" id="clock" role="timer" aria-live="off">1:00</div>
+    <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+  </div>
+  <p class="sr" id="say" aria-live="assertive" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></p>
+
+  <main class="table">
+    <article class="card" id="card" aria-label="Current card">
+      <div class="top"><b>2 Jibber 2 Jabble</b><span id="num">#1</span></div>
+      <div class="band"><span class="q">WHO?</span><span class="w" id="w0"></span></div>
+      <div class="band"><span class="q">WHAT?</span><span class="w" id="w1"></span></div>
+      <div class="band"><span class="q">WHEN?</span><span class="w" id="w2"></span></div>
+      <div class="band"><span class="q">WHERE?</span><span class="w" id="w3"></span></div>
+      <div class="band"><span class="q">WHY?</span><span class="w" id="w4"></span></div>
+    </article>
+  </main>
+
+  <div class="controls">
+    <button type="button" class="primary" id="go">Start timer</button>
+    <button type="button" id="next">Next card</button>
+  </div>
+  <p class="hint">Space starts or pauses the timer · N deals the next card</p>
+
+<script>
+/* ---------- Word pools ----------
+   One pool per question. Every word should answer a natural question that starts with
+   its question word ("When does the ball drop, hmm?" → New Year's Eve). No word sits in two pools. */
+const POOLS = [
+  /* WHO? */ ['Robin Hood','Elvis Presley','Cinderella','Picasso','Sherlock Holmes','Tarzan','Dracula','Amelia Earhart',
+    'Pinocchio','Albert Einstein','Santa Claus','Tooth Fairy','Easter Bunny','Snow White','Frankenstein','Peter Pan',
+    'Rapunzel','Goldilocks','Little Red Riding Hood','Humpty Dumpty','Bigfoot','Shakespeare','Beethoven','Leonardo da Vinci',
+    'Van Gogh','Thomas Edison','Benjamin Franklin','Abraham Lincoln','Julius Caesar','King Tut','Christopher Columbus',
+    'Neil Armstrong','Babe Ruth','Muhammad Ali','Michael Jordan','Marilyn Monroe','Charlie Chaplin','Isaac Newton',
+    'Paul Revere','Johnny Appleseed','Annie Oakley','Blackbeard','Zeus','Hercules','Medusa','Cupid','Mother Nature',
+    'Father Time','Jack Frost','Grim Reaper','Sleeping Beauty','Paul Bunyan','Big Bad Wolf','Mother Goose','Captain Hook',
+    'Uncle Sam','Loch Ness Monster','Leprechaun','Mona Lisa','Bob Ross','Julia Child','Michael Jackson','The Beatles',
+    'Walt Disney','Dr. Seuss','Queen Elizabeth','Pirate','Astronaut','Lifeguard','Mail Carrier','Magician','Firefighter',
+    'Ninja','Cowboy','Mummy','Werewolf','Zombie','Clown','Chef','Mermaid','Genie','Vampire','Superhero','Mad Scientist',
+    'Ballerina','Lumberjack','Knight','Princess','Detective','Referee','Dentist','Babysitter','Robot','Alien','Caveman'],
+  /* WHAT? */ ['Hourglass','Anchor','Trampoline','Parachute','Boomerang','Thermometer','Telescope','Toaster','Trophy',
+    'Umbrella','Pizza','Volcano','Banana','Guitar','Snowman','Cookie','Pillow','Dinosaur','Piñata','Kite','Bubble Gum',
+    'Popcorn','Lawn Mower','Hot Air Balloon','Compass','Magnet','Microscope','Skateboard','Roller Coaster','Ladder',
+    'Wheelbarrow','Fire Extinguisher','Alarm Clock','Treasure Chest','Crown','Magic Wand','Broom','Saxophone','Drum',
+    'Bagpipes','Tuxedo','Wedding Cake','Snow Globe','Rubber Duck','Teddy Bear','Yo-Yo','Frisbee','Bowling Ball','Hammock',
+    'Sandcastle','Taco','Spaghetti','Pretzel','Pancake','Marshmallow','Watermelon','Pineapple','Lemonade','Hot Dog',
+    'Fortune Cookie','Mustache','Wig','Sunglasses','Flip-Flops','Mittens','Scarecrow','Pumpkin','Candle','Fireworks',
+    'Balloon','Bicycle','Tractor','Helicopter','Rocket','Vending Machine','Shopping Cart','Mailbox','Doorbell',
+    'Toothbrush','Bandage','Crayon','Paintbrush','Calculator','Backpack','Lunchbox','Remote Control','Microwave',
+    'Refrigerator','Vacuum','Hammer','Flashlight','Tent','Fishing Rod','Life Jacket','Surfboard','Snorkel','Sled',
+    'Snowball','Ice Cube','Mirror','Map','Passport','Suitcase','Piggy Bank','Lasso','Bubble Wrap','Duct Tape','Slinky'],
+  /* WHEN? */ ['Rush Hour','Birthday','Halftime',"Valentine's Day",'Graduation',"New Year's Eve",'Fourth of July',
+    'Thanksgiving','Spring Break','Halloween','Christmas','Easter',"Mother's Day","Father's Day","St. Patrick's Day",
+    "April Fools' Day",'Groundhog Day','Super Bowl Sunday','Breakfast','Lunch','Dinner','Midnight','Sunrise','Sunset',
+    'Bedtime','Recess','Summer','Winter','Spring','Fall','Snow Day','Weekend','Monday','Friday','Payday','Tax Day',
+    'Election Day','First Day of School','Last Day of School','Wedding','Honeymoon','Retirement','Prom','Baby Shower',
+    'Family Reunion','Road Trip','Sleepover','Field Trip','Fire Drill','Commercial Break','Rainy Day','Full Moon',
+    'Power Outage','Opening Night','Seventh-Inning Stretch','Countdown','Hanukkah','Lunar New Year','Cinco de Mayo',
+    'Earth Day','Labor Day','Bath Time','Nap Time','Dessert','Snack Time','Noon','Moving Day','Game Day','Sick Day',
+    'Ice Age','Stone Age','Middle Ages','Leap Day','Lunch Break','Sunday Morning','Last Call','Black Friday','Tax Season'],
+  /* WHERE? */ ['Laundromat','Zoo','Lighthouse','Courtroom','Submarine','Aquarium','Attic','Bowling Alley','Movie Theater',
+    'Library','Hospital','Desert','Airport','Beach','Castle','Jungle','Bathroom','Moon','Basement','Mall','Igloo',
+    'Kitchen','Garage','Barbershop',"Dentist's Office",'Gym','Bakery','Farm','Circus','Carnival','Water Park',
+    'Ski Lodge','Campground','Haunted House','Graveyard','Museum','Church','Las Vegas','Paris','Hollywood','North Pole',
+    'Antarctica','Space Station','Pyramid','Grand Canyon','Niagara Falls','Mount Everest','Eiffel Tower','White House',
+    'Times Square','Hot Tub','Treehouse','Elevator','Subway','Bus Stop','Gas Station','Car Wash','Drive-Thru',
+    'Grocery Store','Pet Store','Post Office','Police Station','Fire Station','Classroom','Cafeteria','Playground',
+    "Principal's Office",'Locker Room','Stadium','Ice Rink','Swimming Pool','Spa','Hotel','Cruise Ship','Train Station',
+    'Jail','Bank','Casino','Pumpkin Patch','Dog Park','Diner','Food Truck','Cave','Desert Island','Swamp','Closet',
+    'Backyard','Under the Bed','Bottom of the Ocean','Rooftop','Waterbed','Wild West','Volcano Lair','Toy Store','Barn'],
+  /* WHY? */ ['Bad Luck','Cavities','Stage Fright','Curiosity','Boredom','Jet Lag','Homework','Jealousy','Allergies',
+    'Gravity','Germs','Traffic','Love','Money','Hunger','Thirst','Revenge','Fear','Laziness','Pride','Guilt','Excitement',
+    'Sunburn','Cold Weather','Rain','Thunder','Heat Wave','Tradition','Good Luck','Exercise','Science','Charity','Fame',
+    'Attention','Practice','Safety','Spite','Loneliness','Panic','Embarrassment','Nerves','Gossip','Sugar Rush','Caffeine',
+    'Exhaustion','A Dare','A Bet','The Rules','Mom','The Law','Manners','Fashion','Greed','Kindness','Friendship',
+    'Teamwork','Pollen','Wind','Mosquitoes','No Sleep','Motion Sickness','Sweet Tooth','Brain Freeze','Habit','Instinct',
+    'Stubbornness','Clumsiness','Forgetfulness','Procrastination','Hiccups','Bed Head','A Bad Smell','Static Shock',
+    'Peer Pressure','Stress','Fun','Glory','Snoring','A Flat Tire','Dry Skin']
+];
+
+/* Words that give each other away never share a card (Dracula with Halloween, Santa with the North Pole…). */
+const CLASH = [
+  ['Halloween','Dracula','Frankenstein','Mummy','Werewolf','Zombie','Vampire','Grim Reaper','Haunted House','Pumpkin','Scarecrow','Graveyard','Pumpkin Patch','Candle'],
+  ['Christmas','Santa Claus','Jack Frost','North Pole','Snowman','Snow Globe','Mittens'],
+  ['Easter','Easter Bunny'], ["Valentine's Day",'Cupid','Love','Wedding','Honeymoon','Wedding Cake','Tuxedo','Church'],
+  ['Fourth of July','Fireworks','Uncle Sam','White House','Election Day',"New Year's Eve",'Times Square','Countdown'],
+  ['Thanksgiving','Pumpkin','Scarecrow','Farm','Barn','Tractor'], ["St. Patrick's Day",'Leprechaun','Good Luck','Bad Luck'],
+  ['Birthday','Piñata','Balloon','Candle','Wedding Cake','Clown','Circus','Carnival'],
+  ['Cavities','Toothbrush','Tooth Fairy','Sweet Tooth','Dentist',"Dentist's Office",'Cookie','Bubble Gum'],
+  ['Jet Lag','Airport','Passport','Suitcase','Hotel','Motion Sickness','Cruise Ship'],
+  ['Hunger','Breakfast','Lunch','Dinner','Snack Time','Lunch Break','Dessert','Diner','Food Truck','Kitchen','Chef','Julia Child','Bakery'],
+  ['Exhaustion','No Sleep','Bedtime','Nap Time','Pillow','Sleeping Beauty','Snoring','Under the Bed','Waterbed','Hammock'],
+  ['King Tut','Mummy','Pyramid','Desert'], ['Picasso','Van Gogh','Leonardo da Vinci','Mona Lisa','Bob Ross','Museum','Paintbrush','Crayon'],
+  ['Pirate','Blackbeard','Captain Hook','Treasure Chest','Desert Island','Anchor','Map','Compass'],
+  ['Astronaut','Neil Armstrong','Alien','Rocket','Moon','Space Station','Telescope','Full Moon','Werewolf','Gravity','Isaac Newton'],
+  ['Firefighter','Fire Station','Fire Extinguisher','Fire Drill'], ['Tarzan','Jungle','Zoo'],
+  ['Lifeguard','Beach','Swimming Pool','Water Park','Life Jacket','Sunburn','Sandcastle','Surfboard','Snorkel','Flip-Flops','Sunglasses','Summer','Mermaid','Heat Wave','Spring Break'],
+  ['Snow White','Mirror'], ['Cinderella','Midnight','Paul Revere','Pumpkin','Prom','Princess','Castle'],
+  ['Jack Frost','Winter','Snow Day','Sled','Snowball','Ski Lodge','Igloo','Antarctica','Cold Weather','Ice Rink','Ice Age','Mittens'],
+  ['Benjamin Franklin','Kite','Wind','Thunder','Rainy Day','Rain','Umbrella','Power Outage','Thomas Edison'],
+  ['Babe Ruth','Seventh-Inning Stretch','Stadium','Michael Jordan','Super Bowl Sunday','Halftime','Game Day','Referee','Locker Room','Trophy','Muhammad Ali'],
+  ['Father Time','Hourglass','Alarm Clock','Countdown'], ['Elvis Presley','Las Vegas','Casino','A Bet','Wedding'],
+  ['Marilyn Monroe','Charlie Chaplin','Walt Disney','Hollywood','Movie Theater','Popcorn','Opening Night','Fame'],
+  ['Money','Bank','Payday','Piggy Bank','Casino','Greed','Tax Day','Tax Season','Black Friday','Mall'],
+  ['Homework','Classroom','First Day of School','Last Day of School','Recess','Field Trip','Fire Drill',"Principal's Office",'Backpack','Lunchbox','Cafeteria','Crayon','Calculator'],
+  ['Allergies','Pollen','Spring','Germs','Hospital','Thermometer','Sick Day','Bandage'],
+  ['Paul Bunyan','Lumberjack','Johnny Appleseed'], ['Big Bad Wolf','Little Red Riding Hood','Goldilocks'],
+  ['Groundhog Day','Winter'], ['Cowboy','Annie Oakley','Lasso','Wild West'], ['Magician','Genie','Magic Wand'],
+  ['Mad Scientist','Science','Microscope','Albert Einstein','Frankenstein'], ['Shakespeare','Opening Night','Stage Fright'],
+  ['Laundromat','Dry Skin'], ['Bowling Ball','Bowling Alley'], ['Teddy Bear','Toy Store','Yo-Yo','Slinky']
+];
+const CL = new Map();
+CLASH.forEach((g, i) => g.forEach(w => { if (!CL.has(w)) CL.set(w, new Set()); CL.get(w).add(i); }));
+const clashes = (a, b) => { const x = CL.get(a), y = CL.get(b); if (!x || !y) return false; for (const i of x) if (y.has(i)) return true; return false; };
+
+/* Each pool is its own shuffled deck: every word comes up once before any repeats, then it reshuffles. */
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const decks = POOLS.map(p => shuffle(p.slice()));
+function take(slot, picked) {
+  const d = decks[slot];
+  if (!d.length) d.push(...shuffle(POOLS[slot].filter(w => !picked.includes(w))));
+  const ok = w => !picked.some(p => clashes(p, w));
+  const i = d.findIndex(ok);
+  if (i >= 0) return d.splice(i, 1)[0];
+  const spare = shuffle(POOLS[slot].filter(ok));   // the last few in the deck all clash: borrow one from the whole pool
+  return spare[0] || d.shift();
+}
+function dealCard() { const picked = []; for (let s = 0; s < 5; s++) picked.push(take(s, picked)); return picked; }
+
+/* ---------- Table ---------- */
+const $ = id => document.getElementById(id);
+const card = $('card'), go = $('go'), clock = $('clock'), fill = $('fill'), say = $('say');
+let count = 0;
+function deal() {
+  const words = dealCard();
+  words.forEach((w, i) => { $('w' + i).textContent = w; });
+  $('num').textContent = '#' + (++count);
+  card.classList.remove('deal'); void card.offsetWidth; card.classList.add('deal');
+  resetTimer();
+}
+
+/* ---------- One-minute timer ----------
+   Start → Pause → Resume. Next card puts it back to 1:00. At zero it buzzes and the clock turns orange. */
+const LEN = 60000;
+let left = LEN, endAt = 0, raf = 0, state = 'ready';   // ready | running | paused | up
+function fmt(ms) { const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function paint() {
+  clock.textContent = fmt(left);
+  fill.style.transform = 'scaleX(' + (left / LEN) + ')';
+  document.body.classList.toggle('low', state === 'running' && left <= 10000);
+  go.textContent = { ready: 'Start timer', running: 'Pause', paused: 'Resume', up: 'Restart timer' }[state];
+}
+function tick() {
+  left = Math.max(0, endAt - performance.now());
+  if (left <= 0) { state = 'up'; document.body.classList.add('up'); document.body.classList.remove('low'); buzz(); say.textContent = 'Time’s up'; paint(); return; }
+  paint(); raf = requestAnimationFrame(tick);
+}
+function start() { if (state === 'up') left = LEN; document.body.classList.remove('up'); state = 'running'; endAt = performance.now() + left; ac(); raf = requestAnimationFrame(tick); paint(); }
+function pause() { cancelAnimationFrame(raf); left = Math.max(0, endAt - performance.now()); state = 'paused'; paint(); }
+function resetTimer() { cancelAnimationFrame(raf); left = LEN; state = 'ready'; document.body.classList.remove('up', 'low'); paint(); }
+function toggle() { state === 'running' ? pause() : start(); }
+
+/* Three short beeps at zero (the audio context is opened on the first Start, which counts as a tap). */
+let ctx = null;
+function ac() { try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === 'suspended') ctx.resume(); } catch (e) { ctx = null; } }
+function buzz() {
+  if (!ctx) return;
+  [0, .22, .44].forEach((t, i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain(), at = ctx.currentTime + t;
+    o.type = 'square'; o.frequency.value = i === 2 ? 660 : 880;
+    g.gain.setValueAtTime(.0001, at); g.gain.exponentialRampToValueAtTime(.18, at + .02); g.gain.exponentialRampToValueAtTime(.0001, at + .18);
+    o.connect(g).connect(ctx.destination); o.start(at); o.stop(at + .2);
+  });
+}
+
+go.addEventListener('click', toggle);
+$('next').addEventListener('click', deal);
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input,textarea')) return;
+  if (e.code === 'Space' && !e.target.closest('button')) { e.preventDefault(); toggle(); }
+  else if (e.key === 'n' || e.key === 'N' || e.key === 'ArrowRight') { e.preventDefault(); deal(); }
+});
+deal();
+</script>
+</body>
+</html>
