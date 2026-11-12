@@ -7,7 +7,7 @@
 <meta name="description" content="Too Many Crooks! — a dice negotiation game. Play against bots or host an online table for 3 to 6 players.">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <link rel="stylesheet" href="/assets/css/tabletop.css?v=45891ad3">
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/games/too-many-crooks/img/src/crooks.js"></script>
 <style>
 :root{
@@ -283,7 +283,10 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   #hand{order:3}
   #sheets>.sheet:not(.me){order:4}
   main:has(#hand:not(.hide)) #sheets>.sheet.me{order:5}
+  /* sending: your roll rides in a tray at the bottom, above the buttons, so every rival's job can be reached */
+  #hand:not(.hide){order:6;position:sticky;bottom:var(--acth,92px);z-index:6;box-shadow:0 -10px 24px -10px rgba(0,0,0,.35)}
 }
+.sheet.aimed{outline:3px dashed var(--gold);outline-offset:3px}
 @media (max-width:640px){
   /* compact top bar: name, job and Leave on one row, the phase on its own row */
   .top{gap:2px 10px;padding:6px 12px 7px}
@@ -305,9 +308,12 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   .actions .btn.red{flex:2 1 0}
   .actions .muted{flex:1 1 100%}
   /* bigger dice to tap */
-  #hand .die{width:40px;height:40px;padding:6px;border-radius:8px}
-  #hand .die i{width:7px;height:7px}
-  #hand .dice{gap:9px}
+  #hand .die{width:36px;height:36px;padding:5px;border-radius:8px}
+  #hand .die i{width:6.5px;height:6.5px}
+  #hand .dice{gap:7px}
+  #hand{padding:8px 10px}
+  #hand .hd{gap:2px 10px;flex-wrap:wrap;margin-bottom:6px}
+  #hand .hd h3{font-size:14px}
   .sheet.me .kept .die{width:38px;height:38px;padding:6px}
   .sheet.me .kept .die i{width:6.5px;height:6.5px}
   .sheet.me .kept{gap:8px}
@@ -698,6 +704,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   let crewSel = null;     // array of die ids
   let paySel = {};        // keptId -> crewId
   let pickKept = null;    // kept die id waiting for a crew target
+  let aimAt = null;       // the rival job you're sending to: tap dice and they go there
   let submitted = { crew: false, pay: false };
   let tut = null;          // tutorial state while the coach is running, else null
 
@@ -943,7 +950,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     Motion.snap();
     if (v.seq !== lastSeq) {
       // phase changed? reset local selections
-      if (!render._phase || render._phase !== v.phase || render._job !== v.job) { staged = []; pickDie = null; crewSel = null; paySel = {}; pickKept = null; submitted = { crew: false, pay: false }; }
+      if (!render._phase || render._phase !== v.phase || render._job !== v.job) { staged = []; pickDie = null; crewSel = null; paySel = {}; pickKept = null; aimAt = null; submitted = { crew: false, pay: false }; }
       render._phase = v.phase; render._job = v.job; lastSeq = v.seq;
     }
     $('t-job').textContent = 'JOB ' + (v.job + 1) + ' OF 3' + (last ? ' — CREW SCORES DOUBLE' : '');
@@ -972,6 +979,11 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     renderFeed();
     renderTimer();
     const moved = Motion.play();
+    // on a phone, crewing and paying happen on your own job: bring it into view when that step starts
+    if (prevPhase !== v.phase && (v.phase === 'crew' || v.phase === 'pay') && !tut && matchMedia('(max-width:980px)').matches) {
+      const mine = document.querySelector('#sheets .sheet.me');
+      if (mine) setTimeout(() => { const r = mine.getBoundingClientRect(); if (r.top < 60 || r.bottom > innerHeight - 90) window.scrollTo({ top: scrollY + r.top - 76, behavior: 'smooth' }); }, Math.max(moved, 0) + 200);
+    }
     const done = v.phase === 'summary' || v.phase === 'over';
     if (done && prevPhase === 'pay' && !tut && !Motion.reduce()) {
       // the reveal: the last cuts slide into place, every scoring die flies to its scoreboard chip, then the split opens
@@ -1005,7 +1017,8 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     const target = false;   // nothing outlines where a die may go
     const tg = TARGETS[i % TARGETS.length];
     const aim = v.phase === 'send' && v.sender === me && pickDie;
-    let out = '<div class="sheet' + (mine ? ' me' : '') + '" data-zone="job" data-seat="' + i + '"' + (aim ? ' tabindex="0" role="button" aria-label="Send to ' + esc(nm(i)) + '’s job"' : '') + '>';
+    const aimed = v.phase === 'send' && v.sender === me && aimAt === i && !tut;
+    let out = '<div class="sheet' + (mine ? ' me' : '') + (aimed ? ' aimed' : '') + '" data-zone="job" data-seat="' + i + '"' + (aim || (v.phase === 'send' && v.sender === me && !mine) ? ' tabindex="0" role="button" aria-label="Send to ' + esc(nm(i)) + '’s job"' : '') + '>';
     out += '<div class="hd"><span class="sirens">' + SIREN('#F0603F') + SIREN('#5AA2F0') + '</span><span class="dot p' + i + '"></span><span class="nm">' + esc(nm(i)) + (mine ? ' — your job' : '') + '</span>' +
       '<span class="tgt">' + tg[1] + tg[0] + '</span><span class="st">' + st + '</span></div>';
 
@@ -1094,7 +1107,9 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     el.classList.remove('hide');
     const myTurn = v.sender === me;
     const hand = v.hands[me];
-    let h = '<div class="hd"><h3>Your dice</h3><span class="muted small">' + (myTurn ? 'Drag a die onto a rival’s job, or tap a die, then the job' : '') + '</span></div><div class="dice">';
+    const aimTxt = !myTurn ? '' : tut ? 'Drag a die onto a rival’s job, or tap a die, then the job'
+      : aimAt != null ? 'Tap dice to send them to <b>' + esc(nm(aimAt)) + '</b>. Tap another job to switch.' : 'Tap a rival’s job, then tap dice to send them there (or drag them)';
+    let h = '<div class="hd"><h3>Your dice</h3><span class="muted small">' + aimTxt + '</span></div><div class="dice">';
     for (const d of hand) {
       const s = staged.find((x) => x.dieId === d.id);
       let cls = myTurn ? 'pick' : '';
@@ -1120,13 +1135,13 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       else if (!v.kitchens[me].length) h = '<span class="hint">Nobody sent you dice. Your own dice run this job.</span>';
       else {
         if (!crewSel) crewSel = [];
-        h = '<span class="hint">Pick your crew from the dice sent to you.</span><button class="btn red" id="a-crew">Confirm crew</button>';
+        h = '<span class="hint">Tap one inside man, one driver and one muscle from the dice sent to you. The third one hires them.</span><button class="btn red" id="a-crew">Confirm crew</button>';
       }
     } else if (v.phase === 'pay') {
       if (v.payDone[me]) h = '<span class="hint">Cuts handed out. Waiting for the reveal.</span>';
       else {
         const need = v.handOut, have = Object.keys(paySel).length;
-        h = '<span class="hint">Hand out the cuts: put your kept dice on the red slots under your crew.</span>' +
+        h = '<span class="hint">Hand out the cuts: put your kept dice on the red slots under your crew. The last one hands them out.</span>' +
             '<button class="btn ghost" id="a-pclear">Clear</button><button class="btn red" id="a-pay"' + (have || !need ? '' : ' disabled') + '>Hand them out</button>';
       }
     } else if (v.phase === 'summary') {
@@ -1165,33 +1180,52 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
         const id = die.dataset.id;
         const s = staged.findIndex((x) => x.dieId === id);
         if (s >= 0) { staged.splice(s, 1); pickDie = null; render(); return; }
+        if (aimAt != null && !tut) { const why = sendWhy(id, aimAt); if (why) { refuse(why, die); return; } staged.push({ dieId: id, to: aimAt }); pickDie = null; if (window.Tabletop) Tabletop.sound('dice'); render(); return; }
         pickDie = pickDie === id ? null : id; render(); return;
       }
       if (die && die.classList.contains('staged') && sheet) { const id = die.dataset.id; staged = staged.filter((x) => x.dieId !== id); render(); return; }
       if (sheet && pickDie) {
         const to = +sheet.dataset.seat;
         const why = sendWhy(pickDie, to); if (why) { refuse(why, sheet); return; }
-        staged.push({ dieId: pickDie, to }); pickDie = null; if (window.Tabletop) Tabletop.sound('dice'); render(); return;
+        staged.push({ dieId: pickDie, to }); pickDie = null; if (!tut) aimAt = to; if (window.Tabletop) Tabletop.sound('dice'); render(); return;
+      }
+      if (sheet && !die && !tut) {                    // no die in hand: tapping a job aims at it
+        const to = +sheet.dataset.seat;
+        if (to === me) { refuse('You can’t hire your own crew: your dice only ever go to rivals’ jobs.', sheet); return; }
+        aimAt = aimAt === to ? null : to; if (window.Tabletop) Tabletop.sound('chip'); render(); return;
       }
     }
     if (v.phase === 'crew' && !v.crewDone[me] && die && sheet && +sheet.dataset.seat === me) {
       const id = die.dataset.id; const d = v.kitchens[me].find((x) => x.id === id); if (!d) return;
       const b = T.band(d.v);
       crewSel = (crewSel || []).filter((cid) => T.band(v.kitchens[me].find((x) => x.id === cid).v) !== b);
-      crewSel.push(id); render(); return;
+      crewSel.push(id); render(); autoCrew(); return;
     }
     if (v.phase === 'pay' && !v.payDone[me] && !die && pickKept && sheet && +sheet.dataset.seat === me) {
       const slot = e.target.closest('.slot.red[data-crew]');
-      if (slot) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', slot); return; } paySel[pickKept] = slot.dataset.crew; pickKept = null; render(); return; }
+      if (slot) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', slot); return; } paySel[pickKept] = slot.dataset.crew; pickKept = null; render(); autoPay(); return; }
     }
     if (v.phase === 'pay' && !v.payDone[me] && die && sheet && +sheet.dataset.seat === me) {
       const id = die.dataset.id;
       const isKept = v.kept[me].some((x) => x.id === id), isCrew = v.crews[me].some((x) => x.id === id);
       if (isKept) { if (paySel[id]) { delete paySel[id]; pickKept = null; } else pickKept = pickKept === id ? null : id; render(); return; }
-      if (isCrew && pickKept) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', die); return; } paySel[pickKept] = id; pickKept = null; render(); return; }
+      if (isCrew && pickKept) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', die); return; } paySel[pickKept] = id; pickKept = null; render(); autoPay(); return; }
     }
     if (v.phase === 'send' && v.sender !== me && die && e.target.closest('#hand')) refuse('It’s ' + nm(v.sender) + '’s turn to send.', die);
   });
+  // a full crew (one of each) and a full set of cuts go through by themselves, a beat after the last die lands
+  function autoCrew() {
+    if (tut || !crewSel || crewSel.length !== 3) return;
+    const pick = crewSel.slice(), j = view.job;
+    setTimeout(() => { const v = view; if (!v || v.phase !== 'crew' || v.job !== j || v.crewDone[v.me] || (crewSel || []).join() !== pick.join()) return;
+      const r = session.act({ type: 'crew', dieIds: pick }); if (r && !r.ok) refuse(r.error); else submitted.crew = true; }, 450);
+  }
+  function autoPay() {
+    const v = view; if (tut || !v || !v.handOut || Object.keys(paySel).length !== v.handOut) return;
+    const pick = Object.assign({}, paySel), j = v.job, k = JSON.stringify(pick);
+    setTimeout(() => { const v = view; if (!v || v.phase !== 'pay' || v.job !== j || v.payDone[v.me] || JSON.stringify(paySel) !== k) return;
+      const r = session.act({ type: 'pay', assign: pick }); if (r && !r.ok) refuse(r.error); else submitted.pay = true; }, 450);
+  }
   function sendWhy(id, to) {
     const v = view, me = v.me;
     if (v.phase !== 'send') return 'Not now.';
@@ -1200,6 +1234,8 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     if (staged.length >= job(v).send && !staged.some((x) => x.dieId === id)) return 'You send exactly ' + job(v).send + ' dice each job. That’s all ' + job(v).send + '.';
     return null;
   }
+  // the dice tray sits just above the action bar on a phone, whatever height the bar is
+  { const bar = document.getElementById('actions'); if (bar && window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--acth', bar.offsetHeight + 'px')).observe(bar); }
   // dice can be carried too: drag one from your roll onto a rival's job, or a kept die onto a red slot under your crew
   if (window.Tabletop) Tabletop.drag(document.getElementById('game') || document.body, {
     pieces: '#hand .die, .sheet.me .kept .die', zones: '[data-zone]', key: (n) => 'd' + n.dataset.id,
@@ -1215,14 +1251,14 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       if (v.phase === 'send') {
         if (!p.el.closest('#hand')) return { ok: false, quiet: true };
         const to = +z.closest('[data-seat]').dataset.seat, why = sendWhy(id, to); if (why) return why;
-        staged = staged.filter((x) => x.dieId !== id); staged.push({ dieId: id, to }); pickDie = null; render(); return true;
+        staged = staged.filter((x) => x.dieId !== id); staged.push({ dieId: id, to }); pickDie = null; aimAt = to; render(); return true;
       }
       if (v.phase === 'pay') {
         if (v.payDone[me]) return 'You’ve already handed out your cuts.';
         const slot = z.dataset.zone === 'cut' ? z : null;
         if (!slot || +z.closest('[data-seat]').dataset.seat !== me) return 'Cuts go on the red slots under the crew on your own job.';
         if (Object.keys(paySel).length >= v.handOut && !paySel[id]) return 'This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.';
-        paySel[id] = slot.dataset.crew; pickKept = null; render(); return true;
+        paySel[id] = slot.dataset.crew; pickKept = null; render(); autoPay(); return true;
       }
       return { ok: false, quiet: true };
     },

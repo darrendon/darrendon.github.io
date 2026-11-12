@@ -350,7 +350,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
 <div class="overlay" id="ov" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h" id="ov-body"></div></div>
 <div class="sr" aria-live="polite" id="live"></div>
 
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="engine.js"></script>
 <script>
 /* ============================================================ NET (same relay pattern as Dim Sum Rush and Too Many Crooks)
@@ -1178,7 +1178,8 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     else status = g.names[g.turn] + (g.phase === 'open' ? ' is opening…' : ' is thinking…');
 
     const td = tut ? tutDo() : null; // in the tutorial only the taught move is allowed
-    const taking = mine && (g.phase === 'takeback' || mode === 'reverse');
+    // reaching onto the mat and taking a card is a reversal in itself (no button first); in the tutorial only when the coach says so
+    const taking = mine && (g.phase === 'takeback' || mode === 'reverse' || (g.phase === 'answer' && !tut));
     const picks = taking && tut && td && (td.type === 'takeback' || td.type === 'reverse') ? (g.phase === 'takeback' ? o.takeback : o.reverse) : [];
     const used = {};
     const tcards = cur ? cur.cards.map((r, i) => {
@@ -1198,7 +1199,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       else {
         actions = '<button type="button" class="go" id="play"' + (sel.length ? '' : ' disabled') + '>Play' + (sel.length ? ' ' + sel.length : '') + '</button>';
         if (g.phase === 'answer') {
-          actions += '<button type="button" class="gold" id="rev" title="Take a card off the move; discard a stamina card">Reversal</button>';
+          actions += '<button type="button" class="gold" id="rev" title="Take a card off the move (or just tap it on the mat); discard a stamina card">Reversal</button>';
           if (g.n > 2) actions += '<button type="button" class="gold" id="kick" title="Take a stamina card into your hand">Kick out</button>';
         }
         if (sel.length) actions += '<button type="button" class="ghost" id="clear">Clear</button>';
@@ -1263,7 +1264,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     return '<div class="panel rules"><h3>The rules in brief</h3>' +
       '<p><b>Moves</b> are 1–4 cards: a <b>set</b> (same rank) or a <b>run</b> (2–4 in a row).</p>' +
       '<p><b>To beat a move</b>: more cards wins; at equal size a set beats a run; then the higher rank (runs by their top card).</p>' +
-      '<p><b>On your turn</b> beat the move, or spend stamina: <b>Reversal</b> takes a card off the move into your hand and discards a stamina card; <b>Kick out</b> takes a stamina card into your hand. No kick out with 2 players.</p>' +
+      '<p><b>On your turn</b> beat the move, or spend stamina: <b>Reversal</b> takes a card off the move into your hand (tap it on the mat) and discards a stamina card; <b>Kick out</b> takes a stamina card into your hand. No kick out with 2 players.</p>' +
       '<p><b>Out of stamina</b> and you can’t beat it: <b>pinned</b>. Play your last card: <b>tapped out</b>. Either way you’re done for the round.</p>' +
       '<p><b>Takeback</b>: if your move comes back untouched, take one card back for free and the next player answers what’s left.</p>' +
       '<p><b>Scoring</b>: last one standing scores the number of players, first out scores 1. Three rounds; the round winner opens the next.</p></div>';
@@ -1283,7 +1284,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     on('cancel', () => { mode = null; render(); });
     on('clear', () => { sel = []; render(); });
     app.querySelectorAll('[data-take]').forEach((el) => {
-      const go = () => { const why = takeWhy(+el.dataset.take, +el.dataset.pos); if (why) { refuse(why, el); if (window.Tabletop) Tabletop.shake(el); return; } human({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: +el.dataset.take }); };
+      const go = () => { const why = (g.phase === 'answer' && mode !== 'reverse' && stamWhy('rev')) || takeWhy(+el.dataset.take, +el.dataset.pos); if (why) { refuse(why, el); if (window.Tabletop) Tabletop.shake(el); return; } human({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: +el.dataset.take }); };
       el.addEventListener('click', go); el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
     // your hand: tap cards to slide them up, then press Play or carry them into the ring. Nothing says what beats the table.

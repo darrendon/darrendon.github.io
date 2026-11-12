@@ -160,7 +160,10 @@
   }
   @media (max-width:520px){
     .sc{--w:50px}.slots .sc{--w:44px}.slot{width:44px;height:62px}
-    .fight>.mcard{--mw:136px}.mcard.sm{--mw:78px}
+    .fight>.mcard{--mw:112px}.mcard.sm{--mw:70px}
+    /* the monster and its combo side by side, so the cards you play land where you can see them above your hand */
+    .fight{flex-wrap:nowrap;gap:10px}.combo{min-width:0}.combo .slots{flex-wrap:wrap}
+    .upnext .line{gap:6px}
     .seat{grid-template-columns:auto auto;padding:6px 9px 6px 6px}
     .seat .hd{width:36px;height:36px}
     .seat .who small{max-width:96px}
@@ -170,7 +173,7 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
 <script src="art.js?v=a3818800"></script>
 <script src="engine.js?v=f83a4e56"></script>
@@ -209,8 +212,9 @@
     if (st.type === 'set') return 'This is a Set of ' + st.rank + 's. Every card in it has to be a ' + st.rank + '.';
     if (st.type === 'color') return 'This is a ' + COL[st.color] + ' Flush. Every card in it has to be ' + COL[st.color] + '.';
     if (st.type === 'combine') return 'This Rainbow already has ' + COL[c.c] + '. Every card in it has to be a different color.';
-    if (st.cards.some((x) => x.r === c.r)) return 'This Run already has a ' + c.r + '.';
-    return 'A Run of ' + st.total + ' has to fit in ' + st.total + ' ranks in a row. With ' + (st.lo === st.hi ? 'a ' + st.lo : st.lo + '–' + st.hi) + ' down, a ' + c.r + ' won’t fit.';
+    const an = (n) => (n === 8 || n === 11 ? 'an ' : 'a ') + n;
+    if (st.cards.some((x) => x.r === c.r)) return 'This Run already has ' + an(c.r) + '.';
+    return 'A Run of ' + st.total + ' has to fit in ' + st.total + ' ranks in a row. With ' + (st.lo === st.hi ? an(st.lo) : st.lo + '–' + st.hi) + ' down, ' + an(c.r) + ' won’t fit.';
   }
   function mine(l, nm) {
     if (l.endsWith(' ' + nm + ' leads.')) return l.slice(0, -(nm.length + 7)) + 'You lead.';
@@ -323,6 +327,26 @@
       if (wildOn && wildId == null) return wildAs(st, c) ? null : 'Overcharge needs a combo already started, with room to grow.';
       return whyNot(st, c);
     };
+    // how many cards finish your turn on their own: as many as you may add, or as many as the combo still needs
+    function lockMax() { if (vael) return 0; return Math.max(1, Math.min(v.maxAdd, targets[0].need, v.hand.length - 1)); }
+    const lockKey = key;
+    function maybeLock() {
+      if (!myTurn || beaconOn || !sel.length) return;
+      let full = false;
+      if (!vael) full = onHead(0).length >= lockMax();
+      else {
+        const heads = [...new Set(sel.map((x) => selHead[x] || 0))];
+        full = heads.length > 1 || heads.every((h) => onHead(h).length >= Math.min(v.maxAddHead[h], targets[h].need));
+      }
+      if (!full) return;
+      const cards = sel.slice(), sh = Object.assign({}, selHead), wild = wildId;
+      setTimeout(() => {
+        if (key !== lockKey || sel.length !== cards.length) return;      // something changed while the card landed
+        const heads = [...new Set(cards.map((x) => sh[x] || 0))];
+        sel = []; selHead = {}; wildId = null; wildOn = false;
+        api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: cards.filter((x) => (sh[x] || 0) === h) })), head: heads[0], cards, wild });
+      }, 480);
+    }
     const unpick = (id) => { const h = selHead[id] || 0; const drop = [id].concat(wildId != null && wildId !== id && (selHead[wildId] || 0) === h ? [wildId] : []); if (drop.includes(wildId)) wildId = null; sel = sel.filter((x) => !drop.includes(x)); drop.forEach((x) => delete selHead[x]); };
 
     const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
@@ -336,8 +360,8 @@
     const noteOf = (i) => {
       const p = P[i];
       if (v.phase === 'discard') return p.needsDiscard ? 'discarding…' : 'done';
-      if (vael && v.round) { const pl = v.round.plays.find((x) => x.seat === i); return pl ? (pl.pass ? 'passed' : 'fed ' + pl.parts.map((x) => (v.heads[x.head] ? esc(v.heads[x.head].boss.name) : 'a head') + ' ' + x.n).join(', ')) : v.phase === 'build' && i === v.turn ? 'thinking…' : COL[p.hero] + ' Hero'; }
-      const pl = v.enc && v.enc.plays.find((x) => x.seat === i); return pl ? (pl.pass ? 'passed' : 'added ' + pl.n) : v.phase === 'build' && i === v.turn ? 'thinking…' : COL[p.hero] + ' Hero';
+      if (vael && v.round) { const pl = v.round.plays.find((x) => x.seat === i); return pl ? (pl.pass ? 'passed' : 'fed ' + pl.parts.map((x) => (v.heads[x.head] ? esc(v.heads[x.head].boss.name) : 'a head') + ' ' + x.n).join(', ')) : v.phase === 'build' && i === v.turn ? (i === me ? 'your turn' : 'thinking…') : COL[p.hero] + ' Hero'; }
+      const pl = v.enc && v.enc.plays.find((x) => x.seat === i); return pl ? (pl.pass ? 'passed' : 'added ' + pl.n) : v.phase === 'build' && i === v.turn ? (i === me ? 'your turn' : 'thinking…') : COL[p.hero] + ' Hero';
     };
     const leadTok = (i) => i === v.lead && v.phase !== 'over' ? '<span class="lead" data-k="lead" title="Leads this ' + (vael ? 'round' : 'fight') + '">LEAD</span>' : '';
 
@@ -415,7 +439,8 @@
     const myPw = P[me].power;
     let main = '';
     if (myTurn) {
-      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : 'Your turn. Put cards on ' + (vael ? 'the heads' : 'the combo') + ' and lock them in, or pass.';
+      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : vael ? 'Your turn. Put 1 or 2 cards on the heads (tap a card, then a head), or pass.'
+        : lockMax() > 1 ? 'Your turn: tap cards onto the combo. The ' + (lockMax() === 2 ? '2nd' : '3rd') + ' locks them in, or press Lock in sooner. Or pass.' : 'Your turn: tap a card onto the combo and it locks in. Or pass.';
       main = '<p class="prompt">' + prompt + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
           : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Lock in' + (sel.length ? ' ' + sel.length : '') + '</button><button class="dt-btn" data-do="pass">Pass</button>' +
@@ -444,9 +469,9 @@
     if (TUT && !vael && v.done < 2 && v.phase !== 'over') {
       const e = v.enc, t = e ? TYPE[e.boss.type] : '';
       const what = { run: 'ranks that fit in a row, in any colors (gaps are fine while you build)', set: 'cards of one rank', color: 'cards of one color', combine: 'one card of each color, all different' }[e ? e.boss.type : 'run'];
-      const note = v.phase === 'discard' && iDiscard ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Drag 1 card onto the discard pile, face up, and the squad fights the same monster again.'
-        : v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Drag 1 or 2 cards that fit onto the combo (or tap a card, then the combo) and lock them in, or pass and keep your cards for later. If a card doesn’t fit, the game stops you.'
-          : 'You lead. ' + esc(e.boss.name) + ' wants a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. The gold number on its card is the one for your squad of ' + P.length + '. Drag a card onto the combo to start it. Your first card tells your teammates what to add, so pick one you think they can follow.')
+      const note = v.phase === 'discard' && iDiscard ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Tap 1 card to put it on the discard pile, face up, and the squad fights the same monster again.'
+        : v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Tap 1 or 2 cards that fit to put them on the combo (or drag them there). Two cards lock in by themselves; with one, press Lock in. Or pass and keep your cards for later. If a card doesn’t fit, the game stops you.'
+          : 'You lead. ' + esc(e.boss.name) + ' wants a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. The gold number on its card is the one for your squad of ' + P.length + '. Tap a card to put it on the combo and start it. Your first card tells your teammates what to add, so pick one you think they can follow.')
         : v.phase === 'build' ? 'Your teammates are adding to the same combo. Nobody may talk about their hand, so what they play is all you learn about what they hold.'
         : v.phase === 'discard' ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Each Hero discards 1 card, face up, and the squad fights the same monster again.'
         : v.result && v.result.met ? 'Combo complete! The monster is beaten and those cards are spent. Nobody ever draws: your hand is your health, and if any Hero runs out, the Boss wins.'
@@ -473,6 +498,15 @@
       Tabletop.drag(el, {
         pieces: '.cardb, .pend[data-id]', zones: '[data-zone]', key: (n) => 'k' + n.dataset.id,
         canLift: () => v.phase !== 'over',
+        home: (p) => {
+          if (sel.includes(+p.data.id) || beaconOn) return null;
+          if (iDiscard) return el.querySelector('[data-zone="trash"]');
+          if (!myTurn) return null;
+          if (!vael) return el.querySelector('.fight[data-zone="head"]');
+          const used = [...new Set(sel.map((x) => selHead[x] || 0))], live = v.heads.map((x, h) => (x && x.need > 0 ? h : -1)).filter((h) => h >= 0);
+          const h = used.length === 1 ? used[0] : live.length === 1 ? live[0] : -1;
+          return h >= 0 ? el.querySelector('[data-zone="head"][data-head="' + h + '"]') : null;
+        },
         tap: (p) => {
           const id = +p.data.id;
           if (beaconOn && !sel.includes(id)) { beaconOn = false; api.act({ type: 'beacon', card: id }); return true; }
@@ -500,7 +534,7 @@
           const c = handCard(id);
           if (wildOn && wildId == null && targets[h].cards.length + onHead(h).length && !S.fits(stateOf(h), c)) wildId = id;
           sel.push(id); selHead[id] = h;
-          render(el, v, api); return true;
+          render(el, v, api); maybeLock(); return true;
         },
       });
     }

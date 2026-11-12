@@ -13,8 +13,11 @@
                                    // piece: {el, data (its dataset at pickup), key}; zone: the element
      tap(piece)                    // optional: called for a tap when the game wants its own tap rule
      canLift(el) -> bool           // optional: may this piece be picked up right now (e.g. not your turn)
+     home(piece) -> zone el | null // optional: where a tapped piece goes when there's one obvious spot for it.
+                                   // A tap then plays it there in one go (the same drop() rule decides);
+                                   // null means "no obvious spot", and the piece lifts as usual.
    })
-     Drag a piece onto a zone, or tap a piece (it lifts) and then tap a zone. A drop that the game
+     Drag a piece onto a zone, or tap a piece (it goes home, or lifts and then you tap a zone). A drop that the game
      refuses springs back and calls Tabletop.nope(reason). Install once per root: listeners are
      delegated, so the game can redraw the root with innerHTML as often as it likes.
 
@@ -273,6 +276,9 @@
       }
       if (st.opts.tap && st.opts.tap(info) === true) return;          // the game handled it
       if (st.lifted != null && String(st.lifted) === String(info.key)) { st.lifted = null; sound('slide'); mark(); return; }
+      // one obvious place for it: a tap plays it straight there
+      const home = st.opts.home && st.opts.home(info);
+      if (home && rootEl.contains(home)) { st.lifted = info.key; putOn(home); return; }
       st.lifted = info.key; sound('pick'); mark();
     }
     rootEl.addEventListener('click', (e) => {

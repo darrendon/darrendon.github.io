@@ -93,7 +93,7 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
 <script src="engine.js"></script>
 <script>
@@ -152,6 +152,7 @@
           '<div class="hand offer" data-zone="offer">' + C.map((c, i) => sel.includes(i) ? '<span class="card ghost"></span>' : cardHTML(c, i, { button: true, k: 'c' + i })).join('') + '</div>' +
           '<h3 style="margin-top:14px">Your picks</h3><div class="hand picks" data-zone="picks">' + (sel.length ? sel.map((i) => cardHTML(C[i], i, { button: true, k: 'c' + i })).join('') : '<span class="drophere">Drag cards here</span>') + '</div>' +
           '<div class="acts"><button class="dt-btn go" data-do="lock"' + (sel.length ? '' : ' disabled') + '>Lock in</button></div>';
+        main = main.replace('Pick ' + v.picksN + ' in secret.', 'Pick ' + v.picksN + ' in secret: tap a card to take it. The ' + ['', 'first', 'second', 'third', 'fourth'][v.picksN] + ' one locks them in.');
       } else {
         main = '<h3>Your picks</h3><div class="hand">' + v.myPicks.map((c) => cardHTML(C[c], c, { k: 'h' + c })).join('') + '</div><p class="prompt" style="margin-top:12px">Waiting for ' + P.filter((p) => !p.picked).map((p) => esc(p.name)).join(', ') + '…</p>';
       }
@@ -171,7 +172,7 @@
       let act = '';
       if (v.phase === 'lead' && v.leader === me) {
         const c = leadSel;
-        act = '<h3>Your lead</h3><p class="prompt">Put a card down on Risky or Safe.</p><div class="hand mine-h">' + v.hand.map((x) => cardHTML(C[x], x, { button: true, k: 'h' + x })).join('') + '</div>' +
+        act = '<h3>Your lead</h3><p class="prompt">Tap a card on its Risky side (left) or its Safe side (right) to lead it that way, or carry it to a spot.</p><div class="hand mine-h">' + v.hand.map((x) => cardHTML(C[x], x, { button: true, k: 'h' + x })).join('') + '</div>' +
           '<div class="leadspots"><button type="button" class="spot risky" data-zone="lead" data-r="1"><b>Risky</b></button><button type="button" class="spot safe" data-zone="lead" data-r="0"><b>Safe</b></button></div>';
       } else if (v.phase === 'follow' && v.trick && v.trick.next === me) {
         const c = C[v.trick.card], before = v.trick.plays.filter((p) => p.risky).length, after = v.trick.waiting.length - 1;
@@ -198,12 +199,24 @@
 
     // cards are picked up and put down; the game refuses what the rules don't allow
     const pickWhy = (c) => P[me].picked ? 'You’ve already locked in your picks.' : sel.length >= v.picksN && !sel.includes(c) ? 'You pick exactly ' + v.picksN + ' cards. Put one back first.' : null;
-    const togglePick = (c) => { sel = sel.includes(c) ? sel.filter((x) => x !== c) : sel.concat(c); render(el, v, api); };
+    const togglePick = (c) => {
+      sel = sel.includes(c) ? sel.filter((x) => x !== c) : sel.concat(c); render(el, v, api);
+      // your last pick locks them in, once it has landed
+      if (sel.length === v.picksN) { const pick = sel.slice(), race = v.race; setTimeout(() => { if (lastRace === race && sel.join() === pick.join()) api.act({ type: 'pick', cards: pick }); }, 550); }
+    };
+    // which half of a card a tap landed on: the Risky number or the Safe one
+    if (!el.__ssDown) { el.__ssDown = 1; el.addEventListener('pointerdown', (e) => { el.__ssX = e.clientX; }, true); }
     Tabletop.drag(el, {
       pieces: 'button.card', zones: '[data-zone]', key: (n) => n.dataset.k || 'c' + n.dataset.card,
       canLift: () => v.phase === 'pick' || v.phase === 'lead',
       tap: (p) => {
-        if (v.phase !== 'pick') return false;                          // leading: the card lifts, then tap Risky or Safe
+        if (v.phase === 'lead' && v.leader === me) {                  // tap a card's Risky or Safe number to lead it that way
+          const r = p.el.getBoundingClientRect(), x = el.__ssX == null ? r.left : el.__ssX;   // keyboard: no pointer, so it lifts
+          if (el.__ssX == null) return false;
+          el.__ssX = null;
+          api.act({ type: 'lead', card: +p.data.card, risky: x < r.left + r.width / 2 }, p.el); return true;
+        }
+        if (v.phase !== 'pick') return false;
         const c = +p.data.card, why = sel.includes(c) ? null : pickWhy(c);
         if (why) { api.nope(why, p.el); return true; }
         togglePick(c); return true;

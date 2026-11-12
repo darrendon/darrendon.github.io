@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <link rel="stylesheet" href="/assets/css/tabletop.css?v=45891ad3">
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <style>
 /* Layout: field sheets laid out on the floor of a quarry — camps sit on the edges, dig sites are staked between neighboring camps, the season ledger sits in the middle; your rock face runs along the bottom. */
 :root {
@@ -1996,7 +1996,12 @@ function onAct(t) {
   if (act === "pick" && humanTurn()) {
     const i = +t.dataset.i; let s = ui.sel;
     if (tutStep() && !tutWants(me.hand[i]) && !s.includes(i)) return;
-    s = s.includes(i) ? s.filter(x => x !== i) : [...s, i].sort((a, b) => a - b);
+    if (s.includes(i)) s = s.filter(x => x !== i);
+    else if (s.length && !tutStep()) {
+      // a find is fossils side by side, so tapping two picks up everything between them
+      const lo = Math.min(i, s[0]), hi = Math.max(i, s[s.length - 1]);
+      s = hi - lo + 1 > CAP ? [i] : Array.from({ length: hi - lo + 1 }, (_, k) => lo + k);   // too far for one find: start over from this one
+    } else s = [...s, i].sort((a, b) => a - b);
     if (window.Tabletop) Tabletop.sound(s.includes(i) ? "pick" : "slide");
     ui.sel = s; return render();
   }

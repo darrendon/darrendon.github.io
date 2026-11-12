@@ -41,7 +41,12 @@
   .main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,1fr);grid-template-rows:auto 1fr;grid-template-areas:"map hand" "map market";gap:12px;align-items:start}
   .main>.mapwrap{grid-area:map}.main>.handp{grid-area:hand}.main>.mkt{grid-area:market}
   .lower{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,1fr);gap:12px;align-items:start}
-  @media (max-width:899px){.main,.lower{grid-template-columns:1fr}.main{grid-template-rows:none;grid-template-areas:"hand" "map" "market"}}
+  @media (max-width:899px){.main,.lower{grid-template-columns:1fr}.main{grid-template-rows:none;grid-template-areas:"hand" "map" "market"}
+    /* your turn on a phone: the map first, and your hand held at the bottom above the buttons, so a tile and its hex are both in reach */
+    .pbm.myturn .main{grid-template-areas:"map" "hand" "market"}
+    .pbm.myturn .handp{position:sticky;bottom:var(--pbm-bar,118px);z-index:14;padding:8px 10px;box-shadow:0 -10px 22px -12px rgba(0,0,0,.35)}
+    .pbm.myturn .handp .books{display:none!important}
+    .pbm.myturn .handp h3{margin-bottom:6px}}
 
   /* map */
   .mapwrap{padding:8px;background:linear-gradient(180deg,#DCEEF5,#CFE6F0);border-color:#B7D5E2}
@@ -162,13 +167,14 @@
   .pitch button small+small{color:var(--t-muted);font-weight:500}
   .pitch button:disabled{opacity:.25;cursor:default;border-color:var(--t-line)}
   @media (max-width:520px){.dt-bar .say{flex-basis:100%}.acts{margin-left:0;width:100%}.acts .grow{flex:1}.pitch{width:100%}.pitch button{flex:1;width:auto}}
-  @media (max-width:420px){.tile{width:calc((100vw - 78px) / 5);height:78px}.tile .val{font-size:27px}}
+  @media (max-width:420px){.tile{width:calc((100vw - 78px) / 5);height:78px}.tile .val{font-size:27px}
+    .pbm.myturn .handp .tile{height:68px!important}.pbm.myturn .handp .tile .val{font-size:24px}}
   @media (max-width:599px){.strip{grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:6px}.pl .yu{display:none}.pl{padding:6px 7px}.pl .nm{font-size:13px}.pl .vp{font-size:17px}.pl .meta{font-size:11px;gap:2px 6px}.pl .meta .tb{display:none}.pcard{width:15px;height:20px;line-height:17px;font-size:10.5px}}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
 <script src="engine.js"></script>
 <script>
@@ -358,7 +364,7 @@
     const used = v.phase === 'play' && mine ? '<span class="used">' + [['place', 'Place'], ['hire', 'Hire'], ['action', 'Activate']].map(([k, n]) => '<span' + (usedK(v, k) ? ' class="done"' : '') + '>' + n + '</span>').join('') + '</span>' : '';
     return '<div class="panel handp"><h3><span>Your hand <small>' + v.hand.length + '/' + PB.HAND + ' · ' + sum(v.hand) + ' seals</small></span>' + used + '</h3>' +
       '<div class="hand">' + (tiles || '<span class="empty">Your hand is empty.</span>') + '</div>' +
-      '<div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">' + chipRow('Bag ' + me.bagCount, me.books, v.seat) + chipRow('Discard', me.discard, v.seat, true) + '</div></div>';
+      '<div class="books" style="margin-top:10px;display:flex;flex-direction:column;gap:4px">' + chipRow('Bag ' + me.bagCount, me.books, v.seat) + chipRow('Discard', me.discard, v.seat, true) + '</div></div>';
   }
 
   function marketHTML(v) {
@@ -428,11 +434,11 @@
       say = '<b>' + esc(p.name) + ' is playing</b><span>' + esc(v.log[v.log.length - 1] || '') + '</span>';
     } else if (m && m.kind === 'pay') {
       const got = sum(v.hand.filter((t) => ui.pay.includes(t.id)));
-      say = '<b>' + esc(m.title) + '</b><span>Tap the tiles you’re paying with. It costs ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + ', and no change is given.</span>';
+      say = '<b>' + esc(m.title) + '</b><span>Tap the tiles you’re paying with: it costs ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + ', no change given. It’s paid the moment you cover it.</span>';
       acts = '<button class="dt-btn ghost" data-do="cancel">Cancel</button><button class="dt-btn go grow" data-do="confirm"' + (ui.pay.length ? '' : ' disabled') + '>Pay &amp; ' + esc(m.verb || 'confirm') + '</button>';
     } else if (m && m.kind === 'discard') {
       const need = Math.max(0, v.hand.length - ui.disc.length - PB.HAND);
-      say = '<b>End your turn</b><span>Tap the tiles you want to discard, then draw back up to 5.</span>';
+      say = '<b>End your turn</b><span>' + (m.forced ? 'You end with at most 5 tiles: tap ' + Math.max(0, v.hand.length - ui.disc.length - PB.HAND) + ' more to discard. Then you draw back up to 5.' : 'Tap the tiles you want to discard, then draw back up to 5.') + '</span>';
       acts = '<button class="dt-btn ghost" data-do="cancel">Back</button><button class="dt-btn go grow" data-do="end">' + (ui.disc.length ? 'Discard ' + ui.disc.length + ' &amp; end turn' : 'End turn') + '</button>';
     } else if (m && m.kind === 'special') {
       const t = handT(v, m.tile), P = {
@@ -458,13 +464,14 @@
         say = '<b>' + esc(t.name) + ' · ' + t.v + '</b><span>' + esc(tip) + '</span>';
         acts = (canSpec ? '<button class="dt-btn go" data-do="activate">Activate</button>' : '') + '<button class="dt-btn ghost" data-do="deselect">Done</button>';
       } else {
-        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Place or activate a tile, or hire from the agency.' : 'You have used both actions.') + '</span>';
+        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Place or activate a tile, or hire from the agency.' : autoEnd(v) ? 'Both actions used. Ending your turn… (Discard first if you want new tiles.)' : 'You have used both actions.') + '</span>';
       }
       acts += '<button class="dt-btn ghost" data-do="discard">Discard…</button><button class="dt-btn go grow" data-do="endq">End turn</button>';
     }
     return '<div class="dt-bar"><div class="say">' + say + '</div>' + (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>';
   }
 
+  function autoEnd(v) { return myTurn(v) && v.actionsLeft === 0 && !ui.mode && v.hand.length <= PB.HAND; }
   function statusText(v) {
     if (v.phase === 'over') return 'Game over';
     const s = PB.SEASON_NAMES[v.season] + ' · round ' + (v.round + 1) + '/' + PB.ROUNDS + (v.closing ? ' (closing)' : '');
@@ -477,11 +484,13 @@
     const k = [v.phase, v.turn, v.season, v.round, v.actionsUsed.join(','), v.hand.map((t) => t.id).join(',')].join('|');
     if (k !== ui.key) { ui.key = k; reset(); }
     API.status(statusText(v));
-    const html = '<div class="pbm">' + bannerHTML(v) + stripHTML(v) +
+    const html = '<div class="pbm' + (v.phase === 'play' && myTurn(v) ? ' myturn' : '') + '">' + bannerHTML(v) + stripHTML(v) +
       '<div class="main"><div class="panel mapwrap">' + boardHTML(v) + regionsHTML(v) + '</div>' + handPanel(v) + marketHTML(v) + '</div>' +
       '<div class="lower">' + booksHTML(v) + '<div class="panel"><h3><span>Log</span></h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(l) + '</p>').join('') + '</div></div></div>' +
       barHTML(v) + '</div>';
     DevTable.flip(EL, () => { EL.innerHTML = html; }, 560);
+    { const bar = EL.querySelector('.dt-bar'); if (bar) EL.style.setProperty('--pbm-bar', bar.offsetHeight + 'px'); }
+    if (autoEnd(v)) { const k = ui.key; later(() => ui.key === k && !ui.mode && autoEnd(V), () => act({ type: 'end', discard: [] }), 1800); }
     // when a choice needs your hand (paying, discarding, the Negotiator's tile), bring it into view
     const m = ui.mode, needHand = m && (m.kind === 'pay' || m.kind === 'discard' || (m.kind === 'special' && m.action === 'negotiator' && !m.use));
     if (needHand && ui.scrolled !== m) {
@@ -491,7 +500,10 @@
     }
   }
 
-  function act(a) { const r = API.act(a); reset(); if (r && r.ok === false) draw(); return r; }
+  function act(a) { clearTimeout(laterT); const r = API.act(a); reset(); if (r && r.ok === false) draw(); return r; }
+  // a move that's complete goes through a beat after the last tap, unless something changed in that beat
+  let laterT = 0;
+  function later(still, go, ms) { clearTimeout(laterT); laterT = setTimeout(() => { if (V && myTurn(V) && still()) go(); }, ms); }
 
   const nope = (why, at) => API.nope(why, at);
   function placeWhy(v, t, h) {
@@ -523,7 +535,7 @@
       const d = b.dataset.do;
       if (d === 'cancel') { reset(); draw(); return; }
       if (d === 'deselect') { ui.sel = null; draw(); return; }
-      if (d === 'endq') { if (v.hand.length > PB.HAND) { ui.mode = { kind: 'discard' }; ui.disc = []; ui.sel = null; draw(); } else act({ type: 'end', discard: [] }); return; }
+      if (d === 'endq') { if (v.hand.length > PB.HAND) { ui.mode = { kind: 'discard', forced: true }; ui.disc = []; ui.sel = null; draw(); } else act({ type: 'end', discard: [] }); return; }
       if (d === 'discard') { ui.mode = { kind: 'discard' }; ui.disc = []; ui.sel = null; draw(); return; }
       if (d === 'end') { const need = Math.max(0, v.hand.length - ui.disc.length - PB.HAND); if (need) { nope('You end your turn with at most 5 tiles: discard ' + need + ' more.', b); return; } act({ type: 'end', discard: ui.disc.slice() }); return; }
       if (d === 'refresh') { if (!canAct(v) || usedK(v, 'hire')) { nope(!canAct(v) ? 'No actions left. End your turn.' : 'You already hired this turn.', b); return; } if (sum(v.hand) < PB.REFRESH_COST) { nope('Refreshing costs ' + PB.REFRESH_COST + ' seals, and you have ' + sum(v.hand) + '.', b); return; } startPay(v, PB.REFRESH_COST, [], { type: 'refresh' }, 'Refresh the market'); ui.mode.verb = 'refresh'; ui.sel = null; draw(); return; }
@@ -539,8 +551,20 @@
     if (b.dataset.hand) {
       const id = b.dataset.hand;
       if (!myTurn(v)) { const t = handT(v, id); if (t) API.toast(t.name + ' · ' + t.v + (TEXT[t.action] ? ': ' + TEXT[t.action] : '')); return; }
-      if (m && m.kind === 'pay') { if (m.exclude.includes(id)) { nope('You can’t pay with the tile you’re playing.', b); return; } ui.pay = ui.pay.includes(id) ? ui.pay.filter((x) => x !== id) : ui.pay.concat(id); draw(); return; }
-      if (m && m.kind === 'discard') { ui.disc = ui.disc.includes(id) ? ui.disc.filter((x) => x !== id) : ui.disc.concat(id); draw(); return; }
+      if (m && m.kind === 'pay') {
+        if (m.exclude.includes(id)) { nope('You can’t pay with the tile you’re playing.', b); return; }
+        ui.pay = ui.pay.includes(id) ? ui.pay.filter((x) => x !== id) : ui.pay.concat(id); draw();
+        // no change is given, so the moment what you've counted out covers the cost, it's paid
+        const got = sum(v.hand.filter((t) => ui.pay.includes(t.id)));
+        if (got >= m.cost) { const pay = ui.pay.slice(), mm = m; later(() => ui.mode === mm && ui.pay.join() === pay.join(), () => act(Object.assign({}, mm.action, { pay })), 380); }
+        return;
+      }
+      if (m && m.kind === 'discard') {
+        ui.disc = ui.disc.includes(id) ? ui.disc.filter((x) => x !== id) : ui.disc.concat(id); draw();
+        // ending your turn with too many tiles: once you're down to 5, the turn ends (keep tapping to discard more)
+        if (m.forced && v.hand.length - ui.disc.length <= PB.HAND) { const d = ui.disc.slice(), mm = m; later(() => ui.mode === mm && ui.disc.join() === d.join(), () => act({ type: 'end', discard: d }), 900); }
+        return;
+      }
       if (m && m.kind === 'special') {
         if (m.action === 'negotiator' && id !== m.tile) { const u = handT(v, id); if (u.action === 'consultant') { API.toast('Consultants go on water channels.'); return; } m.use = id; draw(); }
         return;
