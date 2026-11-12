@@ -50,6 +50,14 @@
   button.card:hover{border-color:var(--t-accent)}
   .card.sel{border-color:var(--t-accent);box-shadow:0 0 0 3px rgba(217,119,43,.3);transform:translateY(-4px)}
   .card.used{opacity:.4}
+  .card{box-shadow:0 1px 0 rgba(0,0,0,.12),0 6px 10px -6px rgba(0,0,0,.35)}
+  .card.ghost{border-style:dashed;background:transparent;box-shadow:none;min-height:92px}
+  .hand.picks{min-height:112px;padding:8px;border-radius:12px;border:2px dashed var(--t-line);align-items:center}
+  .drophere{color:var(--t-muted);font-size:14px;margin:auto}
+  .leadspots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .leadspots .spot{all:unset;box-sizing:border-box;cursor:pointer;min-height:110px;border-radius:14px;border:2.5px dashed var(--t-line);display:grid;place-items:center;font:700 16px/1 Jost;letter-spacing:.12em;text-transform:uppercase}
+  .leadspots .spot.risky{color:#C2410C;background:rgba(194,65,12,.05)}.leadspots .spot.safe{color:#1D4ED8;background:rgba(29,78,216,.05)}
+  .leadspots .spot.tt-over{border-style:solid;outline:none}
   .card .nm{font-weight:700;font-size:14px;line-height:1.1}
   .card .vals{display:flex;justify-content:space-between;align-items:flex-end}
   .v{display:flex;flex-direction:column;align-items:center;line-height:1}
@@ -85,6 +93,7 @@
 </head>
 <body>
 <div id="app"></div>
+<script src="/assets/js/tabletop.js"></script>
 <script src="/assets/js/dev-table.js"></script>
 <script src="engine.js"></script>
 <script>
@@ -138,9 +147,11 @@
     let main = '';
     if (v.phase === 'pick') {
       if (!P[me].picked) {
-        main = '<h3>Your picks for race ' + v.race + '</h3><p class="prompt">You’re <b>' + (v.edge - P[me].pos) + ' spaces</b> from the edge. Pick ' + v.picksN + ' cards. Everyone else is choosing from the same six.</p>' +
-          '<div class="hand">' + C.map((c, i) => cardHTML(c, i, { button: true, cls: sel.includes(i) ? 'sel' : '' })).join('') + '</div>' +
-          '<div class="acts"><button class="dt-btn go" data-do="lock"' + (sel.length === v.picksN ? '' : ' disabled') + '>Lock in ' + sel.length + ' of ' + v.picksN + '</button></div>';
+        // the six cards everyone picks from, and your picks: carry cards between them (or tap one to move it)
+        main = '<h3>Race ' + v.race + ' · the six cards</h3><p class="prompt">Pick ' + v.picksN + ' in secret. Everyone else picks from the same six.</p>' +
+          '<div class="hand offer" data-zone="offer">' + C.map((c, i) => sel.includes(i) ? '<span class="card ghost"></span>' : cardHTML(c, i, { button: true, k: 'c' + i })).join('') + '</div>' +
+          '<h3 style="margin-top:14px">Your picks</h3><div class="hand picks" data-zone="picks">' + (sel.length ? sel.map((i) => cardHTML(C[i], i, { button: true, k: 'c' + i })).join('') : '<span class="drophere">Drag cards here</span>') + '</div>' +
+          '<div class="acts"><button class="dt-btn go" data-do="lock"' + (sel.length ? '' : ' disabled') + '>Lock in</button></div>';
       } else {
         main = '<h3>Your picks</h3><div class="hand">' + v.myPicks.map((c) => cardHTML(C[c], c, { k: 'h' + c })).join('') + '</div><p class="prompt" style="margin-top:12px">Waiting for ' + P.filter((p) => !p.picked).map((p) => esc(p.name)).join(', ') + '…</p>';
       }
@@ -160,11 +171,11 @@
       let act = '';
       if (v.phase === 'lead' && v.leader === me) {
         const c = leadSel;
-        act = '<h3>Your lead</h3><p class="prompt">Choose a card to lead. Anyone else who picked it must play it too.</p><div class="hand">' + v.hand.map((x) => cardHTML(C[x], x, { button: true, cls: leadSel === x ? 'sel' : '', k: 'h' + x })).join('') + '</div>' +
-          '<div class="acts">' + (c == null ? '<span class="dt-muted" style="margin:0">Tap a card</span>' : '<button class="dt-btn btn-r" data-do="lead" data-r="1">Lead risky (' + C[c].risky + ')</button><button class="dt-btn btn-s" data-do="lead" data-r="0">Lead safe (' + C[c].safe + ')</button>') + '</div>';
+        act = '<h3>Your lead</h3><p class="prompt">Put a card down on Risky or Safe.</p><div class="hand mine-h">' + v.hand.map((x) => cardHTML(C[x], x, { button: true, k: 'h' + x })).join('') + '</div>' +
+          '<div class="leadspots"><button type="button" class="spot risky" data-zone="lead" data-r="1"><b>Risky</b></button><button type="button" class="spot safe" data-zone="lead" data-r="0"><b>Safe</b></button></div>';
       } else if (v.phase === 'follow' && v.trick && v.trick.next === me) {
         const c = C[v.trick.card], before = v.trick.plays.filter((p) => p.risky).length, after = v.trick.waiting.length - 1;
-        act = '<h3>Your call</h3><p class="prompt">You picked <b>' + esc(c.name) + '</b>, so you must play it. ' + (before ? before + ' rider' + (before > 1 ? 's' : '') + ' already went risky: going risky catches them. ' : '') + (after > 0 ? after + ' more rider' + (after > 1 ? 's' : '') + ' still to act could catch you.' : 'Nobody acts after you.') + '</p>' +
+        act = '<h3>Your call</h3><p class="prompt">You picked <b>' + esc(c.name) + '</b> too, so you play it now: risky or safe?</p>' +
           '<div class="acts"><button class="dt-btn btn-r" data-do="follow" data-r="1">Risky (' + c.risky + ')</button><button class="dt-btn btn-s" data-do="follow" data-r="0">Safe (' + c.safe + ')</button></div>';
       }
       const handLeft = (v.phase !== 'lead' || v.leader !== me) && v.myPicks ? '<h3 style="margin-top:14px">Your cards</h3><div class="hand">' + v.myPicks.map((x, i) => { const left = v.hand.filter((h) => h === x).length > 0; return cardHTML(C[x], x, { cls: left ? '' : 'used', k: 'h' + x }); }).join('') + '</div>' : '';
@@ -174,7 +185,7 @@
 
     // riders
     const turn = v.phase === 'lead' ? v.leader : v.phase === 'follow' && v.trick ? v.trick.next : -1;
-    const riders = '<div class="riders">' + P.map((p, i) => '<div class="rider' + (i === turn ? ' turn' : '') + '"><span class="tok c' + i + '" style="width:26px;height:26px;font-size:12px">' + esc(init(p.name)) + '</span><span>' + esc(p.name) + (i === me ? ' (you)' : '') + '</span><span class="meta">' + (p.crashed ? 'over the edge' : (v.edge - p.pos) + ' to go') + ' · ' + (p.left == null ? (p.picked ? 'picked' : 'picking') : p.left + ' left') + ' · ' + '★'.repeat(p.wins) + '<span style="opacity:.3">' + '★'.repeat(Math.max(0, v.winsNeeded - p.wins)) + '</span></span>' +
+    const riders = '<div class="riders">' + P.map((p, i) => '<div class="rider' + (i === turn ? ' turn' : '') + '"><span class="tok c' + i + '" style="width:26px;height:26px;font-size:12px">' + esc(init(p.name)) + '</span><span>' + esc(p.name) + (i === me ? ' (you)' : '') + '</span><span class="meta">' + (p.crashed ? 'over the edge' : 'space ' + p.pos) + ' · ' + (p.left == null ? (p.picked ? 'picked' : 'picking') : p.left + ' left') + ' · ' + '★'.repeat(p.wins) + '<span style="opacity:.3">' + '★'.repeat(Math.max(0, v.winsNeeded - p.wins)) + '</span></span>' +
       (p.picks && i !== me ? '<span class="pk">' + p.picks.map((c) => '<span class="mini">' + esc(C[c].name) + '</span>').join('') + '</span>' : '') + '</div>').join('') + '</div>';
 
     DevTable.flip(el, () => {
@@ -185,15 +196,35 @@
     const road$ = el.querySelector('.road'), tok = el.querySelector('.road .tok.me');
     if (road$ && tok && road$.scrollWidth > road$.clientWidth) road$.scrollLeft = Math.max(0, tok.offsetLeft - road$.clientWidth / 2 + 40);
 
-    el.querySelectorAll('button.card').forEach((b) => b.addEventListener('click', () => {
-      const c = +b.dataset.card;
-      if (v.phase === 'pick') { if (sel.includes(c)) sel = sel.filter((x) => x !== c); else if (sel.length < v.picksN) sel.push(c); else { sel.shift(); sel.push(c); } }
-      else leadSel = c;
-      render(el, v, api);
-    }));
+    // cards are picked up and put down; the game refuses what the rules don't allow
+    const pickWhy = (c) => P[me].picked ? 'You’ve already locked in your picks.' : sel.length >= v.picksN && !sel.includes(c) ? 'You pick exactly ' + v.picksN + ' cards. Put one back first.' : null;
+    const togglePick = (c) => { sel = sel.includes(c) ? sel.filter((x) => x !== c) : sel.concat(c); render(el, v, api); };
+    Tabletop.drag(el, {
+      pieces: 'button.card', zones: '[data-zone]', key: (n) => n.dataset.k || 'c' + n.dataset.card,
+      canLift: () => v.phase === 'pick' || v.phase === 'lead',
+      tap: (p) => {
+        if (v.phase !== 'pick') return false;                          // leading: the card lifts, then tap Risky or Safe
+        const c = +p.data.card, why = sel.includes(c) ? null : pickWhy(c);
+        if (why) { api.nope(why, p.el); return true; }
+        togglePick(c); return true;
+      },
+      drop: (p, z) => {
+        const c = +p.data.card, zone = z.dataset.zone;
+        if (zone === 'picks') { if (sel.includes(c)) return { ok: false, quiet: true }; const why = pickWhy(c); if (why) return why; togglePick(c); return true; }
+        if (zone === 'offer') { if (!sel.includes(c)) return { ok: false, quiet: true }; togglePick(c); return true; }
+        if (zone === 'lead') {
+          if (v.phase !== 'lead') return 'Not now.';
+          if (v.leader !== me) return 'It’s ' + P[v.leader].name + '’s lead.';
+          const r = api.act({ type: 'lead', card: c, risky: z.dataset.r === '1' }, z);
+          return r && r.ok === false ? { ok: false, quiet: true } : true;
+        }
+        return { ok: false, quiet: true };
+      },
+    });
+    el.querySelectorAll('.spot[data-zone="lead"]').forEach((b) => b.addEventListener('click', () => { if (!el.classList.contains('tt-holding')) api.nope('Pick up the card you want to lead first, then put it down here.', b); }));
     el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
       const d = b.dataset.do;
-      if (d === 'lock') api.act({ type: 'pick', cards: sel });
+      if (d === 'lock') api.act({ type: 'pick', cards: sel }, b);
       if (d === 'lead') api.act({ type: 'lead', card: leadSel, risky: b.dataset.r === '1' });
       if (d === 'follow') api.act({ type: 'follow', risky: b.dataset.r === '1' });
     }));
