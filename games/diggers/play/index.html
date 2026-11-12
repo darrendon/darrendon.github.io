@@ -7,6 +7,8 @@
 <meta name="description" content="Diggers, a shedding lane battler of rival paleontologists. Play 2 to 4 players against bots in your browser.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/tabletop.css?v=1">
+<script src="/assets/js/tabletop.js"></script>
 <style>
 /* Layout: field sheets laid out on the floor of a quarry — camps sit on the edges, dig sites are staked between neighboring camps, the season ledger sits in the middle; your rock face runs along the bottom. */
 :root {
@@ -102,6 +104,8 @@ button:focus-visible, [data-act]:focus-visible { outline: 2px solid var(--accent
 .card .ix.tr, .card .ix.bl, .card .ix.br { display: none; }
 .hand .card .ix, .slab-grid .card .ix { display: flex; }
 .card.edge { cursor: pointer; outline: 2px solid var(--accent); outline-offset: 1px; }
+.site [data-act="scout"] { cursor: pointer; }
+.site.tt-over { box-shadow: inset 0 4px 12px rgba(0, 0, 0, .55), 0 0 0 3px var(--glow); outline: none; }
 .hand .card { width: 46px; height: 64px; border-radius: 5px; cursor: pointer; transition: transform .12s ease; }
 .hand .card .ix { min-width: 14px; } .hand .card .ix b { font-size: 15px; } .hand .card .ix svg { width: 11px; height: 11px; }
 .hand .card.sel { transform: translateY(-8px); outline: 3px solid var(--accent); outline-offset: 1px; }
@@ -1605,11 +1609,12 @@ function laneHtml(i) {
   const selCards = ui.sel.map(k => G.players[0].hand[k]);
   const selInf = selCards.length ? meldInfo(selCards) : null;
   const T = tutStep();
-  const target = humanTurn() && mine && selInf && canPlayOn(G, i, selInf) && (!T || (T.act === "play" && T.lane === i && tutSelOk()));
-  const canScout = humanTurn() && mine && ui.sel.length === 0 && L.meld.length > 0 && (!T || (T.act === "scout" && T.lane === i));
+  const lit = !!T && humanTurn() && mine && selInf && canPlayOn(G, i, selInf) && T.act === "play" && T.lane === i && tutSelOk();
+  const target = humanTurn() && ui.sel.length > 0;                 // you may try any site; the referee decides
+  const canScout = humanTurn() && ui.sel.length === 0 && L.meld.length > 0;
   const cards = L.meld.map((v, k) => {
-    const edge = canScout && (k === 0 || k === L.meld.length - 1);
-    return cardHtml(v, edge ? `edge ${T ? "tut" : ""}` : "", edge ? `data-act="scout" data-lane="${i}" data-left="${k === 0 ? 1 : 0}" role="button" tabindex="0" aria-label="Poach the ${cardName(v)}"` : "");
+    const end = k === 0 || k === L.meld.length - 1, ring = T && canScout && mine && end && T.act === "scout" && T.lane === i;
+    return cardHtml(v, ring ? "edge tut" : "", canScout ? `data-act="scout" data-lane="${i}" data-k="${k}" data-left="${k === 0 ? 1 : 0}" role="button" tabindex="0" aria-label="Poach the ${cardName(v)}"` : "");
   }).join("");
   const [pa, pb, dir] = LAYOUT[G.n].sides[i];
   const side = (q, pos) => {
@@ -1625,7 +1630,7 @@ function laneHtml(i) {
   // an advanced site carries its effect on the site itself: inside the plank on a horizontal site, as a banner across the top of an upright one
   const fx = L.fx ? FX[L.fx] : null;
   const banner = fx && dir === "v" ? `<div class="fxbanner"><b>${fx.name}</b><span>${fx.rule}</span></div>` : "";
-  return `<div data-li="${i}" class="cell site ${dir} ${fx ? "fx" : ""} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${target ? (T ? "target tut" : "target") : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
+  return `<div data-li="${i}" data-zone="site" class="cell site ${dir} ${fx ? "fx" : ""} ${mine ? "" : "far"} ${L.owner !== null ? "owned" : ""} ${lit ? "target tut" : ""}" ${target ? `data-act="playlane" data-lane="${i}" role="button" tabindex="0" aria-label="Excavate at ${laneName(G, i)}"` : ""}>
     ${banner}${side(pa, "a")}
     <div class="board"><b>${laneName(G, i)}</b>${fx && dir !== "v" ? `<span class="fxtag">${fx.name}</span>` : ""}${mine ? (fx ? "" : empty) : `<span class="untouched farnote">not beside you</span>`}${fx && dir !== "v" ? `<span class="fxrule">${fx.rule}</span>` : ""}</div>
     ${side(pb, "b")}
@@ -1676,14 +1681,11 @@ function statusHtml() {
     who = `Send a specimen to ${fullName(ui.scout.to)}`;
     hint = "Tap any fossil in your rock face, including the one you just poached. They can keep it or turn it away.";
   } else if (ui.sel.length) {
-    const cards = ui.sel.map(k => me.hand[k]); const inf = meldInfo(cards);
-    who = inf ? `Selected: ${describe(cards)}` : "Those bones don't belong together";
-    const legal = inf ? myLanes(G, 0).filter(i => canPlayOn(G, i, inf)) : [];
-    hint = !inf ? `A run is numbers in order (3-4-5 or 5-4-3); a set is all one number. Finds can be up to ${CAP} cards.` :
-      legal.length ? "Tap a highlighted site to excavate it there." : "It doesn't beat any find beside your camp. Pick other fossils or poach.";
+    who = "Your turn to dig";
+    hint = "Now tap the site to excavate there, or drag the fossils onto it.";
   } else {
     who = "Your turn to dig";
-    hint = `Tap 1–${CAP} adjacent fossils to excavate a find, or tap an outlined end bone at a site beside you to poach it.`;
+    hint = "Excavate a find from your rock face, or poach a bone from a site.";
   }
   return `<div class="status" aria-live="polite"><div class="who">${who}</div><div class="hint">${hint}</div></div>`;
 }
@@ -1945,6 +1947,38 @@ function render() {
   if (net && net.kind === "host") net.sync();
 }
 
+// ===================== THE REFEREE =====================
+// Nothing on the table says what's legal. Try it, and if the rules don't allow it you're stopped and told why.
+function refuse(why, at) { if (window.Tabletop) Tabletop.nope(why, { at }); }
+function digWhy(sel, lane) {
+  const me = G.players[0], L = G.lanes[lane], T = tutStep();
+  if (!myLanes(G, 0).includes(lane)) return "That site isn't beside your camp. You can only dig at the sites between you and a neighbor.";
+  if (sel.length > CAP) return `A find is at most ${CAP} fossils.`;
+  if (sel.some((x, k) => k && x !== sel[k - 1] + 1)) return "Your rock face is locked: a find has to be fossils that sit side by side.";
+  const cards = sel.map(k => me.hand[k]), inf = meldInfo(cards);
+  if (!inf) return "Those bones don't belong together. A run is numbers in order (3-4-5 or 5-4-3); a set is all one number.";
+  if (L.fx === "shallow" && inf[0] > 2) return "Shallow Pit: finds here are only 1 or 2 cards.";
+  if (L.fx === "hard" && inf[0] < 2) return "Hard Rock: finds here are 2 or more cards.";
+  if (!canPlayOn(G, lane, inf)) {
+    const there = meldInfo(L.meld), kind = (x) => ["run", "set", "suited run"][x[1]] || "single";
+    const yours = describe(cards).replace(/^./, c => c.toUpperCase()), theirs = describe(L.meld);
+    if (inf[0] < there[0]) return `More cards outshine fewer: ${yours.toLowerCase()} can't take a site holding ${theirs}.`;
+    if (inf[0] === there[0] && inf[1] !== there[1] && L.fx !== "trackway") return `At the same size a suited run beats a set, and a set beats a run. Your ${kind(inf)} can't beat that ${kind(there)}.`;
+    if (L.fx === "trackway" && inf[1] !== there[1]) return `Trackway: runs beat sets here. Your ${kind(inf)} can't beat that ${kind(there)}.`;
+    if (L.fx === "overturned") return `Overturned Beds: at equal size and kind, the lower total wins. ${yours} doesn't outshine ${theirs}.`;
+    return L.fx === "shared" ? `${yours} doesn't match or beat ${theirs}.` : `${yours} doesn't outshine ${theirs}: it needs a higher total.`;
+  }
+  if (T && !(T.act === "play" && T.lane === lane && tutSelOk())) return "In the field lesson, make the find the coach asks for.";
+  return null;
+}
+function poachWhy(lane, k) {
+  const L = G.lanes[lane], T = tutStep();
+  if (!myLanes(G, 0).includes(lane)) return "You can only poach from a site beside your camp.";
+  if (k !== 0 && k !== L.meld.length - 1) return "You can only poach an end bone, from either end of the find.";
+  if (T && !(T.act === "scout" && T.lane === lane)) return "In the field lesson, poach the bone the coach asks for.";
+  return null;
+}
+
 function onAct(t) {
   const act = t.dataset.act;
   if (netOnAct(act, t)) return;
@@ -1962,20 +1996,22 @@ function onAct(t) {
   if (act === "pick" && humanTurn()) {
     const i = +t.dataset.i; let s = ui.sel;
     if (tutStep() && !tutWants(me.hand[i]) && !s.includes(i)) return;
-    if (s.includes(i)) s = (i === s[0] || i === s[s.length - 1]) ? s.filter(x => x !== i) : [i];
-    else if (s.length && s.length < CAP && (i === s[0] - 1 || i === s[s.length - 1] + 1)) s = [...s, i].sort((a, b) => a - b);
-    else s = [i];
+    s = s.includes(i) ? s.filter(x => x !== i) : [...s, i].sort((a, b) => a - b);
+    if (window.Tabletop) Tabletop.sound(s.includes(i) ? "pick" : "slide");
     ui.sel = s; return render();
   }
   if (act === "clear") { ui.sel = []; return render(); }
   if (act === "playlane" && humanTurn()) {
-    const lane = +t.dataset.lane; const s = ui.sel[0], e = ui.sel[ui.sel.length - 1] + 1;
+    const lane = +t.dataset.lane, why = digWhy(ui.sel, lane);
+    if (why) { refuse(why, t); if (window.Tabletop) Tabletop.shake([...root.querySelectorAll(".hand .card.sel")]); return; }
+    const s = ui.sel[0], e = ui.sel[ui.sel.length - 1] + 1;
     ui.sel = [];
     if (guest) { netSend({ type: "play", lane, s, e }); return render(); }
     doPlay(G, 0, lane, s, e); if (tut) tut.step++; render(); return scheduleBot();
   }
   if (act === "scout" && humanTurn()) {
     const lane = +t.dataset.lane; const left = t.dataset.left === "1";
+    const why = poachWhy(lane, +t.dataset.k); if (why) { refuse(why, t); if (window.Tabletop) Tabletop.shake(t); return; }
     const card = scoutTake(G, 0, lane, left);
     if (tut) tut.poached = card;
     ui.scout = { lane, left, card, to: neighbor(G, lane, 0) }; ui.mode = "placeScout"; return render();
@@ -2484,6 +2520,19 @@ function netBoot() {
 
 if (root) {
   root.addEventListener("click", e => { const t = e.target.closest("[data-act]"); if (t) onAct(t); });
+  if (window.Tabletop) Tabletop.drag(root, {
+    pieces: '.hand .card[data-act="pick"]', zones: '[data-zone]', key: (n) => 'f' + n.dataset.i,
+    canLift: () => !!G && G.phase === "play",
+    tap: () => true,                                    // taps go through the click handler
+    drop: (p, z) => {
+      if (z.dataset.zone !== "site") return { ok: false, quiet: true };
+      if (!humanTurn()) return G.turn !== 0 ? `It's ${fullName(G.turn)}'s turn.` : "Not now.";
+      const i = +p.data.i, sel = ui.sel.includes(i) ? ui.sel : [...ui.sel, i].sort((a, b) => a - b), lane = +z.dataset.li;
+      const why = digWhy(sel, lane); if (why) return why;
+      ui.sel = sel; const t = document.createElement("div"); t.dataset.act = "playlane"; t.dataset.lane = String(lane); onAct(t);
+      return true;
+    },
+  });
   root.addEventListener("toggle", e => { const k = e.target.dataset && e.target.dataset.key; if (k) ui.open[k] = e.target.open; }, true);
   root.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-act]:not(button)")) { e.preventDefault(); onAct(e.target); } });
   root.addEventListener("input", e => { const k = e.target.dataset && e.target.dataset.key; if (k === "name") ui.name = e.target.value; else if (k === "code") ui.code = e.target.value; });
