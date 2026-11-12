@@ -22,21 +22,13 @@
     bosses: {
       gorvax: {
         name: 'Emperor Gorvax',
-        // prototype: fewer, bigger monsters (7 fights; each asks for most of what the table can add in one go)
-        big: {
-          hand: { 2: 16, 3: 16, 4: 15 },
-          draws: { 2: [2, 2, 3], 3: [2, 2, 3], 4: [2, 2, 3] },
-          needs: [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5], [2, 3, 4], [2, 3, 4],
-                  [4, 5, 6], [4, 5, 6], [3, 5, 6], [3, 4, 5], [3, 4, 4], [2, 3, 4],
-                  [4, 6, 6], [4, 6, 6], [4, 5, 6], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
-        },
         // per act: [type, [need with 2, 3, 4 Heroes], name]
         acts: [
-          [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 2], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
-           ['combine', [2, 2, 2], 'Static Swarm'], ['set', [3, 2, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
+          [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 3], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
+           ['combine', [2, 2, 3], 'Static Swarm'], ['set', [3, 3, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
           [['run', [3, 3, 4], 'Tiderazor'], ['run', [3, 3, 5], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
-           ['combine', [3, 3, 4], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 2, 3], 'Twin Oni']],
-          [['run', [3, 4, 6], 'Megalith Rex'], ['run', [3, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
+           ['combine', [3, 4, 5], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 3, 3], 'Twin Oni']],
+          [['run', [3, 4, 6], 'Megalith Rex'], ['run', [4, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
            ['combine', [3, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
         ],
       },
@@ -48,10 +40,10 @@
         acts: [
           [['run', [2, 2, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3], 'Sallowmaw', 'coil'],
            ['combine', [2, 2, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3], 'Ashtongue', 'venom']],
-          [['run', [2, 3, 3], 'Thornscale', 'hunger'], ['run', [2, 2, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3], 'Bilefang', 'venom'],
-           ['combine', [2, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 2, 3], 'Gravejaw', 'brood'], ['set', [2, 2, 3], 'Smokeneck', 'spite']],
+          [['run', [2, 3, 4], 'Thornscale', 'hunger'], ['run', [2, 2, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3], 'Bilefang', 'venom'],
+           ['combine', [2, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 2, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3], 'Smokeneck', 'spite']],
           [['run', [3, 3, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4], 'Nightmaw', 'hunger'],
-           ['combine', [2, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
+           ['combine', [3, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
         ],
       },
     },
@@ -181,14 +173,13 @@
       for (let k = 0; k < (RULES.copies || 1); k++) for (let c = 0; c < this.colors; c++) for (let r = 1; r <= RULES.ranks; r++) deck.push({ id: id++, c, r });
       shuffle(deck);
       const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
-      this.big = this.boss === 'gorvax' && !!+opts.big;      // prototype: fewer, bigger monsters
-      this.defs = B.acts.map((act, a) => act.map((m, i) => this.big ? [m[0], B.big.needs[a * 6 + i], m[2], m[3]] : m));
-      const handN = this.handSize = this.big ? B.big.hand[this.N] : B.hand || RULES.hand;
+      this.defs = B.acts;
+      const handN = this.handSize = B.hand || RULES.hand;
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
       this.box = deck.slice(this.N * handN);          // never seen in play
       this.boxed = this.box.length;
       this.known = this.players.map(() => []);             // cards everyone has seen each Hero holding
-      this.acts = (this.big ? B.big.draws : RULES.actDraws)[this.N].map((k, a) =>
+      this.acts = RULES.actDraws[this.N].map((k, a) =>
         shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[this.N - 2], needs: need.slice(), name, hex: hex || null, key: keyBase + a * 6 + i }))).slice(0, k));
       this.total = this.acts.reduce((t, x) => t + x.length, 0);
       this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = []; this.trash = [];   // trash: face-up discard pile, {c, seat}
