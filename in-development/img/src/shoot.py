@@ -6,7 +6,7 @@ import sys, os, io
 from playwright.sync_api import sync_playwright
 from PIL import Image
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-GAMES = {'slipstream': 'slipstream', 'jibber': '2-jibber-2-jabble', 'abducted': 'abducted', 'polar': 'polar-bear-market', 'dayone': 'day-one', 'nestegg': 'nest-egg'}
+GAMES = {'slipstream': 'slipstream', 'jibber': '2-jibber-2-jabble', 'abducted': 'abducted', 'polar': 'polar-bear-market', 'dayone': 'day-one', 'mrmagpie': 'mr-magpie'}
 want = sys.argv[1:] or list(GAMES)
 with sync_playwright() as p:
     b = p.chromium.launch()

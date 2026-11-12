@@ -1,4 +1,4 @@
-/* Nest Egg — rules engine and bots. Runs in the browser (window.NestEgg) and in node
+/* Mr. Magpie — rules engine and bots. Runs in the browser (window.MrMagpie) and in node
    (module.exports), so bot-only games can be checked headless: node sim.js 3000
    Every number a playtest might tune lives in RULES. */
 (function (root) {
@@ -132,14 +132,14 @@
         this.stats.frostLots++;
         this.phase = 'frost'; this.lot.offers = Array(N).fill(null);
         this.players.forEach((p, i) => { if (!p.hand.length) this.lot.offers[i] = []; });
-        this.say('A frost! The magpie offers the ' + t.name + ' (' + t.vp + ') for secret offers.');
+        this.say('A frost! Mr. Magpie takes secret offerings for the ' + t.name + ' (' + t.vp + ').');
         this.checkFrost();
       } else {
         this.phase = 'bid';
         this.lot.active = order.filter((s) => this.players[s].hand.length);
         this.lot.acted = [];
         this.lot.turn = this.lot.active.length ? this.lot.active[0] : -1;
-        this.say('The magpie shows the ' + t.name + ' (' + t.vp + '). ' + (this.lot.turn >= 0 ? this.players[this.lot.turn].name + ' starts.' : ''));
+        this.say('Mr. Magpie shows off the ' + t.name + ' (' + t.vp + '). ' + (this.lot.turn >= 0 ? this.players[this.lot.turn].name + ' starts.' : ''));
         if (this.lot.turn < 0) this.finishBid();
       }
     }
@@ -170,20 +170,20 @@
         if (a.type === 'pass') { this.pass(seat); return { ok: true }; }
         if (a.type !== 'raise') return { ok: false, error: 'Offer acorns or pass.' };
         const idx = [...new Set((a.cards || []).map((x) => x | 0))].filter((x) => x >= 0 && x < p.hand.length);
-        if (!idx.length) return { ok: false, error: 'Put at least one acorn card in your offer.' };
+        if (!idx.length) return { ok: false, error: 'Put at least one acorn card in your offering.' };
         const add = sum(idx.map((x) => p.hand[x]));
-        if (L.bids[seat] + add <= L.high) return { ok: false, error: 'Your offer has to beat ' + L.high + '. That only makes ' + (L.bids[seat] + add) + '.' };
+        if (L.bids[seat] + add <= L.high) return { ok: false, error: 'Your offering has to beat ' + L.high + '. That only makes ' + (L.bids[seat] + add) + '.' };
         const cards = idx.map((x) => p.hand[x]);
         p.hand = p.hand.filter((_, x) => !idx.includes(x));
         L.bids[seat] += add; L.spent[seat] = L.spent[seat].concat(cards); L.high = L.bids[seat]; L.highSeat = seat;
         if (!L.acted.includes(seat)) L.acted.push(seat);
-        this.say(p.name + ' offers ' + cards.join('+') + (L.bids[seat] !== add ? ' (now ' + L.bids[seat] + ')' : '') + '.');
+        this.say(p.name + ' brings ' + cards.join('+') + (L.bids[seat] !== add ? ' (now ' + L.bids[seat] + ')' : '') + '.');
         this.nextTurn(seat);
         return { ok: true };
       }
       if (this.phase === 'frost') {
-        if (a.type !== 'offer') return { ok: false, error: 'Make a secret offer (or offer nothing).' };
-        if (this.lot.offers[seat]) return { ok: false, error: 'You already made your offer.' };
+        if (a.type !== 'offer') return { ok: false, error: 'Make a secret offering (or bring nothing).' };
+        if (this.lot.offers[seat]) return { ok: false, error: 'You already brought your offering.' };
         const idx = [...new Set((a.cards || []).map((x) => x | 0))].filter((x) => x >= 0 && x < p.hand.length);
         this.lot.offers[seat] = idx.map((x) => p.hand[x]);
         p.hand = p.hand.filter((_, x) => !idx.includes(x));
@@ -247,7 +247,7 @@
       if (L.high === 0) {
         this.stats.washes++;
         this.result = { kind: 'wash', t: L.t };
-        this.say('Nobody makes an offer. The magpie flies off with the ' + L.t.name + '.');
+        this.say('Nobody brings an offering. Mr. Magpie keeps the ' + L.t.name + '.');
       } else {
         const w = L.highSeat, solo = L.bids.filter((b) => b > 0).length === 1;
         if (solo) this.stats.solo++;
@@ -264,11 +264,11 @@
       L.bids = tot; L.spent = L.offers.map((o) => o.slice());
       const ranked = L.order.slice().sort((a, b) => tot[b] - tot[a] || L.order.indexOf(a) - L.order.indexOf(b));
       const nz = ranked.filter((s) => tot[s] > 0);
-      if (!nz.length) { this.result = { kind: 'wash', t: L.t, frost: true }; this.say('Nobody offers for the ' + L.t.name + '.'); this.phase = 'lotEnd'; return; }
+      if (!nz.length) { this.result = { kind: 'wash', t: L.t, frost: true }; this.say('Nobody brings an offering for the ' + L.t.name + '.'); this.phase = 'lotEnd'; return; }
       const w = nz[0];
       this.players[w].treasures.push(L.t);
       this.result = { kind: 'win', t: L.t, seat: w, bid: tot[w], cards: L.spent[w].length, frost: true, offers: tot };
-      this.say(this.players[w].name + ' wins the ' + L.t.name + ' with ' + tot[w] + '. Offers: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
+      this.say(this.players[w].name + ' wins the ' + L.t.name + ' with ' + tot[w] + '. Offerings: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
       const list = nz.slice(1).map((s) => ({ seat: s, n: L.spent[s].length }));
       if (!this.queuePicks(list, 'frostDone')) this.endFrost();
     }
@@ -385,5 +385,5 @@
   }
 
   const api = { RULES, BAUBLE, CRITTERS, BOT_NAMES, STYLES, Game, scoreOf, setRandom: (f) => { rnd = f; } };
-  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NestEgg = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MrMagpie = api;
 })(typeof window !== 'undefined' ? window : globalThis);

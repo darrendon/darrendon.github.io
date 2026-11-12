@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>In Development box art</title>
-<!-- Box fronts for the In Development games. ?g=slipstream|jibber|abducted|dayone|polar|nestegg
+<!-- Box fronts for the In Development games. ?g=slipstream|jibber|abducted|dayone|polar|mrmagpie
      &view=scene (1600×1000: box on its own backdrop, for cards and page heroes) or &view=box (box front only, 900×900).
      Rendered to webp by shoot.py. -->
 <link rel="stylesheet" href="/assets/css/fonts.css">
@@ -23,7 +23,7 @@
 </head>
 <body>
 <div class="scene" id="scene"></div>
-<script src="/in-development/nest-egg/play/art.js"></script>
+<script src="/in-development/mr-magpie/play/art.js"></script>
 <script>
 const q = new URLSearchParams(location.search), g = q.get('g') || 'slipstream';
 if (q.get('view') === 'box') document.body.classList.add('box');
@@ -124,10 +124,10 @@ const A = {
     <div class="ttl" style="top:8%;font:400 11cqw/.92 Righteous,sans-serif;color:#1F4E66">POLAR BEAR<br>MARKET</div>
     <div class="by" style="color:#E9F3F6;bottom:3.6%">by Darren Don</div>`,
   },
-  /* Nest Egg: woodland critters line up with their acorns while the magpie shows off a pocket watch.
-     Critters, magpie and trinkets come from in-development/nest-egg/play/art.js (the playable uses the same art). */
-  nestegg: (() => {
-    const N = window.NestArt;
+  /* Mr. Magpie: woodland critters line up with their acorn offerings while Mr. Magpie shows off a pocket watch.
+     Critters, Mr. Magpie and trinkets come from in-development/mr-magpie/play/art.js (the playable uses the same art). */
+  mrmagpie: (() => {
+    const N = window.MagpieArt;
     const tree = (x, y, r, c) => `<g><rect x="${x - r * .09}" y="${y}" width="${r * .18}" height="${r * 1.5}" fill="#8A6A4E" opacity=".55"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/><circle cx="${x - r * .35}" cy="${y - r * .3}" r="${r * .55}" fill="#fff" opacity=".12"/></g>`;
     const leaf = (x, y, rot, c) => `<path d="M0 -1.8 C1.2 -1 1.2 1 0 1.8 C-1.2 1 -1.2 -1 0 -1.8Z" fill="${c}" transform="translate(${x} ${y}) rotate(${rot})"/>`;
     const flake = (x, y, r) => `<g transform="translate(${x} ${y})" stroke="#FFFFFF" stroke-width="${r * .28}" stroke-linecap="round" opacity=".9"><path d="M0 ${-r} V${r} M${-r * .87} ${-r * .5} L${r * .87} ${r * .5} M${-r * .87} ${r * .5} L${r * .87} ${-r * .5}"/></g>`;
@@ -143,10 +143,9 @@ const A = {
         <path d="M0 71 C18 66 34 69 50 67 C66 65 82 69 100 66 V100 H0Z" fill="url(#ne-ground)"/>
         <path d="M0 71 C18 66 34 69 50 67 C66 65 82 69 100 66" stroke="#C3BE79" stroke-width=".8" fill="none" opacity=".8"/>
         ${leaf(25, 79, 30, '#D9772B')}${leaf(39.4, 82, -20, '#E1A53B')}${leaf(60, 78, 60, '#C2463B')}${leaf(80, 81, -40, '#D9772B')}${leaf(4, 74, 10, '#E1A53B')}${leaf(97, 76, 70, '#C2463B')}
-        <g transform="translate(0 3.2)">
+        <g transform="translate(0 5.2)">
         <path d="M100 41.5 C88 42.2 76 44.6 62 46.6 C60 46.9 58.6 47.6 58 48.4" stroke="#6E4E36" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <path d="M90 42.2 C92 39 95 37.6 97 37.4" stroke="#6E4E36" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        ${leaf(97.6, 36.8, 50, '#D9772B')}${leaf(94, 38.2, -30, '#E1A53B')}${leaf(66, 47.8, 140, '#C2463B')}${leaf(80, 45.3, 160, '#E1A53B')}
+        ${leaf(70.5, 47.6, 140, '#C2463B')}${leaf(98, 44.2, 120, '#D9772B')}
         <g transform="translate(74 43.9) scale(.78)">${N.magpie()}</g>
         <path d="M60.5 32.6 C58 34 56 35.4 54.6 37.2" stroke="#C9A24A" stroke-width=".35" fill="none"/>
         <g transform="translate(54 40.6) scale(.34)">${N.treasure('Pocket Watch')}</g>
@@ -159,8 +158,8 @@ const A = {
         ${crit.map(([k, x, y]) => `<g transform="translate(${x} ${y}) scale(.48)">${N.body(k)}</g>`).join('')}
         <rect width="100" height="100" filter="url(#ne-paper)"/>
       </svg>
-      <div class="ttl" style="top:8.5%;font:900 15.5cqw/1 Fraunces,serif;color:#4A2E1E;letter-spacing:-.01em">Nest Egg</div>
-      <div class="ttl" style="top:26%;font:600 3.2cqw/1 Jost;letter-spacing:.3em;color:#8A5228;text-transform:uppercase">Trade before the first snow</div>
+      <div class="ttl" style="top:8.5%;font:900 14cqw/1 Fraunces,serif;color:#4A2E1E;letter-spacing:-.01em">Mr. Magpie</div>
+      <div class="ttl" style="top:25%;font:600 3cqw/1 Jost;letter-spacing:.24em;color:#8A5228;text-transform:uppercase">Offerings before the first snow</div>
       <div class="by" style="color:#F7EBD0;bottom:3.4%">by Darren Don</div>`,
     };
   })(),

@@ -1,7 +1,7 @@
-/* Nest Egg — the woodland critters, the magpie, her treasures and the baubles, as SVG.
+/* Mr. Magpie — the woodland critters, Mr. Magpie himself, his treasures and the baubles, as SVG.
    One source for the playable (play/index.html) and the box art (in-development/img/src/art.html).
    Soft, rounded, painted-looking shapes: gentle gradients, blush cheeks, no hard outlines.
-   Every function returns SVG markup; NestArt.defs() must be on the page once (inside any <svg>). */
+   Every function returns SVG markup; MagpieArt.defs() must be on the page once (inside any <svg>). */
 (function (root) {
   'use strict';
   const C = {
@@ -117,7 +117,7 @@
     return `<g class="ne-critter">${s}</g>`;
   }
 
-  /* the magpie, standing on 0,0 and facing left */
+  /* Mr. Magpie, standing on 0,0 and facing left, in his top hat, monocle and bow tie */
   function magpie() {
     return `<g class="ne-magpie">
       <path d="M6 -7 L27 3 L25.5 5.5 L4 -3Z" fill="url(#ne-irid)"/>
@@ -130,6 +130,12 @@
       <path d="M-11.8 -16.4 L-17.2 -14.8 L-11.8 -13.6Z" fill="#3A3B42"/>
       <circle cx="-8.8" cy="-16.4" r="1.05" fill="#fff"/><circle cx="-9.05" cy="-16.5" r=".62" fill="#1D1E24"/>
       <path d="M-1.5 -2.6 L-2.6 1.4 M1.6 -2.2 L1.2 1.6" stroke="#2A2B31" stroke-width=".8" stroke-linecap="round"/>
+      <path d="M-7.2 -11.2 L-10.4 -12.9 L-10.4 -9.5Z M-7.2 -11.2 L-4 -12.9 L-4 -9.5Z" fill="#B5463A"/><circle cx="-7.2" cy="-11.2" r=".9" fill="#8E2C26"/>
+      <circle cx="-8.95" cy="-16.45" r="1.85" fill="none" stroke="url(#ne-gold)" stroke-width=".55"/><path d="M-7.3 -15.6 C-6.4 -13.6 -5.4 -12.6 -4.6 -12.3" stroke="#C9A24A" stroke-width=".3" fill="none"/>
+      <ellipse cx="-7.2" cy="-19.4" rx="4.3" ry=".95" fill="#2A2420"/>
+      <path d="M-9.8 -19.6 L-9.4 -25.6 C-9.4 -26.2 -5 -26.2 -5 -25.6 L-4.6 -19.6Z" fill="#2E2722"/>
+      <path d="M-9.65 -21.2 L-4.75 -21.2 L-4.7 -20.1 L-9.7 -20.1Z" fill="#B5612C"/>
+      <path d="M-8.6 -25.2 L-8.4 -21.6" stroke="#fff" stroke-width=".35" opacity=".25" stroke-linecap="round"/>
     </g>`;
   }
 
@@ -162,5 +168,5 @@
   };
   function treasure(name) { return `<g>${T[name] || T['Locket']}</g>`; }
 
-  root.NestArt = { C, SEAT, defs, acorn, head, body, token, magpie, bauble, treasure, mix };
+  root.MagpieArt = { C, SEAT, defs, acorn, head, body, token, magpie, bauble, treasure, mix };
 })(typeof window !== 'undefined' ? window : globalThis);
