@@ -112,6 +112,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 .card.take:hover { transform: translateY(-4px); }
 .card.pick img { box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px var(--ink), 0 8px 14px -8px rgba(0, 0, 0, .6); }
 .card.pick:hover { transform: translateY(-4px); }
+.card.take.held { transform: translateY(-12px) rotate(-3deg); }
+.card.take.held img { box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px var(--ink), 0 14px 18px -8px rgba(0, 0, 0, .6); }
 
 /* you */
 .you { background: var(--night-2); border: 3px solid var(--ink); border-radius: 18px; box-shadow: var(--hard); padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
@@ -738,7 +740,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
   const BOTS = ['Hacksaw Hal', 'The Duchess', 'Rocket Ruiz', 'Big Moe'];
   const COLORS = ['#ffd630', '#2f7bff', '#3cc75a', '#ff7a1a', '#8c4bff', '#13c2b0'];
   const app = document.getElementById('app'), ov = document.getElementById('ov'), ovBody = document.getElementById('ov-body'), live = document.getElementById('live');
-  let g = null, sel = [], mode = null, timer = null, lastLog = 0, pops = [], chosenN = 4, showRules = false, tough = true;
+  let g = null, sel = [], mode = null, revPick = null, timer = null, lastLog = 0, pops = [], chosenN = 4, showRules = false, tough = true;
   try { if (localStorage.getItem('dftc-bots') === 'casual') tough = false; } catch (e) {}
   // online tables: `me` is the seat this page plays (always 0 against bots and in the tutorial); `net` is the host or guest session.
   // Online, `g` is this page's player view from the host (same shape as the engine state, other hands reduced to their sizes).
@@ -1171,6 +1173,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     else if (mine) {
       if (g.phase === 'takeback') { status = 'Nobody touched your move. Take one card back.'; hint = 'Pick it up off the mat.'; }
       else if (g.phase === 'open') status = 'Your turn. Open with any move.';
+      else if (mode === 'reverse' && revPick != null) { status = 'Reversal: take the ' + cur.cards[revPick] + '?'; hint = 'Confirm, or tap another card.'; }
       else if (mode === 'reverse') { status = 'Reversal: take a card off the move.'; hint = 'Pick it up off the mat.'; }
       else status = 'Your turn. Beat ' + E.describe(cur) + '?';
     } else if (g.status[me] !== 'in') status = 'You’re ' + (g.status[me] === 'pinned' ? 'pinned' : 'tapped out') + '. Watching the rest of the round…';
@@ -1186,7 +1189,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       const end = cur.type === 'run' ? (i === 0 || i === cur.cards.length - 1) : true;
       const ring = picks.includes(r) && end && !used[r];
       if (ring && cur.type === 'set') used[r] = true;
-      return cardImg(r, (taking ? 'take' : '') + (ring ? ' pick' : ''), taking ? 'role="button" tabindex="0" data-take="' + r + '" data-pos="' + i + '" aria-label="Take the ' + r + '"' : '');
+      return cardImg(r, (taking ? 'take' : '') + (ring ? ' pick' : '') + (mode === 'reverse' && revPick === i ? ' held' : ''), taking ? 'role="button" tabindex="0" data-take="' + r + '" data-pos="' + i + '" aria-label="Take the ' + r + '"' : '');
     }).join('') : '<span class="empty">Open mat</span>';
     const ownerName = cur ? (g.owner === -1 ? 'left by a wrestler who’s out' : g.owner === me ? 'your move' : g.names[g.owner] + '’s move') : '';
 
@@ -1195,11 +1198,11 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
 
     let actions = '', chips = '';
     if (mine && g.phase !== 'takeback') {
-      if (mode === 'reverse') actions = '<button type="button" class="ghost" id="cancel">Cancel</button>';
+      if (mode === 'reverse') actions = (revPick != null ? '<button type="button" class="gold" id="revok">Confirm reversal</button>' : '') + '<button type="button" class="ghost" id="cancel">Cancel</button>';
       else {
         actions = '<button type="button" class="go" id="play"' + (sel.length ? '' : ' disabled') + '>Play' + (sel.length ? ' ' + sel.length : '') + '</button>';
         if (g.phase === 'answer') {
-          actions += '<button type="button" class="gold" id="rev" title="Take a card off the move (or just tap it on the mat); discard a stamina card">Reversal</button>';
+          actions += '<button type="button" class="gold" id="rev" title="Take a card off the move (or tap it on the mat); discard a stamina card">Reversal</button>';
           if (g.n > 2) actions += '<button type="button" class="gold" id="kick" title="Take a stamina card into your hand">Kick out</button>';
         }
         if (sel.length) actions += '<button type="button" class="ghost" id="clear">Clear</button>';
@@ -1280,11 +1283,17 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     app.querySelectorAll('[data-cover]').forEach((b) => b.addEventListener('click', () => net && net.kind === 'host' && net.setCover(+b.dataset.cover, b.dataset.on === '1')));
     on('play', (e) => { const cards = sel.map((i) => g.hands[me][i]), why = playWhy(cards); if (why) { refuse(why, app.querySelector('.ring')); shakeSel(); return; } human({ type: 'play', cards }); });
     on('kick', (e) => { const why = stamWhy('kick'); if (why) return refuse(why, e.currentTarget); human({ type: 'kickout' }); });
-    on('rev', (e) => { const why = stamWhy('rev'); if (why) return refuse(why, e.currentTarget); const o = E.options(g); if (o.reverse.length === 1 && !tut) human({ type: 'reverse', rank: o.reverse[0] }); else { mode = 'reverse'; sel = []; render(); } });
-    on('cancel', () => { mode = null; render(); });
+    on('rev', (e) => { const why = stamWhy('rev'); if (why) return refuse(why, e.currentTarget); const o = E.options(g); if (o.reverse.length === 1 && !tut) human({ type: 'reverse', rank: o.reverse[0] }); else { mode = 'reverse'; revPick = null; sel = []; render(); } });
+    on('revok', () => { if (mode !== 'reverse' || revPick == null || !g.cur) return; human({ type: 'reverse', rank: g.cur.cards[revPick] }); });
+    on('cancel', () => { mode = null; revPick = null; render(); });
     on('clear', () => { sel = []; render(); });
     app.querySelectorAll('[data-take]').forEach((el) => {
-      const go = () => { const why = (g.phase === 'answer' && mode !== 'reverse' && stamWhy('rev')) || takeWhy(+el.dataset.take, +el.dataset.pos); if (why) { refuse(why, el); if (window.Tabletop) Tabletop.shake(el); return; } human({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: +el.dataset.take }); };
+      const go = () => {
+        const why = (g.phase === 'answer' && mode !== 'reverse' && stamWhy('rev')) || takeWhy(+el.dataset.take, +el.dataset.pos); if (why) { refuse(why, el); if (window.Tabletop) Tabletop.shake(el); return; }
+        if (g.phase === 'takeback' || (mode === 'reverse' && revPick == null)) { human({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: +el.dataset.take }); return; }
+        // reaching onto the mat picks the card up; Confirm reversal spends the stamina
+        mode = 'reverse'; revPick = +el.dataset.pos; sel = []; if (window.Tabletop) Tabletop.sound('pick'); render();
+      };
       el.addEventListener('click', go); el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
     // your hand: tap cards to slide them up, then press Play or carry them into the ring. Nothing says what beats the table.

@@ -434,11 +434,11 @@
       say = '<b>' + esc(p.name) + ' is playing</b><span>' + esc(v.log[v.log.length - 1] || '') + '</span>';
     } else if (m && m.kind === 'pay') {
       const got = sum(v.hand.filter((t) => ui.pay.includes(t.id)));
-      say = '<b>' + esc(m.title) + '</b><span>Tap the tiles you’re paying with: it costs ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + ', no change given. It’s paid the moment you cover it.</span>';
+      say = '<b>' + esc(m.title) + '</b><span>Tap the tiles you’re paying with: it costs ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + ', and no change is given.</span>';
       acts = '<button class="dt-btn ghost" data-do="cancel">Cancel</button><button class="dt-btn go grow" data-do="confirm"' + (ui.pay.length ? '' : ' disabled') + '>Pay &amp; ' + esc(m.verb || 'confirm') + '</button>';
     } else if (m && m.kind === 'discard') {
       const need = Math.max(0, v.hand.length - ui.disc.length - PB.HAND);
-      say = '<b>End your turn</b><span>' + (m.forced ? 'You end with at most 5 tiles: tap ' + Math.max(0, v.hand.length - ui.disc.length - PB.HAND) + ' more to discard. Then you draw back up to 5.' : 'Tap the tiles you want to discard, then draw back up to 5.') + '</span>';
+      say = '<b>End your turn</b><span>' + (m.forced ? (need ? 'You end with at most 5 tiles: tap ' + need + ' more to discard, then end your turn.' : 'Down to 5. End your turn and draw back up to 5, or discard more first.') : 'Tap the tiles you want to discard, then draw back up to 5.') + '</span>';
       acts = '<button class="dt-btn ghost" data-do="cancel">Back</button><button class="dt-btn go grow" data-do="end">' + (ui.disc.length ? 'Discard ' + ui.disc.length + ' &amp; end turn' : 'End turn') + '</button>';
     } else if (m && m.kind === 'special') {
       const t = handT(v, m.tile), P = {
@@ -464,14 +464,13 @@
         say = '<b>' + esc(t.name) + ' · ' + t.v + '</b><span>' + esc(tip) + '</span>';
         acts = (canSpec ? '<button class="dt-btn go" data-do="activate">Activate</button>' : '') + '<button class="dt-btn ghost" data-do="deselect">Done</button>';
       } else {
-        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Place or activate a tile, or hire from the agency.' : autoEnd(v) ? 'Both actions used. Ending your turn… (Discard first if you want new tiles.)' : 'You have used both actions.') + '</span>';
+        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Place or activate a tile, or hire from the agency.' : 'Both actions used. End your turn (or discard first for new tiles).') + '</span>';
       }
       acts += '<button class="dt-btn ghost" data-do="discard">Discard…</button><button class="dt-btn go grow" data-do="endq">End turn</button>';
     }
     return '<div class="dt-bar"><div class="say">' + say + '</div>' + (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>';
   }
 
-  function autoEnd(v) { return myTurn(v) && v.actionsLeft === 0 && !ui.mode && v.hand.length <= PB.HAND; }
   function statusText(v) {
     if (v.phase === 'over') return 'Game over';
     const s = PB.SEASON_NAMES[v.season] + ' · round ' + (v.round + 1) + '/' + PB.ROUNDS + (v.closing ? ' (closing)' : '');
@@ -490,7 +489,6 @@
       barHTML(v) + '</div>';
     DevTable.flip(EL, () => { EL.innerHTML = html; }, 560);
     { const bar = EL.querySelector('.dt-bar'); if (bar) EL.style.setProperty('--pbm-bar', bar.offsetHeight + 'px'); }
-    if (autoEnd(v)) { const k = ui.key; later(() => ui.key === k && !ui.mode && autoEnd(V), () => act({ type: 'end', discard: [] }), 1800); }
     // when a choice needs your hand (paying, discarding, the Negotiator's tile), bring it into view
     const m = ui.mode, needHand = m && (m.kind === 'pay' || m.kind === 'discard' || (m.kind === 'special' && m.action === 'negotiator' && !m.use));
     if (needHand && ui.scrolled !== m) {
@@ -500,10 +498,7 @@
     }
   }
 
-  function act(a) { clearTimeout(laterT); const r = API.act(a); reset(); if (r && r.ok === false) draw(); return r; }
-  // a move that's complete goes through a beat after the last tap, unless something changed in that beat
-  let laterT = 0;
-  function later(still, go, ms) { clearTimeout(laterT); laterT = setTimeout(() => { if (V && myTurn(V) && still()) go(); }, ms); }
+  function act(a) { const r = API.act(a); reset(); if (r && r.ok === false) draw(); return r; }
 
   const nope = (why, at) => API.nope(why, at);
   function placeWhy(v, t, h) {
@@ -554,15 +549,10 @@
       if (m && m.kind === 'pay') {
         if (m.exclude.includes(id)) { nope('You can’t pay with the tile you’re playing.', b); return; }
         ui.pay = ui.pay.includes(id) ? ui.pay.filter((x) => x !== id) : ui.pay.concat(id); draw();
-        // no change is given, so the moment what you've counted out covers the cost, it's paid
-        const got = sum(v.hand.filter((t) => ui.pay.includes(t.id)));
-        if (got >= m.cost) { const pay = ui.pay.slice(), mm = m; later(() => ui.mode === mm && ui.pay.join() === pay.join(), () => act(Object.assign({}, mm.action, { pay })), 380); }
         return;
       }
       if (m && m.kind === 'discard') {
         ui.disc = ui.disc.includes(id) ? ui.disc.filter((x) => x !== id) : ui.disc.concat(id); draw();
-        // ending your turn with too many tiles: once you're down to 5, the turn ends (keep tapping to discard more)
-        if (m.forced && v.hand.length - ui.disc.length <= PB.HAND) { const d = ui.disc.slice(), mm = m; later(() => ui.mode === mm && ui.disc.join() === d.join(), () => act({ type: 'end', discard: d }), 900); }
         return;
       }
       if (m && m.kind === 'special') {

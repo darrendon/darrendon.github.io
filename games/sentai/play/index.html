@@ -327,26 +327,6 @@
       if (wildOn && wildId == null) return wildAs(st, c) ? null : 'Overcharge needs a combo already started, with room to grow.';
       return whyNot(st, c);
     };
-    // how many cards finish your turn on their own: as many as you may add, or as many as the combo still needs
-    function lockMax() { if (vael) return 0; return Math.max(1, Math.min(v.maxAdd, targets[0].need, v.hand.length - 1)); }
-    const lockKey = key;
-    function maybeLock() {
-      if (!myTurn || beaconOn || !sel.length) return;
-      let full = false;
-      if (!vael) full = onHead(0).length >= lockMax();
-      else {
-        const heads = [...new Set(sel.map((x) => selHead[x] || 0))];
-        full = heads.length > 1 || heads.every((h) => onHead(h).length >= Math.min(v.maxAddHead[h], targets[h].need));
-      }
-      if (!full) return;
-      const cards = sel.slice(), sh = Object.assign({}, selHead), wild = wildId;
-      setTimeout(() => {
-        if (key !== lockKey || sel.length !== cards.length) return;      // something changed while the card landed
-        const heads = [...new Set(cards.map((x) => sh[x] || 0))];
-        sel = []; selHead = {}; wildId = null; wildOn = false;
-        api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: cards.filter((x) => (sh[x] || 0) === h) })), head: heads[0], cards, wild });
-      }, 480);
-    }
     const unpick = (id) => { const h = selHead[id] || 0; const drop = [id].concat(wildId != null && wildId !== id && (selHead[wildId] || 0) === h ? [wildId] : []); if (drop.includes(wildId)) wildId = null; sel = sel.filter((x) => !drop.includes(x)); drop.forEach((x) => delete selHead[x]); };
 
     const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
@@ -439,8 +419,8 @@
     const myPw = P[me].power;
     let main = '';
     if (myTurn) {
-      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : vael ? 'Your turn. Put 1 or 2 cards on the heads (tap a card, then a head), or pass.'
-        : lockMax() > 1 ? 'Your turn: tap cards onto the combo. The ' + (lockMax() === 2 ? '2nd' : '3rd') + ' locks them in, or press Lock in sooner. Or pass.' : 'Your turn: tap a card onto the combo and it locks in. Or pass.';
+      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : vael ? 'Your turn. Put 1 or 2 cards on the heads (tap a card, then a head) and press Lock in, or pass.'
+        : 'Your turn. Tap cards onto the combo, then press Lock in. Or pass.';
       main = '<p class="prompt">' + prompt + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
           : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Lock in' + (sel.length ? ' ' + sel.length : '') + '</button><button class="dt-btn" data-do="pass">Pass</button>' +
@@ -470,7 +450,7 @@
       const e = v.enc, t = e ? TYPE[e.boss.type] : '';
       const what = { run: 'ranks that fit in a row, in any colors (gaps are fine while you build)', set: 'cards of one rank', color: 'cards of one color', combine: 'one card of each color, all different' }[e ? e.boss.type : 'run'];
       const note = v.phase === 'discard' && iDiscard ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Tap 1 card to put it on the discard pile, face up, and the squad fights the same monster again.'
-        : v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Tap 1 or 2 cards that fit to put them on the combo (or drag them there). Two cards lock in by themselves; with one, press Lock in. Or pass and keep your cards for later. If a card doesn’t fit, the game stops you.'
+        : v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Tap 1 or 2 cards that fit to put them on the combo (or drag them there). Then press Lock in. Or pass and keep your cards for later. If a card doesn’t fit, the game stops you.'
           : 'You lead. ' + esc(e.boss.name) + ' wants a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. The gold number on its card is the one for your squad of ' + P.length + '. Tap a card to put it on the combo and start it. Your first card tells your teammates what to add, so pick one you think they can follow.')
         : v.phase === 'build' ? 'Your teammates are adding to the same combo. Nobody may talk about their hand, so what they play is all you learn about what they hold.'
         : v.phase === 'discard' ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Each Hero discards 1 card, face up, and the squad fights the same monster again.'
@@ -534,7 +514,7 @@
           const c = handCard(id);
           if (wildOn && wildId == null && targets[h].cards.length + onHead(h).length && !S.fits(stateOf(h), c)) wildId = id;
           sel.push(id); selHead[id] = h;
-          render(el, v, api); maybeLock(); return true;
+          render(el, v, api); return true;
         },
       });
     }

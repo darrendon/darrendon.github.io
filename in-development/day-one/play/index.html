@@ -512,15 +512,14 @@
     drawPanels(disp, F);
     autoWalk(F, mine);
   }
-  // once you've set off, a step with only one place to go takes itself, and a finished walk goes through a beat later.
-  // Undo stops both: the state you undo back to is left for you to play by hand.
+  // once you've set off, a step with only one place to go takes itself; a finished walk waits for Go.
+  // Undo stops the auto-steps: the state you undo back to is left for you to play by hand.
   let autoT = 0;
   const walkKey = () => U.origin + '|' + U.c + '|' + U.clicks.join(',') + '|' + U.pull;
   function autoWalk(F, mine) {
     clearTimeout(autoT);
     if (!mine || A.running || U.mode !== 'aim' || !F || !U.clicks.length || U.noAuto === walkKey()) return;
     const k = walkKey();
-    if (F.phase === 'done') { autoT = setTimeout(() => { if (walkKey() === k && !U.submitted && myTurn()) submit(); }, 900); return; }
     if (F.next && F.next.length === 1) autoT = setTimeout(() => {
       if (walkKey() !== k || U.submitted || !myTurn()) return;
       if (F.phase === 'pull') U.pull = F.next[0]; else U.clicks.push(F.next[0]);
@@ -628,11 +627,11 @@
     let say;
     if (F.phase === 'done') {
       const m = D1.walkMove(F), r = D1.applyMove(V.s, me(), m, false), b = D1.score(V.s).total[me()], a = D1.score(r.ns).total[me()];
-      say = U.noAuto === walkKey() ? '<b>Shrine on ' + coord(m.target) + '</b>. Go, or undo a step.' : '<b>Raising your shrine on ' + coord(m.target) + '…</b> Undo to stop.';
+      say = '<b>Shrine on ' + coord(m.target) + '</b>. Go, or undo a step.';
     } else if (F.phase === 'pull') say = '<b>Out of shrines:</b> tap one of yours to move here.';
     else if (F.phase === 'target') say = '<b>That space is taken:</b> tap a stack next to it.';
     else { const left = F.cnt - F.path.length; say = (F.relays ? '<b>Surge!</b> ' : '') + 'Steps left <b>' + left + '</b> · offerings <b>' + F.gifts + '</b>' + (left > 1 ? ' · next drops ' + discDot(F.hand[F.path.length]) : ' · next step: your god comes to rest'); }
-    bar.innerHTML = '<span class="say">' + say + '</span><div class="acts">' + undo + restart + (F.phase === 'done' ? '<button class="bbtn go" data-do="go">' + (U.noAuto === walkKey() ? 'Go' : 'Go now') + '</button>' : '') + '</div>';
+    bar.innerHTML = '<span class="say">' + say + '</span><div class="acts">' + undo + restart + (F.phase === 'done' ? '<button class="bbtn go" data-do="go">Go</button>' : '') + '</div>';
   }
   function drawFinal(over) {
     const box = $('.final');
@@ -685,7 +684,7 @@
   function refuse(why, at) { if (window.Tabletop) Tabletop.nope(why, { at: at && at.getBoundingClientRect ? at : null }); }
   function stepWhy(F, i) {
     if (V.board.out[i]) return 'That’s the shallows: out of play with this many gods.';
-    if (F.phase === 'done') return 'Your walk is finished. It goes through on its own, or undo a step.';
+    if (F.phase === 'done') return 'Your walk is finished. Press Go, or undo a step.';
     if (F.phase === 'pull') return 'You’re out of shrines: pick one of your own shrines to move under your god.';
     if (F.phase === 'target') return 'Raise your shrine on an open stack next to where your god came to rest.';
     const head = F.path.length ? F.path[F.path.length - 1] : F.from, left = F.cnt - F.path.length - 1;

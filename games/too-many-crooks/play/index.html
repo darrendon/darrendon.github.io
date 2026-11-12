@@ -1135,13 +1135,13 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       else if (!v.kitchens[me].length) h = '<span class="hint">Nobody sent you dice. Your own dice run this job.</span>';
       else {
         if (!crewSel) crewSel = [];
-        h = '<span class="hint">Tap one inside man, one driver and one muscle from the dice sent to you. The third one hires them.</span><button class="btn red" id="a-crew">Confirm crew</button>';
+        h = '<span class="hint">Tap one inside man, one driver and one muscle from the dice sent to you, then Confirm crew.</span><button class="btn red" id="a-crew">Confirm crew</button>';
       }
     } else if (v.phase === 'pay') {
       if (v.payDone[me]) h = '<span class="hint">Cuts handed out. Waiting for the reveal.</span>';
       else {
         const need = v.handOut, have = Object.keys(paySel).length;
-        h = '<span class="hint">Hand out the cuts: put your kept dice on the red slots under your crew. The last one hands them out.</span>' +
+        h = '<span class="hint">Hand out the cuts: put your kept dice on the red slots under your crew, then press Hand them out.</span>' +
             '<button class="btn ghost" id="a-pclear">Clear</button><button class="btn red" id="a-pay"' + (have || !need ? '' : ' disabled') + '>Hand them out</button>';
       }
     } else if (v.phase === 'summary') {
@@ -1199,33 +1199,20 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       const id = die.dataset.id; const d = v.kitchens[me].find((x) => x.id === id); if (!d) return;
       const b = T.band(d.v);
       crewSel = (crewSel || []).filter((cid) => T.band(v.kitchens[me].find((x) => x.id === cid).v) !== b);
-      crewSel.push(id); render(); autoCrew(); return;
+      crewSel.push(id); render(); return;
     }
     if (v.phase === 'pay' && !v.payDone[me] && !die && pickKept && sheet && +sheet.dataset.seat === me) {
       const slot = e.target.closest('.slot.red[data-crew]');
-      if (slot) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', slot); return; } paySel[pickKept] = slot.dataset.crew; pickKept = null; render(); autoPay(); return; }
+      if (slot) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', slot); return; } paySel[pickKept] = slot.dataset.crew; pickKept = null; render(); return; }
     }
     if (v.phase === 'pay' && !v.payDone[me] && die && sheet && +sheet.dataset.seat === me) {
       const id = die.dataset.id;
       const isKept = v.kept[me].some((x) => x.id === id), isCrew = v.crews[me].some((x) => x.id === id);
       if (isKept) { if (paySel[id]) { delete paySel[id]; pickKept = null; } else pickKept = pickKept === id ? null : id; render(); return; }
-      if (isCrew && pickKept) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', die); return; } paySel[pickKept] = id; pickKept = null; render(); autoPay(); return; }
+      if (isCrew && pickKept) { if (Object.keys(paySel).length >= v.handOut && !paySel[pickKept]) { refuse('This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.', die); return; } paySel[pickKept] = id; pickKept = null; render(); return; }
     }
     if (v.phase === 'send' && v.sender !== me && die && e.target.closest('#hand')) refuse('It’s ' + nm(v.sender) + '’s turn to send.', die);
   });
-  // a full crew (one of each) and a full set of cuts go through by themselves, a beat after the last die lands
-  function autoCrew() {
-    if (tut || !crewSel || crewSel.length !== 3) return;
-    const pick = crewSel.slice(), j = view.job;
-    setTimeout(() => { const v = view; if (!v || v.phase !== 'crew' || v.job !== j || v.crewDone[v.me] || (crewSel || []).join() !== pick.join()) return;
-      const r = session.act({ type: 'crew', dieIds: pick }); if (r && !r.ok) refuse(r.error); else submitted.crew = true; }, 450);
-  }
-  function autoPay() {
-    const v = view; if (tut || !v || !v.handOut || Object.keys(paySel).length !== v.handOut) return;
-    const pick = Object.assign({}, paySel), j = v.job, k = JSON.stringify(pick);
-    setTimeout(() => { const v = view; if (!v || v.phase !== 'pay' || v.job !== j || v.payDone[v.me] || JSON.stringify(paySel) !== k) return;
-      const r = session.act({ type: 'pay', assign: pick }); if (r && !r.ok) refuse(r.error); else submitted.pay = true; }, 450);
-  }
   function sendWhy(id, to) {
     const v = view, me = v.me;
     if (v.phase !== 'send') return 'Not now.';
@@ -1258,7 +1245,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
         const slot = z.dataset.zone === 'cut' ? z : null;
         if (!slot || +z.closest('[data-seat]').dataset.seat !== me) return 'Cuts go on the red slots under the crew on your own job.';
         if (Object.keys(paySel).length >= v.handOut && !paySel[id]) return 'This job you hand out exactly ' + v.handOut + ' of your kept dice. That’s all ' + v.handOut + '.';
-        paySel[id] = slot.dataset.crew; pickKept = null; render(); autoPay(); return true;
+        paySel[id] = slot.dataset.crew; pickKept = null; render(); return true;
       }
       return { ok: false, quiet: true };
     },

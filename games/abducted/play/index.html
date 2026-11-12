@@ -165,11 +165,11 @@
     bino: '<svg viewBox="0 0 24 24" fill="none" stroke="#1B1B2F" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="15" r="4"/><circle cx="17" cy="15" r="4"/><path d="M11 14h2"/></svg>',
   };
   const img = (n) => 'art/' + n + '.webp';
-  let pick = null, pickKey = '', tutDone = false, commitT = 0;
+  let pick = null, pickKey = '', tutDone = false;
 
   function render(el, v, api) {
     const me = v.seat, P = v.players, n = v.n, over = v.phase === 'over';
-    const key = v.round + v.phase; if (key !== pickKey) { pick = null; pickKey = key; clearTimeout(commitT); }
+    const key = v.round + v.phase; if (key !== pickKey) { pick = null; pickKey = key; }
     const nm = (i) => esc(P[i].name);
     const st = { split: v.leader === me ? 'Split the town' : P[v.leader].name + ' is splitting the town', vote: 'Which party searches?', tiebreak: 'Tied vote', signal: 'Party ' + v.party + ' is searching', abduct: v.lookout === me ? 'Send a searcher to the light' : P[v.lookout].name + ' is picking a searcher', over: v.winner ? TEAMS[v.winner] + ' win' : '' }[v.phase];
     api.status('Round ' + v.round + ' · ' + st);
@@ -209,7 +209,7 @@
     } else {
       if (v.phase === 'split') {
         title = 'Split the town';
-        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round.' : ''); ctrls = pick === null ? '' : '<button class="b primary" data-do="split">Lock in now</button>'; hint = pick === null ? 'Tap the player who starts Party 1' : 'Party 1 starts with ' + P[pick].name + '…'; }
+        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round.' : ''); ctrls = '<button class="b primary" data-do="split"' + (pick === null ? ' disabled' : '') + '>Confirm split</button>'; hint = pick === null ? 'Tap the player who starts Party 1' : 'Party 1 starts with ' + P[pick].name; }
         else body = nm(v.leader) + ' is splitting the town into two search parties.';
       } else if (v.phase === 'vote') {
         title = 'Which party searches?';
@@ -228,7 +228,7 @@
         } else body = 'The search party is choosing signals in secret. ' + waitTxt;
       } else if (v.phase === 'abduct') {
         title = '“Go check out that light”';
-        if (v.lookout === me) { body = 'You’re the Lookout. Tap one searcher to send toward the light.'; ctrls = pick === null ? '' : '<button class="b coral" data-do="abduct">Send them now</button>'; hint = pick === null ? 'Tap a searcher to send to the light' : 'Sending ' + P[pick].name + ' to the light…'; }
+        if (v.lookout === me) { body = 'You’re the Lookout. Tap one searcher to send toward the light.'; ctrls = '<button class="b coral" data-do="abduct"' + (pick === null ? ' disabled' : '') + '>Confirm</button>'; hint = pick === null ? 'Tap a searcher to send to the light' : 'Send ' + P[pick].name + ' to the light?'; }
         else body = nm(v.lookout) + ' is picking a searcher to abduct.';
       }
       body = '<div class="panel action"><div class="kicker">Round ' + v.round + '</div><h3 class="dela">' + title + '</h3><p>' + body + '</p>' + (ctrls ? '<div class="row" data-hint="' + esc(hint) + '">' + ctrls + '</div>' : '') + '</div>';
@@ -259,11 +259,7 @@
       const why = v.phase === 'split' ? (v.blocked.includes(i) ? 'You can’t split the town the same way as last round. Start Party 1 somewhere else.' : null)
         : v.phase === 'abduct' ? (!v.searchers.includes(i) ? 'The Lookout can only send someone from the search party.' : !v.targets.includes(i) ? 'You can’t send ' + (i === me ? 'yourself' : P[i].name) + ' to the light.' : null) : null;
       if (why) { api.nope(why, b); if (window.Tabletop) Tabletop.shake(b); return; }
-      // a tap is the pick: it goes through a beat later (tap someone else in that beat to change it, or the same seat to go now)
-      clearTimeout(commitT);
-      if (pick === i) { pick = null; api.act({ value: i }, b); return; }
       pick = i; if (window.Tabletop) Tabletop.sound('chip'); render(el, v, api);
-      const k = pickKey; commitT = setTimeout(() => { if (pickKey === k && pick === i) { pick = null; api.act({ value: i }); } }, 1100);
     }));
     // a signal card can be put face down on the felt by hand
     if (window.Tabletop) Tabletop.drag(el, {
@@ -273,7 +269,7 @@
     });
     el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
       const d = b.dataset.do;
-      if ((d === 'split' || d === 'abduct') && pick !== null) { clearTimeout(commitT); const i = pick; pick = null; api.act({ value: i }); }
+      if ((d === 'split' || d === 'abduct') && pick !== null) { const i = pick; pick = null; api.act({ value: i }); }
       if (d === 'vote') api.act({ value: +b.dataset.v });
       if (d === 'sig') api.act({ value: b.dataset.v });
     }));
