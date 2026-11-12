@@ -1,6 +1,6 @@
 /* Shared lobby and table chrome for the In Development playables (assets/js/dev-table.js).
    Each game sets the --t-* colours on body and styles its own board inside .dt-board. */
-@import url("tabletop.css?v=1");
+@import url("tabletop.css?v=45891ad3");
 :root{--t-bg:#F5F3EE;--t-card:#FFFDF8;--t-ink:#25272E;--t-muted:#5E616B;--t-line:#DCD6C8;--t-accent:#E18C0A;--t-accent-ink:#fff;--t-good:#6B680E;--t-bad:#B3412C;--t-r:12px;
   --t-font:"Jost","Futura","Avenir Next","Helvetica Neue",Arial,sans-serif}
 *,*::before,*::after{box-sizing:border-box}
