@@ -7,6 +7,7 @@
 <meta name="description" content="Down for the Count, a shedding game where you don’t want to shed. 2–5 players against bots or online.">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
+<link rel="stylesheet" href="/assets/css/tabletop.css?v=1">
 <style>
 /* Layout: a ring seen from the cheap seats. Opponents sit along the top, the move on the table sits on the canvas
    inside the ropes, and your hand and stamina run along the bottom. Colours come from the cards and the box. */
@@ -107,7 +108,8 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 .pile .cap { font: 700 11px/1.15 var(--body, inherit); color: #6b6488; text-align: center; }
 .pile .cap b { display: block; font: 900 16px/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
 @media (max-width: 1080px) { .piles { position: static; transform: none; } .pile .stack { width: 40px; } .pile { width: 56px; } }
-.card.pick { cursor: pointer; }
+.card.pick, .card.take { cursor: pointer; }
+.card.take:hover { transform: translateY(-4px); }
 .card.pick img { box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px var(--ink), 0 8px 14px -8px rgba(0, 0, 0, .6); }
 .card.pick:hover { transform: translateY(-4px); }
 
@@ -120,7 +122,9 @@ button:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outl
 .you .counts img { width: 26px; height: 37px; border-color: var(--paper); }
 .you .counts .none { color: var(--gold); }
 .hand { display: flex; justify-content: center; padding: 18px 6px 4px; min-height: 140px; }
-.hand .card { flex: 0 1 88px; min-width: 0; width: auto; cursor: pointer; transition: transform .12s; }
+.hand .card { flex: 0 1 88px; min-width: 0; width: auto; cursor: grab; transition: transform .12s; }
+.hand .card img { box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 8px 12px -6px rgba(0,0,0,.5); border-radius: 8px; }
+.ring.tt-over { outline: 4px dashed var(--gold); outline-offset: 4px; }
 .hand .card img { width: 88px; height: auto; aspect-ratio: 5 / 7; max-width: none; }
 .hand .card:hover img { transform: translateY(-6px); }
 .hand .card.sel img { transform: translateY(-18px); box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px var(--ink), 0 12px 16px -8px rgba(0, 0, 0, .7); }
@@ -346,6 +350,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
 <div class="overlay" id="ov" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h" id="ov-body"></div></div>
 <div class="sr" aria-live="polite" id="live"></div>
 
+<script src="/assets/js/tabletop.js"></script>
 <script src="engine.js"></script>
 <script>
 /* ============================================================ NET (same relay pattern as Dim Sum Rush and Too Many Crooks)
@@ -957,7 +962,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     { title: 'Kick out', spot: '.seat[data-p="2"]', next: true,
       text: 'The Duchess couldn’t beat the 3s, so she <b>kicked out</b>: she took one of her stamina cards into her hand, and the move on the table stayed. She’s a card richer and one step closer to being pinned.' },
     { title: 'Answer the move', do: { type: 'play', cards: [9, 9] },
-      text: 'Your <b>pair of 9s</b> beats the 3s: same size, both sets, and 9 is higher. Tap both 9s, then press <b>Play</b>. The list under your hand shows every move that beats the table.' },
+      text: 'Your <b>pair of 9s</b> beats the 3s: same size, both sets, and 9 is higher. Tap both 9s, then press <b>Play</b> (or drag them into the ring). If a move doesn’t beat the table, the referee stops you.' },
     { title: 'The takeback', do: { type: 'takeback', rank: 9 },
       wait: 'Your 9s are up. Only a higher pair or a bigger move beats them.',
       text: 'Hal and the Duchess both kicked out, so your 9s came all the way back to you <b>untouched</b>. That earns a <b>takeback</b>: take one card off your move, for free. Tap a <b>9 on the table</b>.' },
@@ -1129,7 +1134,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       else if (a.a.type === 'takeback') word = 'TAKEBACK!';
       if (g.status[a.p] === 'pinned') word = '1, 2, 3!';
       if (g.status[a.p] === 'tapped') word = 'TAPPED OUT!';
-      pops = [{ p: a.p, word }];
+      pops = [{ p: a.p, word }]; if (window.Tabletop) setTimeout(() => Tabletop.sound(a.a.type === 'play' ? 'place' : a.a.type === 'kickout' ? 'chip' : 'flip'), 260);
       // anyone pinned at the start of the next turn
       g.out.forEach((p) => { if (g.status[p] === 'pinned' && p !== a.p && !pops.some((x) => x.p === p) && justOut(p)) pops.push({ p, word: '1, 2, 3!' }); });
     }
@@ -1142,9 +1147,9 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       if (net.kind === 'guest') {
         pending = true; sel = []; mode = null;
         clearTimeout(pendT); pendT = setTimeout(() => { pending = false; if (g) render(); }, 8000);
-        const r = net.act(a); if (!r.ok) { pending = false; flash(r.error); }
+        const r = net.act(a); if (!r.ok) { pending = false; refuse(r.error); }
         render();
-      } else { const r = net.act(a); if (!r.ok) flash(r.error); }
+      } else { const r = net.act(a); if (!r.ok) refuse(r.error); }
       return;
     }
     if (tut && !tutMatches(a)) return;
@@ -1162,24 +1167,25 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     const cur = g.cur;
     let status, hint = '';
     if (g.roundOver) status = (g.winner === me ? 'You are' : g.names[g.winner] + ' is') + ' the last one standing!';
-    else if (pending && g.turn === me) { status = 'Sending your move…'; hint = cur ? E.beatHint(cur, g.top) : ''; }
+    else if (pending && g.turn === me) status = 'Sending your move…';
     else if (mine) {
-      if (g.phase === 'takeback') { status = 'Nobody touched your move. Take one card back.'; hint = 'Click a highlighted card on the table.'; }
-      else if (g.phase === 'open') { status = 'Your turn. Open with any move.'; hint = 'Select 1–4 cards that make a set (same rank) or a run (in a row), then Play.'; }
-      else if (mode === 'reverse') { status = 'Reversal: take a card off the move.'; hint = 'Click a highlighted card. It goes to your hand and one of your stamina cards is discarded.'; }
-      else { status = 'Your turn. Beat ' + E.describe(cur) + '?'; hint = E.beatHint(cur, g.top); }
-    } else if (g.status[me] !== 'in') { status = 'You’re ' + (g.status[me] === 'pinned' ? 'pinned' : 'tapped out') + '. Watching the rest of the round…'; hint = cur ? E.beatHint(cur, g.top) : ''; }
-    else if (net && g.seats && g.seats[g.turn].away && !g.seats[g.turn].cover) { status = g.names[g.turn] + ' is away. Waiting for them…'; hint = cur ? E.beatHint(cur, g.top) : ''; }
-    else { status = g.names[g.turn] + (g.phase === 'open' ? ' is opening…' : ' is thinking…'); hint = cur ? E.beatHint(cur, g.top) : ''; }
+      if (g.phase === 'takeback') { status = 'Nobody touched your move. Take one card back.'; hint = 'Pick it up off the mat.'; }
+      else if (g.phase === 'open') status = 'Your turn. Open with any move.';
+      else if (mode === 'reverse') { status = 'Reversal: take a card off the move.'; hint = 'Pick it up off the mat.'; }
+      else status = 'Your turn. Beat ' + E.describe(cur) + '?';
+    } else if (g.status[me] !== 'in') status = 'You’re ' + (g.status[me] === 'pinned' ? 'pinned' : 'tapped out') + '. Watching the rest of the round…';
+    else if (net && g.seats && g.seats[g.turn].away && !g.seats[g.turn].cover) status = g.names[g.turn] + ' is away. Waiting for them…';
+    else status = g.names[g.turn] + (g.phase === 'open' ? ' is opening…' : ' is thinking…');
 
     const td = tut ? tutDo() : null; // in the tutorial only the taught move is allowed
-    const picks = mine && (!tut || (td && (td.type === 'takeback' || td.type === 'reverse'))) ? (g.phase === 'takeback' ? o.takeback : mode === 'reverse' ? o.reverse : []) : [];
+    const taking = mine && (g.phase === 'takeback' || mode === 'reverse');
+    const picks = taking && tut && td && (td.type === 'takeback' || td.type === 'reverse') ? (g.phase === 'takeback' ? o.takeback : o.reverse) : [];
     const used = {};
     const tcards = cur ? cur.cards.map((r, i) => {
       const end = cur.type === 'run' ? (i === 0 || i === cur.cards.length - 1) : true;
-      const can = picks.includes(r) && end && !used[r];
-      if (can && cur.type === 'set') used[r] = true;
-      return cardImg(r, can ? 'pick' : '', can ? 'role="button" tabindex="0" data-take="' + r + '" aria-label="Take the ' + r + '"' : '');
+      const ring = picks.includes(r) && end && !used[r];
+      if (ring && cur.type === 'set') used[r] = true;
+      return cardImg(r, (taking ? 'take' : '') + (ring ? ' pick' : ''), taking ? 'role="button" tabindex="0" data-take="' + r + '" data-pos="' + i + '" aria-label="Take the ' + r + '"' : '');
     }).join('') : '<span class="empty">Open mat</span>';
     const ownerName = cur ? (g.owner === -1 ? 'left by a wrestler who’s out' : g.owner === me ? 'your move' : g.names[g.owner] + '’s move') : '';
 
@@ -1190,20 +1196,12 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     if (mine && g.phase !== 'takeback') {
       if (mode === 'reverse') actions = '<button type="button" class="ghost" id="cancel">Cancel</button>';
       else {
-        const m = E.classify(sel.map((i) => g.hands[me][i]));
-        let legal = m && o.plays.some((x) => x.type === m.type && x.size === m.size && x.top === m.top);
-        if (tut && legal && !(td && td.type === 'play' && sameCards(td.cards, m.cards))) legal = false;
-        const label = !sel.length || (tut && !legal) ? 'Play' : !m ? 'Not a set or run' : !legal ? 'Doesn’t beat it' : 'Play ' + E.describe(m) + (m.size === g.hands[me].length ? ' (taps you out)' : '');
-        actions = '<button type="button" class="go" id="play"' + (legal ? '' : ' disabled') + '>' + esc(label) + '</button>';
+        actions = '<button type="button" class="go" id="play"' + (sel.length ? '' : ' disabled') + '>Play' + (sel.length ? ' ' + sel.length : '') + '</button>';
         if (g.phase === 'answer') {
-          actions += '<button type="button" class="gold" id="rev"' + (o.reverse.length && (!tut || (td && td.type === 'reverse')) ? '' : ' disabled') + ' title="Take a card off the move; discard a stamina card">Reversal</button>';
-          if (g.n > 2) actions += '<button type="button" class="gold" id="kick"' + (o.kickOut && (!tut || (td && td.type === 'kickout')) ? '' : ' disabled') + ' title="Take a stamina card into your hand">Kick out</button>';
+          actions += '<button type="button" class="gold" id="rev" title="Take a card off the move; discard a stamina card">Reversal</button>';
+          if (g.n > 2) actions += '<button type="button" class="gold" id="kick" title="Take a stamina card into your hand">Kick out</button>';
         }
         if (sel.length) actions += '<button type="button" class="ghost" id="clear">Clear</button>';
-        const plays = o.plays.slice().sort((a, b) => a.size - b.size || (a.type === b.type ? 0 : a.type === 'run' ? -1 : 1) || a.top - b.top);
-        if (g.phase === 'answer') chips = plays.length ? '<span class="lbl">Beats it:</span>' + plays.slice(0, 10).map((m, k) => '<button type="button" class="chip" data-chip="' + k + '"' + (tut && !(td && td.type === 'play' && sameCards(td.cards, m.cards)) ? ' disabled' : '') + '>' + esc(E.describe(m)) + '</button>').join('') + (plays.length > 10 ? '<span class="lbl">+' + (plays.length - 10) + ' more</span>' : '')
-          : '<span class="lbl">' + (g.counts[me].length ? 'Nothing in your hand beats it. Reverse or kick out.' : 'Nothing beats it and no stamina left.') + '</span>';
-        app._plays = plays;
       }
     }
 
@@ -1216,7 +1214,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
       (net ? '<button type="button" class="ghost" id="leave">Leave table</button>' : '<button type="button" class="ghost" id="new">' + (tut ? 'Exit tutorial' : 'New match') + '</button>') + '</div></div>' +
       (net ? netBar() : '') +
       '<div class="seats">' + seats.join('') + '</div>' +
-      '<div class="ring"><span class="post tl"></span><span class="post tr"></span><span class="post bl"></span><span class="post br"></span><div class="mat">' +
+      '<div class="ring" data-zone="mat"><span class="post tl"></span><span class="post tr"></span><span class="post bl"></span><span class="post br"></span><div class="mat">' +
       '<div class="status" id="status">' + esc(status) + '</div>' +
       '<div class="tablecards">' + tcards + '</div>' +
       '<div class="hint">' + esc(cur ? E.describe(cur).replace(/^./, (c) => c.toUpperCase()) + ', ' + ownerName + (g.touched && g.owner !== -1 ? ' (reversed)' : '') + '. ' : '') + esc(hint) + '</div>' +
@@ -1279,24 +1277,79 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
     on('leave', askLeave);
     on('codepill', (e) => copyText(shareLink(net.code), e.currentTarget, 'Link copied'));
     app.querySelectorAll('[data-cover]').forEach((b) => b.addEventListener('click', () => net && net.kind === 'host' && net.setCover(+b.dataset.cover, b.dataset.on === '1')));
-    on('play', () => { const cards = sel.map((i) => g.hands[me][i]); human({ type: 'play', cards }); });
-    on('kick', () => human({ type: 'kickout' }));
-    on('rev', () => { const o = E.options(g); if (o.reverse.length === 1) human({ type: 'reverse', rank: o.reverse[0] }); else { mode = 'reverse'; sel = []; render(); } });
+    on('play', (e) => { const cards = sel.map((i) => g.hands[me][i]), why = playWhy(cards); if (why) { refuse(why, app.querySelector('.ring')); shakeSel(); return; } human({ type: 'play', cards }); });
+    on('kick', (e) => { const why = stamWhy('kick'); if (why) return refuse(why, e.currentTarget); human({ type: 'kickout' }); });
+    on('rev', (e) => { const why = stamWhy('rev'); if (why) return refuse(why, e.currentTarget); const o = E.options(g); if (o.reverse.length === 1 && !tut) human({ type: 'reverse', rank: o.reverse[0] }); else { mode = 'reverse'; sel = []; render(); } });
     on('cancel', () => { mode = null; render(); });
     on('clear', () => { sel = []; render(); });
-    app.querySelectorAll('.hand:not(.locked) .card').forEach((b) => b.addEventListener('click', () => {
-      const i = +b.dataset.i; if (tut && !tutCanPick(i)) return; sel = sel.includes(i) ? sel.filter((x) => x !== i) : sel.concat(i); render();
-      const again = app.querySelector('.hand .card[data-i="' + i + '"]'); if (again) again.focus();
-    }));
     app.querySelectorAll('[data-take]').forEach((el) => {
-      const go = () => human({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: +el.dataset.take });
+      const go = () => { const why = takeWhy(+el.dataset.take, +el.dataset.pos); if (why) { refuse(why, el); if (window.Tabletop) Tabletop.shake(el); return; } human({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: +el.dataset.take }); };
       el.addEventListener('click', go); el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
-    app.querySelectorAll('[data-chip]').forEach((b) => b.addEventListener('click', () => {
-      const m = app._plays[+b.dataset.chip], hand = g.hands[me], taken = [];
-      for (const r of m.cards) { const i = hand.findIndex((x, k) => x === r && !taken.includes(k)); taken.push(i); }
-      sel = taken; render();
-    }));
+    // your hand: tap cards to slide them up, then press Play or carry them into the ring. Nothing says what beats the table.
+    const handEl = app.querySelector('.you .hand');
+    if (window.Tabletop && handEl) {
+      Tabletop.fan(handEl, { maxDeg: 12, arc: 14, show: 0.8 });
+      Tabletop.drag(app, {
+        pieces: '.you .hand .card', zones: '[data-zone]', key: (n) => 'h' + n.dataset.i,
+        canLift: () => !!g && !g.roundOver && g.status[me] === 'in',
+        tap: (p) => {
+          const i = +p.data.i;
+          if (!myMove()) { refuse(notYours(), p.el); return true; }
+          if (tut && !tutCanPick(i)) { refuse('In the tutorial, pick the cards the coach asks for.', p.el); return true; }
+          sel = sel.includes(i) ? sel.filter((x) => x !== i) : sel.concat(i); Tabletop.sound(sel.includes(i) ? 'pick' : 'slide'); render();
+          const again = app.querySelector('.hand .card[data-i="' + i + '"]'); if (again) again.focus();
+          return true;
+        },
+        drop: (p, z) => {
+          if (z.dataset.zone !== 'mat') return { ok: false, quiet: true };
+          const i = +p.data.i, idx = sel.includes(i) ? sel : sel.concat(i), cards = idx.map((k) => g.hands[me][k]);
+          const why = playWhy(cards); if (why) return why;
+          sel = []; human({ type: 'play', cards }); return true;
+        },
+      });
+    }
+  }
+  // ---------------------------------------------------------------- the referee: why the rules stop a move
+  function refuse(why, at) { if (window.Tabletop) Tabletop.nope(why, { at }); else flash(why); }
+  function myMove() { return g && g.turn === me && !g.roundOver && g.status[me] === 'in' && !pending; }
+  function notYours() { return g.roundOver ? 'The round is over.' : g.status[me] !== 'in' ? 'You’re out for this round.' : pending ? 'Hold on: your move is on its way.' : 'It’s ' + g.names[g.turn] + '’s turn.'; }
+  function shakeSel() { if (window.Tabletop) Tabletop.shake(Array.from(app.querySelectorAll('.hand .card.sel'))); }
+  function playWhy(cards) {
+    if (!myMove()) return notYours();
+    if (g.phase === 'takeback') return 'Nobody touched your move, so first you take one card back off the mat.';
+    if (mode === 'reverse') return 'You’re reversing: take a card off the move, or cancel.';
+    if (cards.length > 4) return 'A move is at most 4 cards.';
+    const m = E.classify(cards);
+    if (!m) {
+      const c = cards.slice().sort((a, b) => a - b), uniq = new Set(c).size === c.length;
+      return uniq && c.length > 1 ? c.join('-') + ' isn’t a run: a run is 2–4 cards in a row, with no gaps.' : 'That’s not a move. A move is a set (cards of one rank) or a run (2–4 in a row).';
+    }
+    const cur = g.cur;
+    if (cur && !E.beats(m, cur)) {
+      const theirs = E.describe(cur), ours = E.describe(m).replace(/^./, (c) => c.toUpperCase());
+      if (m.size < cur.size) return 'More cards always wins. ' + ours + ' can’t beat ' + theirs + '.';
+      if (m.type !== cur.type) return 'With the same number of cards, a set beats a run. ' + ours + ' can’t beat ' + theirs + '.';
+      return ours + ' isn’t higher than ' + theirs + (m.type === 'run' ? ' (a run counts its top card).' : '.');
+    }
+    if (tut) { const d = tutDo(); if (!(d && d.type === 'play' && sameCards(d.cards, m.cards))) return 'In the tutorial, make the move the coach asks for.'; }
+    return null;
+  }
+  function stamWhy(kind) {
+    if (!myMove()) return notYours();
+    if (g.phase !== 'answer') return 'You can only ' + (kind === 'rev' ? 'reverse' : 'kick out') + ' when there’s a move to answer.';
+    if (!g.counts[me].length) return 'You’re out of stamina, so you can’t ' + (kind === 'rev' ? 'reverse' : 'kick out') + '.';
+    if (tut) { const d = tutDo(); if (!(d && d.type === (kind === 'rev' ? 'reverse' : 'kickout'))) return 'Not yet: follow the coach.'; }
+    return null;
+  }
+  function takeWhy(r, pos) {
+    if (!myMove()) return notYours();
+    const cur = g.cur; if (!cur) return 'There’s nothing on the mat.';
+    if (cur.type === 'run' && pos !== 0 && pos !== cur.cards.length - 1) return 'From a run you can only take an end card.';
+    const o = E.options(g), ok = g.phase === 'takeback' ? o.takeback : o.reverse;
+    if (!ok.includes(r)) return 'You can’t take that one.';
+    if (tut && !tutMatches({ type: g.phase === 'takeback' ? 'takeback' : 'reverse', rank: r })) return 'In the tutorial, take the card the coach asks for.';
+    return null;
   }
 
   // ---------------------------------------------------------------- end of round / match
@@ -1528,7 +1581,7 @@ i.tag.away { background: var(--crimson); color: var(--paper); }
         else if (a.a.type === 'takeback') word = 'TAKEBACK!';
         if (v.status[a.p] === 'pinned') word = '1, 2, 3!';
         if (v.status[a.p] === 'tapped') word = 'TAPPED OUT!';
-        pops = [{ p: a.p, word }];
+        pops = [{ p: a.p, word }]; if (window.Tabletop) setTimeout(() => Tabletop.sound(a.a.type === 'play' ? 'place' : a.a.type === 'kickout' ? 'chip' : 'flip'), 260);
         const newLines = v.log.slice(-Math.max(0, Math.min(v.log.length, v.logN - lastLog + 1)));
         newLines.forEach((l) => { if (l.kind === 'out' && l.who != null && l.who !== a.p && v.status[l.who] === 'pinned' && !pops.some((x) => x.p === l.who)) pops.push({ p: l.who, word: '1, 2, 3!' }); });
       }
