@@ -186,7 +186,7 @@
     doSend(seat, assign) {
       const S = this.S, job = JOBS[S.job];
       if (this.currentSender() !== seat) return { ok: false, error: 'Not your turn to send' };
-      if (!Array.isArray(assign) || assign.length !== job.send) return { ok: false, error: 'Send exactly ' + job.send + ' dice' };
+      if (!Array.isArray(assign) || assign.length !== job.send) return { ok: false, error: 'You send exactly ' + job.send + ' dice each job.' };
       const hand = S.hands[seat];
       const ids = new Set();
       for (const x of assign) {
@@ -194,7 +194,7 @@
         ids.add(x.dieId);
         if (!hand.some((d) => d.id === x.dieId)) return { ok: false, error: 'That die is not yours' };
         const to = x.to | 0;
-        if (to === seat || to < 0 || to >= S.N) return { ok: false, error: 'Send to a rival' };
+        if (to === seat || to < 0 || to >= S.N) return { ok: false, error: 'You can’t hire your own crew: your dice only ever go to rivals’ jobs.' };
       }
       const counts = {};
       for (const x of assign) {
@@ -229,10 +229,10 @@
         const d = kitchen.find((x) => x.id === id);
         if (!d) return { ok: false, error: 'That die was not sent to you' };
         const b = band(d.v);
-        if (seen.has(b)) return { ok: false, error: 'Only one ' + BANDS[b].toLowerCase() };
+        if (seen.has(b)) return { ok: false, error: 'Your crew is one of each kind, so only one ' + ['inside man', 'getaway driver', 'muscle'][b] + '.' };
         seen.add(b); chosen.push(d);
       }
-      for (let b = 0; b < 3; b++) if (!seen.has(b) && kitchen.some((d) => band(d.v) === b)) return { ok: false, error: 'You need a ' + BANDS[b].toLowerCase() + ' — one was sent to you' };
+      for (let b = 0; b < 3; b++) if (!seen.has(b) && kitchen.some((d) => band(d.v) === b)) return { ok: false, error: 'You need ' + ['an inside man', 'a getaway driver', 'the muscle'][b] + ': one was sent to you, and every kind you were sent has to be on your crew.' };
       S.crews[seat] = chosen;
       S.crewDone[seat] = true;
       if (S.crewDone.every(Boolean)) {
@@ -254,7 +254,7 @@
       const kept = S.kept[seat], crew = S.crews[seat];
       const need = this.handOut(seat);
       const keys = Object.keys(assign);
-      if (keys.length !== need) return { ok: false, error: 'Hand out exactly ' + need + (need === 1 ? ' die' : ' dice') };
+      if (keys.length !== need) return { ok: false, error: 'This job you hand out exactly ' + need + ' of your kept dice' + (keys.length < need ? ' (you’ve placed ' + keys.length + ')' : '') + '.' };
       for (const k of keys) {
         if (!kept.some((d) => d.id === k)) return { ok: false, error: 'That die is not in your hand' };
         if (!crew.some((d) => d.id === assign[k])) return { ok: false, error: 'Cuts go to your crew' };
