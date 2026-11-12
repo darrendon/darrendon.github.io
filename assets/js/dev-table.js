@@ -251,7 +251,7 @@
         '<p class="dt-muted dt-credit">' + esc(def.title) + ' by Darren Don</p>' +
       '</div>' +
       '<div class="dt-game" id="dt-game" hidden>' +
-        '<div class="dt-top"><b class="dt-title">' + esc(def.title) + '</b><span class="dt-status" id="dt-status"></span><span class="dt-tcode" id="dt-tcode"></span><button class="dt-btn ghost sm" id="dt-talk-btn" hidden>Talk</button><button class="dt-btn ghost sm" id="dt-leave">Leave</button></div>' +
+        '<div class="dt-top"><b class="dt-title">' + esc(def.title) + '</b><span class="dt-status" id="dt-status"></span><span class="dt-tcode" id="dt-tcode"></span><button class="dt-btn ghost sm" id="dt-talk-btn" hidden>Talk</button>' + (root.Tabletop ? root.Tabletop.soundButton('dt-snd') : '') + '<button class="dt-btn ghost sm" id="dt-leave">Leave</button></div>' +
         '<div class="dt-body"><div class="dt-board" id="dt-board"></div>' +
         '<aside class="dt-talk" id="dt-talk" hidden><div class="dt-talk-h">Table talk <button class="dt-x" id="dt-talk-x" aria-label="Close table talk">×</button></div><div class="dt-feed" id="dt-feed"></div><form class="dt-say" id="dt-say"><input id="dt-say-in" maxlength="200" placeholder="Say something…" autocomplete="off"><button class="dt-btn sm">Say</button></form></aside></div>' +
       '</div>' +
@@ -273,9 +273,12 @@
     }));
 
     let session = null, lastSig = '';
+    // a refused move gets the referee (the piece springs back, a buzz, and why), not a quiet toast
+    const refuse = (why, at) => { if (root.Tabletop) root.Tabletop.nope(why || 'That move isn’t allowed.', { at }); else toast(why || 'Not allowed'); };
     const api = {
       get seat() { return session ? session.seat : 0; },
-      act(a) { if (!session) return; const r = session.act(a); if (r && !r.ok) toast(r.error || 'Not allowed'); return r; },
+      act(a, at) { if (!session) return; const r = session.act(a); if (r && !r.ok) refuse(r.error, at); return r; },
+      nope: refuse,
       toast,
       status(t) { $('dt-status').textContent = t || ''; },
       get online() { return session && session.kind !== 'local'; },
@@ -350,7 +353,7 @@
         if (st.started && $('dt-game').hidden) showGame();
       });
       s.onUpdate(() => { if ($('dt-game').hidden && s._view) showGame(); else draw(); });
-      s.onError((m) => toast(m));
+      s.onError((m) => refuse(m));
       try { await s.connect(); session = s; msg(''); } catch (e) { b.disabled = false; msg(e.message || String(e), true); }
     });
     $('dt-j-seats').addEventListener('click', (e) => { const d = e.target.closest('.dt-seat.sit'); if (d && session && session.sit) session.sit(+d.dataset.seat); });
@@ -376,15 +379,20 @@
     draw();
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let moved = false;
+    const T = root.Tabletop; let landed = 0;
     container.querySelectorAll('[data-k]').forEach((n) => {
-      const a = before.get(n.dataset.k), b = n.getBoundingClientRect();
+      const dropped = T && T.takeLaunch(n.dataset.k);              // a piece you just put down lands from where you let go of it
+      const a = dropped || before.get(n.dataset.k), b = n.getBoundingClientRect();
       if (!a) { if (n.dataset.enter != null) { n.animate([{ opacity: 0, transform: 'translateY(-14px) scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: ms * 0.8, easing: 'cubic-bezier(.2,.8,.2,1)' }); moved = true; } return; }
       const dx = a.left - b.left, dy = a.top - b.top;
       if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
-      moved = true;
-      n.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: ms, easing: 'cubic-bezier(.3,.7,.2,1)' });
+      moved = true; if (!dropped) landed++;
+      // pieces travel in a low arc and settle, like a hand put them there
+      const lift = Math.min(40, Math.hypot(dx, dy) * 0.12), rot = ((dx > 0 ? -1 : 1) * Math.min(8, Math.abs(dx) * 0.02));
+      n.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: `translate(${dx * 0.45}px,${dy * 0.45 - lift}px) rotate(${rot}deg) scale(1.04)`, offset: 0.5 }, { transform: 'none' }], { duration: dropped ? ms * 0.55 : ms, easing: 'cubic-bezier(.3,.7,.2,1)' });
     });
     if (moved) busyUntil = Date.now() + ms;
+    if (landed && T) setTimeout(() => T.sound(landed > 2 ? 'deal' : 'place'), ms * 0.85);
   }
 
   root.DevTable = { mount, shuffle, esc, flip, LocalSession, HostSession, GuestSession, Runner, SANDBOXED };

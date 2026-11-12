@@ -69,9 +69,6 @@
   /* the Hydra */
   .heads{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:clamp(8px,1.4vw,16px)}
   .head{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 8px 12px;border-radius:16px;border:2px solid transparent;min-width:0;position:relative;transition:border-color .15s,background .15s}
-  button.head{cursor:pointer}
-  button.head:hover,button.head:focus-visible{border-color:rgba(240,180,41,.6);background:rgba(0,0,0,.1)}
-  .head.tgt{border-color:var(--gold);background:rgba(240,180,41,.08)}
   .head .mcard{--mw:184px}
   .head.enr .mcard{rotate:-4deg}
   .head.enr .mcard::after{content:"ENRAGED";position:absolute;left:50%;top:-11px;translate:-50% 0;font:900 10.5px/1 Archivo,Jost;letter-spacing:.12em;background:#E2482F;color:#fff;padding:5px 7px;border-radius:5px;white-space:nowrap}
@@ -103,15 +100,16 @@
   .mypw b{font-family:Archivo,Jost}
   .prompt{font-size:15px;margin:0 0 10px;line-height:1.45}
   .prompt b{color:var(--gold)}
-  .hand{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding-top:10px}
-  .hand.many{gap:6px}.hand.many .sc{--w:56px}
-  button.cardb{all:unset;cursor:pointer;border-radius:9px;position:relative;transition:translate .14s}
+  .hand{display:flex;justify-content:center;padding:26px 4px 6px;min-height:136px}
+  .hand .sc{--w:76px;box-shadow:0 1px 0 rgba(0,0,0,.25),0 6px 10px rgba(0,0,0,.22)}
+  button.cardb{all:unset;border-radius:9px;position:relative}
   button.cardb:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-  .hand.live .cardb.no{opacity:.4;cursor:default}
-  .hand.live .cardb.ok .sc{box-shadow:0 0 0 2px #FFF6E4,0 4px 0 rgba(0,0,0,.3)}
-  .cardb.sel{translate:0 -12px}
-  .cardb.sel .sc{box-shadow:0 0 0 3px var(--gold),0 8px 0 rgba(0,0,0,.3)!important}
-  .hb{position:absolute;left:50%;bottom:-17px;translate:-50% 0;font:700 10px/1 Jost;white-space:nowrap;background:var(--gold);color:#1F1A2B;padding:2px 5px;border-radius:4px;font-style:normal}
+  .pend{cursor:grab;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35));translate:0 -3px}
+  .pend .sc{outline:2px dashed rgba(255,246,228,.7);outline-offset:2px}
+  .trashspot{display:flex;flex-direction:column;align-items:center}
+  .trashspot .sc{--w:60px}
+  [data-zone].tt-over{outline-color:var(--gold)}
+  .fight,.head,.pile[data-zone]{border-radius:16px;outline-offset:4px}
   .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;justify-content:center}
   .mine .dt-btn{border-color:#FFF6E4;color:#FFF6E4}
   .mine .dt-btn.go{background:var(--t-accent);border-color:var(--t-accent);color:#fff}
@@ -151,18 +149,28 @@
     .head .rule{text-align:left}
     .under{grid-template-columns:1fr}
   }
+  /* on a phone your hand stays at the bottom of the screen, the way you'd hold it, so you can carry cards to any part of the table */
+  @media (max-width:760px){
+    .mine{position:sticky;bottom:0;z-index:12;margin:0 calc(-1 * clamp(12px,2vw,22px));border-radius:18px 18px 0 0;padding:6px 10px calc(14px + env(safe-area-inset-bottom,0px));
+      background:linear-gradient(rgba(16,36,31,.94),rgba(12,28,24,.97));backdrop-filter:blur(6px);box-shadow:0 -10px 24px rgba(0,0,0,.3)}
+    .mehead{margin-bottom:0}.mehead .hd{width:28px;height:28px}.mypw{display:none}
+    .prompt{font-size:13.5px;margin:4px 0 0}
+    .mine .acts{margin-top:8px}
+    .mine .lead{top:-8px}
+  }
   @media (max-width:520px){
     .sc{--w:50px}.slots .sc{--w:44px}.slot{width:44px;height:62px}
     .fight>.mcard{--mw:136px}.mcard.sm{--mw:78px}
     .seat{grid-template-columns:auto auto;padding:6px 9px 6px 6px}
     .seat .hd{width:36px;height:36px}
     .seat .who small{max-width:96px}
-    .hand{gap:6px}.hand.many{gap:5px}.hand.many .sc{--w:47px}
+    .hand .sc{--w:54px}.hand{min-height:100px;padding-top:20px}
   }
 </style>
 </head>
 <body>
 <div id="app"></div>
+<script src="/assets/js/tabletop.js"></script>
 <script src="/assets/js/dev-table.js"></script>
 <script src="art.js?v=a3818800"></script>
 <script src="engine.js?v=f83a4e56"></script>
@@ -173,7 +181,7 @@
   const ACT = ['Season 1', 'Season 2', 'Finale'], IN = ['Season 1', 'Season 2', 'the Finale'], TYPE = S.TYPE, COL = S.COLORS;
   const TUT = new URLSearchParams(location.search).has('tutorial');   // a coached first two monsters
   let tutDone = false;
-  let sel = [], selHead = {}, key = '', tgt = null, wildOn = false, wildId = null, beaconOn = false;   // selHead: card id → head it's going to
+  let sel = [], selHead = {}, key = '', wildOn = false, wildId = null, beaconOn = false;   // sel: cards you've put on the table but not locked in; selHead: card id → head it's on
 
   const tilt = (id) => ((id * 37) % 7) - 3;                       // played cards sit a little crooked, the way hands put them down
   const card = (c, attrs) => '<span class="cw" data-k="k' + c.id + '"' + (attrs || '') + '>' + (c.wild ? '<span class="wild">' + A.cardHTML(c.real) + '</span>' : A.cardHTML(c)) + '</span>';
@@ -196,18 +204,13 @@
     if (t.hi - t.lo + 1 < t.total && t.lo > 1) return { r: t.lo - 1, c: c.c };
     return null;
   }
-  function describe(e) {
-    const warn = e.enraged ? 'Enraged: finish it this round or it strikes. ' : '';
-    return warn + describeCombo(e);
-  }
-  function describeCombo(e) {
-    if (!e.cards.length) return 'Any card starts it.';
-    if (e.type === 'combine') { const used = COL.filter((_, i) => e.mask & (1 << i)); return 'Every card must be a different color. Used so far: ' + used.join(', ') + '.'; }
-    if (e.type === 'set') return 'Every card must be a ' + e.rank + '.';
-    if (e.type === 'color') return 'Every card must be ' + COL[e.color] + '.';
-    const have = new Set(e.cards.map((c) => c.r)), from = Math.max(1, e.hi - e.total + 1), to = Math.min(12, e.lo + e.total - 1), ok = [];
-    for (let r = from; r <= to; r++) if (!have.has(r)) ok.push(r);
-    return ok.length ? 'A Run can have gaps, as long as it all fits in ' + e.total + ' in a row. Fits now: ' + ok.join(', ') + ', any color.' : 'The run can’t grow any further.';
+  // the referee: why a card can't go on a combo (st already includes the cards you've put down this turn)
+  function whyNot(st, c) {
+    if (st.type === 'set') return 'This is a Set of ' + st.rank + 's. Every card in it has to be a ' + st.rank + '.';
+    if (st.type === 'color') return 'This is a ' + COL[st.color] + ' Flush. Every card in it has to be ' + COL[st.color] + '.';
+    if (st.type === 'combine') return 'This Rainbow already has ' + COL[c.c] + '. Every card in it has to be a different color.';
+    if (st.cards.some((x) => x.r === c.r)) return 'This Run already has a ' + c.r + '.';
+    return 'A Run of ' + st.total + ' has to fit in ' + st.total + ' ranks in a row. With ' + (st.lo === st.hi ? 'a ' + st.lo : st.lo + '–' + st.hi) + ' down, a ' + c.r + ' won’t fit.';
   }
   function mine(l, nm) {
     if (l.endsWith(' ' + nm + ' leads.')) return l.slice(0, -(nm.length + 7)) + 'You lead.';
@@ -221,7 +224,7 @@
   // a combo laid out on the felt: placed cards (each remembers whose hand it came from), then empty spots
   // pend: cards you've picked for this head but not added yet, shown in its empty spots
   const slots = (x, pend) => '<div class="slots">' + x.cards.map((c) => card(c, ' style="rotate:' + tilt(c.id) + 'deg" data-from="seat' + (x.who ? x.who[c.id] : '') + '"')).join('') +
-    (pend || []).map((c) => '<span class="cw pend">' + A.cardHTML(c) + '</span>').join('') +
+    (pend || []).map((c) => '<span class="cw pend" data-k="k' + c.id + '" data-id="' + c.id + '" title="Not locked in yet: drag it back to take it back">' + A.cardHTML(c) + '</span>').join('') +
     Array.from({ length: Math.max(0, x.need - (pend || []).length) }, () => '<span class="slot"></span>').join('') + '</div>';
 
   /* ---------- motion: every card and monster keeps its identity, so it travels between hands, the combo and the piles ---------- */
@@ -239,12 +242,12 @@
     const anchorsAfter = rectsOf(el, '[data-anchor]', 'data-anchor');
     const at = (a) => a && (anchorsBefore.get(a) || anchorsAfter.get(a));
     const ease = 'cubic-bezier(.25,.8,.25,1)', seen = new Set();
-    let end = 0, deal = 0;
+    let end = 0, deal = 0, landed = 0;
     el.querySelectorAll('[data-k]').forEach((n) => {
       const k = n.dataset.k; seen.add(k);
       const b = n.getBoundingClientRect(); if (!b.width) return;
-      const prev = before.get(k);
-      let from = prev && prev.r, fade = false, delay = 0;
+      const prev = before.get(k), dropped = window.Tabletop && Tabletop.takeLaunch(k);
+      let from = dropped || (prev && prev.r), fade = false, delay = 0;
       if (!from) {
         if (firstDeal && n.dataset.deal != null) { from = at('center'); delay = 40 * deal++; }
         else from = at(n.dataset.from);
@@ -253,7 +256,8 @@
       }
       const dx = from.left - b.left, dy = from.top - b.top, s = Math.max(.3, Math.min(3, from.width / b.width));
       if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(s - 1) < .02) return;
-      const dur = 520;
+      const dur = dropped ? 260 : 520;
+      if (!dropped && prev && !fade) landed++;
       n.style.transformOrigin = '0 0';
       n.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + s + ')', opacity: fade ? .15 : 1 }, { transform: 'none', opacity: 1 }], { duration: dur, delay, easing: ease, fill: 'backwards' });
       end = Math.max(end, dur + delay);
@@ -276,6 +280,7 @@
       end = Math.max(end, 560);
     });
     if (end) busyUntil = Date.now() + end;
+    if (window.Tabletop) { if (deal) Tabletop.sound('shuffle'); else if (landed) setTimeout(() => Tabletop.sound(landed > 2 ? 'deal' : 'place'), 430); }
   }
 
   function render(el, v, api) {
@@ -289,30 +294,42 @@
     const dn = P[me].discardCount;
     const nm = (i) => i === me ? 'You' : esc(P[i].name);
     const targets = vael ? v.heads : [v.enc];
-    if (myTurn) {
-      const ok = (h) => v.legal[h] && (v.legal[h].length || (v.canWild && targets[h] && targets[h].cards.length));
-      if (tgt == null || !ok(tgt)) tgt = vael ? targets.map((_, i) => i).find(ok) : 0;
-      if (tgt === undefined) tgt = null;
-    } else tgt = null;
-    const T = tgt != null ? targets[tgt] : null;
     const onHead = (h) => sel.filter((id) => (selHead[id] || 0) === h);
     const handCard = (id) => v.hand.find((x) => x.id === id);
-    const stateOf = (h) => { const X = targets[h]; let st = { type: X.type, total: X.total, cards: X.cards.slice(), rank: X.rank, color: X.color, lo: X.lo, hi: X.hi, mask: X.mask || 0, rmask: X.cards.reduce((m, c) => m | (1 << c.r), 0) };
-      for (const id of onHead(h)) { const c = handCard(id), w = id === wildId ? wildAs(st, c) : null; st = addTo(st, w ? { id, r: w.r, c: w.c } : c); } return st; };
-    // Hydra: can card c go on head h, given what's already picked? 1 or 2 cards to one head, or 1 card each to two heads
-    const headOk = (h, c) => {
-      const X = targets[h]; if (!myTurn || !X || !v.legal[h] || sel.length >= v.hand.length - 1) return false;
+    const stateOf = (h, skip) => { const X = targets[h]; let st = { type: X.type, total: X.total, cards: X.cards.slice(), rank: X.rank, color: X.color, lo: X.lo, hi: X.hi, mask: X.mask || 0, rmask: X.cards.reduce((m, c) => m | (1 << c.r), 0) };
+      for (const id of onHead(h)) { if (id === skip) continue; const c = handCard(id), w = id === wildId ? wildAs(st, c) : null; st = addTo(st, w ? { id, r: w.r, c: w.c } : c); } return st; };
+    // the referee for one card put down on head h (h = 0 is Gorvax's combo): null if it may go there, else why not
+    const placeWhy = (id, h) => {
+      const c = handCard(id);
+      if (v.phase === 'over') return 'The game is over.';
+      if (iDiscard) return 'The squad is discarding. Put ' + (dn === 1 ? 'a card' : dn + ' cards') + ' on the discard pile.';
+      if (v.phase !== 'build') return 'Hold on: the squad is between fights.';
+      if (!myTurn) return 'It’s ' + P[v.turn].name + '’s turn.';
+      const X = targets[h];
+      if (!X) return 'There’s no head there yet.';
+      if (vael && X.need <= 0) return X.boss.name + ' is already finished.';
+      if (vael && X.boss.hex === 'split' && v.round && v.round.lastHeads.includes(h)) return 'Split: you can’t feed ' + X.boss.name + ' right after the Hero before you did.';
+      if (sel.length + 1 >= v.hand.length) return 'You have to keep at least one card. If your hand runs out, the Boss wins.';
       const mine = onHead(h), rest = sel.length - mine.length;
-      if (rest) { if (rest > 1 || mine.length) return false; }
-      else if (mine.length >= Math.min(v.maxAddHead[h], X.need)) return false;
-      return mine.length ? S.fits(stateOf(h), c) : v.legal[h].includes(c.id);
+      if (vael) {
+        if (rest && (rest > 1 || mine.length)) return 'You can add 1 or 2 cards to one head, or 1 card each to two heads.';
+        if (rest && mine.length >= 1) return 'You can add 1 or 2 cards to one head, or 1 card each to two heads.';
+        const max = rest ? 1 : v.maxAddHead[h];
+        if (mine.length >= max) return X.boss.hex === 'coil' ? 'Coil: no Hero may add more than 1 card a turn to ' + X.boss.name + '.' : 'You can add at most ' + max + ' card' + (max > 1 ? 's' : '') + ' a turn.';
+      } else if (mine.length >= v.maxAdd) return 'You can add at most ' + v.maxAdd + ' cards a turn.';
+      if (mine.length >= X.need) return 'That combo only needs ' + X.need + ' more.';
+      const st = stateOf(h);
+      if (!st.cards.length || S.fits(st, c)) return null;
+      if (wildOn && wildId == null) return wildAs(st, c) ? null : 'Overcharge needs a combo already started, with room to grow.';
+      return whyNot(st, c);
     };
+    const unpick = (id) => { const h = selHead[id] || 0; const drop = [id].concat(wildId != null && wildId !== id && (selHead[wildId] || 0) === h ? [wildId] : []); if (drop.includes(wildId)) wildId = null; sel = sel.filter((x) => !drop.includes(x)); drop.forEach((x) => delete selHead[x]); };
 
     const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
       : v.phase === 'riptide' ? (iRiptide ? 'Use Riptide?' : 'Waiting on Riptide…')
       : v.phase === 'discard' ? (iDiscard ? 'Discard ' + dn : 'Waiting for discards…')
       : v.phase === 'result' ? (vael ? 'End of the round' : v.result.met ? 'Combo complete!' : 'Everyone discarded')
-      : myTurn ? 'Your turn: add cards or pass' : P[v.turn].name + '’s turn';
+      : myTurn ? 'Your turn' : P[v.turn].name + '’s turn';
     api.status(v.bossName + ' · ' + ACT[Math.min(v.act, 2)] + ' · ' + status);
 
     // what each Hero is doing this fight or round
@@ -344,7 +361,9 @@
     // right side: the discard pile and the beaten monsters
     const top = v.trash.length ? v.trash[v.trash.length - 1] : null;
     const beat = v.hist.filter((h) => h.met), lastBeat = beat.length ? beat[beat.length - 1].key : null;
-    const right = '<div class="side r"><div class="pile"><div data-anchor="trash">' + (top ? card(top.c, ' data-from="seat' + top.seat + '"') : '<div class="spot"></div>') + '</div><span class="lbl">Discards · ' + v.trashN + '</span></div>' +
+    const staged = iDiscard ? sel.map(handCard).filter(Boolean) : [];
+    const right = '<div class="side r"><div class="pile" data-zone="trash"><div data-anchor="trash" class="trashspot">' + (staged.length ? staged.map((c, i) => '<span class="cw pend" data-k="k' + c.id + '" data-id="' + c.id + '" style="rotate:' + tilt(c.id) + 'deg;margin-top:' + (i ? '-64px' : '0') + '">' + A.cardHTML(c) + '</span>').join('')
+      : top ? card(top.c, ' data-from="seat' + top.seat + '"') : '<div class="spot"></div>') + '</div><span class="lbl">Discards · ' + v.trashN + '</span></div>' +
       '<div class="pile"><div class="spot" data-anchor="beaten">' + (lastBeat != null ? '<b style="font:900 22px/1 Archivo;color:var(--gold)">' + v.done + '</b>' : '') + '</div><span class="lbl">' + (vael ? 'Cut ' + v.done + ' · struck ' + v.misses : 'Beaten ' + v.done + (v.misses ? ' · missed ' + v.misses + '×' : '')) + '</span></div></div>';
 
     // the middle: the fight, or the Hydra's heads
@@ -352,18 +371,14 @@
     if (vael) {
       arena = '<div class="heads" style="--n:' + v.heads.length + '">' + v.heads.map((x, h) => {
         if (!x) return '<div class="head empty">' + (v.pile ? 'A head will grow here' : 'No head here: the pile is empty') + '</div>';
-        const pick = myTurn && (v.legal[h].length || (v.canWild && x.cards.length));
-        const tag = pick ? 'button' : 'div';
         const hx = '<div class="hx2"><b>' + esc(S.HEX[x.boss.hex].name) + ':</b> ' + esc(S.HEX[x.boss.hex].text) + '</div>';
-        return '<' + tag + (pick ? ' type="button" data-head="' + h + '"' : '') + ' class="head' + (x.enraged ? ' enr' : '') + (tgt === h ? ' tgt' : '') + '">' +
-          mcard(x.boss, '', ' data-from="deck' + x.boss.act + '"') + slots(x, myTurn ? onHead(h).map(handCard) : null) + hx +
-          (myTurn && tgt === h ? '<p class="rule">' + esc(describe(x)) + '</p>' : '') + '</' + tag + '>';
+        return '<div class="head' + (x.enraged ? ' enr' : '') + '" data-zone="head" data-head="' + h + '" tabindex="-1">' +
+          mcard(x.boss, '', ' data-from="deck' + x.boss.act + '"') + slots(x, myTurn ? onHead(h).map(handCard) : null) + hx + '</div>';
       }).join('') + '</div>';
     } else if (v.enc) {
       const e = v.enc;
-      arena = '<div class="fight">' + mcard(e.boss, '', ' data-from="deck' + e.boss.act + '"') +
-        '<div class="combo"><span class="lbl">The combo · <b>' + (e.need > 0 ? e.need + ' to go' : 'complete') + '</b></span>' + slots(e) +
-        (v.phase === 'build' ? '<p class="rule">' + esc(describe(e)) + '</p>' : '') + '</div></div>' +
+      arena = '<div class="fight" data-zone="head" data-head="0" tabindex="-1">' + mcard(e.boss, '', ' data-from="deck' + e.boss.act + '"') +
+        '<div class="combo"><span class="lbl">The combo</span>' + slots(e, myTurn ? onHead(0).map(handCard) : null) + '</div></div>' +
         (v.upcoming.length ? '<div class="upnext"><span class="lbl">Up next in ' + IN[v.act] + ', in order</span><div class="line">' + v.upcoming.map((b, i) => mcard(b, 'sm' + (i ? '' : ' next'), ' data-from="deck' + b.act + '"')).join('') + '</div></div>' : '');
     } else arena = '<div class="spot" style="width:auto;height:160px">The table is clear.</div>';
 
@@ -393,48 +408,24 @@
       }
     }
 
-    // my hand
-    let tstate = T ? { type: T.type, total: T.total, cards: T.cards.slice(), rank: T.rank, color: T.color, lo: T.lo, hi: T.hi, mask: T.mask || 0, rmask: T.cards.reduce((m, c) => m | (1 << c.r), 0) } : null;
-    const onTgt = sel.filter((id) => (selHead[id] || 0) === tgt), others = sel.filter((id) => (selHead[id] || 0) !== tgt);
-    const tmax = vael && tgt != null ? (others.length === 1 ? 1 : v.maxAddHead[tgt]) : v.maxAdd, anyFits = false;
-    if (T) for (const id of onTgt) { const c = v.hand.find((x) => x.id === id); const w = id === wildId ? wildAs(tstate, c) : null; tstate = addTo(tstate, w ? { id, r: w.r, c: w.c } : c); }
-    const canPick = (c) => {
-      if (beaconOn) return true;
-      if (myTurn && T) {
-        if (sel.includes(c.id)) return true;
-        if (vael && !(wildOn && wildId == null)) return targets.some((_, h) => headOk(h, c));
-        if (others.length > 1 || onTgt.length >= Math.min(tmax, T.need) || sel.length >= v.hand.length - 1) return false;
-        if (anyFits) return true;
-        if (wildOn && wildId == null && wildAs(tstate, c)) return true;
-        return S.fits(tstate, c);
-      }
-      return iDiscard;
-    };
-    const live = (myTurn && (T || vael)) || iDiscard || beaconOn;
-    const hand = '<div class="hand' + (live ? ' live' : '') + (v.hand.length > 14 ? ' many' : '') + '" data-anchor="seat' + me + '">' + v.hand.map((c) => {
-      const ok = live && canPick(c);
-      return '<button type="button" class="cardb ' + (ok ? 'ok' : 'no') + (sel.includes(c.id) ? ' sel' : '') + '" data-id="' + c.id + '" aria-label="' + esc(S.cardName(c)) + '"' + (ok ? '' : ' aria-disabled="true"') + '>' + card(c, ' data-deal') +
-        (vael && sel.includes(c.id) && v.heads[selHead[c.id]] ? '<i class="hb">' + esc(v.heads[selHead[c.id]].boss.name) + '</i>' : '') + '</button>';
-    }).join('') + '</div>';
+    // my hand: a fan of real cards. Nothing is greyed out or lit up: pick one up and try it, and the game stops you if it's not allowed.
+    const inHand = v.hand.filter((c) => !sel.includes(c.id));
+    const hand = '<div class="hand" data-zone="hand" data-anchor="seat' + me + '">' + inHand.map((c) =>
+      '<button type="button" class="cardb" data-id="' + c.id + '" aria-label="' + esc(S.cardName(c)) + '">' + card(c, ' data-deal') + '</button>').join('') + '</div>';
     const myPw = P[me].power;
     let main = '';
     if (myTurn) {
-      const tname = vael && T ? esc(T.boss.name) : 'the combo';
-      const prompt = beaconOn ? 'Tap the card you want everyone to see.'
-        : !T ? 'Nothing in your hand fits ' + (vael ? 'any head' : 'this combo') + '. You have to pass.'
-        : (vael ? 'Add 1 or 2 cards to one head, or 1 card each to two heads. A card you tap goes to <b>' + tname + '</b>, or to whichever head it fits.' + (v.heads.filter(Boolean).length > 1 ? ' <b>To split</b>, tap another head before or after your second card.' : '')
-          : 'Tap 1 or 2 cards that fit, then add them. If the combo falls short, everything added comes back, everyone discards 1, and you fight it again.');
-      main = '<p class="prompt">' + prompt + (v.hand.length <= 3 ? ' <b>Careful: if your hand runs out, the squad loses.</b>' : '') + '</p>' + hand +
+      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : 'Your turn. Put cards on ' + (vael ? 'the heads' : 'the combo') + ' and lock them in, or pass.';
+      main = '<p class="prompt">' + prompt + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
-          : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Add ' + (sel.length || '') + ' card' + (sel.length === 1 ? '' : 's') + '</button><button class="dt-btn" data-do="pass"' + (v.canPass ? '' : ' disabled') + '>Pass</button>' +
-            (v.canWild && T && !anyFits ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
+          : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Lock in' + (sel.length ? ' ' + sel.length : '') + '</button><button class="dt-btn" data-do="pass">Pass</button>' +
+            (v.canWild ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
             (v.canBeacon ? '<button class="dt-btn" data-do="beacon">Beacon: show a card</button>' : '')) + '</div>';
     } else if (iRiptide) {
       main = '<p class="prompt">The squad is about to discard (' + v.riptide.counts.map((n, i) => nm(i) + ' ' + n).join(', ') + '). <b>Use Riptide so nobody discards?</b> You can only use it once.</p>' + hand +
         '<div class="acts"><button class="dt-btn go" data-do="rip-yes">Use Riptide</button><button class="dt-btn" data-do="rip-no">Save it</button></div>';
     } else if (iDiscard) {
-      main = '<p class="prompt"><b>Discard ' + dn + ' card' + (dn === 1 ? '' : 's') + '</b> of your choice, face up.' + (v.hand.length <= dn ? ' That empties your hand, so the squad will fall.' : '') + '</p>' + hand +
-        '<div class="acts"><button class="dt-btn go" data-do="discard"' + (sel.length === dn ? '' : ' disabled') + '>Discard ' + dn + '</button></div>';
+      main = '<p class="prompt"><b>Discard ' + dn + '.</b> Put ' + (dn === 1 ? 'a card' : dn + ' cards') + ' of your choice face up on the discard pile.</p>' + hand;
     } else main = hand;
     const p0 = P[me];
     const mineHTML = '<div class="mine c' + p0.hero + (myTurn ? ' turn' : '') + '">' + leadTok(me) +
@@ -453,8 +444,9 @@
     if (TUT && !vael && v.done < 2 && v.phase !== 'over') {
       const e = v.enc, t = e ? TYPE[e.boss.type] : '';
       const what = { run: 'ranks that fit in a row, in any colors (gaps are fine while you build)', set: 'cards of one rank', color: 'cards of one color', combine: 'one card of each color, all different' }[e ? e.boss.type : 'run'];
-      const note = v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Tap 1 or 2 cards that fit and add them, or pass and keep your cards for later.'
-          : 'You lead. ' + esc(e.boss.name) + ' wants a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. The gold number on its card is the one for your squad of ' + P.length + '. Your first card tells your teammates what to add, so pick one you think they can follow.')
+      const note = v.phase === 'discard' && iDiscard ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Drag 1 card onto the discard pile, face up, and the squad fights the same monster again.'
+        : v.phase === 'build' && myTurn ? (e.cards.length ? 'Your turn. The squad is building a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. Drag 1 or 2 cards that fit onto the combo (or tap a card, then the combo) and lock them in, or pass and keep your cards for later. If a card doesn’t fit, the game stops you.'
+          : 'You lead. ' + esc(e.boss.name) + ' wants a <b>' + t + ' of ' + e.total + '</b>: ' + what + '. The gold number on its card is the one for your squad of ' + P.length + '. Drag a card onto the combo to start it. Your first card tells your teammates what to add, so pick one you think they can follow.')
         : v.phase === 'build' ? 'Your teammates are adding to the same combo. Nobody may talk about their hand, so what they play is all you learn about what they hold.'
         : v.phase === 'discard' ? 'The combo fell short. Every card went back to whoever played it, so now everyone knows who holds those. Each Hero discards 1 card, face up, and the squad fights the same monster again.'
         : v.result && v.result.met ? 'Combo complete! The monster is beaten and those cards are spent. Nobody ever draws: your hand is your health, and if any Hero runs out, the Boss wins.'
@@ -475,41 +467,50 @@
       el.innerHTML = coach + '<div class="tbl">' + opp + '<div class="mid" data-anchor="center">' + left + '<div class="arena">' + arena + '</div>' + right + '</div>' + call + mineHTML + '</div>' + under;
     }, leaveTo);
 
-    el.querySelectorAll('button.cardb.ok').forEach((b) => b.addEventListener('click', () => {
-      const id = +b.dataset.id;
-      if (beaconOn) { beaconOn = false; api.act({ type: 'beacon', card: id }); return; }
-      if (iDiscard) { if (sel.includes(id)) sel = sel.filter((x) => x !== id); else if (sel.length < dn) sel.push(id); else sel = sel.slice(1).concat(id); }
-      else if (sel.includes(id)) { const h = selHead[id], drop = sel.filter((x) => selHead[x] === h).slice(sel.filter((x) => selHead[x] === h).indexOf(id)); if (drop.includes(wildId)) wildId = null; sel = sel.filter((x) => !drop.includes(x)); }
-      else {
-        const c = v.hand.find((x) => x.id === id);
-        if (wildOn && wildId == null && !S.fits(tstate, c)) wildId = id;
-        let h = tgt || 0;
-        if (vael && wildId !== id && !headOk(h, c)) { const alt = targets.map((_, i) => i).find((i) => headOk(i, c)); if (alt != null) h = alt; }
-        sel.push(id); selHead[id] = h; if (vael) tgt = h;
-      }
-      render(el, v, api);
-    }));
-    el.querySelectorAll('[data-head]').forEach((b) => b.addEventListener('click', () => {
-      const h = +b.dataset.head;
-      if (h !== tgt) {
-        const kept = onHead(tgt), there = onHead(h);
-        // two cards picked for one head: move one over, so each head gets one (the second if it fits there, else the first)
-        if (kept.length === 2 && !there.length) {
-          const [a, b] = kept, can = (id, hh) => id !== wildId && v.legal[hh].includes(id);
-          if (can(b, h)) selHead[b] = h; else if (can(a, h) && can(b, tgt)) selHead[a] = h;
-        }
-        tgt = h;
-      }
-      render(el, v, api);
-    }));
+    // pick cards up and put them down: on the combo or a head, on the discard pile, or back in your hand
+    if (window.Tabletop) {
+      Tabletop.fan(el.querySelector('.hand'), { maxDeg: 14, arc: 16 });
+      Tabletop.drag(el, {
+        pieces: '.cardb, .pend[data-id]', zones: '[data-zone]', key: (n) => 'k' + n.dataset.id,
+        canLift: () => v.phase !== 'over',
+        tap: (p) => {
+          const id = +p.data.id;
+          if (beaconOn && !sel.includes(id)) { beaconOn = false; api.act({ type: 'beacon', card: id }); return true; }
+          if (sel.includes(id)) { unpick(id); Tabletop.sound('slide'); render(el, v, api); return true; }   // tap a card you put down to take it back
+          return false;
+        },
+        drop: (p, z) => {
+          const id = +p.data.id, zone = z.dataset.zone;
+          if (zone === 'hand') { if (!sel.includes(id)) return { ok: false, quiet: true }; unpick(id); render(el, v, api); return true; }
+          if (beaconOn) return 'Beacon: tap the card you want everyone to see, or cancel.';
+          if (zone === 'trash') {
+            if (!iDiscard) return v.phase === 'build' && myTurn ? 'You don’t discard on your turn. Put cards on ' + (vael ? 'a head' : 'the combo') + ', or pass.' : 'Nobody is discarding right now.';
+            if (sel.includes(id)) return { ok: false, quiet: true };
+            if (sel.length + 1 >= dn) { const cards = sel.concat(id); sel = []; api.act({ type: 'discard', cards }); }
+            else { sel.push(id); render(el, v, api); }
+            return true;
+          }
+          const h = +z.dataset.head;
+          if (sel.includes(id)) {
+            if ((selHead[id] || 0) === h) return { ok: false, quiet: true };
+            const was = selHead[id], wasWild = wildId; unpick(id);
+            const why = placeWhy(id, h);
+            if (why) { sel.push(id); selHead[id] = was; wildId = wasWild; return why; }
+          } else { const why = placeWhy(id, h); if (why) return why; }
+          const c = handCard(id);
+          if (wildOn && wildId == null && targets[h].cards.length + onHead(h).length && !S.fits(stateOf(h), c)) wildId = id;
+          sel.push(id); selHead[id] = h;
+          render(el, v, api); return true;
+        },
+      });
+    }
     el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
       const d = b.dataset.do;
       if (d === 'wild') { wildOn = !wildOn; if (!wildOn && wildId != null) { sel = sel.filter((x) => x !== wildId); wildId = null; } render(el, v, api); return; }
       if (d === 'beacon') { beaconOn = true; sel = []; render(el, v, api); return; }
       if (d === 'beacon-off') { beaconOn = false; render(el, v, api); return; }
-      if (d === 'add') { const heads = [...new Set(sel.map((x) => selHead[x] || 0))]; api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: sel.filter((x) => (selHead[x] || 0) === h) })), head: heads[0], cards: sel, wild: wildId }); }
+      if (d === 'add') { const heads = [...new Set(sel.map((x) => selHead[x] || 0))]; api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: sel.filter((x) => (selHead[x] || 0) === h) })), head: heads[0], cards: sel, wild: wildId }, b); }
       if (d === 'pass') api.act({ type: 'pass' });
-      if (d === 'discard') api.act({ type: 'discard', cards: sel });
       if (d === 'rip-yes') api.act({ type: 'riptide', use: true });
       if (d === 'rip-no') api.act({ type: 'riptide', use: false });
       sel = []; selHead = {}; wildId = null; wildOn = false;

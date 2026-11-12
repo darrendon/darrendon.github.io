@@ -1,5 +1,6 @@
 /* Shared lobby and table chrome for the In Development playables (assets/js/dev-table.js).
    Each game sets the --t-* colours on body and styles its own board inside .dt-board. */
+@import url("tabletop.css?v=1");
 :root{--t-bg:#F5F3EE;--t-card:#FFFDF8;--t-ink:#25272E;--t-muted:#5E616B;--t-line:#DCD6C8;--t-accent:#E18C0A;--t-accent-ink:#fff;--t-good:#6B680E;--t-bad:#B3412C;--t-r:12px;
   --t-font:"Jost","Futura","Avenir Next","Helvetica Neue",Arial,sans-serif}
 *,*::before,*::after{box-sizing:border-box}
@@ -54,6 +55,7 @@ button,input,select{font:inherit;color:inherit}
 .dt-title{font-size:16px;white-space:nowrap}
 .dt-status{flex:1;min-width:0;font-size:14px;color:var(--t-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dt-tcode{font:600 12.5px ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;color:var(--t-muted)}
+#dt-top .dt-snd,.dt-top .dt-snd{color:var(--t-muted);border-color:var(--t-line);width:32px;height:32px}
 #dt-talk-btn.ping{border-color:var(--t-accent);background:color-mix(in srgb,var(--t-accent) 18%,transparent)}
 .dt-body{flex:1;display:flex;min-height:0}
 .dt-board{flex:1;min-width:0;padding:clamp(10px,2vw,20px)}
