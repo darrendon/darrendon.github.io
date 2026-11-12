@@ -50,6 +50,8 @@
   .hex{position:absolute;transform:translate(-50%,-50%);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:color-mix(in srgb,var(--rc) 55%,#fff);display:grid;place-items:center;border:0;padding:0;margin:0;cursor:default;-webkit-tap-highlight-color:transparent}
   .hex .in{position:absolute;inset:5%;clip-path:inherit;background:color-mix(in srgb,var(--rc) 14%,#F4FAFC);display:grid;place-items:center}
   .hex .plus{color:color-mix(in srgb,var(--rc) 50%,#fff);font:400 calc(var(--s) * .9) / 1 Jost}
+  .hex.tt-over,.chan.tt-over{outline:3px dashed var(--t-accent);outline-offset:1px}
+  .pitch button.spent{opacity:.3}
   .hex.ok{cursor:pointer;background:var(--t-accent);animation:pulse 1.4s ease-in-out infinite}
   .hex.ok .in{background:#fff}
   .hex.ok.occ{background:#E0592A}
@@ -166,6 +168,7 @@
 </head>
 <body>
 <div id="app"></div>
+<script src="/assets/js/tabletop.js"></script>
 <script src="/assets/js/dev-table.js"></script>
 <script src="engine.js"></script>
 <script>
@@ -242,9 +245,8 @@
   }
   function startPay(v, cost, exclude, action, title) {
     const pool = v.hand.filter((t) => !exclude.includes(t.id));
-    const g = PB.payGreedy(pool, cost);
     ui.mode = { kind: 'pay', cost, exclude, action, title };
-    ui.pay = g ? g.removed.map((t) => t.id) : [];
+    ui.pay = [];
   }
 
   /* targets for the specialist being activated */
@@ -301,12 +303,11 @@
     v.hexes.forEach((hx, i) => {
       const g = GEO.hexes[i], r = R[hx.region];
       let cls = '';
-      if (m && m.kind === 'special') { if (targets.has(hx.id)) cls = ' ok' + (hx.tile ? ' occ' : ''); if (m.from === hx.id || (m.action === 'closer' && m.region === hx.region)) cls = ' pick'; }
+      if (m && m.kind === 'special') { if (m.from === hx.id || (m.action === 'closer' && m.region === hx.region)) cls = ' pick'; }
       else if (m && m.kind === 'pay' && m.hex === hx.id) cls = ' pick';
-      else if (t && !m) { if (legalHex(v, t, hx)) cls = ' ok' + (hx.tile ? ' occ' : ''); else if (!hx.tile && t.action !== 'consultant' && canAct(v) && !usedK(v, 'place')) cls = ' dim'; }
       if (!cls && hot.has(hx.id)) cls = ' hot';
       const tl = hx.tile;
-      h += '<button type="button" class="hex' + cls + '" data-hex="' + hx.id + '" style="--rc:' + r.color + ';left:' + GEO.px(g.x) + '%;top:' + GEO.py(g.y) + '%;width:' + ((S3 * 0.98) / GEO.W * 100) + '%;height:' + ((2 * 0.98) / GEO.H * 100) + '%" aria-label="' + esc(r.short + (tl ? ', ' + who(v, tl.owner) + ' ' + tl.v : ', empty')) + '">' +
+      h += '<button type="button" class="hex' + cls + '" data-zone="hex" data-hex="' + hx.id + '" style="--rc:' + r.color + ';left:' + GEO.px(g.x) + '%;top:' + GEO.py(g.y) + '%;width:' + ((S3 * 0.98) / GEO.W * 100) + '%;height:' + ((2 * 0.98) / GEO.H * 100) + '%" aria-label="' + esc(r.short + (tl ? ', ' + who(v, tl.owner) + ' ' + tl.v : ', empty')) + '">' +
         '<span class="in">' + (tl ? '' : '<span class="plus">+</span>') + '</span>' +
         (tl ? '<span class="btile c' + tl.owner + (tl.action ? ' spec' : '') + '" data-k="' + tl.id + '"><b>' + tl.v + '</b><i>' + esc(tl.label) + '</i></span>' : '') + '</button>';
     });
@@ -314,9 +315,8 @@
     GEO.chans.forEach((c) => {
       const w = v.water.find((x) => x.id === c.id);
       let cls = '';
-      if (t && !m && legalChan(v, t, w)) cls = ' ok';
-      else if (hot.has(w.id)) cls = ' hot';
-      h += '<button type="button" class="chan' + cls + '" data-chan="' + c.id + '" style="left:' + GEO.px(c.x) + '%;top:' + GEO.py(c.y) + '%" aria-label="Channel between ' + esc(R[c.a].short + ' and ' + R[c.b].short) + '">' +
+      if (hot.has(w.id)) cls = ' hot';
+      h += '<button type="button" class="chan' + cls + '" data-zone="chan" data-chan="' + c.id + '" style="left:' + GEO.px(c.x) + '%;top:' + GEO.py(c.y) + '%" aria-label="Channel between ' + esc(R[c.a].short + ' and ' + R[c.b].short) + '">' +
         (w.tile ? '<span class="ctile c' + w.tile.owner + '" data-k="' + w.tile.id + '">' + w.tile.v + '</span>' : '≈') + '</button>';
     });
     return h + '</div>';
@@ -365,14 +365,14 @@
     const m = ui.mode, total = sum(v.hand), can = canAct(v) && !usedK(v, 'hire') && !m;
     const refresh = can && total >= PB.REFRESH_COST;
     let h = '<div class="panel mkt"><h3><span>Hiring agency <small>' + v.market.tier1.slots.length + ' per tier</small></span>' +
-      (myTurn(v) && !usedK(v, 'hire') ? '<button class="dt-btn ghost sm" data-do="refresh"' + (refresh ? '' : ' disabled') + '>Refresh (' + PB.REFRESH_COST + ' seals)</button>' : '') + '</h3>';
+      (myTurn(v) && !usedK(v, 'hire') ? '<button class="dt-btn ghost sm" data-do="refresh">Refresh (' + PB.REFRESH_COST + ' seals)</button>' : '') + '</h3>';
     PB.TIERS.forEach((tk, ti) => {
       const tier = v.market[tk];
       h += '<div class="tier"><div class="th"><span>' + PB.TIER_NAMES[tk] + '</span><span>' + tier.left + ' left</span></div><div class="slots" style="--n:' + tier.slots.length + '">';
       tier.slots.forEach((s, si) => {
         if (!s) { h += '<div class="vac">vacant</div>'; return; }
         const afford = total >= s.cost, sel = m && m.kind === 'pay' && m.action.type === 'hire' && m.action.tier === tk && m.action.slot === si;
-        h += '<button type="button" class="mk t' + (ti + 1) + ' ' + kind(s) + (sel ? ' sel' : can ? (afford ? ' can' : ' no') : '') + '" data-k="' + s.id + '" data-enter data-tier="' + tk + '" data-slot="' + si + '">' +
+        h += '<button type="button" class="mk t' + (ti + 1) + ' ' + kind(s) + (sel ? ' sel' : '') + '" data-k="' + s.id + '" data-enter data-tier="' + tk + '" data-slot="' + si + '">' +
           '<span class="row"><b class="val">' + s.v + '</b><span class="cost">cost ' + s.cost + '</span></span><span class="nm">' + esc(s.name) + '</span>' + (TEXT[s.action] ? '<span class="tx">' + esc(TEXT[s.action]) + '</span>' : '') + '</button>';
       });
       h += '</div></div>';
@@ -417,7 +417,7 @@
         acts = '<div class="pitch">' + PB.PITCH.map((c) => {
           const has = me.pitchLeft.includes(c), bonus = PB.pitchBonus(c);
           const when = v.closing ? (c === 1 ? 'first' : c === 5 ? 'last' : '') : (c === 5 ? 'first' : c === 1 ? 'last' : '');
-          return '<button data-pitch="' + c + '"' + (has ? '' : ' disabled') + ' aria-label="Pitch ' + c + '"><b>' + c + '</b><small>' + (bonus ? '+' + bonus + ' tiles' : 'no bonus') + '</small><small>' + (when ? 'acts ' + when : '&nbsp;') + '</small></button>';
+          return '<button data-pitch="' + c + '"' + (has ? '' : ' class="spent"') + ' aria-label="Pitch ' + c + '"><b>' + c + '</b><small>' + (bonus ? '+' + bonus + ' tiles' : 'no bonus') + '</small><small>' + (when ? 'acts ' + when : '&nbsp;') + '</small></button>';
         }).join('') + '</div>';
       } else {
         const wait = v.players.map((p, i) => (p.ready ? null : esc(p.name))).filter(Boolean);
@@ -428,12 +428,12 @@
       say = '<b>' + esc(p.name) + ' is playing</b><span>' + esc(v.log[v.log.length - 1] || '') + '</span>';
     } else if (m && m.kind === 'pay') {
       const got = sum(v.hand.filter((t) => ui.pay.includes(t.id)));
-      say = '<b>' + esc(m.title) + '</b><span>Tap tiles to pay ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + '. Picked ' + got + (got > m.cost ? ' (no change given)' : '') + '. Paid tiles go to your discard.</span>';
-      acts = '<button class="dt-btn ghost" data-do="cancel">Cancel</button><button class="dt-btn go grow" data-do="confirm"' + (got >= m.cost ? '' : ' disabled') + '>Pay ' + got + ' &amp; ' + esc(m.verb || 'confirm') + '</button>';
+      say = '<b>' + esc(m.title) + '</b><span>Tap the tiles you’re paying with. It costs ' + m.cost + ' seal' + (m.cost !== 1 ? 's' : '') + ', and no change is given.</span>';
+      acts = '<button class="dt-btn ghost" data-do="cancel">Cancel</button><button class="dt-btn go grow" data-do="confirm"' + (ui.pay.length ? '' : ' disabled') + '>Pay &amp; ' + esc(m.verb || 'confirm') + '</button>';
     } else if (m && m.kind === 'discard') {
       const need = Math.max(0, v.hand.length - ui.disc.length - PB.HAND);
-      say = '<b>End your turn</b><span>' + (need ? 'Tap ' + need + ' more tile' + (need > 1 ? 's' : '') + ' to discard: you keep 5.' : 'Tap any tiles you want to discard, then draw back up to 5.') + '</span>';
-      acts = '<button class="dt-btn ghost" data-do="cancel">Back</button><button class="dt-btn go grow" data-do="end"' + (need ? ' disabled' : '') + '>' + (ui.disc.length ? 'Discard ' + ui.disc.length + ' &amp; end turn' : 'End turn') + '</button>';
+      say = '<b>End your turn</b><span>Tap the tiles you want to discard, then draw back up to 5.</span>';
+      acts = '<button class="dt-btn ghost" data-do="cancel">Back</button><button class="dt-btn go grow" data-do="end">' + (ui.disc.length ? 'Discard ' + ui.disc.length + ' &amp; end turn' : 'End turn') + '</button>';
     } else if (m && m.kind === 'special') {
       const t = handT(v, m.tile), P = {
         founder: 'Tap an empty hex for The Founder.',
@@ -453,12 +453,12 @@
         const special = PB.isSpecial(t), canPlace = canAct(v) && !usedK(v, 'place'), canSpec = special && canAct(v) && !usedK(v, 'action');
         let tip;
         if (!canAct(v)) tip = 'No actions left this turn.';
-        else if (t.action === 'consultant') tip = canPlace ? 'Tap a lit water channel. It counts for both regions until the season ends.' : 'You already placed this turn.';
-        else tip = (canPlace ? 'Tap a lit hex to place it' + (special ? ', or activate it once (then it leaves the game).' : '. Orange hexes are outbids: pay the difference.') : 'You already placed this turn.') + (special ? ' ' + TEXT[t.action] : '');
+        else if (t.action === 'consultant') tip = 'Put it on a water channel (tap or drag).';
+        else tip = 'Put it on a hex (tap or drag)' + (special ? ', or activate it.' : '.') + (special ? ' ' + TEXT[t.action] : '');
         say = '<b>' + esc(t.name) + ' · ' + t.v + '</b><span>' + esc(tip) + '</span>';
         acts = (canSpec ? '<button class="dt-btn go" data-do="activate">Activate</button>' : '') + '<button class="dt-btn ghost" data-do="deselect">Done</button>';
       } else {
-        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Tap a tile to place or activate it, or tap the market to hire. Each action once per turn.' : 'You have used both actions.') + '</span>';
+        say = '<b>Your turn · ' + v.actionsLeft + ' action' + (v.actionsLeft !== 1 ? 's' : '') + ' left</b><span>' + (v.actionsLeft ? 'Place or activate a tile, or hire from the agency.' : 'You have used both actions.') + '</span>';
       }
       acts += '<button class="dt-btn ghost" data-do="discard">Discard…</button><button class="dt-btn go grow" data-do="endq">End turn</button>';
     }
@@ -493,21 +493,41 @@
 
   function act(a) { const r = API.act(a); reset(); if (r && r.ok === false) draw(); return r; }
 
+  const nope = (why, at) => API.nope(why, at);
+  function placeWhy(v, t, h) {
+    if (!myTurn(v)) return v.phase === 'play' ? 'It’s ' + v.players[v.turn].name + '’s turn.' : 'Not now.';
+    if (!canAct(v)) return 'No actions left. End your turn.';
+    if (usedK(v, 'place')) return 'You already placed this turn.';
+    if (t.action === 'consultant') return 'Consultants go on water channels.';
+    if (!h.tile) return v.reach.includes(h.region) ? null : R[h.region].short + ' is out of reach. Open offices where you hold a tile, one outer strait away, or in Midfloe.';
+    if (t.v <= h.tile.v) return 'To outbid, your ' + t.v + ' must beat the ' + h.tile.v + ' there.';
+    if (sum(v.hand.filter((x) => x.id !== t.id)) < t.v - h.tile.v) return 'Outbidding costs the difference (' + (t.v - h.tile.v) + ' seals), and you don’t have enough left in hand.';
+    return null;
+  }
+  function chanWhy(v, t, w) {
+    if (!myTurn(v)) return v.phase === 'play' ? 'It’s ' + v.players[v.turn].name + '’s turn.' : 'Not now.';
+    if (!canAct(v)) return 'No actions left. End your turn.';
+    if (usedK(v, 'place')) return 'You already placed this turn.';
+    if (t.action !== 'consultant') return 'Only consultants go on water channels.';
+    if (w.tile) return 'That channel already has a consultant.';
+    if (!w.regions.some((r) => v.reach.includes(r))) return 'That channel isn’t beside a region you can reach.';
+    return null;
+  }
   function onClick(e) {
     const v = V; if (!v) return;
     const b = e.target.closest('[data-pitch],[data-hand],[data-hex],[data-chan],[data-tier],[data-do]');
     if (!b || !EL.contains(b) || b.disabled) return;
     const m = ui.mode;
-    if (b.dataset.pitch) { act({ type: 'pitch', card: +b.dataset.pitch }); return; }
+    if (b.dataset.pitch) { const me = v.players[v.seat]; if (!me.pitchLeft.includes(+b.dataset.pitch)) { nope('You’ve already pitched your ' + b.dataset.pitch + ' this season. Each card once a season.', b); return; } act({ type: 'pitch', card: +b.dataset.pitch }); return; }
     if (b.dataset.do) {
       const d = b.dataset.do;
       if (d === 'cancel') { reset(); draw(); return; }
       if (d === 'deselect') { ui.sel = null; draw(); return; }
       if (d === 'endq') { if (v.hand.length > PB.HAND) { ui.mode = { kind: 'discard' }; ui.disc = []; ui.sel = null; draw(); } else act({ type: 'end', discard: [] }); return; }
       if (d === 'discard') { ui.mode = { kind: 'discard' }; ui.disc = []; ui.sel = null; draw(); return; }
-      if (d === 'end') { act({ type: 'end', discard: ui.disc.slice() }); return; }
-      if (d === 'refresh') { startPay(v, PB.REFRESH_COST, [], { type: 'refresh' }, 'Refresh the market'); ui.mode.verb = 'refresh'; ui.sel = null; draw(); return; }
-      if (d === 'confirm' && m && m.kind === 'pay') { act(Object.assign({}, m.action, { pay: ui.pay.slice() })); return; }
+      if (d === 'end') { const need = Math.max(0, v.hand.length - ui.disc.length - PB.HAND); if (need) { nope('You end your turn with at most 5 tiles: discard ' + need + ' more.', b); return; } act({ type: 'end', discard: ui.disc.slice() }); return; }
+      if (d === 'refresh') { if (!canAct(v) || usedK(v, 'hire')) { nope(!canAct(v) ? 'No actions left. End your turn.' : 'You already hired this turn.', b); return; } if (sum(v.hand) < PB.REFRESH_COST) { nope('Refreshing costs ' + PB.REFRESH_COST + ' seals, and you have ' + sum(v.hand) + '.', b); return; } startPay(v, PB.REFRESH_COST, [], { type: 'refresh' }, 'Refresh the market'); ui.mode.verb = 'refresh'; ui.sel = null; draw(); return; }
+      if (d === 'confirm' && m && m.kind === 'pay') { const got = sum(v.hand.filter((t) => ui.pay.includes(t.id))); if (got < m.cost) { nope('That’s ' + got + ' seal' + (got === 1 ? '' : 's') + '. It costs ' + m.cost + '.', b); return; } act(Object.assign({}, m.action, { pay: ui.pay.slice() })); return; }
       if (d === 'closer' && m && m.region != null) { act({ type: 'activate', tile: m.tile, region: m.region }); return; }
       if (d === 'activate') {
         const t = handT(v, ui.sel); if (!t) return;
@@ -519,7 +539,7 @@
     if (b.dataset.hand) {
       const id = b.dataset.hand;
       if (!myTurn(v)) { const t = handT(v, id); if (t) API.toast(t.name + ' · ' + t.v + (TEXT[t.action] ? ': ' + TEXT[t.action] : '')); return; }
-      if (m && m.kind === 'pay') { if (m.exclude.includes(id)) return; ui.pay = ui.pay.includes(id) ? ui.pay.filter((x) => x !== id) : ui.pay.concat(id); draw(); return; }
+      if (m && m.kind === 'pay') { if (m.exclude.includes(id)) { nope('You can’t pay with the tile you’re playing.', b); return; } ui.pay = ui.pay.includes(id) ? ui.pay.filter((x) => x !== id) : ui.pay.concat(id); draw(); return; }
       if (m && m.kind === 'discard') { ui.disc = ui.disc.includes(id) ? ui.disc.filter((x) => x !== id) : ui.disc.concat(id); draw(); return; }
       if (m && m.kind === 'special') {
         if (m.action === 'negotiator' && id !== m.tile) { const u = handT(v, id); if (u.action === 'consultant') { API.toast('Consultants go on water channels.'); return; } m.use = id; draw(); }
@@ -530,15 +550,18 @@
     if (b.dataset.tier) {
       const s = v.market[b.dataset.tier].slots[+b.dataset.slot]; if (!s) return;
       const info = s.name + ' · ' + s.v + ', cost ' + s.cost + (TEXT[s.action] ? '. ' + TEXT[s.action] : '');
-      if (m || !canAct(v) || usedK(v, 'hire')) { API.toast(info); return; }
-      if (sum(v.hand) < s.cost) { API.toast('Need ' + s.cost + ' seals, you have ' + sum(v.hand) + '. ' + info); return; }
+      if (m || !myTurn(v)) { API.toast(info); return; }
+      if (!canAct(v)) { nope('No actions left. End your turn.', b); return; }
+      if (usedK(v, 'hire')) { nope('You already hired this turn. Each action once per turn.', b); return; }
+      if (sum(v.hand) < s.cost) { nope(s.name + ' costs ' + s.cost + ' seals, and you have ' + sum(v.hand) + ' in hand.', b); return; }
       ui.sel = null;
       startPay(v, s.cost, [], { type: 'hire', tier: b.dataset.tier, slot: +b.dataset.slot }, 'Hire ' + s.name + ' (' + s.v + ')' + (TEXT[s.action] ? ': ' + TEXT[s.action] : ''));
       ui.mode.verb = 'hire'; draw(); return;
     }
     if (b.dataset.chan) {
       const t = ui.sel && handT(v, ui.sel), w = v.water.find((x) => x.id === b.dataset.chan);
-      if (t && !m && legalChan(v, t, w)) act({ type: 'water', tile: t.id, channel: w.id });
+      if (t && !m) { const why = chanWhy(v, t, w); if (why) nope(why, b); else act({ type: 'water', tile: t.id, channel: w.id }); }
+      else if (!t && !m && myTurn(v)) nope('Pick up a consultant from your hand first.', b);
       return;
     }
     if (b.dataset.hex) {
@@ -546,7 +569,7 @@
       if (m && m.kind === 'special') {
         const tg = specialTargets(v);
         if (m.action === 'closer') { m.region = h.region; draw(); return; }
-        if (!tg.has(h.id)) return;
+        if (!tg.has(h.id)) { nope('That’s not a place ' + (handT(v, m.tile) || { name: 'this specialist' }).name + ' can use.', b); return; }
         if (m.action === 'founder' || m.action === 'poacher') { act({ type: 'activate', tile: m.tile, hex: h.id }); return; }
         if (m.action === 'relocator') { if (!m.from) { m.from = h.id; draw(); } else act({ type: 'activate', tile: m.tile, from: m.from, to: h.id }); return; }
         if (m.action === 'transfer') {
@@ -568,16 +591,8 @@
       }
       if (m) return;
       const t = ui.sel && handT(v, ui.sel);
-      if (!t) { if (h.tile) API.toast(R[h.region].short + ': ' + who(v, h.tile.owner) + ' · ' + h.tile.name + ' (' + h.tile.v + ')'); else if (myTurn(v)) API.toast('Tap a tile in your hand first.'); return; }
-      if (!legalHex(v, t, h)) {
-        if (!canAct(v)) API.toast('No actions left. End your turn.');
-        else if (usedK(v, 'place')) API.toast('You already placed this turn.');
-        else if (t.action === 'consultant') API.toast('Consultants go on water channels.');
-        else if (!h.tile) API.toast(R[h.region].short + ' is out of reach. Open offices where you hold a tile, one outer strait away, or in Midfloe.');
-        else if (t.v <= h.tile.v) API.toast('Your ' + t.v + ' must beat the ' + h.tile.v + ' there.');
-        else API.toast('Not enough seals left in hand to outbid there.');
-        return;
-      }
+      if (!t) { if (h.tile) API.toast(R[h.region].short + ': ' + who(v, h.tile.owner) + ' · ' + h.tile.name + ' (' + h.tile.v + ')'); else if (myTurn(v)) nope('Pick up a tile from your hand first.', b); return; }
+      { const why = placeWhy(v, t, h); if (why) { nope(why, b); return; } }
       if (!h.tile) { act({ type: 'place', tile: t.id, hex: h.id }); return; }
       startPay(v, t.v - h.tile.v, [t.id], { type: 'place', tile: t.id, hex: h.id }, 'Outbid in ' + R[h.region].short + ' (' + t.v + ' over ' + h.tile.v + ')');
       ui.mode.verb = 'outbid'; ui.mode.placing = t.id; ui.mode.hex = h.id; draw();
@@ -586,7 +601,22 @@
 
   function render(el, v, api) {
     EL = el; V = v; API = api;
-    if (!bound) { bound = true; el.addEventListener('click', onClick); }
+    if (!bound) {
+      bound = true; el.addEventListener('click', onClick);
+      // tiles can be carried from your hand straight onto a hex or a water channel
+      if (window.Tabletop) Tabletop.drag(el, {
+        pieces: '[data-hand]', zones: '[data-zone]', key: (n) => 'h' + n.dataset.hand,
+        canLift: () => !!V && V.phase === 'play' && !ui.mode,
+        tap: () => true,                                         // taps go through the click handler
+        drop: (p, z) => {
+          const v = V, t = handT(v, p.data.hand); if (!t) return { ok: false, quiet: true };
+          if (z.dataset.zone === 'hex') { const h = v.hexes.find((x) => x.id === z.dataset.hex), why = placeWhy(v, t, h); if (why) return why; }
+          else if (z.dataset.zone === 'chan') { const w = v.water.find((x) => x.id === z.dataset.chan), why = chanWhy(v, t, w); if (why) return why; }
+          else return { ok: false, quiet: true };
+          ui.sel = t.id; onClick({ target: z }); return true;
+        },
+      });
+    }
     draw();
   }
 
