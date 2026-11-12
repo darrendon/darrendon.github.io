@@ -179,6 +179,7 @@
 </head>
 <body>
 <div id="app"></div>
+<script src="/assets/js/tabletop.js"></script>
 <script src="/assets/js/dev-table.js"></script>
 <script src="engine.js"></script>
 <script>
@@ -394,7 +395,7 @@
     F.segs.forEach((g, j) => { if (F.phase !== 'fly' && j === F.segs.length - 1) out += dotLine([g.from, ...g.path], 0.8, 3); else out += dotLine([g.from, ...g.path], 0.3, 2); });
     if (F.phase === 'fly' && F.path.length) out += dotLine([F.from, ...F.path], 0.8, 3);
     const left = F.phase === 'fly' ? F.cnt - F.path.length : 0;
-    for (const x of F.next) {
+    for (const x of []) {   // (no rings on the spaces you could step to)
       const c = cells[x];
       if (F.phase === 'pull') { out += '<polygon points="' + hexPoints(c.x, c.y, R - 3) + '" fill="#f2c14e" fill-opacity=".18" stroke="#f2c14e" stroke-width="1.8" pointer-events="none"/>'; continue; }
       if (F.phase === 'target' || left === 1) { out += '<polygon points="' + hexPoints(c.x, c.y, R - 3) + '" fill="' + pc + '" fill-opacity=".22" stroke="' + pc + '" stroke-opacity=".95" stroke-width="2" pointer-events="none"/>'; continue; }   // where your god can come to rest
@@ -498,10 +499,10 @@
     const F = mine ? computeWalk() : (U.F = null);
     let ov = { hide: -1, legal: [], hits: [] };
     if (A.running) ov = A.ov;
-    else if (mine && U.mode === 'pick') ov = { hide: -1, legal: U.legal, hits: U.legal };
+    else if (mine && U.mode === 'pick') ov = { hide: -1, legal: [], hits: [] };
     else if (mine && U.mode === 'aim') {
       const held = F.phase === 'fly' ? { i: F.path.length ? F.path[F.path.length - 1] : F.from, hand: F.hand.slice(F.path.length), q: me(), lifted: true } : { i: F.target !== null ? F.target : F.final, hand: [], q: me(), lifted: false };
-      ov = { hide: me(), legal: !U.clicks.length ? U.legal : [], origin: U.origin, hits: F.next.concat(!U.clicks.length ? U.legal : []), free: Object.assign(F, { held }) };
+      ov = { hide: me(), legal: [], origin: U.origin, hits: [], free: Object.assign(F, { held }) };
     }
     const disp = A.running ? A.disp : F ? F.D : s;
     const svg = $('#board');
@@ -531,9 +532,9 @@
     if (over) hint = 'Night has fallen.';
     else if (A.running) hint = 'Watch the stack: each step drops its bottom disc.';
     else if (!mine) hint = U.submitted ? 'Sending your move…' : isBot(p) ? 'Thinking…' : 'Waiting for ' + nameOf(p) + '.';
-    else if (U.mode === 'pick') hint = 'Your god can’t travel from where it stands this turn, so pick one of your other shrines (outlined) to start from.';
-    else if (F && F.phase === 'fly' && !U.clicks.length) hint = 'Take earth of creation (tap a pile), then walk your god one space at a time. It carries the stack and drops the bottom disc on every space it enters.';
-    else if (F) hint = F.phase === 'pull' ? 'You’re out of shrines: pick one of yours to move under your god.' : F.phase === 'fly' ? 'Move one space at a time: tap a ringed space. Each step drops your bottom disc; a coral ring is a rival’s shrine or an elder altar, so that disc becomes an offering. You can’t enter the same space twice in a turn. Your god comes to rest on the last step (spaces tinted in your colour), where you raise a shrine.' : F.phase === 'target' ? 'That space is taken. Raise your shrine on one of the highlighted neighbouring stacks.' : 'Check the plan, then go.';
+    else if (U.mode === 'pick') hint = 'Your god can’t travel from where it stands this turn: start from another of your shrines.';
+    else if (F && F.phase === 'fly' && !U.clicks.length) hint = 'Take earth of creation (tap a pile), then walk your god one space at a time.';
+    else if (F) hint = F.phase === 'pull' ? 'You’re out of shrines: pick one of yours to move under your god.' : F.phase === 'fly' ? 'Walk on: tap the next space.' : F.phase === 'target' ? 'That space is taken: raise your shrine on a stack next to it.' : 'Check the plan, then go.';
     const turnN = over ? V.s.turns : V.s.turns + (A.running ? 0 : 1);
     $('.turncard:not(.preview)').innerHTML = '<span class="round">Round ' + V.s.round + ' · turn ' + turnN + '</span><div class="who">' + godIcon(p, 30) + '<span>' + nameOf(p) + (isBot(p) ? ' <small>bot</small>' : '') + '</span></div><div class="hint' + (mine && U.mode === 'aim' ? ' walk' : '') + '">' + hint + '</div>';
     // preview
@@ -543,8 +544,8 @@
     const choosing = mine && (U.mode === 'pick' || (U.mode === 'aim' && !U.clicks.length));
     const kNeed = U.origin !== null && U.mode === 'aim' ? D1.fillAmount(V.s, U.origin) : 1;
     $('.supply').innerHTML = ELEM.map((e, c) => {
-      const dis = choosing && s.supply[c] < kNeed, on = choosing && U.c === c;
-      return '<button type="button" class="pile' + (on ? ' on' : '') + '" data-el="' + c + '" ' + (choosing ? 'aria-pressed="' + on + '"' : 'tabindex="-1"') + ' ' + (dis || !choosing ? 'disabled' : '') + ' aria-label="' + e.name + ': ' + s.supply[c] + ' left">' + pileSVG(c, s.supply[c]) + '<span class="pl">' + e.name + '</span><b>' + s.supply[c] + '</b></button>';
+      const on = choosing && U.c === c;
+      return '<button type="button" class="pile' + (on ? ' on' : '') + '" data-el="' + c + '" ' + (choosing ? 'aria-pressed="' + on + '"' : 'tabindex="-1"') + ' ' + (!choosing ? 'disabled' : '') + ' aria-label="' + e.name + ': ' + s.supply[c] + ' left">' + pileSVG(c, s.supply[c]) + '<span class="pl">' + e.name + '</span><b>' + s.supply[c] + '</b></button>';
     }).join('');
     $('.tray').classList.toggle('live', choosing);
     // mats
@@ -598,22 +599,22 @@
     }
     bar.hidden = false;
     const many = U.legal.length > 1;
-    if (U.mode === 'pick') { bar.innerHTML = '<span class="say"><b>Pick a shrine to start from.</b> Your god can’t travel from where it stands, so tap one of your outlined shrines.</span>'; return; }
+    if (U.mode === 'pick') { bar.innerHTML = '<span class="say"><b>Pick a shrine to start from.</b> Your god can’t travel from where it stands.</span>'; return; }
     const undo = '<button class="bbtn" data-do="undo"' + (U.clicks.length || U.pull !== undefined ? '' : ' disabled') + '>Undo step</button>';
     const restart = U.clicks.length ? '<button class="bbtn" data-do="restart">Restart turn</button>' : many ? '<button class="bbtn" data-do="repick">Pick another shrine</button>' : '';
     if (!U.clicks.length) {
       const k = D1.fillAmount(V.s, U.origin);
-      bar.innerHTML = '<span class="say"><b>Take ' + k + ' earth</b>, then tap a ringed space to walk.</span><div class="lands" role="group" aria-label="Land to take">' +
-        ELEM.map((e, c) => '<button type="button" class="land" data-el="' + c + '" aria-pressed="' + (U.c === c) + '"' + (V.s.supply[c] < k ? ' disabled' : '') + ' aria-label="' + e.name + ', ' + V.s.supply[c] + ' left"><span class="row"><span class="dot" style="background:' + e.col + '"></span>' + V.s.supply[c] + '</span>' + e.name + '</button>').join('') +
+      bar.innerHTML = '<span class="say"><b>Take ' + k + ' earth</b>, then walk.</span><div class="lands" role="group" aria-label="Land to take">' +
+        ELEM.map((e, c) => '<button type="button" class="land" data-el="' + c + '" aria-pressed="' + (U.c === c) + '" aria-label="' + e.name + ', ' + V.s.supply[c] + ' left"><span class="row"><span class="dot" style="background:' + e.col + '"></span>' + V.s.supply[c] + '</span>' + e.name + '</button>').join('') +
         '</div>' + (restart ? '<div class="acts">' + restart + '</div>' : '');
       return;
     }
     let say;
     if (F.phase === 'done') {
       const m = D1.walkMove(F), r = D1.applyMove(V.s, me(), m, false), b = D1.score(V.s).total[me()], a = D1.score(r.ns).total[me()];
-      say = '<b>Shrine on ' + coord(m.target) + '</b> · collect ' + (r.captured.length ? r.captured.map((x) => discDot(x) + ' ' + D1.discName(x)).join(', ') : 'nothing') + ' · score ' + b + ' → ' + a;
-    } else if (F.phase === 'pull') say = '<b>Out of shrines:</b> tap one of yours (amber) to move here.';
-    else if (F.phase === 'target') say = '<b>That space is taken:</b> tap a highlighted stack next to it.';
+      say = '<b>Shrine on ' + coord(m.target) + '</b>. Go, or undo a step.';
+    } else if (F.phase === 'pull') say = '<b>Out of shrines:</b> tap one of yours to move here.';
+    else if (F.phase === 'target') say = '<b>That space is taken:</b> tap a stack next to it.';
     else { const left = F.cnt - F.path.length; say = (F.relays ? '<b>Surge!</b> ' : '') + 'Steps left <b>' + left + '</b> · offerings <b>' + F.gifts + '</b>' + (left > 1 ? ' · next drops ' + discDot(F.hand[F.path.length]) : ' · next step: your god comes to rest'); }
     bar.innerHTML = '<span class="say">' + say + '</span><div class="acts">' + undo + restart + (F.phase === 'done' ? '<button class="bbtn go" data-do="go">Go</button>' : '') + '</div>';
   }
@@ -635,7 +636,14 @@
   function onClick(e) {
     if (!V || A.running) return;
     const land = e.target.closest('[data-el]');
-    if (land && !land.disabled) { if (myTurn() && !U.submitted && (U.mode === 'pick' || (U.mode === 'aim' && !U.clicks.length))) { U.c = +land.dataset.el; draw(); } return; }
+    if (land && !land.disabled) {
+      if (myTurn() && !U.submitted && (U.mode === 'pick' || (U.mode === 'aim' && !U.clicks.length))) {
+        const c = +land.dataset.el, k = U.origin !== null && U.mode === 'aim' ? D1.fillAmount(V.s, U.origin) : 1;
+        if (V.s.supply[c] < k) { refuse('There ' + (V.s.supply[c] === 1 ? 'is only 1 ' : 'are only ' + V.s.supply[c] + ' ') + ELEM[c].name + ' disc' + (V.s.supply[c] === 1 ? '' : 's') + ' left, and you need ' + k + '.', land); return; }
+        U.c = c; if (window.Tabletop) Tabletop.sound('chip'); draw();
+      } else if (myTurn() && U.clicks.length) refuse('You’ve already started walking with ' + ELEM[U.c].name + '. Restart the turn to take different earth.', land);
+      return;
+    }
     const btn = e.target.closest('[data-do]');
     if (btn && !btn.disabled) {
       const d = btn.dataset.do;
@@ -649,12 +657,27 @@
     const i = +h.dataset.i;
     $('.hexinfo').innerHTML = hexInfo(i, displayState()); hoverI = i;
     if (!myTurn() || U.submitted) return;
-    if (U.mode === 'pick') { if (U.legal.includes(i)) { enterAim(i); lastHeld = null; draw(); } return; }
+    if (U.mode === 'pick') { if (U.legal.includes(i)) { enterAim(i); lastHeld = null; draw(); } else refuse('Your god starts from one of your own shrines.', h); return; }
     if (U.mode === 'aim') {
       const F = U.F || computeWalk();
-      if (F.next.includes(i)) { if (F.phase === 'pull') U.pull = i; else U.clicks.push(i); draw(); }
+      if (F.next.includes(i)) { if (F.phase === 'pull') U.pull = i; else U.clicks.push(i); if (window.Tabletop) Tabletop.sound('place'); draw(); }
       else if (!U.clicks.length && U.legal.includes(i) && i !== U.origin) { enterAim(i); lastHeld = null; draw(); }
+      else if (i !== U.origin || U.clicks.length) refuse(stepWhy(F, i), h);
     }
+  }
+  // the referee: why that space can't be the next step
+  function refuse(why, at) { if (window.Tabletop) Tabletop.nope(why, { at: at && at.getBoundingClientRect ? at : null }); }
+  function stepWhy(F, i) {
+    if (V.board.out[i]) return 'That’s the shallows: out of play with this many gods.';
+    if (F.phase === 'done') return 'Your walk is finished. Press Go, or undo a step.';
+    if (F.phase === 'pull') return 'You’re out of shrines: pick one of your own shrines to move under your god.';
+    if (F.phase === 'target') return 'Raise your shrine on an open stack next to where your god came to rest.';
+    const head = F.path.length ? F.path[F.path.length - 1] : F.from, left = F.cnt - F.path.length - 1;
+    if (!D1.geo.nbl[head].includes(i)) return 'Your god walks one space at a time: step to a space next to it.';
+    if (F.visited.has(i)) return 'You can’t enter the same space twice in a turn.';
+    if (left === 0 && F.D.owner[i] >= 0) return 'Your god comes to rest on its last step, and it can’t rest on a space that already has a shrine.';
+    if (left === 0) return 'Your god can’t come to rest there.';
+    return 'Your god can’t walk there: from that space it couldn’t finish its walk.';
   }
   function submit() {
     const F = U.F; if (!F || F.phase !== 'done') return;
