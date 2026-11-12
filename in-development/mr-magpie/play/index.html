@@ -220,7 +220,7 @@
     const crits = '<div class="crits">' + P.map((p, i) => {
       const have = p.treasures.map((t) => '<span class="h" title="' + esc(t.name) + '">' + svg(A.treasure(t.name), '-15 -15 30 30') + t.vp + '</span>').join('') +
         ['earring', 'berry', 'button', 'feather'].filter((b) => p.baubles[b]).map((b) => '<span class="h" title="' + esc(B[b].plural) + '">' + baubleIcon(b) + p.baubles[b] + '</span>').join('');
-      return '<div class="crit' + (i === turn ? ' turn' : '') + '">' + tok(p.critter) + '<span class="nm">' + name(i) + '</span><span class="money"><b>' + p.money + '</b> acorns · ' + p.cards + ' card' + (p.cards === 1 ? '' : 's') + '</span>' +
+      return '<div class="crit' + (i === turn ? ' turn' : '') + '">' + tok(p.critter) + '<span class="nm">' + name(i) + '</span><span class="money">' + (p.money != null ? '<b>' + p.money + '</b> acorns · ' + p.cards + ' card' + (p.cards === 1 ? '' : 's') : '<b>' + p.cards + '</b> acorn card' + (p.cards === 1 ? '' : 's')) + '</span>' +
         '<span class="have">' + (have || '<span class="pts">nothing yet</span>') + '<span class="pts">' + p.score.total + ' pts</span></span></div>';
     }).join('') + '</div>';
 
@@ -271,9 +271,9 @@
     create: (players, opts) => new E.Game(players, opts),
     render,
     rules:
-      '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 13 acorn cards, and you can’t make change.</p>' +
+      '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 13 acorn cards. Keep them hidden in your hand, and you can’t make change.</p>' +
       '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. In turn, beat the top offering by adding acorn cards, or pass. Passing is for good. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, he keeps it.</p>' +
-      '<p><b>He keeps every acorn.</b> Win or lose, your offering goes in his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first.</p>' +
+      '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first.</p>' +
       '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first. The fourth frost brings the first snow and ends the game at once.</p>' +
       '<p><b>Baubles.</b> Earrings: one alone is −3, each pair +5. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 1 each, most +6, second +3. Lost acorns go into your hand.</p>' +
       '<p><b>Winter.</b> The critter with the fewest acorns left doesn’t make it through. Most points among the rest wins.</p>',

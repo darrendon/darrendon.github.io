@@ -88,6 +88,7 @@
       this.players = players.map((p, i) => ({
         name: p.name, bot: !!p.bot, critter: crit[i % crit.length], style: styles[Math.floor(rnd() * styles.length)],
         hand: RULES.hand.slice(), treasures: [], baubles: { earring: 0, berry: 0, button: 0, feather: 0, acorn: 0 },
+        blind: 0,   // lost acorns drawn blind from the bag: nobody else saw them
       }));
       if (opts.styles) opts.styles.forEach((s, i) => { if (s && this.players[i]) this.players[i].style = s; });
       const deck = RULES.treasures.map((t) => Object.assign({ frost: false }, t)).concat(RULES.frosts.map((t) => Object.assign({ frost: true }, t)));
@@ -111,6 +112,7 @@
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
     over() { return this.phase === 'over'; }
     money(i) { return sum(this.players[i].hand); }
+    seen(i) { return this.money(i) - this.players[i].blind; }   // what a sharp player could have counted
     remFrac() { const n = this.deck.length, k = this.framesLeft; if (k <= 0) return 0; return Math.max(0, Math.min(1, (k * (n + 1) / (k + 1) - 1) / Math.max(1, this.expLots))); }
 
     refill() { while (this.row.length < this.rowSize && this.side.length) this.row.push(this.side.pop()); }
@@ -193,9 +195,9 @@
       if (this.phase === 'lotEnd' && a.type === 'next') { this.nextLot(); return { ok: true }; }
       return { ok: false, error: 'Not now.' };
     }
-    give(seat, b) {
+    give(seat, b, blind) {
       const p = this.players[seat];
-      if (isAcorn(b)) { p.hand.push(acornVal(b)); p.hand.sort((x, y) => x - y); p.baubles.acorn++; }
+      if (isAcorn(b)) { p.hand.push(acornVal(b)); p.hand.sort((x, y) => x - y); p.baubles.acorn++; if (blind) p.blind += acornVal(b); }
       else p.baubles[b]++;
       (this.lot.got = this.lot.got || []).push({ seat, b });
     }
@@ -203,7 +205,7 @@
       // once the row is empty, the rest are drawn blind from the bag
       while (this.picks.length) {
         const cur = this.picks[0];
-        while (cur.n > 0 && !this.row.length && this.side.length) { this.give(cur.seat, this.side.pop()); cur.n--; }
+        while (cur.n > 0 && !this.row.length && this.side.length) { this.give(cur.seat, this.side.pop(), true); cur.n--; }
         if (cur.n > 0 && !this.row.length && !this.side.length) cur.n = 0;
         if (cur.n > 0) return;
         this.picks.shift();
@@ -291,7 +293,7 @@
       if (winners.length) this.say(winners.map((i) => this.players[i].name).join(' and ') + (winners.length > 1 ? ' share the win!' : ' wins!'));
     }
 
-    /* what one seat may see: everything except other hands' exact cards and secret frost offers */
+    /* what one seat may see: everything except other hands (only how many cards) and secret frost offers */
     view(seat) {
       const L = this.lot, sc = scoreOf(this.players, this.R);
       return {
@@ -305,7 +307,7 @@
         },
         picking: this.phase === 'pick' && this.picks[0] ? { seat: this.picks[0].seat, n: this.picks[0].n } : null,
         players: this.players.map((p, i) => ({
-          name: p.name, bot: p.bot, critter: p.critter, money: sum(p.hand), cards: p.hand.length,
+          name: p.name, bot: p.bot, critter: p.critter, money: (i === seat || this.phase === 'over') ? sum(p.hand) : null, cards: p.hand.length,
           treasures: p.treasures.slice(), baubles: Object.assign({}, p.baubles), score: sc[i],
         })),
         hand: this.players[seat].hand.slice(),
@@ -324,9 +326,10 @@
       return false;
     }
     st(s) { return STYLES[this.players[s].style]; }
-    danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
+    // bots count the acorns everyone has offered, like a sharp player would, but can't see blind draws
+    danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.seen(i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
     allowed(s) {
-      const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)));
+      const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.seen(i)));
       const floor = Math.max(1, opp + 1 - this.st(s).slack * this.M * this.remFrac());
       return Math.max(0, me - floor);
     }
