@@ -152,6 +152,7 @@
 </head>
 <body>
 <div id="app"></div>
+<script src="/assets/js/tabletop.js"></script>
 <script src="/assets/js/dev-table.js"></script>
 <script src="engine.js"></script>
 <script>
@@ -183,8 +184,9 @@
       const ang = Math.PI / 2 + (i - me) * 2 * Math.PI / n, x = 50 + 41 * Math.cos(ang), y = 50 + 41 * Math.sin(ang);
       const c = v.cards[i], face = c.t ? 'team-' + c.t : 'back';
       let cls = 'seat' + (i === me ? ' me' : '') + (searching(i) ? ' search' : ''), click = false;
-      if (v.phase === 'split' && v.leader === me) { if (v.blocked.includes(i)) cls += ' dim'; else { click = true; if (pick === i) cls += ' picked'; } }
-      if (v.phase === 'abduct' && v.lookout === me) { if (v.targets.includes(i)) { click = true; cls += pick === i ? ' picked' : ' target'; } else cls += ' dim'; }
+      // nothing is dimmed or ringed: tap anyone, and the rules stop a pick they don't allow
+      if (v.phase === 'split' && v.leader === me) { click = true; if (pick === i) cls += ' picked'; }
+      if (v.phase === 'abduct' && v.lookout === me) { click = true; if (pick === i) cls += ' picked'; }
       const tags = [];
       if (p1.includes(i)) tags.push('<span class="tag p1">1</span>'); else if (p2.includes(i)) tags.push('<span class="tag p2">2</span>');
       if (v.acted.includes(i) && !over) tags.push('<span class="tag ok">✓</span>');
@@ -207,7 +209,7 @@
     } else {
       if (v.phase === 'split') {
         title = 'Split the town';
-        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round, so those seats are dimmed.' : ''); ctrls = '<button class="b primary" data-do="split"' + (pick === null ? ' disabled' : '') + '>Lock in the split</button>'; hint = pick === null ? 'Tap the player who starts Party 1' : 'Party 1 starts with ' + P[pick].name; }
+        if (v.leader === me) { body = 'You’re the Town Leader. Tap a player: they and the next ' + (v.half - 1) + ' clockwise become Party 1, everyone else Party 2.' + (v.prevSplit != null ? ' You can’t split the town the same way as last round.' : ''); ctrls = '<button class="b primary" data-do="split"' + (pick === null ? ' disabled' : '') + '>Lock in the split</button>'; hint = pick === null ? 'Tap the player who starts Party 1' : 'Party 1 starts with ' + P[pick].name; }
         else body = nm(v.leader) + ' is splitting the town into two search parties.';
       } else if (v.phase === 'vote') {
         title = 'Which party searches?';
@@ -222,7 +224,7 @@
         title = 'Party ' + v.party + ' is searching';
         if (v.searchers.includes(me)) {
           if (v.mine !== null) body = 'You played ' + (v.mine === 'T' ? 'Transmit' : 'Jam') + '. ' + waitTxt;
-          else { body = 'Play Transmit if you think you’re an Alien, Jam if you think you’re Human. Nobody sees which.'; hint = 'Transmit if you think you’re an Alien, Jam if Human'; ctrls = '<div class="sigpick"><button data-do="sig" data-v="T" aria-label="Transmit"><img src="' + img('signal-T') + '" alt=""></button><button data-do="sig" data-v="J" aria-label="Jam"><img src="' + img('signal-J') + '" alt=""></button></div>'; }
+          else { body = 'Play Transmit if you think you’re an Alien, Jam if you think you’re Human: drag it face down onto the table, or tap it. Nobody sees which.'; hint = 'Play Transmit or Jam face down'; ctrls = '<div class="sigpick"><button data-do="sig" data-v="T" aria-label="Transmit"><img src="' + img('signal-T') + '" alt=""></button><button data-do="sig" data-v="J" aria-label="Jam"><img src="' + img('signal-J') + '" alt=""></button></div>'; }
         } else body = 'The search party is choosing signals in secret. ' + waitTxt;
       } else if (v.phase === 'abduct') {
         title = '“Go check out that light”';
@@ -252,7 +254,19 @@
         '<div class="panel"><div class="kicker">Table log</div><ul class="log">' + v.log.slice().reverse().map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul></div></div></div>';
     }, 600);
 
-    el.querySelectorAll('button.seat').forEach((b) => b.addEventListener('click', () => { pick = +b.dataset.seat; render(el, v, api); }));
+    el.querySelectorAll('button.seat').forEach((b) => b.addEventListener('click', () => {
+      const i = +b.dataset.seat;
+      const why = v.phase === 'split' ? (v.blocked.includes(i) ? 'You can’t split the town the same way as last round. Start Party 1 somewhere else.' : null)
+        : v.phase === 'abduct' ? (!v.searchers.includes(i) ? 'The Lookout can only send someone from the search party.' : !v.targets.includes(i) ? 'You can’t send ' + (i === me ? 'yourself' : P[i].name) + ' to the light.' : null) : null;
+      if (why) { api.nope(why, b); if (window.Tabletop) Tabletop.shake(b); return; }
+      pick = i; if (window.Tabletop) Tabletop.sound('chip'); render(el, v, api);
+    }));
+    // a signal card can be put face down on the felt by hand
+    if (window.Tabletop) Tabletop.drag(el, {
+      pieces: '.sigpick button', zones: '.felt', key: (n) => 'sig' + n.dataset.v,
+      tap: () => true,
+      drop: (p) => { const r = api.act({ value: p.data.v }); return r && r.ok === false ? { ok: false, quiet: true } : true; },
+    });
     el.querySelectorAll('[data-do]').forEach((b) => b.addEventListener('click', () => {
       const d = b.dataset.do;
       if ((d === 'split' || d === 'abduct') && pick !== null) api.act({ value: pick });
