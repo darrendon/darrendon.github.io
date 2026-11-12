@@ -172,6 +172,9 @@
       const el = e.target.closest(st.opts.pieces);
       if (!el || !rootEl.contains(el)) return;
       if (st.opts.canLift && !st.opts.canLift(el)) return;
+      // no text selection or native image drag fighting the pick-up
+      if (e.pointerType === 'mouse') e.preventDefault();
+      try { const sel = root.getSelection && root.getSelection(); if (sel && !sel.isCollapsed) sel.removeAllRanges(); } catch (x) {}
       d = { el, info: pieceInfo(el), x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, id: e.pointerId, moved: false, rect: el.getBoundingClientRect(), vx: 0, lastX: e.clientX, t: performance.now() };
     });
     root.addEventListener('pointermove', (e) => {
