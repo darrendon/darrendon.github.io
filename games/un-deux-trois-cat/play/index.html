@@ -434,6 +434,7 @@ button{font:inherit;color:inherit}
   </div>
 </div>
 
+<script src="/assets/js/tabletop.js"></script>
 <script>
 /* ============================================================ NET: online tables (same relay pattern as Too Many Crooks and Dim Sum Rush)
    The host's browser runs the game; guests are thin clients that send grabs and receive their own view.
@@ -1324,6 +1325,7 @@ function startRound(eligible, sudden){
 function flip(){
   if (!S.sudden) S.players.forEach(p => { p.flipped = p.deck.splice(0, S.flips); });
   renderTable("faces"); renderSeats();
+  if (window.Tabletop) Tabletop.sound("flip");
   const all = S.players.flatMap(p => p.flipped);
   S.legal = new Set(all.filter(isCorrect).map(c => c.obj));
   if (S.legal.size === 0) S.legal.add("cat");
@@ -1393,12 +1395,14 @@ function grab(p, target){
     const open = [...S.legal].filter(o => !S.taken.has(o));
     if (!open.length || S.eligible.every(q => S.out.has(q))) return resolve();
     if (S.scorers.length === 1) later(resolve, CLOSE_MS);
-    banner(`<span>${p.human ? "<b>You</b> have" : `<b>${p.name}</b> has`} the ${NAME[target].toLowerCase()}. Still up for grabs: ${open.map(o => NAME[o].toLowerCase()).join(", ")}.</span>`);
+    banner(`<span>${p.human ? "<b>You</b> have" : `<b>${p.name}</b> has`} the ${NAME[target].toLowerCase()}.</span>`);   // no list of what's still up for grabs: look at the cards
+    if (window.Tabletop) Tabletop.sound("place");
     refreshToys(); renderSeats();
     if (!p.human && !S.tut) botAgain(p);
     return;
   }
   S.out.add(p); S.misgrabs.push({p, target});
+  if (window.Tabletop && p.human) Tabletop.sound("nope");
   const el = $("toy-"+target); el.classList.remove("miss"); void el.offsetWidth; el.classList.add("miss"); wrongGrab(seatOf(p), target);
   tagToy(target, p.name, true);
   if (p.human){ S.stats.miss++; banner(`Wrong grab. That's not the ${NAME[target].toLowerCase()}. You're out this round.`); }
@@ -1864,7 +1868,7 @@ function paintOnline(v){
   const cards = v.players.flatMap(q => q.shown || []), legal = new Set(cards.filter(isCorrect).map(c => c.obj));
   if (!legal.size) legal.add("cat");
   const open = [...legal].filter(o => !taken.has(o));
-  const upFor = () => open.length ? ` Still up for grabs: ${open.map(toyName).join(", ")}.` : "";
+  const upFor = () => "";   // no list of what's still up for grabs: look at the cards
   let html = "";
   if (v.phase === "ready") html = "Get ready…";
   else if (v.phase === "live"){
