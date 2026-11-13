@@ -101,7 +101,7 @@
   .bs .cap{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#9A8468;text-align:center}
   .bs .g{display:grid;grid-template-columns:repeat(var(--n),1fr);text-align:center;row-gap:1px}
   .bs .g i{font-size:9.5px}.bs .g b{font-size:10.5px;letter-spacing:-.02em}
-  .k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}.k-cap{--bb:#FBF0BF;--bc:#86650F}
+  .k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}.k-cap{--bb:#FBF0BF;--bc:#86650F}.k-bead{--bb:#E2F1E0;--bc:#3C7440}
   @media (max-width:560px){.bauble{width:106px}.row{gap:7px}.seats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.seat{padding:8px 7px}.sh .nm{font-size:14px}}
   .mk-note{font-size:14.5px;margin:0 0 10px}
   .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
@@ -164,7 +164,7 @@
   const backHTML = (kind, mini) => '<div class="back' + (kind ? ' ' + kind : '') + (mini ? ' mini' : '') + '">' + (kind === 't' ? svg(A.treasure('Locket'), '-15 -15 30 30') : kind === 'b' ? baubleIcon('feather') : svg(A.acorn(6), '-8 -8 16 16')) + '</div>';
   // every bauble card prints how it scores along the bottom
   const R = E.RULES, signed = (n) => (n < 0 ? '−' + (-n) : '+' + n);
-  const ladder = (tab) => { const pts = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + pts.length + '">' + pts.map((_, i) => '<i>' + (i + 1) + (i === pts.length - 1 ? '+' : '') + '</i>').join('') + pts.map((x) => '<b>' + x + '</b>').join('') + '</span>'; };
+  const ladder = (tab) => { const pts = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + pts.length + '">' + pts.map((_, i) => '<i>' + (i + 1) + (i === pts.length - 1 ? '+' : '') + '</i>').join('') + pts.map((x) => '<b>' + (x < 0 ? '−' + (-x) : x) + '</b>').join('') + '</span>'; };
   const line = (a, b) => '<span class="l"><i>' + a + '</i><b>' + b + '</b></span>';
   const SCORING = {
     earring: line('One alone', signed(R.earring.single)) + line('Each pair', signed(R.earring.pair)),
@@ -172,6 +172,7 @@
     button: ladder(R.button),
     feather: line('Each', signed(R.feather.each)) + line('Most', signed(R.feather.most)) + line('2nd most', signed(R.feather.second)),
     cap: line('Each', signed(R.cap.each)) + line('Fewest', signed(R.cap.fewest)),
+    bead: ladder(R.bead),
     acorn: '<span class="l c"><i>Goes into your hand</i></span>',
   };
   const baubleHTML = (b, i, pick, chosen) => {
@@ -179,7 +180,7 @@
     return '<' + tag + ' class="bauble k-' + k + (chosen ? ' sel' : '') + '" data-i="' + i + '" data-k="b' + i + '-' + b + '" aria-label="' + esc(B[k].name + (k === 'acorn' ? ' ' + b.slice(5) : '') + ': ' + B[k].rule) + '"><span class="bn">' + esc(k === 'acorn' ? 'Lost acorns' : B[k].name) + '</span>' +
       '<span class="art">' + (k === 'acorn' ? '<span class="an"><b>' + b.slice(5) + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '</span>' : baubleIcon(b)) + '</span><span class="bs">' + SCORING[k] + '</span></' + (pick ? 'button' : 'div') + '>';
   };
-  const KINDS = ['earring', 'berry', 'button', 'feather', 'cap'];
+  const KINDS = ['earring', 'berry', 'button', 'feather', 'cap', 'bead'];
   // what a critter has collected, as little cards in front of them
   const tableau = (p) => p.treasures.map((t) => '<span class="mc" title="' + esc(t.name) + '">' + svg(A.treasure(t.name), '-15 -15 30 30') + '<b>' + t.vp + '</b></span>').join('') +
     KINDS.filter((b) => p.baubles[b]).map((b) => '<span class="mc" title="' + esc(B[b].plural + ': ' + B[b].rule) + '">' + baubleIcon(b) + '<b>×' + p.baubles[b] + '</b><i>' + signed(p.score[b]).replace('+', '') + ' pts</i></span>').join('');
@@ -266,8 +267,8 @@
       banner = '<div class="banner"><div><b>' + (v.snow ? 'The first snow falls on the ' + esc(v.snow.name) + '.' : 'Winter is here.') + ' ' + (w.length ? w.map(name).join(' and ') + (w.length > 1 ? ' share the win!' : (w[0] === me && P[me].name === 'You' ? ' win!' : ' wins!')) : 'Nobody makes it through!') + '</b>' +
         '<p>' + f.out.map(name).join(' and ') + ' ran lowest on acorns and ' + (f.out.length > 1 || (f.out[0] === me && P[me].name === 'You') ? 'don’t' : 'doesn’t') + ' make it through winter.</p></div></div>';
       const order = P.map((_, i) => i).sort((a, b) => (f.out.includes(a) - f.out.includes(b)) || f.scores[b].total - f.scores[a].total);
-      banner += '<div class="panel"><h3>Final count</h3><div style="overflow-x:auto"><table class="final"><tr><th>Critter</th><th>Acorns left</th><th>Treasures</th><th>Earrings</th><th>Berries</th><th>Buttons</th><th>Feathers</th><th>Caps</th><th>Total</th></tr>' +
-        order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.out.includes(i) ? ' · out' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td>' + s.cap + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
+      banner += '<div class="panel"><h3>Final count</h3><div style="overflow-x:auto"><table class="final"><tr><th>Critter</th><th>Acorns left</th><th>Treasures</th><th>Earrings</th><th>Berries</th><th>Buttons</th><th>Feathers</th><th>Caps</th><th>Beads</th><th>Total</th></tr>' +
+        order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.out.includes(i) ? ' · out' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td>' + s.cap + '</td><td>' + s.bead + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
     }
 
     // ---- Mr. Magpie's baubles: the bag and the face-up row
@@ -362,7 +363,7 @@
       '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good, but if you pass without offering anything you draw a card from the acorn deck, a 1, 2 or 3, and keep it hidden. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, the treasure stays out and goes with the next one, so whoever wins next takes both. Treasures still waiting at the first snow stay with Mr. Magpie.</p>' +
       '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first, and if the row runs out, it’s refilled face up.</p>' +
       '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first, and anyone who brought nothing draws an acorn card. If the biggest offerings tie, the tied critters offer again in secret, adding to what they brought, until the tie breaks. The fourth frost brings the first snow and ends the game at once.</p>' +
-      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Bottle caps: 1 each, but whoever has the fewest loses 6.</p>' +
+      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Bottle caps: 1 each, but whoever has the fewest loses 6. Glass beads: one scores 1, two score −3, then 6, 10, 14 and 18 for three to six.</p>' +
       '<p><b>Winter.</b> The critter with the fewest acorns left doesn’t make it through, and if several tie for fewest, none of them do. Most points among the rest wins.</p>',
   });
 })();

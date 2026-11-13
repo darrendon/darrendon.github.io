@@ -60,7 +60,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 .tcard .tv{display:flex;align-items:baseline;gap:4px;background:#4A2E1E;color:#F7D9A6;border-radius:999px;padding:3px 9px;margin-top:2px}
 .tcard .tv b{font:900 14px/1 var(--disp);color:inherit}.tcard .tv i{font-style:normal;font-size:9.5px}
 .tcard.frost{background:linear-gradient(180deg,#EAF6FC,#FFFBF2 60%);outline-color:#9FCBE0}.tcard.frost .tb{color:#3F7E9C}.tcard.frost .tv{background:#2F5F7A;color:#E6F5FC}
-.bauble{width:118px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;overflow:hidden}
+.bauble{width:108px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;overflow:hidden}
 .bauble .bn{align-self:stretch;text-align:center;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;padding:6px 2px 5px;background:var(--bb);color:var(--bc)}
 .bauble .art{flex:1;display:grid;place-items:center;padding:6px 0 4px}
 .bauble .art svg{width:46px;height:46px}
@@ -71,7 +71,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 .bs .cap{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#9A8468;text-align:center}
 .bs .g{display:grid;grid-template-columns:repeat(var(--n),1fr);text-align:center;row-gap:1px}
 .bs .g i{font-size:8.5px}.bs .g b{font-size:9.5px;letter-spacing:-.03em}
-.k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}.k-cap{--bb:#FBF0BF;--bc:#86650F}
+.k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}.k-cap{--bb:#FBF0BF;--bc:#86650F}.k-bead{--bb:#E2F1E0;--bc:#3C7440}
 </style>
 </head>
 <body>
@@ -90,7 +90,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
   <div class="comp">
     <figure><div data-c="acorns"></div><b>111 acorn cards</b>5 sets of <span data-n="hand"></span> (<span data-n="handList"></span>)<br>and a 36-card acorn deck: eighteen 1s, twelve 2s, six 3s</figure>
     <figure><div data-c="treasures"></div><b>18 treasure cards</b>14 treasures (5–15 points)<br>and 4 frosts (7–10 points)</figure>
-    <figure><div data-c="bauble"></div><b>65 bauble cards</b>13 each of earrings, berries,<br>buttons, feathers and bottle caps</figure>
+    <figure><div data-c="bauble"></div><b>66 bauble cards</b>11 each of earrings, berries, buttons,<br>feathers, bottle caps and glass beads</figure>
   </div>
 
   <div class="cols">
@@ -141,6 +141,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
       <p><b>Berries.</b> <span data-n="berry"></span>. A few are lovely, but too many spoil.</p>
       <p><b>Buttons.</b> <span data-n="button"></span>. The bigger the collection, the better.</p>
       <p><b>Feathers.</b> <span data-n="each"></span> each. The critter with the most feathers scores <span data-n="most"></span> more and the second most <span data-n="second"></span> more. Tied critters all take the lower prize: a tie for most scores as second, and a tie for second scores nothing extra.</p>
+      <p><b>Glass beads.</b> One bead scores 1 and two score −3, but three score 6, four 10, five 14 and six or more 18. Don’t start a string you can’t finish.</p>
       <p><b>Bottle caps.</b> <span data-n="capEach"></span> each, but the critter with the fewest caps scores <span data-n="capFewest"></span>, and having none counts as fewest. Tied for fewest? All of them lose the points, unless everyone is level.</p>
     </div>
   </div>
@@ -171,11 +172,11 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
   const acard = (v) => '<div class="acard"><b>' + v + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '<i>' + v + '</i></div>';
   const tcard = (t, frost) => '<div class="tcard' + (frost ? ' frost' : '') + '"><span class="tb">' + (frost ? 'Frost' : 'Treasure') + '</span>' + svg(A.treasure(t.name), '-15 -15 30 30') + '<div class="nm">' + t.name + '</div><div class="tv"><b>' + t.vp + '</b><i>points</i></div></div>';
   const signed = (n) => (n < 0 ? '−' + (-n) : '+' + n);
-  const ladder = (tab) => { const pts = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + pts.length + '">' + pts.map((_, i) => '<i>' + (i + 1) + (i === pts.length - 1 ? '+' : '') + '</i>').join('') + pts.map((x) => '<b>' + x + '</b>').join('') + '</span>'; };
+  const ladder = (tab) => { const pts = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + pts.length + '">' + pts.map((_, i) => '<i>' + (i + 1) + (i === pts.length - 1 ? '+' : '') + '</i>').join('') + pts.map((x) => '<b>' + (x < 0 ? '−' + (-x) : x) + '</b>').join('') + '</span>'; };
   const line = (a, b) => '<span class="l"><i>' + a + '</i><b>' + b + '</b></span>';
   const SC = {
     earring: line('One alone', signed(R.earring.single)) + line('Each pair', signed(R.earring.pair)), berry: ladder(R.berry), button: ladder(R.button),
-    feather: line('Each', signed(R.feather.each)) + line('Most', signed(R.feather.most)) + line('2nd most', signed(R.feather.second)), cap: line('Each', signed(R.cap.each)) + line('Fewest', signed(R.cap.fewest)), acorn: '<span class="l c"><i>Goes into your hand</i></span>',
+    feather: line('Each', signed(R.feather.each)) + line('Most', signed(R.feather.most)) + line('2nd most', signed(R.feather.second)), cap: line('Each', signed(R.cap.each)) + line('Fewest', signed(R.cap.fewest)), bead: ladder(R.bead), acorn: '<span class="l c"><i>Goes into your hand</i></span>',
   };
   const bauble = (b) => { const k = b.startsWith('acorn') ? 'acorn' : b; return '<div class="bauble k-' + k + '"><span class="bn">' + (k === 'acorn' ? 'Lost acorns' : B[k].name) + '</span><span class="art">' + (k === 'acorn' ? '<span class="an"><b>' + b.slice(5) + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '</span>' : svg(A.bauble(b))) + '</span><span class="bs">' + SC[k] + '</span></div>'; };
   const put = (k, html) => document.querySelectorAll('[data-c="' + k + '"]').forEach((n) => { n.innerHTML = html; });
@@ -184,7 +185,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
   put('acorns', acard(hand[0]) + acard(hand[Math.floor(hand.length / 2)]) + acard(top) + '<div class="back">' + svg(A.acorn(6), '-8 -8 16 16') + '</div>');
   put('treasures', tcard(R.treasures[R.treasures.length - 1]) + tcard(R.frosts[1], true));
   put('bauble', bauble('button') + bauble('cap'));
-  put('baubles', ['earring', 'berry', 'button', 'feather', 'cap'].map(bauble).join(''));
+  put('baubles', ['earring', 'berry', 'button', 'feather', 'cap', 'bead'].map(bauble).join(''));
   const steps = (tab, word) => tab.slice(1).map((p, i) => (i + 1) + (i === tab.length - 2 ? ' or more' : '') + ' ' + (i ? word[1] : word[0]) + ' ' + (i === tab.length - 2 ? 'score ' : i ? 'score ' : 'scores ') + p).join(', ');
   num('hand', hand.length); num('handList', hand.join(', '));
   num('pair', signed(R.earring.pair)); num('single', signed(R.earring.single));

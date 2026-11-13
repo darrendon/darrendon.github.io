@@ -16,7 +16,7 @@
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 13, berry: 13, button: 13, feather: 13, cap: 13 },
+    baubles: { earring: 11, berry: 11, button: 11, feather: 11, cap: 11, bead: 11 },
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
     looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
     rowExtra: 2,                                        // the bauble row holds players + this many
@@ -24,6 +24,7 @@
     berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
     button: [0, 2, 5, 9, 14, 20, 27],                   // the bigger the collection, the better
     feather: { each: 2, most: 8, second: 4 },
+    bead: [0, 1, -3, 6, 10, 14, 18],                    // one is a trinket, two is a broken string, three or more is a necklace
     cap: { each: 1, fewest: -6 },                       // everyone needs a few: whoever has the fewest loses points (nobody does if all are level)           // ties take the lower place
   };
   const BAUBLE = {
@@ -32,6 +33,7 @@
     button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 2·5·9·14·20·27' },
     feather: { name: 'Feather', plural: 'Feathers', rule: '2 each · most +8 · second +4' },
     cap: { name: 'Bottle cap', plural: 'Bottle caps', rule: '1 each · fewest −6' },
+    bead: { name: 'Glass bead', plural: 'Glass beads', rule: '1·2·3·4·5·6 → 1·−3·6·10·14·18' },
     acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: 'Goes into your hand' },
   };
   const CRITTERS = ['mouse', 'chipmunk', 'hedgehog', 'rabbit', 'mole'];
