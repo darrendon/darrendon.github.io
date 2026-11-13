@@ -16,7 +16,7 @@
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 11, berry: 11, button: 11, feather: 11, cap: 11, bead: 11 },
+    baubles: { earring: 13, berry: 13, button: 13, feather: 13, cap: 13, bead: 13 },   // 78 cards, enough that the bag never runs dry at 5
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
     looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
     rowExtra: 2,                                        // the bauble row holds players + this many
