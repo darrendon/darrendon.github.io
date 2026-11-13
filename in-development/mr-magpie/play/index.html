@@ -13,78 +13,116 @@
   .dt-mast h1{font-family:Fraunces,Georgia,serif;font-weight:900;letter-spacing:-.01em;color:#F7D9A6}
   .mast-crit{display:flex;gap:6px;margin-top:10px}.mast-crit svg{width:38px;height:38px}
   .ne{display:grid;gap:14px;max-width:1180px;margin:0 auto}
-  .ne>*,.cols>*{min-width:0}
-  .cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
-  @media (max-width:880px){.cols{grid-template-columns:1fr}}
-  .cols.solo{grid-template-columns:1fr}
+  .ne>*,.felt>*,.mid>*,.mat-cols>*{min-width:0}
   .panel{background:var(--t-card);border:1px solid var(--t-line);border-radius:14px;padding:14px}
-  .panel h3{margin:0 0 10px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-muted);font-weight:600}
-  .ico{display:inline-block;vertical-align:middle}
+  .panel h3,.zl{margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+  .panel h3{color:var(--t-muted)}
 
-  /* Mr. Magpie's stage */
-  .stage{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;background:linear-gradient(180deg,#FBEBCB,#F1CF9C);border:1px solid #E6C38E;border-radius:16px;padding:14px 16px}
-  @media (max-width:560px){.stage{grid-template-columns:1fr}}
-  .tcard{width:150px;border-radius:14px;background:#FFFAF0;border:2px solid #E3C79D;padding:10px 10px 12px;text-align:center;box-shadow:0 2px 0 rgba(0,0,0,.08),0 12px 18px -10px rgba(74,46,30,.45);position:relative}
-  .tcard.frost{border-color:#9FCBE0;background:linear-gradient(180deg,#F4FBFF,#FFFAF0)}
-  .tcard svg{width:96px;height:96px}
-  .tcard .nm{font-weight:600;font-size:15px;line-height:1.15;min-height:2.3em;display:flex;align-items:center;justify-content:center}
-  .tcard .vp{position:absolute;top:-10px;right:-10px;width:42px;height:42px;border-radius:50%;background:#4A2E1E;color:#F7D9A6;display:grid;place-items:center;font:900 20px/1 Fraunces,serif;box-shadow:0 3px 0 rgba(0,0,0,.2)}
-  .tcard .fr{position:absolute;top:8px;left:10px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#4B86A3;font-weight:700}
-  .tleft{display:grid;gap:8px;justify-items:center}
-  .carry{display:flex;align-items:center;gap:6px;max-width:170px;background:#FFFAF0;border:1px dashed #D9B57E;border-radius:10px;padding:4px 8px;font-size:12.5px;line-height:1.2}
-  .carry svg{width:26px;height:26px;flex:none}
-  .carry b{font:900 15px/1 Fraunces,serif}
-  .tcard.empty{display:grid;place-items:center;min-height:180px;color:var(--t-muted);font-size:14px}
-  .stage-r h2{margin:0 0 4px;font:900 24px/1.1 Fraunces,serif}
-  .stage-r p{margin:0 0 8px;color:#6B4B33;font-size:14.5px}
-  .clock{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:#6B4B33}
-  .clock span{background:rgba(255,255,255,.55);border-radius:999px;padding:3px 10px}
-  .offers{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;margin-top:10px}
-  .off{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;background:rgba(255,255,255,.7);border-radius:10px;padding:5px 8px;font-size:13.5px;border:2px solid transparent}
-  .off.turn{border-color:var(--t-accent);background:#fff}
-  .off.out{opacity:.55}
-  .off.high .amt{color:var(--t-accent)}
-  .off .amt{font:900 18px/1 Fraunces,serif}
-  .off .cards{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:3px}
-  .chip{font-size:11px;font-weight:700;border-radius:5px;padding:1px 5px;background:#F3E3C6;color:#6B4B33}
+  /* the table: a wooden rim around green felt */
+  .table{background:linear-gradient(180deg,#8A5A34,#5E3A20);border-radius:30px;padding:12px;box-shadow:0 20px 30px -20px rgba(40,22,10,.7),inset 0 1px 0 rgba(255,255,255,.22),inset 0 -2px 0 rgba(0,0,0,.25)}
+  .felt{background:radial-gradient(130% 90% at 50% 0%,#52845C,#345F3F 72%);border-radius:20px;padding:16px;color:#F4EBD3;display:grid;gap:18px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.2),inset 0 10px 26px rgba(0,0,0,.25)}
+  .zl{color:#D5E4C4}
+  @media (max-width:560px){.table{border-radius:22px;padding:8px}.felt{border-radius:15px;padding:12px 10px}}
+
+  /* cards */
   .tok{width:30px;height:30px;flex:none}.tok svg{width:100%;height:100%;display:block}
-
-  /* baubles */
-  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .bauble{all:unset;box-sizing:border-box;width:66px;height:78px;border-radius:12px;background:#fff;border:2px solid var(--t-line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;box-shadow:0 1px 0 rgba(0,0,0,.08),0 6px 10px -7px rgba(74,46,30,.5)}
-  button.bauble{cursor:pointer}button.bauble:hover{border-color:var(--t-accent);transform:translateY(-2px)}
-  .bauble.sel{border-color:var(--t-accent);box-shadow:0 0 0 3px rgba(181,97,44,.28);transform:translateY(-5px)}
-  .bauble svg{width:42px;height:42px}
-  .bauble small{font-size:10.5px;font-weight:600;color:var(--t-muted);letter-spacing:.02em}
-  .bag{font-size:12.5px;color:var(--t-muted);margin-left:6px}
-  .key{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px;margin-top:10px;font-size:12.5px;color:var(--t-muted)}
-  .key div{display:flex;align-items:center;gap:6px}.key svg{width:20px;height:20px}
-
-  /* your acorns */
-  .hand{display:flex;flex-wrap:wrap;gap:5px;min-height:84px;align-items:flex-end}
-  .acard{all:unset;box-sizing:border-box;width:46px;height:70px;border-radius:10px;background:#FFF6E6;border:2px solid #E3C79D;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:5px 0 4px;box-shadow:0 1px 0 rgba(0,0,0,.08),0 6px 10px -7px rgba(74,46,30,.5);position:relative}
-  button.acard{cursor:pointer}button.acard:hover{border-color:var(--t-accent)}
-  .acard b{font:900 24px/1 Fraunces,serif;color:#5A3A24}
+  .acard,.bauble,.tcard,.back,.mc{box-shadow:0 1px 0 rgba(0,0,0,.28),0 9px 12px -8px rgba(0,0,0,.6)}
+  .acard{all:unset;box-sizing:border-box;width:56px;height:84px;border-radius:9px;background:#FFF8EA;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 0 5px;color:#5A3A24;box-shadow:0 1px 0 rgba(0,0,0,.28),0 9px 12px -8px rgba(0,0,0,.6)}
+  button.acard{cursor:pointer}button.acard:hover{outline-color:var(--t-accent);transform:translateY(-3px)}
+  .acard b{font:900 25px/1 Fraunces,serif}
   .acard svg{width:26px;height:26px}
-  .acard.mini{width:30px;height:42px;padding:2px 0;border-radius:7px}.acard.mini b{font-size:15px}.acard.mini svg{width:14px;height:14px}
-  .tray{display:flex;flex-wrap:wrap;gap:7px;min-height:92px;padding:8px;border:2.5px dashed var(--t-line);border-radius:14px;align-items:center;margin-top:10px;background:rgba(255,255,255,.4)}
-  .tray .drophere{margin:auto;color:var(--t-muted);font-size:14px}
-  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
-  .prompt{font-size:15.5px;margin:0 0 10px}.prompt b{font-weight:700}
-  .sum{font:900 22px/1 Fraunces,serif;margin-left:auto}
+  .acard i{font:900 11px/1 Fraunces,serif;font-style:normal;transform:rotate(180deg);align-self:flex-end;margin-right:7px;opacity:.7}
+  .acard.mini{width:34px;height:48px;border-width:2px;outline-offset:-3px;padding:3px 0;border-radius:6px}.acard.mini b{font-size:15px}.acard.mini svg{width:14px;height:14px}.acard.mini i{display:none}
+  .back{box-sizing:border-box;display:grid;place-items:center;border-radius:9px;border:3px solid #FBF1DA;width:56px;height:84px;background:repeating-linear-gradient(45deg,#8A5A32 0 7px,#7A4D29 7px 14px)}
+  .back svg{width:60%;height:auto;background:#FBF1DA;border-radius:50%;padding:3px;box-sizing:border-box}
+  .back.t{width:84px;height:118px;background:repeating-linear-gradient(45deg,#2B3A47 0 8px,#22303B 8px 16px)}
+  .back.b{width:72px;height:102px;background:repeating-linear-gradient(45deg,#7B4A6B 0 8px,#6C3F5E 8px 16px)}
+  .back.mini{width:34px;height:48px;border-width:2px;border-radius:6px}
+  .pile{display:grid;gap:6px;justify-items:center;text-align:center;font-size:12.5px;line-height:1.25;color:#E6EED8}
+  .pile b{font:900 17px/1 Fraunces,serif;color:#fff}
 
-  /* critters */
-  .crits{display:flex;flex-direction:column;gap:8px}
-  .crit{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:7px 8px;border-radius:10px}
-  .crit.turn{background:rgba(181,97,44,.12)}
-  .crit .nm{font-weight:600;font-size:15px}
-  .crit .money{text-align:right;font-size:12.5px;color:var(--t-muted);white-space:nowrap}
-  .crit .money b{font:900 18px/1 Fraunces,serif;color:var(--t-ink)}
-  .crit .have{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
-  .have .h{display:inline-flex;align-items:center;gap:2px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--t-line);border-radius:999px;padding:1px 7px 1px 3px}
-  .have .h svg{width:18px;height:18px}
-  .have .pts{margin-left:auto;font-size:12.5px;color:var(--t-muted)}
-  .log{margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--t-line);font-size:13.5px;color:var(--t-muted);max-height:190px;overflow:auto}
+  /* Mr. Magpie and his treasure */
+  .mid{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:18px;align-items:center}
+  @media (max-width:760px){.mid{grid-template-columns:auto minmax(0,1fr)}.mid .say{grid-column:1/-1}}
+  .tcards{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .tcard{box-sizing:border-box;width:158px;border-radius:12px;background:#FFFBF2;border:4px solid #fff;outline:1px solid #D9BE93;outline-offset:-5px;padding:10px 10px 12px;text-align:center;color:#3E2A1E;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .tcard .tb{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#A17A3C}
+  .tcard svg{width:92px;height:92px}
+  .tcard .nm{font:900 17px/1.1 Fraunces,serif}
+  .tcard .tv{display:flex;align-items:baseline;gap:5px;background:#4A2E1E;color:#F7D9A6;border-radius:999px;padding:4px 12px;margin-top:2px}
+  .tcard .tv b{font:900 20px/1 Fraunces,serif}.tcard .tv i{font-style:normal;font-size:11.5px;letter-spacing:.06em}
+  .tcard.frost{background:linear-gradient(180deg,#EAF6FC,#FFFBF2 60%);outline-color:#9FCBE0}.tcard.frost .tb{color:#3F7E9C}.tcard.frost .tv{background:#2F5F7A;color:#E6F5FC}
+  .tcard.sm{width:112px;padding:7px 6px 9px;border-width:3px;outline-offset:-4px}.tcard.sm svg{width:54px;height:54px}.tcard.sm .nm{font-size:13px}.tcard.sm .tv{padding:3px 9px}.tcard.sm .tv b{font-size:15px}
+  @media (max-width:560px){.tcard{width:136px}.tcard svg{width:76px;height:76px}.back.t{width:66px;height:92px}}
+  .say{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
+  .say .bird{width:92px;height:auto;flex:none}
+  .bubble{background:#FFFBF2;color:#3E2A1E;border-radius:16px;padding:12px 14px;box-shadow:0 9px 12px -8px rgba(0,0,0,.5)}
+  .bubble h2{margin:0 0 4px;font:900 22px/1.12 Fraunces,serif}
+  .bubble p{margin:0;font-size:14.5px;color:#5E4532}
+  .frosts{display:flex;gap:4px;justify-content:center}
+  .frosts span{width:16px;height:16px;border-radius:50%;background:#DDF1FA;border:2px solid #fff;box-sizing:border-box}
+  .frosts span.gone{background:transparent;border-color:rgba(255,255,255,.35)}
+  @media (max-width:560px){.say .bird{width:64px}.bubble h2{font-size:19px}}
+
+  /* the other critters around the table */
+  .seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+  .seat{background:rgba(0,0,0,.17);border:2px solid transparent;border-radius:14px;padding:10px;display:grid;gap:8px;align-content:start}
+  .seat.turn{border-color:#F2C66B;background:rgba(0,0,0,.26)}
+  .seat.out{opacity:.72}
+  .sh{display:flex;align-items:center;gap:8px}
+  .sh .nm{font-weight:600;font-size:15.5px;flex:1;min-width:0;overflow-wrap:anywhere}
+  .sh .pts{font-size:12.5px;color:#D5E4C4;white-space:nowrap}
+  .holds{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#E6EED8}
+  .holds b{font:900 17px/1 Fraunces,serif;color:#fff}
+  .tabl{display:flex;flex-wrap:wrap;gap:5px}
+  .mc{box-sizing:border-box;width:46px;border-radius:7px;background:#FFFBF2;border:2px solid #fff;color:#3E2A1E;display:flex;flex-direction:column;align-items:center;padding:3px 2px 4px;font-size:11px;line-height:1.1;text-align:center}
+  .mc svg{width:26px;height:26px}.mc b{font:900 13px/1 Fraunces,serif}.mc i{font-style:normal;font-size:10px;color:#7A5E48}
+  .put{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:48px;border:2px dashed rgba(255,255,255,.3);border-radius:10px;padding:5px 7px}
+  .put .lbl,.seat .lbl{font-size:12px;color:#D5E4C4}
+  .put .amt{margin-left:auto;font:900 21px/1 Fraunces,serif;color:#fff}
+  .put.high{border-color:#F2C66B;border-style:solid}.put.high .amt{color:#F9D98A}
+  .chip{font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 6px;background:rgba(255,255,255,.85);color:#4A3424;margin-left:auto}
+
+  /* Mr. Magpie's baubles */
+  .market{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
+  @media (max-width:560px){.market{grid-template-columns:1fr}.market .pile{grid-template-columns:auto auto;justify-content:start;align-items:center;text-align:left}.market .back.b{width:44px;height:62px}}
+  .row{display:flex;flex-wrap:wrap;gap:9px;align-items:stretch}
+  .bauble{all:unset;box-sizing:border-box;width:114px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;box-shadow:0 1px 0 rgba(0,0,0,.28),0 9px 12px -8px rgba(0,0,0,.6);overflow:hidden}
+  button.bauble{cursor:pointer}button.bauble:hover{outline-color:var(--t-accent);transform:translateY(-3px)}
+  .bauble.sel{outline:3px solid #F2C66B;outline-offset:0;transform:translateY(-7px)}
+  .bauble .bn{align-self:stretch;text-align:center;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;padding:6px 2px 5px;background:var(--bb);color:var(--bc)}
+  .bauble .art{flex:1;display:grid;place-items:center;padding:6px 0 4px}
+  .bauble .art svg{width:50px;height:50px}
+  .bauble .an{display:flex;align-items:center;gap:3px}.bauble .an b{font:900 32px/1 Fraunces,serif;color:#5A3A24}.bauble .an svg{width:30px;height:30px}
+  .bauble .bs{align-self:stretch;margin:0 6px;padding-top:5px;border-top:1.5px dashed #DCC7A2;display:grid;gap:2px;font-size:10.5px;line-height:1.15}
+  .bs .l{display:flex;justify-content:space-between;gap:4px}.bs .l.c{justify-content:center;text-align:center}
+  .bs i{font-style:normal;color:#7A5E48}.bs b{font-weight:700}
+  .bs .cap{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#9A8468;text-align:center}
+  .bs .g{display:grid;grid-template-columns:repeat(var(--n),1fr);text-align:center;row-gap:1px}
+  .bs .g i{font-size:9.5px}.bs .g b{font-size:10.5px;letter-spacing:-.02em}
+  .k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}
+  @media (max-width:560px){.bauble{width:106px}.row{gap:7px}.seats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.seat{padding:8px 7px}.sh .nm{font-size:14px}}
+  .mk-note{font-size:14.5px;margin:0 0 10px}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+
+  /* your place at the table */
+  .mat{background:#FBF3E0;color:var(--t-ink);border-radius:16px;padding:14px;box-shadow:0 9px 14px -9px rgba(0,0,0,.55);border:2px solid transparent}
+  .mat.turn{border-color:#F2C66B}
+  .mat .sh .pts{color:var(--t-muted)}
+  .mat-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;margin-top:10px}
+  @media (max-width:820px){.mat-cols{grid-template-columns:1fr}}
+  .mat .zl{color:var(--t-muted);margin-top:10px}
+  .mat .zl:first-child{margin-top:0}
+  .hand{display:flex;flex-wrap:wrap;gap:6px;min-height:84px;align-items:flex-end}
+  .tray{display:flex;flex-wrap:wrap;gap:7px;min-height:98px;padding:7px;border:2.5px dashed #D8C19A;border-radius:12px;align-items:center;background:rgba(255,255,255,.5)}
+  .tray .drophere{margin:auto;color:var(--t-muted);font-size:14px;text-align:center}
+  .prompt{font-size:15.5px;margin:8px 0 0}.prompt b{font-weight:700}
+  .sum{font:900 22px/1 Fraunces,serif;margin-left:auto}
+  .onTable{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .onTable .amt{font:900 20px/1 Fraunces,serif;margin-left:6px}
+  .none{font-size:13px;color:var(--t-muted)}
+
+  .log{font-size:13.5px;color:var(--t-muted);max-height:170px;overflow:auto}
   .log p{margin:0 0 3px}
 
   .banner{border-radius:14px;padding:14px 16px;background:#4A2E1E;color:#F7EBD0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
@@ -117,9 +155,32 @@
   const acardHTML = (v, opts) => {
     opts = opts || {};
     const tag = opts.button ? 'button type="button"' : 'div';
-    return '<' + tag + ' class="acard' + (opts.mini ? ' mini' : '') + '"' + (opts.i != null ? ' data-i="' + opts.i + '"' : '') + (opts.k ? ' data-k="' + opts.k + '"' : '') + ' aria-label="' + v + ' acorns"><b>' + v + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '</' + (opts.button ? 'button' : 'div') + '>';
+    return '<' + tag + ' class="acard' + (opts.mini ? ' mini' : '') + '"' + (opts.i != null ? ' data-i="' + opts.i + '"' : '') + (opts.k ? ' data-k="' + opts.k + '"' : '') + ' aria-label="' + v + ' acorns"><b>' + v + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '<i>' + v + '</i></' + (opts.button ? 'button' : 'div') + '>';
   };
-  const tcardHTML = (t) => t ? '<div class="tcard' + (t.frost ? ' frost' : '') + '" data-k="t-' + esc(t.name) + '">' + (t.frost ? '<span class="fr">Frost</span>' : '') + '<span class="vp">' + t.vp + '</span>' + svg(A.treasure(t.name), '-15 -15 30 30') + '<div class="nm">' + esc(t.name) + '</div></div>' : '<div class="tcard empty">—</div>';
+  // a real card for each treasure: what it is, its picture, its points
+  const tcardHTML = (t, sm) => '<div class="tcard' + (t.frost ? ' frost' : '') + (sm ? ' sm' : '') + '" data-k="t-' + esc(t.name) + '"><span class="tb">' + (sm ? 'Still here' : t.frost ? 'Frost' : 'Treasure') + '</span>' + svg(A.treasure(t.name), '-15 -15 30 30') + '<div class="nm">' + esc(t.name) + '</div><div class="tv"><b>' + t.vp + '</b><i>points</i></div></div>';
+  // card backs: acorn cards, the treasure deck, the bauble bag
+  const backHTML = (kind, mini) => '<div class="back' + (kind ? ' ' + kind : '') + (mini ? ' mini' : '') + '">' + (kind === 't' ? svg(A.treasure('Locket'), '-15 -15 30 30') : kind === 'b' ? baubleIcon('feather') : svg(A.acorn(6), '-8 -8 16 16')) + '</div>';
+  // every bauble card prints how it scores along the bottom
+  const R = E.RULES, signed = (n) => (n < 0 ? '−' + (-n) : '+' + n);
+  const ladder = (tab) => { const pts = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + pts.length + '">' + pts.map((_, i) => '<i>' + (i + 1) + (i === pts.length - 1 ? '+' : '') + '</i>').join('') + pts.map((x) => '<b>' + x + '</b>').join('') + '</span>'; };
+  const line = (a, b) => '<span class="l"><i>' + a + '</i><b>' + b + '</b></span>';
+  const SCORING = {
+    earring: line('One alone', signed(R.earring.single)) + line('Each pair', signed(R.earring.pair)),
+    berry: ladder(R.berry),
+    button: ladder(R.button),
+    feather: line('Each', signed(R.feather.each)) + line('Most', signed(R.feather.most)) + line('2nd most', signed(R.feather.second)),
+    acorn: '<span class="l c"><i>Goes into your hand</i></span>',
+  };
+  const baubleHTML = (b, i, pick, chosen) => {
+    const k = bKind(b), tag = pick ? 'button type="button"' : 'div';
+    return '<' + tag + ' class="bauble k-' + k + (chosen ? ' sel' : '') + '" data-i="' + i + '" data-k="b' + i + '-' + b + '" aria-label="' + esc(B[k].name + (k === 'acorn' ? ' ' + b.slice(5) : '') + ': ' + B[k].rule) + '"><span class="bn">' + esc(k === 'acorn' ? 'Lost acorns' : B[k].name) + '</span>' +
+      '<span class="art">' + (k === 'acorn' ? '<span class="an"><b>' + b.slice(5) + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '</span>' : baubleIcon(b)) + '</span><span class="bs">' + SCORING[k] + '</span></' + (pick ? 'button' : 'div') + '>';
+  };
+  const KINDS = ['earring', 'berry', 'button', 'feather'];
+  // what a critter has collected, as little cards in front of them
+  const tableau = (p) => p.treasures.map((t) => '<span class="mc" title="' + esc(t.name) + '">' + svg(A.treasure(t.name), '-15 -15 30 30') + '<b>' + t.vp + '</b></span>').join('') +
+    KINDS.filter((b) => p.baubles[b]).map((b) => '<span class="mc" title="' + esc(B[b].plural + ': ' + B[b].rule) + '">' + baubleIcon(b) + '<b>×' + p.baubles[b] + '</b><i>' + signed(p.score[b]).replace('+', '') + ' pts</i></span>').join('');
 
   let sel = [], selSig = '', bsel = [], bselSig = '';
   // the log names you "You": "You brings" reads "You bring"
@@ -146,33 +207,51 @@
     }[v.phase] || '';
     api.status('Treasure ' + v.lotNo + ' · ' + status);
 
-    // ---- the stage: Mr. Magpie's treasure and every offering
-    let stage = '';
+    const frost = !!(L && L.frost);
+    const turn = v.phase === 'bid' && L ? L.turn : v.phase === 'pick' && v.picking ? v.picking.seat : -1;
+    const want = myPick ? Math.min(v.picking.n, v.row.length) : 0;
+
+    // ---- Mr. Magpie, the treasure deck and what's up for grabs
+    let mid = '';
     if (v.phase !== 'over') {
-      const t = v.treasure;
-      const frost = L && L.frost;
-      const ex = v.extra || [], exNames = ex.map((x) => 'the ' + esc(x.name)).join(' and ');
-      let head = frost ? 'A frost! Secret offerings' : 'Mr. Magpie shows off a treasure';
+      const t = v.treasure, ex = v.extra || [], exNames = ex.map((x) => 'the ' + esc(x.name)).join(' and ');
+      let head = frost ? 'A frost! Secret offerings' : 'Mr. Magpie shows off a treasure';
       let sub = frost ? 'Everyone brings a secret offering of acorn cards at once. The biggest wins; everyone else who brought one takes a bauble per card.' :
-        'Beat the top offering by adding acorn cards, or pass. The last critter in wins it. Mr. Magpie keeps every acorn, win or lose.';
+        'Beat the top offering by adding acorn cards, or pass. The last critter in wins it. Mr. Magpie keeps every acorn, win or lose.';
       if (ex.length && v.phase !== 'lotEnd') sub = 'Nobody claimed ' + exNames + ', so ' + (ex.length > 1 ? 'they go' : 'it goes') + ' with this one: <b>' + v.lotVp + ' points in all</b>. ' + sub;
       if (v.phase === 'lotEnd' && v.result) {
         const all = [v.result.t].concat(v.result.extra || []).map((x) => 'the ' + esc(x.name)).join(' and ');
         head = v.result.kind === 'win' ? name(v.result.seat) + ' wins ' + all + '!' : 'Nobody wanted ' + all;
         sub = v.result.kind === 'win' ? 'For ' + v.result.bid + ' acorns' + (v.result.solo ? ', and nobody else made an offer.' : '.') + ' Next treasure coming…' : 'Nobody brought an offering, so ' + ((v.result.extra || []).length ? 'they stay' : 'it stays') + ' out and goes with the next treasure.';
       }
-      const offers = L ? '<div class="offers">' + L.order.map((s) => {
-        const spent = L.spent[s] || [], out = L.out.includes(s), turn = L.turn === s && v.phase === 'bid';
-        let right = '';
-        if (frost) right = v.phase === 'frost' ? (L.offered[s] ? '<span class="chip">offered</span>' : '<span class="chip">thinking…</span>') : '<span class="amt">' + (L.bids[s] || 0) + '</span>';
-        else right = out ? '<span class="chip">' + (spent.length ? 'out · took ' + spent.length : 'passed') + '</span>' : '<span class="amt">' + (L.bids[s] || 0) + '</span>';
-        return '<div class="off' + (turn ? ' turn' : '') + (out ? ' out' : '') + (!frost && L.highSeat === s && L.high > 0 ? ' high' : '') + '">' + tok(P[s].critter) + '<span>' + name(s) + '</span>' + right +
-          (spent.length && (!frost || v.phase !== 'frost' || s === me) ? '<span class="cards">' + spent.map((c, j) => acardHTML(c, { mini: true, k: 'sp' + s + '-' + j + '-' + v.lotNo })).join('') + '</span>' : '') + '</div>';
-      }).join('') + '</div>' : '';
-      const carry = ex.length && v.phase !== 'lotEnd' ? ex.map((x) => '<div class="carry">' + svg(A.treasure(x.name), '-15 -15 30 30') + '<span>+ ' + esc(x.name) + '</span><b>' + x.vp + '</b></div>').join('') : '';
-      stage = '<div class="stage"><div class="tleft">' + tcardHTML(t) + carry + '</div><div class="stage-r"><h2>' + head + '</h2><p>' + sub + '</p>' +
-        '<div class="clock"><span>' + v.deckLeft + ' treasure cards left</span><span>' + v.frostsLeft + ' frost card' + (v.frostsLeft === 1 ? '' : 's') + ' left · the last one brings the snow</span></div>' + offers + '</div></div>';
+      const pips = [0, 1, 2, 3].map((i) => '<span' + (i < v.frostsLeft ? '' : ' class="gone"') + '></span>').join('');
+      mid = '<div class="mid"><div class="pile">' + backHTML('t') + '<span><b>' + v.deckLeft + '</b> cards left</span><div class="frosts" title="Frost cards still in the deck">' + pips + '</div><span>' + v.frostsLeft + ' frost' + (v.frostsLeft === 1 ? '' : 's') + ' left<br>the last brings the snow</span></div>' +
+        '<div class="tcards">' + (t ? tcardHTML(t) : '') + (v.phase !== 'lotEnd' ? ex.map((x) => tcardHTML(x, true)).join('') : '') + '</div>' +
+        '<div class="say"><svg class="bird" viewBox="-13 -25 42 33" aria-hidden="true">' + A.magpie() + '</svg><div class="bubble"><h2>' + head + '</h2><p>' + sub + '</p></div></div></div>';
     }
+
+    // ---- what a critter has put on the table for this treasure
+    const putHTML = (s) => {
+      if (!L) return '';
+      const spent = L.spent[s] || [], out = L.out.includes(s);
+      const cards = spent.map((c, j) => acardHTML(c, { mini: true, k: 'sp' + s + '-' + j + '-' + v.lotNo })).join('');
+      let inner;
+      if (frost && v.phase === 'frost') inner = L.offered[s] ? backHTML('', true) + '<span class="chip">offered in secret</span>' : '<span class="lbl">Choosing a secret offering…</span>';
+      else if (frost) inner = cards + (spent.length ? '' : '<span class="lbl">Brought nothing</span>') + '<span class="amt">' + (L.bids[s] || 0) + '</span>';
+      else if (out) inner = cards + '<span class="chip">' + (spent.length ? 'out · took ' + spent.length : 'passed') + '</span>';
+      else inner = cards + (spent.length ? '' : '<span class="lbl">No offering yet</span>') + '<span class="amt">' + (L.bids[s] || 0) + '</span>';
+      return '<div class="put' + (!frost && L.highSeat === s && L.high > 0 && !out ? ' high' : '') + '">' + inner + '</div>';
+    };
+
+    // ---- the other critters, clockwise from you
+    const others = P.map((_, k) => (me + 1 + k) % P.length).filter((s) => s !== me);
+    const seats = '<div class="seats">' + others.map((s) => {
+      const p = P[s], out = L && L.out.includes(s) && !frost;
+      return '<div class="seat' + (s === turn ? ' turn' : '') + (out ? ' out' : '') + '"><div class="sh">' + tok(p.critter) + '<span class="nm">' + name(s) + '</span><span class="pts">' + p.score.total + ' pts</span></div>' +
+        '<div class="holds">' + backHTML('', true) + '<span><b>' + p.cards + '</b> acorn card' + (p.cards === 1 ? '' : 's') + (v.phase === 'over' && p.money != null ? ' · ' + p.money + ' acorns' : '') + '</span></div>' +
+        (v.phase !== 'over' ? putHTML(s) : '') +
+        '<div class="tabl">' + (tableau(p) || '<span class="lbl">Nothing collected yet</span>') + '</div></div>';
+    }).join('') + '</div>';
 
     // ---- final scores
     let banner = '';
@@ -185,22 +264,19 @@
         order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.out.includes(i) ? ' · out' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
     }
 
-    // ---- the bauble row
-    const want = myPick ? Math.min(v.picking.n, v.row.length) : 0;
-    let row = '';
+    // ---- Mr. Magpie's baubles: the bag and the face-up row
+    let market = '';
     if (v.phase !== 'over') {
-      row = '<div class="panel"><h3>Mr. Magpie’s baubles' + (myPick ? ' · take ' + v.picking.n : '') + '</h3>' +
-        (myPick ? '<p class="prompt">You dropped out, so Mr. Magpie thanks you with <b>' + v.picking.n + ' bauble' + (v.picking.n > 1 ? 's' : '') + '</b>, one for each acorn card you offered. Tap ' + (want > 1 ? want + ' of them' : 'one') + ', then Take.</p>' : '') +
-        '<div class="row">' + v.row.map((b, i) => '<' + (myPick ? 'button type="button"' : 'div') + ' class="bauble' + (myPick && bsel.includes(i) ? ' sel' : '') + '" data-i="' + i + '" data-k="b' + i + '-' + b + '" title="' + esc(B[bKind(b)].name + ': ' + B[bKind(b)].rule) + '">' + baubleIcon(b) + '<small>' + (b.startsWith('acorn') ? b.slice(5) + ' acorns' : esc(B[b].name)) + '</small></' + (myPick ? 'button' : 'div') + '>').join('') +
-        '<span class="bag">' + v.bagLeft + ' in the bag</span></div>' +
-        (myPick ? '<div class="acts"><button class="dt-btn go" data-do="take"' + (bsel.length === want ? '' : ' disabled') + '>Take ' + (want > 1 ? 'these ' + want : 'it') + '</button></div>' : '') +
-        '<div class="key">' + ['earring', 'berry', 'button', 'feather', 'acorn'].map((k) => '<div>' + baubleIcon(k === 'acorn' ? 'acorn4' : k) + '<span><b>' + esc(B[k].plural) + '</b> · ' + esc(B[k].rule) + '</span></div>').join('') + '</div></div>';
+      market = '<div><p class="zl">Mr. Magpie’s baubles' + (myPick ? ' · take ' + v.picking.n : '') + '</p>' +
+        (myPick ? '<p class="mk-note">You dropped out, so Mr. Magpie thanks you with <b>' + v.picking.n + ' bauble' + (v.picking.n > 1 ? 's' : '') + '</b>, one for each acorn card you offered. Tap ' + (want > 1 ? want + ' of them' : 'one') + ', then Take.</p>' : '') +
+        '<div class="market"><div class="pile">' + backHTML('b') + '<span><b>' + v.bagLeft + '</b> in the bag</span></div><div><div class="row">' + v.row.map((b, i) => baubleHTML(b, i, myPick, myPick && bsel.includes(i))).join('') + '</div>' +
+        (myPick ? '<div class="acts"><button class="dt-btn go" data-do="take"' + (bsel.length === want ? '' : ' disabled') + '>Take ' + (want > 1 ? 'these ' + want : 'it') + '</button></div>' : '') + '</div></div></div>';
     }
 
-    // ---- your acorns
+    // ---- your place at the table
     let mine = '';
-    if (v.phase !== 'over') {
-      const tot = sel.reduce((t, i) => t + v.hand[i], 0), myBid = L && !L.frost ? L.bids[me] || 0 : 0;
+    {
+      const tot = sel.reduce((t, i) => t + v.hand[i], 0), myBid = L && !frost ? L.bids[me] || 0 : 0;
       let prompt = '', acts = '';
       if (myTurn) {
         const need = L.high + 1 - myBid;
@@ -216,25 +292,22 @@
       } else if (v.phase === 'lotEnd') {
         acts = '<button class="dt-btn" data-do="next">Next treasure</button>';
       }
-      const staging = myTurn || myFrost;
-      mine = '<div class="panel"><h3>Your acorns · ' + P[me].money + ' left</h3>' + (prompt ? '<p class="prompt">' + prompt + '</p>' : '') +
-        '<div class="hand" data-zone="hand">' + v.hand.map((c, i) => sel.includes(i) ? '' : acardHTML(c, { button: staging, i, k: 'h' + i + '-' + c })).join('') + (v.hand.length ? '' : '<span class="bag">No acorn cards left.</span>') + '</div>' +
-        (staging ? '<div class="tray" data-zone="tray">' + (sel.length ? sel.map((i) => acardHTML(v.hand[i], { button: true, i, k: 'h' + i + '-' + v.hand[i] })).join('') + '<span class="sum">+' + tot + '</span>' : '<span class="drophere">Tap acorn cards to put them in your offering</span>') + '</div>' : '') +
-        (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>';
+      const staging = myTurn || myFrost, mySpent = L ? (v.phase === 'frost' ? v.myOffer || [] : L.spent[me] || []) : [], iOut = L && !frost && L.out.includes(me);
+      const onTable = mySpent.length ? '<div class="onTable">' + mySpent.map((c, j) => acardHTML(c, { mini: true, k: 'sp' + me + '-' + j + '-' + v.lotNo })).join('') + '<span class="amt">' + mySpent.reduce((a, c) => a + c, 0) + '</span>' + (iOut ? '<span class="none">· you dropped out</span>' : '') + '</div>' : '<span class="none">' + (iOut ? 'You passed.' : 'Nothing yet.') + '</span>';
+      mine = '<div class="mat' + (turn === me ? ' turn' : '') + '"><div class="sh">' + tok(P[me].critter) + '<span class="nm">' + name(me) + '</span><span class="pts"><b>' + P[me].money + '</b> acorns in hand · ' + P[me].score.total + ' pts</span></div>' +
+        (prompt ? '<p class="prompt">' + prompt + '</p>' : '') +
+        (v.phase === 'over' ? '<div class="mat-cols"><div><p class="zl">Your acorn cards</p><div class="hand">' + v.hand.map((c, i) => acardHTML(c, { k: 'h' + i + '-' + c })).join('') + (v.hand.length ? '' : '<span class="none">No acorn cards left.</span>') + '</div></div><div><p class="zl">What you collected</p><div class="tabl">' + (tableau(P[me]) || '<span class="none">Nothing.</span>') + '</div></div></div>' :
+        '<div class="mat-cols"><div>' +
+        (staging ? '<p class="zl">' + (myFrost ? 'Your secret offering' : 'Add to your offering') + '</p><div class="tray" data-zone="tray">' + (sel.length ? sel.map((i) => acardHTML(v.hand[i], { button: true, i, k: 'h' + i + '-' + v.hand[i] })).join('') + '<span class="sum">+' + tot + '</span>' : '<span class="drophere">Tap acorn cards to put them in your offering</span>') + '</div>' : '') +
+        '<p class="zl">Your acorn cards</p><div class="hand" data-zone="hand">' + v.hand.map((c, i) => sel.includes(i) ? '' : acardHTML(c, { button: staging, i, k: 'h' + i + '-' + c })).join('') + (v.hand.length ? '' : '<span class="none">No acorn cards left.</span>') + '</div>' +
+        (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>' +
+        '<div><p class="zl">Your offering on the table</p>' + onTable + '<p class="zl">What you’ve collected</p><div class="tabl">' + (tableau(P[me]) || '<span class="none">Nothing yet.</span>') + '</div></div></div>') + '</div>';
     }
 
-    // ---- critters
-    const turn = v.phase === 'bid' && L ? L.turn : v.phase === 'pick' && v.picking ? v.picking.seat : -1;
-    const crits = '<div class="crits">' + P.map((p, i) => {
-      const have = p.treasures.map((t) => '<span class="h" title="' + esc(t.name) + '">' + svg(A.treasure(t.name), '-15 -15 30 30') + t.vp + '</span>').join('') +
-        ['earring', 'berry', 'button', 'feather'].filter((b) => p.baubles[b]).map((b) => '<span class="h" title="' + esc(B[b].plural) + '">' + baubleIcon(b) + p.baubles[b] + '</span>').join('');
-      return '<div class="crit' + (i === turn ? ' turn' : '') + '">' + tok(p.critter) + '<span class="nm">' + name(i) + '</span><span class="money">' + (p.money != null ? '<b>' + p.money + '</b> acorns · ' + p.cards + ' card' + (p.cards === 1 ? '' : 's') : '<b>' + p.cards + '</b> acorn card' + (p.cards === 1 ? '' : 's')) + '</span>' +
-        '<span class="have">' + (have || '<span class="pts">nothing yet</span>') + '<span class="pts">' + p.score.total + ' pts</span></span></div>';
-    }).join('') + '</div>';
-
     DevTable.flip(el, () => {
-      el.innerHTML = DEFS + '<div class="ne">' + (banner || stage) + '<div class="cols' + (v.phase === 'over' ? ' solo' : '') + '">' + (v.phase === 'over' ? '' : '<div style="display:grid;gap:14px">' + mine + row + '</div>') + '<div class="panel"><h3>Critters</h3>' + crits +
-        '<p class="dt-muted" style="font-size:12.5px">Lowest on acorns at the first snow is out. Most points among the rest wins.</p><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(youLine(l)) + '</p>').join('') + '</div></div></div></div>';
+      el.innerHTML = DEFS + '<div class="ne">' + banner + '<div class="table"><div class="felt">' + seats + mid + market + mine + '</div></div>' +
+        '<div class="panel"><h3>Table talk</h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(youLine(l)) + '</p>').join('') + '</div>' +
+        '<p class="dt-muted" style="font-size:12.5px;margin:10px 0 0">Lowest on acorns at the first snow is out. Most points among the rest wins.</p></div></div>';
     });
 
     // pick cards up and put them down: acorns move between your hand and your offer, baubles come to you
