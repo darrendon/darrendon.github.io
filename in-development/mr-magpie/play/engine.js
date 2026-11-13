@@ -4,20 +4,21 @@
 (function (root) {
   'use strict';
   const RULES = {
-    hand: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20], // every critter's starting acorn cards: a wide range, and no making change
+    hand: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20], // every critter's starting acorn cards: a wide range, and no making change
     treasures: [                                        // open auctions: the last critter in wins it
       { name: 'Silver Thimble', vp: 5 }, { name: 'Old Key', vp: 5 }, { name: 'Jingle Bell', vp: 6 },
       { name: 'Teaspoon', vp: 6 }, { name: 'Pocket Mirror', vp: 7 }, { name: 'Locket', vp: 8 },
       { name: 'Brass Compass', vp: 9 }, { name: 'Pocket Watch', vp: 11 }, { name: 'Tiara', vp: 13 },
       { name: 'Disco Ball', vp: 15 },
+      { name: 'Glass Marble', vp: 6 }, { name: 'Opera Glasses', vp: 8 }, { name: 'Music Box', vp: 10 }, { name: 'Goblet', vp: 12 },
     ],
     frosts: [                                           // sealed offers; the last one drawn is the first snow
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 10, berry: 10, button: 10, feather: 10, cap: 10 },
-    lostAcorns: [4, 5, 6, 7, 8, 9],                     // a few acorn cards in the bauble deck: take one and it goes into your hand
-    looseAcorns: 30,                                    // 1-acorn cards beside the table: pass without offering and take one
+    baubles: { earring: 13, berry: 13, button: 13, feather: 13, cap: 13 },
+    lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
+    looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
     rowExtra: 2,                                        // the bauble row holds players + this many
     earring: { single: -2, pair: 7 },                   // one alone is useless; each pair scores
     berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
@@ -124,7 +125,8 @@
       this.lotNo = 0; this.log = []; this.phase = 'lotEnd'; this.lot = null; this.picks = []; this.result = null; this.final = null;
       this.stats = { washes: 0, solo: 0, lots: 0, frostLots: 0, rolled: 0, potsWon: 0, potVp: 0, lostAtSnow: 0 };
       this.carry = [];   // treasures nobody opened: they stay out and join the next one
-      this.ones = RULES.looseAcorns || 0;   // a pile of 1-acorn cards: pass without offering and take one
+      // the acorn deck: pass without offering and draw one, face down, into your hand
+      this.looseDeck = shuffle(Array.isArray(RULES.looseAcorns) ? RULES.looseAcorns : Array(RULES.looseAcorns || 0).fill(1));
       this.nextLot(true);
     }
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
@@ -250,7 +252,7 @@
       if (!L.acted.includes(seat)) L.acted.push(seat);
       const n = L.spent[seat].length;
       const loose = !n && this.drawOne(seat);
-      this.say(p.name + (n ? ' drops out and takes ' + n + ' bauble' + (n > 1 ? 's' : '') + '.' : loose ? ' passes and takes a loose acorn.' : ' passes.'));
+      this.say(p.name + (n ? ' drops out and takes ' + n + ' bauble' + (n > 1 ? 's' : '') + '.' : loose ? ' passes and draws an acorn card.' : ' passes.'));
       const ended = this.bidEnded();
       if (!ended) this.nextTurn(seat, true);
       L.done = ended;
@@ -324,8 +326,8 @@
       this.frostBaubles(-1);
     }
     drawOne(seat) {   // the way back in: pass without offering and take a loose acorn
-      if (this.ones <= 0) return false;
-      this.ones--; const p = this.players[seat]; p.hand.push(1); p.hand.sort((x, y) => x - y); p.loose = (p.loose || 0) + 1;
+      if (!this.looseDeck.length) return false;
+      const p = this.players[seat]; p.hand.push(this.looseDeck.pop()); p.hand.sort((x, y) => x - y); p.loose = (p.loose || 0) + 1;
       return true;
     }
     endFrost() { this.phase = 'lotEnd'; }
@@ -365,7 +367,7 @@
       const L = this.lot, sc = scoreOf(this.players, this.R);
       return {
         seat, phase: this.phase, lotNo: this.lotNo, start: this.start, rowSize: this.rowSize,
-        treasure: L ? L.t : null, extra: L ? L.extra.slice() : [], lotVp: this.lotVp(), deckLeft: this.deck.length, frostsLeft: this.framesLeft, bagLeft: this.side.length, loose: this.ones,
+        treasure: L ? L.t : null, extra: L ? L.extra.slice() : [], lotVp: this.lotVp(), deckLeft: this.deck.length, frostsLeft: this.framesLeft, bagLeft: this.side.length, loose: this.looseDeck.length,
         row: this.row.slice(), result: this.result, final: this.final, snow: this.snow || null,
         lot: L && {
           order: L.order, high: L.high, highSeat: L.highSeat, turn: L.turn, out: L.out.slice(), active: L.active ? L.active.slice() : null,

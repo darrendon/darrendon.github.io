@@ -186,7 +186,7 @@
 
   let sel = [], selSig = '', bsel = [], bselSig = '';
   // the log names you "You": "You brings" reads "You bring"
-  const youLine = (l) => l.replace(/\bYou (brings|drops out and takes|drops|passes and takes|passes|wins|runs|starts)\b/g, (m, v) => 'You ' + ({ 'drops out and takes': 'drop out and take', 'passes and takes': 'pass and take', passes: 'pass' }[v] || v.slice(0, -1)));
+  const youLine = (l) => l.replace(/\bYou (brings|drops out and takes|drops|passes and draws|passes|wins|runs|starts)\b/g, (m, v) => 'You ' + ({ 'drops out and takes': 'drop out and take', 'passes and draws': 'pass and draw', passes: 'pass' }[v] || v.slice(0, -1)));
 
   function render(el, v, api) {
     const me = v.seat, P = v.players, L = v.lot;
@@ -230,7 +230,7 @@
       }
       const pips = [0, 1, 2, 3].map((i) => '<span' + (i < v.frostsLeft ? '' : ' class="gone"') + '></span>').join('');
       mid = '<div class="mid"><div class="pile">' + backHTML('t') + '<span><b>' + v.deckLeft + '</b> cards left</span><div class="frosts" title="Frost cards still in the deck">' + pips + '</div><span>' + v.frostsLeft + ' frost' + (v.frostsLeft === 1 ? '' : 's') + ' left<br>the last brings the snow</span></div>' +
-        '<div class="pile">' + (v.loose > 0 ? acardHTML(1, { k: 'loose' }) : '<div class="back" style="opacity:.35"></div>') + '<span><b>' + v.loose + '</b> loose acorns</span><span>pass without offering<br>and take one</span></div>' +
+        '<div class="pile">' + '<div class="back"' + (v.loose > 0 ? '' : ' style="opacity:.35"') + '>' + svg(A.acorn(6), '-8 -8 16 16') + '</div><span><b>' + v.loose + '</b> in the acorn deck</span><span>pass without offering<br>and draw one (1, 2 or 3)</span></div>' +
         '<div class="tcards">' + (t ? tcardHTML(t) : '') + (v.phase !== 'lotEnd' ? ex.map((x) => tcardHTML(x, true)).join('') : '') + '</div>' +
         '<div class="say"><svg class="bird" viewBox="-13 -25 42 33" aria-hidden="true">' + A.magpie() + '</svg><div class="bubble"><h2>' + head + '</h2><p>' + sub + '</p></div></div></div>';
     }
@@ -289,9 +289,9 @@
         prompt = L.high === 0 ? 'Nobody has brought an offering yet. Open with any acorn cards, or pass.' : 'The top offering is <b>' + L.high + '</b>' + (L.highSeat >= 0 ? ' (' + name(L.highSeat) + ')' : '') + '. ' + (myBid ? 'You have ' + myBid + ' in, so add at least ' + need + '.' : 'Add at least ' + need + ' to beat it.');
         const nb = (L.spent[me] || []).length;
         acts = '<button class="dt-btn go" data-do="raise"' + (sel.length && myBid + tot > L.high ? '' : ' disabled') + '>Offer ' + (myBid + tot) + '</button>' +
-          '<button class="dt-btn" data-do="pass">' + (nb ? 'Drop out and take ' + nb + ' bauble' + (nb > 1 ? 's' : '') : v.loose > 0 ? 'Pass and take a loose acorn' : 'Pass') + '</button>';
+          '<button class="dt-btn" data-do="pass">' + (nb ? 'Drop out and take ' + nb + ' bauble' + (nb > 1 ? 's' : '') : v.loose > 0 ? 'Pass and draw an acorn card' : 'Pass') + '</button>';
       } else if (myFrost) {
-        prompt = rebid ? 'You’re tied at <b>' + L.bids[me] + '</b>. Add acorn cards in secret to break the tie, or add nothing.' : 'Put acorn cards in your secret offering, then lock it in. Bring nothing and you take a loose acorn.';
+        prompt = rebid ? 'You’re tied at <b>' + L.bids[me] + '</b>. Add acorn cards in secret to break the tie, or add nothing.' : 'Put acorn cards in your secret offering, then lock it in. Bring nothing and you draw an acorn card.';
         acts = '<button class="dt-btn go" data-do="offer">' + (sel.length ? (rebid ? 'Add ' : 'Offer ') + tot + ' in secret' : rebid ? 'Add nothing' : 'Bring nothing') + '</button>';
       } else if (v.phase === 'frost' && L && L.offered[me]) {
         prompt = rebid ? (rebid.includes(me) ? 'Waiting for the other tied critters…' : 'Waiting for the tie to break…') : 'You brought ' + (v.myOffer ? v.myOffer.reduce((t, x) => t + x, 0) : 0) + '. Waiting for the others…';
@@ -358,11 +358,11 @@
     create: (players, opts) => new E.Game(players, opts),
     render,
     rules:
-      '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 13 acorn cards, from 1 up to 20. Keep them hidden in your hand. You can’t make change, so pick your cards carefully.</p>' +
-      '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good, but if you pass without offering anything you take a loose acorn, a 1, from the pile. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, the treasure stays out and goes with the next one, so whoever wins next takes both. Treasures still waiting at the first snow stay with Mr. Magpie.</p>' +
+      '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 15 acorn cards, from 1 up to 20. Keep them hidden in your hand. You can’t make change, so pick your cards carefully.</p>' +
+      '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good, but if you pass without offering anything you draw a card from the acorn deck, a 1, 2 or 3, and keep it hidden. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, the treasure stays out and goes with the next one, so whoever wins next takes both. Treasures still waiting at the first snow stay with Mr. Magpie.</p>' +
       '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first, and if the row runs out, it’s refilled face up.</p>' +
-      '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first, and anyone who brought nothing takes a loose acorn. If the biggest offerings tie, the tied critters offer again in secret, adding to what they brought, until the tie breaks. The fourth frost brings the first snow and ends the game at once.</p>' +
-      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Bottle caps: 1 each, but whoever has the fewest loses 6. A few cards in the bag are lost acorns: take one instead of a bauble and it goes into your hand.</p>' +
+      '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first, and anyone who brought nothing draws an acorn card. If the biggest offerings tie, the tied critters offer again in secret, adding to what they brought, until the tie breaks. The fourth frost brings the first snow and ends the game at once.</p>' +
+      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Bottle caps: 1 each, but whoever has the fewest loses 6.</p>' +
       '<p><b>Winter.</b> The critter with the fewest acorns left doesn’t make it through, and if several tie for fewest, none of them do. Most points among the rest wins.</p>',
   });
 })();

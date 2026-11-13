@@ -41,7 +41,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 .frostbox{background:#EAF6FC;border-left:5px solid #6FAECB;border-radius:6px;padding:.1in .15in;margin-top:.08in}
 .frostbox h2{color:#2F5F7A;margin-top:0}
 .foot{position:absolute;left:.6in;right:.6in;bottom:.3in;display:flex;justify-content:space-between;font-size:8.6pt;color:var(--soft);border-top:1px solid var(--line);padding-top:.06in}
-.baubles{display:flex;justify-content:space-between;gap:8px;margin:.08in 0 .1in}
+.baubles{display:flex;justify-content:space-around;gap:8px;margin:.08in 0 .1in}
 .q p{font-size:9.8pt}
 .qrow{margin-top:.1in;border-top:1px solid var(--line);padding-top:.1in}
 
@@ -60,7 +60,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 .tcard .tv{display:flex;align-items:baseline;gap:4px;background:#4A2E1E;color:#F7D9A6;border-radius:999px;padding:3px 9px;margin-top:2px}
 .tcard .tv b{font:900 14px/1 var(--disp);color:inherit}.tcard .tv i{font-style:normal;font-size:9.5px}
 .tcard.frost{background:linear-gradient(180deg,#EAF6FC,#FFFBF2 60%);outline-color:#9FCBE0}.tcard.frost .tb{color:#3F7E9C}.tcard.frost .tv{background:#2F5F7A;color:#E6F5FC}
-.bauble{width:108px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;overflow:hidden}
+.bauble{width:118px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;overflow:hidden}
 .bauble .bn{align-self:stretch;text-align:center;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;padding:6px 2px 5px;background:var(--bb);color:var(--bc)}
 .bauble .art{flex:1;display:grid;place-items:center;padding:6px 0 4px}
 .bauble .art svg{width:46px;height:46px}
@@ -79,7 +79,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
   <div class="band">
     <div>
       <h1>Mr. Magpie</h1>
-      <p>An auction game for 3–5 critters, 20–30 minutes. Trade your winter acorns for Mr.&nbsp;Magpie’s treasures, but he keeps every acorn you offer, win or lose.</p>
+      <p>An auction game for 3–5 critters, 20–25 minutes. Trade your winter acorns for Mr.&nbsp;Magpie’s treasures, but he keeps every acorn you offer, win or lose.</p>
       <div class="by">by Darren Don</div>
     </div>
     <img src="/in-development/mr-magpie/img/box-front-480.webp" alt="">
@@ -88,19 +88,19 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 
   <h2>Components</h2>
   <div class="comp">
-    <figure><div data-c="acorns"></div><b>95 acorn cards</b>5 sets of <span data-n="hand"></span> (<span data-n="handList"></span>)<br>and 30 loose acorns, all 1s</figure>
-    <figure><div data-c="treasures"></div><b>14 treasure cards</b>10 treasures (5–15 points)<br>and 4 frosts (7–10 points)</figure>
-    <figure><div data-c="bauble"></div><b>56 bauble cards</b>10 each of earrings, berries, buttons, feathers<br>and bottle caps, and 6 lost acorns (4–9)</figure>
+    <figure><div data-c="acorns"></div><b>111 acorn cards</b>5 sets of <span data-n="hand"></span> (<span data-n="handList"></span>)<br>and a 36-card acorn deck: eighteen 1s, twelve 2s, six 3s</figure>
+    <figure><div data-c="treasures"></div><b>18 treasure cards</b>14 treasures (5–15 points)<br>and 4 frosts (7–10 points)</figure>
+    <figure><div data-c="bauble"></div><b>65 bauble cards</b>13 each of earrings, berries,<br>buttons, feathers and bottle caps</figure>
   </div>
 
   <div class="cols">
     <div>
       <h2>Setup</h2>
-      <p>1. Each critter takes one set of 13 acorn cards and keeps it <b>hidden in hand</b>. Put unused sets back in the box.</p>
-      <p>2. Shuffle the 14 treasure cards into a face-down deck.</p>
+      <p>1. Each critter takes one set of 15 acorn cards and keeps it <b>hidden in hand</b>. Put unused sets back in the box.</p>
+      <p>2. Shuffle the 18 treasure cards into a face-down deck.</p>
       <p>3. Shuffle the bauble cards into a face-down deck, the <b>bag</b>. Deal a face-up row of baubles beside it: <b>one for each player, plus two</b>.</p>
       <p>4. Leave room for Mr.&nbsp;Magpie’s <b>larder</b>, a face-down pile for every acorn card offered.</p>
-      <p>5. Put the 30 <b>loose acorns</b> in a face-up pile, then pick a start player at random.</p>
+      <p>5. Shuffle the 36-card <b>acorn deck</b> and put it face down, then pick a start player at random.</p>
       <h2>Acorn cards</h2>
       <p>Acorn cards are your money and your winter food. You can’t make change: to offer 7 you need cards that add up to 7 or more, and whatever you put down is spent. Nobody may look at or count your hand, though they see every card you offer.</p>
     </div>
@@ -110,7 +110,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
       <div class="frostbox">
         <h2>Frosts</h2>
         <p>Four treasure cards are frosts. A frost is a secret auction. Everyone chooses any acorn cards from their hand (or none) and holds them out face down, then all reveal together.</p>
-        <p>The <b>biggest total wins</b> the frost. Everyone else who offered takes one bauble per card, biggest offering first, and anyone who offered nothing takes a loose acorn. All offered cards go to the larder. If nobody offers, the frost stays out like any other treasure.</p>
+        <p>The <b>biggest total wins</b> the frost. Everyone else who offered takes one bauble per card, biggest offering first, and anyone who offered nothing draws from the acorn deck. All offered cards go to the larder. If nobody offers, the frost stays out like any other treasure.</p>
         <p><b>Tied for biggest?</b> The tied critters offer again in secret, adding to what they brought, until the tie breaks. If none of them adds a card, nobody wins: the frost stays out and everyone who offered takes baubles.</p>
       </div>
     </div>
@@ -124,7 +124,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
       <h2>Each treasure</h2>
       <ol class="turn">
         <li><b class="h">Show the treasure</b>Refill the bauble row to its full size, then turn up the top treasure card. If it’s a frost, see <b>Frosts</b> on page 1. Whoever won the last treasure starts; if nobody won it, the start passes to the left.</li>
-        <li><b class="h">Offer or pass</b>Going clockwise, either <b>offer</b> or <b>pass</b>. To offer, lay acorn cards face up in front of you so that your total beats the top offering; cards you offered earlier still count. Nobody has to open. Once you pass you’re out of this auction, but if you pass <b>without having offered anything, take a loose acorn</b> into your hand. Nobody is ever stuck with nothing to bring.</li>
+        <li><b class="h">Offer or pass</b>Going clockwise, either <b>offer</b> or <b>pass</b>. To offer, lay acorn cards face up in front of you so that your total beats the top offering; cards you offered earlier still count. Nobody has to open. Once you pass you’re out of this auction, but if you pass <b>without having offered anything, draw a card from the acorn deck</b> into your hand without showing it. It’s a 1, a 2 or a 3, so nobody is ever stuck with nothing to bring.</li>
         <li><b class="h">Drop out, take baubles</b>If you pass after offering, your cards go to the larder and you <b>take one bauble from the row for each acorn card you offered</b>, right away. So whoever drops out first picks first. If the row runs out, refill it face up and keep taking.</li>
         <li><b class="h">Last critter in wins</b>When only one critter with an offering is left, they take the treasure and their cards go to the larder. They get no baubles. A lone offering wins even if nobody else offered anything.</li>
         <li><b class="h">Nobody offered?</b>The treasure <b>stays out</b>. Turn up the next card: whoever wins it takes the waiting treasure as well. Several can pile up this way.</li>
@@ -142,7 +142,6 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
       <p><b>Buttons.</b> <span data-n="button"></span>. The bigger the collection, the better.</p>
       <p><b>Feathers.</b> <span data-n="each"></span> each. The critter with the most feathers scores <span data-n="most"></span> more and the second most <span data-n="second"></span> more. Tied critters all take the lower prize: a tie for most scores as second, and a tie for second scores nothing extra.</p>
       <p><b>Bottle caps.</b> <span data-n="capEach"></span> each, but the critter with the fewest caps scores <span data-n="capFewest"></span>, and having none counts as fewest. Tied for fewest? All of them lose the points, unless everyone is level.</p>
-      <p><b>Lost acorns.</b> Not a bauble at all: take one from the row and it goes <b>into your hand</b> as an acorn card. You can offer it later, and it counts toward surviving winter.</p>
     </div>
   </div>
   <div class="baubles" data-c="baubles"></div>
@@ -151,7 +150,7 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
       <div>
         <h2>Questions</h2>
         <p><b>Can I offer more than I need to?</b> Yes, and without change you often have to. Extra cards also mean extra baubles if you drop out.</p>
-        <p><b>What if I have no acorn cards?</b> Pass and take a loose acorn. A few passes and you’re back in the bidding.</p>
+        <p><b>What if I have no acorn cards?</b> Pass and draw from the acorn deck. A few passes and you’re back in the bidding.</p>
       </div>
       <div>
         <p><b>Do I get baubles for a treasure I win?</b> No. Baubles only go to critters who offered and didn’t win.</p>
@@ -184,8 +183,8 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
   const hand = R.hand, top = hand[hand.length - 1];
   put('acorns', acard(hand[0]) + acard(hand[Math.floor(hand.length / 2)]) + acard(top) + '<div class="back">' + svg(A.acorn(6), '-8 -8 16 16') + '</div>');
   put('treasures', tcard(R.treasures[R.treasures.length - 1]) + tcard(R.frosts[1], true));
-  put('bauble', bauble('button') + bauble('acorn7'));
-  put('baubles', ['earring', 'berry', 'button', 'feather', 'cap', 'acorn7'].map(bauble).join(''));
+  put('bauble', bauble('button') + bauble('cap'));
+  put('baubles', ['earring', 'berry', 'button', 'feather', 'cap'].map(bauble).join(''));
   const steps = (tab, word) => tab.slice(1).map((p, i) => (i + 1) + (i === tab.length - 2 ? ' or more' : '') + ' ' + (i ? word[1] : word[0]) + ' ' + (i === tab.length - 2 ? 'score ' : i ? 'score ' : 'scores ') + p).join(', ');
   num('hand', hand.length); num('handList', hand.join(', '));
   num('pair', signed(R.earring.pair)); num('single', signed(R.earring.single));
