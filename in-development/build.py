@@ -169,7 +169,7 @@ def head(title, desc, url, img, body_cls=''):
     </a>
     <nav class="nav" aria-label="Main">
       <a href="/games/">Games</a>
-      <a href="/in-development/" aria-current="page">In Development</a>
+      <a href="/in-development/" aria-current="page">Playtest</a>
       <a href="/#about">About</a>
       <a href="/contact/">Contact</a>
     </nav>
@@ -207,12 +207,12 @@ def card(g):
       </a>'''
 
 def build_index():
-    out = head('In Development · Darren Don', 'Games Darren Don is still building: play them in your browser and tell him what you think.', '/in-development/', '/in-development/slipstream/img/scene.webp')
+    out = head('Playtest · Darren Don', 'Games Darren Don is still building: play them in your browser and tell him what you think.', '/in-development/', '/in-development/slipstream/img/scene.webp')
     out += f'''
 <main id="main">
   <section class="page-hero wrap dev-hero" aria-labelledby="d-h">
-    <p class="label"><a href="/games/" style="color:inherit">Games</a> / In Development</p>
-    <h1 id="d-h">In Development<span class="dot" style="color:var(--orange)">.</span></h1>
+    <p class="label"><a href="/games/" style="color:inherit">Games</a> / Playtest</p>
+    <h1 id="d-h">Playtest<span class="dot" style="color:var(--orange)">.</span></h1>
     <p class="lede">Games I’m still building. Most of them are playable in your browser, against bots or with friends at an online table. Each page ends with a few questions, and your answers come straight to me.</p>
   </section>
   <section class="section wrap" style="padding-top:clamp(12px,2vw,24px)" aria-label="Games in development">
@@ -238,7 +238,7 @@ def build_index():
 
 def build_game(g):
     url = f'/in-development/{g["slug"]}/'
-    out = head(f'{g["title"]} · In Development · Darren Don', g['hook'], url, img(g, 'scene'), 'dev ' + g['cls'])
+    out = head(f'{g["title"]} · Playtest · Darren Don', g['hook'], url, img(g, 'scene'), 'dev ' + g['cls'])
     specs = ''.join(f'<div class="spec"><dt>{e(k)}</dt><dd>{comps(v) if k == "For fans of" else e(v)}</dd></div>' for k, v in g['specs'])
     acts = []
     if g['play']: acts.append('<a class="btn accent" href="#play">Play in your browser</a>')
@@ -250,7 +250,7 @@ def build_game(g):
     nav.append('<a href="#feedback">Feedback</a>')
     out += f'''
 <main id="main">
-  <div class="wrap crumbs"><a href="/games/">Games</a> / <a href="/in-development/">In Development</a> / {e(g["title"])}</div>
+  <div class="wrap crumbs"><a href="/games/">Games</a> / <a href="/in-development/">Playtest</a> / {e(g["title"])}</div>
   <section class="wrap d-hero" aria-labelledby="t">
     <div>
       <span class="tag">In development</span>
@@ -310,7 +310,7 @@ def build_game(g):
 
   <section class="d-sec" aria-labelledby="more-h">
     <div class="wrap">
-      <div class="head"><div><p class="label">In Development</p><h2 id="more-h">Also on the workbench</h2></div><a class="btn" href="/in-development/">All of them</a></div>
+      <div class="head"><div><p class="label">Playtest</p><h2 id="more-h">More to playtest</h2></div><a class="btn" href="/in-development/">All of them</a></div>
       <div class="more-dev">{others}</div>
     </div>
   </section>
