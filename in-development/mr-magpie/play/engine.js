@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const RULES = {
-    hand: [1, 2, 3, 4, 5, 6, 8, 10, 13, 16],           // every critter's starting acorn cards: a wide range, and no making change
+    hand: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20], // every critter's starting acorn cards: a wide range, and no making change
     treasures: [                                        // open auctions: the last critter in wins it
       { name: 'Silver Thimble', vp: 5 }, { name: 'Old Key', vp: 5 }, { name: 'Jingle Bell', vp: 6 },
       { name: 'Teaspoon', vp: 6 }, { name: 'Pocket Mirror', vp: 7 }, { name: 'Locket', vp: 8 },
@@ -15,20 +15,23 @@
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 10, berry: 10, button: 10, feather: 10 },
-    lostAcorns: [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20],   // acorn cards in the bauble deck: take one and it goes into your hand
+    baubles: { earring: 10, berry: 10, button: 10, feather: 10, cap: 10 },
+    lostAcorns: [4, 5, 6, 7, 8, 9],                     // a few acorn cards in the bauble deck: take one and it goes into your hand
+    looseAcorns: 30,                                    // 1-acorn cards beside the table: pass without offering and take one
     rowExtra: 2,                                        // the bauble row holds players + this many
     earring: { single: -2, pair: 7 },                   // one alone is useless; each pair scores
     berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
     button: [0, 2, 5, 9, 14, 20, 27],                   // the bigger the collection, the better
-    feather: { each: 2, most: 8, second: 4 },           // ties take the lower place
+    feather: { each: 2, most: 8, second: 4 },
+    cap: { each: 1, fewest: -6 },                       // everyone needs a few: whoever has the fewest loses points (nobody does if all are level)           // ties take the lower place
   };
   const BAUBLE = {
     earring: { name: 'Earring', plural: 'Earrings', rule: 'One alone −2 · each pair +7' },
     berry: { name: 'Berry', plural: 'Berries', rule: '1·2·3·4·5+ → 3·6·10·4·0' },
     button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 2·5·9·14·20·27' },
     feather: { name: 'Feather', plural: 'Feathers', rule: '2 each · most +8 · second +4' },
-    acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: '1 to 20 · goes into your hand' },
+    cap: { name: 'Bottle cap', plural: 'Bottle caps', rule: '1 each · fewest −6' },
+    acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: 'Goes into your hand' },
   };
   const CRITTERS = ['mouse', 'chipmunk', 'hedgehog', 'rabbit', 'mole'];
   const BOT_NAMES = ['Hazel', 'Bramble', 'Pip', 'Clover', 'Juniper', 'Moss', 'Fern', 'Thistle', 'Rowan', 'Willow'];
@@ -121,6 +124,7 @@
       this.lotNo = 0; this.log = []; this.phase = 'lotEnd'; this.lot = null; this.picks = []; this.result = null; this.final = null;
       this.stats = { washes: 0, solo: 0, lots: 0, frostLots: 0, rolled: 0, potsWon: 0, potVp: 0, lostAtSnow: 0 };
       this.carry = [];   // treasures nobody opened: they stay out and join the next one
+      this.ones = RULES.looseAcorns || 0;   // a pile of 1-acorn cards: pass without offering and take one
       this.nextLot(true);
     }
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
@@ -205,7 +209,7 @@
       }
       if (this.phase === 'frost') {
         if (a.type !== 'offer') return { ok: false, error: 'Make a secret offering (or bring nothing).' };
-        if (this.lot.offers[seat]) return { ok: false, error: 'You already brought your offering.' };
+        if (this.lot.offers[seat]) return { ok: false, error: this.lot.rebid && !this.lot.rebid.includes(seat) ? 'Only the tied critters offer again.' : 'You already brought your offering.' };
         const idx = [...new Set((a.cards || []).map((x) => x | 0))].filter((x) => x >= 0 && x < p.hand.length);
         this.lot.offers[seat] = idx.map((x) => p.hand[x]);
         p.hand = p.hand.filter((_, x) => !idx.includes(x));
@@ -245,7 +249,8 @@
       L.active = L.active.filter((s) => s !== seat); L.out.push(seat);
       if (!L.acted.includes(seat)) L.acted.push(seat);
       const n = L.spent[seat].length;
-      this.say(p.name + ' drops out' + (n ? ' and takes ' + n + ' bauble' + (n > 1 ? 's' : '') + '.' : '.'));
+      const loose = !n && this.drawOne(seat);
+      this.say(p.name + (n ? ' drops out and takes ' + n + ' bauble' + (n > 1 ? 's' : '') + '.' : loose ? ' passes and takes a loose acorn.' : ' passes.'));
       const ended = this.bidEnded();
       if (!ended) this.nextTurn(seat, true);
       L.done = ended;
@@ -281,17 +286,47 @@
     checkFrost() {
       const L = this.lot;
       if (L.offers.some((o) => o === null)) return;
-      const N = this.N, tot = L.offers.map((o) => sum(o));
-      L.bids = tot; L.spent = L.offers.map((o) => o.slice());
-      const ranked = L.order.slice().sort((a, b) => tot[b] - tot[a] || L.order.indexOf(a) - L.order.indexOf(b));
-      const nz = ranked.filter((s) => tot[s] > 0);
-      if (!nz.length) { this.rollOver(); return; }
-      const w = nz[0];
+      if (!L.rebid) {
+        L.spent = L.offers.map((o) => o.slice());
+        L.order.forEach((s) => { if (!L.spent[s].length) this.drawOne(s); });   // brought nothing: a loose acorn
+      } else {
+        let added = 0;
+        L.rebid.forEach((s) => { added += L.offers[s].length; L.spent[s] = L.spent[s].concat(L.offers[s]); });
+        if (!added) return this.frostStandoff();
+      }
+      const tot = L.spent.map((o) => sum(o)); L.bids = tot;
+      const top = Math.max(...tot);
+      if (top <= 0) { this.rollOver(); return; }
+      const tied = L.order.filter((s) => tot[s] === top);
+      if (tied.length > 1) {   // a tie for the biggest offering: those critters offer again, in secret, until it breaks
+        if (!tied.some((s) => this.players[s].hand.length)) return this.frostStandoff();
+        L.rebid = tied; L.high = top; this.stats.rebids = (this.stats.rebids || 0) + 1;
+        L.offers = Array(this.N).fill(0).map(() => []);
+        tied.forEach((s) => { if (this.players[s].hand.length) L.offers[s] = null; });
+        this.say(tied.map((s) => this.players[s].name).join(' and ') + ' tie at ' + top + ' and offer again in secret.');
+        return;
+      }
+      const w = tied[0];
       this.award(w);
       this.result = { kind: 'win', t: L.t, extra: L.extra, seat: w, bid: tot[w], cards: L.spent[w].length, frost: true, offers: tot };
       this.say(this.players[w].name + ' wins the ' + names([L.t].concat(L.extra)) + ' with ' + tot[w] + '. Offerings: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
-      const list = nz.slice(1).map((s) => ({ seat: s, n: L.spent[s].length }));
+      this.frostBaubles(w);
+    }
+    frostBaubles(w) {   // everyone who offered and didn't win takes baubles, biggest offering first
+      const L = this.lot, tot = L.bids;
+      const list = L.order.filter((s) => s !== w && tot[s] > 0).sort((a, b) => tot[b] - tot[a] || L.order.indexOf(a) - L.order.indexOf(b)).map((s) => ({ seat: s, n: L.spent[s].length }));
       if (!this.queuePicks(list, 'frostDone')) this.endFrost();
+    }
+    frostStandoff() {   // still tied and nobody added a card: nobody wins it, and it stays out
+      const L = this.lot; L.bids = L.spent.map((o) => sum(o));
+      this.rollOver();
+      this.say('The tie holds and nobody adds a card, so nobody wins it.');
+      this.frostBaubles(-1);
+    }
+    drawOne(seat) {   // the way back in: pass without offering and take a loose acorn
+      if (this.ones <= 0) return false;
+      this.ones--; const p = this.players[seat]; p.hand.push(1); p.hand.sort((x, y) => x - y); p.loose = (p.loose || 0) + 1;
+      return true;
     }
     endFrost() { this.phase = 'lotEnd'; }
     lotVp() { const L = this.lot; return L ? L.t.vp + sum(L.extra.map((t) => t.vp)) : 0; }
@@ -311,8 +346,8 @@
     endGame() {
       const N = this.N, sc = scoreOf(this.players, this.R), money = this.players.map((_, i) => this.money(i));
       const mn = Math.min(...money);
-      let out = money.map((m, i) => (m === mn ? i : -1)).filter((i) => i >= 0);
-      if (out.length > 1) { const top = Math.max(...out.map((i) => sc[i].total)); out = out.filter((i) => sc[i].total === top); }
+      let out = money.map((m, i) => (m === mn ? i : -1)).filter((i) => i >= 0);   // everyone tied for fewest is out…
+      if (out.length === N) out = [];                                              // …unless that's every critter
       const alive = this.players.map((_, i) => i).filter((i) => !out.includes(i));
       let winners = [];
       if (alive.length) {
@@ -321,7 +356,7 @@
       }
       this.final = { scores: sc, money, out, winners };
       this.phase = 'over'; this.lot = null; this.result = null; this.picks = [];
-      this.say(out.map((i) => this.players[i].name).join(' and ') + (out.length > 1 ? ' run' : ' runs') + ' out of acorns for winter.');
+      this.say(out.length ? out.map((i) => this.players[i].name).join(' and ') + (out.length > 1 ? ' run' : ' runs') + ' out of acorns for winter.' : 'Everyone is level on acorns, so everyone makes it through winter.')
       if (winners.length) this.say(winners.map((i) => this.players[i].name).join(' and ') + (winners.length > 1 ? ' share the win!' : ' wins!'));
     }
 
@@ -330,11 +365,11 @@
       const L = this.lot, sc = scoreOf(this.players, this.R);
       return {
         seat, phase: this.phase, lotNo: this.lotNo, start: this.start, rowSize: this.rowSize,
-        treasure: L ? L.t : null, extra: L ? L.extra.slice() : [], lotVp: this.lotVp(), deckLeft: this.deck.length, frostsLeft: this.framesLeft, bagLeft: this.side.length,
+        treasure: L ? L.t : null, extra: L ? L.extra.slice() : [], lotVp: this.lotVp(), deckLeft: this.deck.length, frostsLeft: this.framesLeft, bagLeft: this.side.length, loose: this.ones,
         row: this.row.slice(), result: this.result, final: this.final, snow: this.snow || null,
         lot: L && {
           order: L.order, high: L.high, highSeat: L.highSeat, turn: L.turn, out: L.out.slice(), active: L.active ? L.active.slice() : null,
-          bids: L.bids.slice(), spent: (this.phase === 'frost') ? L.spent.map((s, i) => (i === seat ? s : [])) : L.spent.map((s) => s.slice()),
+          bids: L.bids.slice(), spent: (this.phase === 'frost' && !L.rebid) ? L.spent.map((s, i) => (i === seat ? s : [])) : L.spent.map((s) => s.slice()), rebid: L.rebid ? L.rebid.slice() : null,
           offered: L.offers ? L.offers.map((o) => o !== null) : null, frost: !!L.t.frost,
         },
         picking: this.phase === 'pick' && this.picks[0] ? { seat: this.picks[0].seat, n: this.picks[0].n } : null,
@@ -406,6 +441,10 @@
     }
     botFrost(s) {
       const p = this.players[s], S = this.st(s); if (!p.hand.length) return [];
+      if (this.lot.rebid) {   // tied for the top: add the smallest card if the treasure is still worth it
+        const c = Math.min(...p.hand), mine = sum(this.lot.spent[s]);
+        return (c <= this.allowed(s) && this.lotVp() * this.beta * S.mShow * S.aggr > mine * 0.5 + c) ? [p.hand.indexOf(c)] : [];
+      }
       const allow = this.allowed(s), W = this.lotVp() * this.beta * S.mShow * Math.exp(gauss() * 0.15);
       const big = Math.min(allow, W * (0.25 + rnd() * 0.55) * S.aggr), small = Math.min(...p.hand), resB = this.reserve();
       if (rnd() < 0.35 * S.mShow * S.aggr && big >= small && p.hand.length > resB) {

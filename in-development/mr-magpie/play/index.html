@@ -42,8 +42,9 @@
   .pile b{font:900 17px/1 Fraunces,serif;color:#fff}
 
   /* Mr. Magpie and his treasure */
-  .mid{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:18px;align-items:center}
-  @media (max-width:760px){.mid{grid-template-columns:auto minmax(0,1fr)}.mid .say{grid-column:1/-1}}
+  .mid{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:18px;align-items:center}
+  @media (max-width:900px){.mid{grid-template-columns:auto auto minmax(0,1fr)}.mid .say{grid-column:1/-1}}
+  @media (max-width:560px){.mid{grid-template-columns:auto auto;justify-content:space-around}.mid .tcards{grid-column:1/-1;justify-content:center;order:-1}}
   .tcards{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
   .tcard{box-sizing:border-box;width:158px;border-radius:12px;background:#FFFBF2;border:4px solid #fff;outline:1px solid #D9BE93;outline-offset:-5px;padding:10px 10px 12px;text-align:center;color:#3E2A1E;display:flex;flex-direction:column;align-items:center;gap:4px}
   .tcard .tb{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#A17A3C}
@@ -100,7 +101,7 @@
   .bs .cap{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#9A8468;text-align:center}
   .bs .g{display:grid;grid-template-columns:repeat(var(--n),1fr);text-align:center;row-gap:1px}
   .bs .g i{font-size:9.5px}.bs .g b{font-size:10.5px;letter-spacing:-.02em}
-  .k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}
+  .k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}.k-cap{--bb:#FBF0BF;--bc:#86650F}
   @media (max-width:560px){.bauble{width:106px}.row{gap:7px}.seats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.seat{padding:8px 7px}.sh .nm{font-size:14px}}
   .mk-note{font-size:14.5px;margin:0 0 10px}
   .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
@@ -170,6 +171,7 @@
     berry: ladder(R.berry),
     button: ladder(R.button),
     feather: line('Each', signed(R.feather.each)) + line('Most', signed(R.feather.most)) + line('2nd most', signed(R.feather.second)),
+    cap: line('Each', signed(R.cap.each)) + line('Fewest', signed(R.cap.fewest)),
     acorn: '<span class="l c"><i>Goes into your hand</i></span>',
   };
   const baubleHTML = (b, i, pick, chosen) => {
@@ -177,14 +179,14 @@
     return '<' + tag + ' class="bauble k-' + k + (chosen ? ' sel' : '') + '" data-i="' + i + '" data-k="b' + i + '-' + b + '" aria-label="' + esc(B[k].name + (k === 'acorn' ? ' ' + b.slice(5) : '') + ': ' + B[k].rule) + '"><span class="bn">' + esc(k === 'acorn' ? 'Lost acorns' : B[k].name) + '</span>' +
       '<span class="art">' + (k === 'acorn' ? '<span class="an"><b>' + b.slice(5) + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '</span>' : baubleIcon(b)) + '</span><span class="bs">' + SCORING[k] + '</span></' + (pick ? 'button' : 'div') + '>';
   };
-  const KINDS = ['earring', 'berry', 'button', 'feather'];
+  const KINDS = ['earring', 'berry', 'button', 'feather', 'cap'];
   // what a critter has collected, as little cards in front of them
   const tableau = (p) => p.treasures.map((t) => '<span class="mc" title="' + esc(t.name) + '">' + svg(A.treasure(t.name), '-15 -15 30 30') + '<b>' + t.vp + '</b></span>').join('') +
     KINDS.filter((b) => p.baubles[b]).map((b) => '<span class="mc" title="' + esc(B[b].plural + ': ' + B[b].rule) + '">' + baubleIcon(b) + '<b>×' + p.baubles[b] + '</b><i>' + signed(p.score[b]).replace('+', '') + ' pts</i></span>').join('');
 
   let sel = [], selSig = '', bsel = [], bselSig = '';
   // the log names you "You": "You brings" reads "You bring"
-  const youLine = (l) => l.replace(/\bYou (brings|drops out and takes|drops|wins|runs|starts)\b/g, (m, v) => 'You ' + ({ 'drops out and takes': 'drop out and take' }[v] || v.slice(0, -1)));
+  const youLine = (l) => l.replace(/\bYou (brings|drops out and takes|drops|passes and takes|passes|wins|runs|starts)\b/g, (m, v) => 'You ' + ({ 'drops out and takes': 'drop out and take', 'passes and takes': 'pass and take', passes: 'pass' }[v] || v.slice(0, -1)));
 
   function render(el, v, api) {
     const me = v.seat, P = v.players, L = v.lot;
@@ -196,6 +198,7 @@
     const name = (i) => esc(P[i].name) + (i === me && P[i].name !== 'You' ? ' (you)' : '');
     const myTurn = v.phase === 'bid' && L && L.turn === me;
     const myFrost = v.phase === 'frost' && L && !L.offered[me] && P[me].cards > 0;
+    const rebid = v.phase === 'frost' && L && L.rebid ? L.rebid : null;
     const myPick = v.phase === 'pick' && v.picking && v.picking.seat === me;
 
     const status = {
@@ -218,6 +221,7 @@
       let head = frost ? 'A frost! Secret offerings' : 'Mr. Magpie shows off a treasure';
       let sub = frost ? 'Everyone brings a secret offering of acorn cards at once. The biggest wins; everyone else who brought one takes a bauble per card.' :
         'Beat the top offering by adding acorn cards, or pass. The last critter in wins it. Mr. Magpie keeps every acorn, win or lose.';
+      if (rebid) { head = 'A tie! ' + rebid.map(name).join(' and ') + ' offer again'; sub = 'They’re level at ' + L.bids[rebid[0]] + '. Each adds more acorn cards in secret, or nothing, until the tie breaks. If nobody adds a card, nobody wins it.'; }
       if (ex.length && v.phase !== 'lotEnd') sub = 'Nobody claimed ' + exNames + ', so ' + (ex.length > 1 ? 'they go' : 'it goes') + ' with this one: <b>' + v.lotVp + ' points in all</b>. ' + sub;
       if (v.phase === 'lotEnd' && v.result) {
         const all = [v.result.t].concat(v.result.extra || []).map((x) => 'the ' + esc(x.name)).join(' and ');
@@ -226,6 +230,7 @@
       }
       const pips = [0, 1, 2, 3].map((i) => '<span' + (i < v.frostsLeft ? '' : ' class="gone"') + '></span>').join('');
       mid = '<div class="mid"><div class="pile">' + backHTML('t') + '<span><b>' + v.deckLeft + '</b> cards left</span><div class="frosts" title="Frost cards still in the deck">' + pips + '</div><span>' + v.frostsLeft + ' frost' + (v.frostsLeft === 1 ? '' : 's') + ' left<br>the last brings the snow</span></div>' +
+        '<div class="pile">' + (v.loose > 0 ? acardHTML(1, { k: 'loose' }) : '<div class="back" style="opacity:.35"></div>') + '<span><b>' + v.loose + '</b> loose acorns</span><span>pass without offering<br>and take one</span></div>' +
         '<div class="tcards">' + (t ? tcardHTML(t) : '') + (v.phase !== 'lotEnd' ? ex.map((x) => tcardHTML(x, true)).join('') : '') + '</div>' +
         '<div class="say"><svg class="bird" viewBox="-13 -25 42 33" aria-hidden="true">' + A.magpie() + '</svg><div class="bubble"><h2>' + head + '</h2><p>' + sub + '</p></div></div></div>';
     }
@@ -236,7 +241,8 @@
       const spent = L.spent[s] || [], out = L.out.includes(s);
       const cards = spent.map((c, j) => acardHTML(c, { mini: true, k: 'sp' + s + '-' + j + '-' + v.lotNo })).join('');
       let inner;
-      if (frost && v.phase === 'frost') inner = L.offered[s] ? backHTML('', true) + '<span class="chip">offered in secret</span>' : '<span class="lbl">Choosing a secret offering…</span>';
+      if (rebid) inner = cards + (spent.length ? '' : '<span class="lbl">Brought nothing</span>') + (rebid.includes(s) ? '<span class="chip">' + (L.offered[s] ? 'ready' : 'adding…') + '</span>' : '') + '<span class="amt"' + (rebid.includes(s) ? ' style="margin-left:6px"' : '') + '>' + (L.bids[s] || 0) + '</span>';
+      else if (frost && v.phase === 'frost') inner = L.offered[s] ? backHTML('', true) + '<span class="chip">offered in secret</span>' : '<span class="lbl">Choosing a secret offering…</span>';
       else if (frost) inner = cards + (spent.length ? '' : '<span class="lbl">Brought nothing</span>') + '<span class="amt">' + (L.bids[s] || 0) + '</span>';
       else if (out) inner = cards + '<span class="chip">' + (spent.length ? 'out · took ' + spent.length : 'passed') + '</span>';
       else inner = cards + (spent.length ? '' : '<span class="lbl">No offering yet</span>') + '<span class="amt">' + (L.bids[s] || 0) + '</span>';
@@ -260,8 +266,8 @@
       banner = '<div class="banner"><div><b>' + (v.snow ? 'The first snow falls on the ' + esc(v.snow.name) + '.' : 'Winter is here.') + ' ' + (w.length ? w.map(name).join(' and ') + (w.length > 1 ? ' share the win!' : (w[0] === me && P[me].name === 'You' ? ' win!' : ' wins!')) : 'Nobody makes it through!') + '</b>' +
         '<p>' + f.out.map(name).join(' and ') + ' ran lowest on acorns and ' + (f.out.length > 1 || (f.out[0] === me && P[me].name === 'You') ? 'don’t' : 'doesn’t') + ' make it through winter.</p></div></div>';
       const order = P.map((_, i) => i).sort((a, b) => (f.out.includes(a) - f.out.includes(b)) || f.scores[b].total - f.scores[a].total);
-      banner += '<div class="panel"><h3>Final count</h3><div style="overflow-x:auto"><table class="final"><tr><th>Critter</th><th>Acorns left</th><th>Treasures</th><th>Earrings</th><th>Berries</th><th>Buttons</th><th>Feathers</th><th>Total</th></tr>' +
-        order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.out.includes(i) ? ' · out' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
+      banner += '<div class="panel"><h3>Final count</h3><div style="overflow-x:auto"><table class="final"><tr><th>Critter</th><th>Acorns left</th><th>Treasures</th><th>Earrings</th><th>Berries</th><th>Buttons</th><th>Feathers</th><th>Caps</th><th>Total</th></tr>' +
+        order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.out.includes(i) ? ' · out' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td>' + s.cap + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
     }
 
     // ---- Mr. Magpie's baubles: the bag and the face-up row
@@ -283,16 +289,16 @@
         prompt = L.high === 0 ? 'Nobody has brought an offering yet. Open with any acorn cards, or pass.' : 'The top offering is <b>' + L.high + '</b>' + (L.highSeat >= 0 ? ' (' + name(L.highSeat) + ')' : '') + '. ' + (myBid ? 'You have ' + myBid + ' in, so add at least ' + need + '.' : 'Add at least ' + need + ' to beat it.');
         const nb = (L.spent[me] || []).length;
         acts = '<button class="dt-btn go" data-do="raise"' + (sel.length && myBid + tot > L.high ? '' : ' disabled') + '>Offer ' + (myBid + tot) + '</button>' +
-          '<button class="dt-btn" data-do="pass">' + (nb ? 'Drop out and take ' + nb + ' bauble' + (nb > 1 ? 's' : '') : 'Pass') + '</button>';
+          '<button class="dt-btn" data-do="pass">' + (nb ? 'Drop out and take ' + nb + ' bauble' + (nb > 1 ? 's' : '') : v.loose > 0 ? 'Pass and take a loose acorn' : 'Pass') + '</button>';
       } else if (myFrost) {
-        prompt = 'Put acorn cards in your secret offering, then lock it in. You can bring nothing.';
-        acts = '<button class="dt-btn go" data-do="offer">' + (sel.length ? 'Offer ' + tot + ' in secret' : 'Bring nothing') + '</button>';
+        prompt = rebid ? 'You’re tied at <b>' + L.bids[me] + '</b>. Add acorn cards in secret to break the tie, or add nothing.' : 'Put acorn cards in your secret offering, then lock it in. Bring nothing and you take a loose acorn.';
+        acts = '<button class="dt-btn go" data-do="offer">' + (sel.length ? (rebid ? 'Add ' : 'Offer ') + tot + ' in secret' : rebid ? 'Add nothing' : 'Bring nothing') + '</button>';
       } else if (v.phase === 'frost' && L && L.offered[me]) {
-        prompt = 'You brought ' + (v.myOffer ? v.myOffer.reduce((t, x) => t + x, 0) : 0) + '. Waiting for the others…';
+        prompt = rebid ? (rebid.includes(me) ? 'Waiting for the other tied critters…' : 'Waiting for the tie to break…') : 'You brought ' + (v.myOffer ? v.myOffer.reduce((t, x) => t + x, 0) : 0) + '. Waiting for the others…';
       } else if (v.phase === 'lotEnd') {
         acts = '<button class="dt-btn" data-do="next">Next treasure</button>';
       }
-      const staging = myTurn || myFrost, mySpent = L ? (v.phase === 'frost' ? v.myOffer || [] : L.spent[me] || []) : [], iOut = L && !frost && L.out.includes(me);
+      const staging = myTurn || myFrost, mySpent = L ? (v.phase === 'frost' && !rebid ? v.myOffer || [] : L.spent[me] || []) : [], iOut = L && !frost && L.out.includes(me);
       const onTable = mySpent.length ? '<div class="onTable">' + mySpent.map((c, j) => acardHTML(c, { mini: true, k: 'sp' + me + '-' + j + '-' + v.lotNo })).join('') + '<span class="amt">' + mySpent.reduce((a, c) => a + c, 0) + '</span>' + (iOut ? '<span class="none">· you dropped out</span>' : '') + '</div>' : '<span class="none">' + (iOut ? 'You passed.' : 'Nothing yet.') + '</span>';
       mine = '<div class="mat' + (turn === me ? ' turn' : '') + '"><div class="sh">' + tok(P[me].critter) + '<span class="nm">' + name(me) + '</span><span class="pts"><b>' + P[me].money + '</b> acorns in hand · ' + P[me].score.total + ' pts</span></div>' +
         (prompt ? '<p class="prompt">' + prompt + '</p>' : '') +
@@ -352,12 +358,12 @@
     create: (players, opts) => new E.Game(players, opts),
     render,
     rules:
-      '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 10 acorn cards, from 1 up to 16. Keep them hidden in your hand. You can’t make change, so pick your cards carefully.</p>' +
-      '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, the treasure stays out and goes with the next one, so whoever wins next takes both. Treasures still waiting at the first snow stay with Mr. Magpie.</p>' +
+      '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 13 acorn cards, from 1 up to 20. Keep them hidden in your hand. You can’t make change, so pick your cards carefully.</p>' +
+      '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good, but if you pass without offering anything you take a loose acorn, a 1, from the pile. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, the treasure stays out and goes with the next one, so whoever wins next takes both. Treasures still waiting at the first snow stay with Mr. Magpie.</p>' +
       '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first, and if the row runs out, it’s refilled face up.</p>' +
-      '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first. The fourth frost brings the first snow and ends the game at once.</p>' +
-      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Nearly a third of the bag is lost acorns, from 1 up to 20: take one instead of a bauble and it goes into your hand.</p>' +
-      '<p><b>Winter.</b> The critter with the fewest acorns left doesn’t make it through. Most points among the rest wins.</p>',
+      '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first, and anyone who brought nothing takes a loose acorn. If the biggest offerings tie, the tied critters offer again in secret, adding to what they brought, until the tie breaks. The fourth frost brings the first snow and ends the game at once.</p>' +
+      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Bottle caps: 1 each, but whoever has the fewest loses 6. A few cards in the bag are lost acorns: take one instead of a bauble and it goes into your hand.</p>' +
+      '<p><b>Winter.</b> The critter with the fewest acorns left doesn’t make it through, and if several tie for fewest, none of them do. Most points among the rest wins.</p>',
   });
 })();
 </script>
