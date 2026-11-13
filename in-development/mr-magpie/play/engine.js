@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const RULES = {
-    hand: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 22], // every critter's acorn cards: a wide range, and no making change
+    hand: [1, 2, 3, 4, 5, 6, 8, 10, 13, 16],           // every critter's starting acorn cards: a wide range, and no making change
     treasures: [                                        // open auctions: the last critter in wins it
       { name: 'Silver Thimble', vp: 5 }, { name: 'Old Key', vp: 5 }, { name: 'Jingle Bell', vp: 6 },
       { name: 'Teaspoon', vp: 6 }, { name: 'Pocket Mirror', vp: 7 }, { name: 'Locket', vp: 8 },
@@ -15,8 +15,8 @@
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 13, berry: 13, button: 13, feather: 13 },
-    lostAcorns: [5, 6, 7, 8, 9, 10, 11, 13],            // bauble cards that go straight into your hand
+    baubles: { earring: 10, berry: 10, button: 10, feather: 10 },
+    lostAcorns: [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20],   // acorn cards in the bauble deck: take one and it goes into your hand
     rowExtra: 2,                                        // the bauble row holds players + this many
     earring: { single: -3, pair: 5 },                   // one alone is useless; each pair scores
     berry: [0, 2, 4, 7, 2, 0],                          // a few are lovely, too many spoil
@@ -28,7 +28,7 @@
     berry: { name: 'Berry', plural: 'Berries', rule: '1·2·3·4·5+ → 2·4·7·2·0' },
     button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 1·3·6·10·15·21' },
     feather: { name: 'Feather', plural: 'Feathers', rule: '1 each · most +6 · second +3' },
-    acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: 'Goes into your hand' },
+    acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: '1 to 20 · goes into your hand' },
   };
   const CRITTERS = ['mouse', 'chipmunk', 'hedgehog', 'rabbit', 'mole'];
   const BOT_NAMES = ['Hazel', 'Bramble', 'Pip', 'Clover', 'Juniper', 'Moss', 'Fern', 'Thistle', 'Rowan', 'Willow'];
@@ -60,22 +60,34 @@
   const isAcorn = (b) => typeof b === 'string' && b.startsWith('acorn');
   const acornVal = (b) => +b.slice(5);
 
-  function scoreOf(players, R) {
-    const fe = players.map((p) => p.baubles.feather);
-    const maj = fe.map(() => 0), vals = [...new Set(fe.filter((x) => x > 0))].sort((a, b) => b - a);
-    const places = [R.feather.most, R.feather.second];
+  /* places for a most-or-fewest race: ties take the lower place */
+  function race(counts, places) {
+    const out = counts.map(() => 0), vals = [...new Set(counts.filter((x) => x > 0))].sort((a, b) => b - a);
     let spot = 0;
     for (const v of vals) {
-      const tied = fe.map((x, i) => (x === v ? i : -1)).filter((i) => i >= 0), last = spot + tied.length - 1;
-      tied.forEach((i) => { maj[i] = last < places.length ? places[last] : 0; });
+      const tied = counts.map((x, i) => (x === v ? i : -1)).filter((i) => i >= 0), last = spot + tied.length - 1;
+      tied.forEach((i) => { out[i] = last < places.length ? places[last] : 0; });
       spot += tied.length; if (spot >= places.length) break;
     }
-    const tab = (t, n) => t[Math.min(n, t.length - 1)];
+    return out;
+  }
+  const KINDS = ['earring', 'berry', 'button', 'feather', 'cap', 'bead'];
+  function scoreOf(players, R) {
+    const has = (k) => !!(R.baubles[k]), n = (p, k) => p.baubles[k] || 0;
+    const tab = (t, k) => t[Math.min(k, t.length - 1)];
+    const maj = has('feather') ? race(players.map((p) => n(p, 'feather')), [R.feather.most, R.feather.second]) : players.map(() => 0);
+    let capPen = players.map(() => 0);
+    if (has('cap')) { const c = players.map((p) => n(p, 'cap')), mn = Math.min(...c); if (Math.max(...c) > mn) capPen = c.map((x) => (x === mn ? R.cap.fewest : 0)); }
     return players.map((p, i) => {
-      const b = p.baubles, treasures = sum(p.treasures.map((t) => t.vp));
-      const earring = R.earring.pair * Math.floor(b.earring / 2) + R.earring.single * (b.earring % 2);
-      const berry = tab(R.berry, b.berry), button = tab(R.button, b.button), feather = R.feather.each * b.feather + maj[i];
-      return { treasures, earring, berry, button, feather, total: treasures + earring + berry + button + feather };
+      const o = { treasures: sum(p.treasures.map((t) => t.vp)) };
+      o.earring = has('earring') ? R.earring.pair * Math.floor(n(p, 'earring') / 2) + R.earring.single * (n(p, 'earring') % 2) : 0;
+      o.berry = has('berry') ? tab(R.berry, n(p, 'berry')) : 0;
+      o.button = has('button') ? tab(R.button, n(p, 'button')) : 0;
+      o.feather = has('feather') ? R.feather.each * n(p, 'feather') + maj[i] : 0;
+      o.cap = has('cap') ? R.cap.each * n(p, 'cap') + capPen[i] : 0;
+      o.bead = has('bead') ? tab(R.bead, n(p, 'bead')) : 0;
+      o.total = o.treasures + KINDS.reduce((t, k) => t + o[k], 0);
+      return o;
     });
   }
 
@@ -87,7 +99,7 @@
       const styles = Object.keys(STYLES);
       this.players = players.map((p, i) => ({
         name: p.name, bot: !!p.bot, critter: crit[i % crit.length], style: styles[Math.floor(rnd() * styles.length)],
-        hand: RULES.hand.slice(), treasures: [], baubles: { earring: 0, berry: 0, button: 0, feather: 0, acorn: 0 },
+        hand: RULES.hand.slice(), treasures: [], baubles: Object.assign({ acorn: 0 }, ...Object.keys(RULES.baubles).map((k) => ({ [k]: 0 }))),
         blind: 0,   // lost acorns drawn blind from the bag: nobody else saw them
       }));
       if (opts.styles) opts.styles.forEach((s, i) => { if (s && this.players[i]) this.players[i].style = s; });
@@ -98,7 +110,7 @@
       RULES.lostAcorns.forEach((v) => side.push('acorn' + v));
       this.side = shuffle(side); this.row = [];
       this.rowSize = this.N + RULES.rowExtra;
-      this.M = sum(RULES.hand);
+      this.M = sum(RULES.hand) + sum(RULES.lostAcorns) / this.N * 0.5;   // starting acorns plus a share of the lost ones, for the bots
       this.framesLeft = RULES.frosts.length;
       const n = this.deck.length, k = this.framesLeft;
       this.expLots = k * (n + 1) / (k + 1) - 1;
@@ -337,14 +349,15 @@
     itemVp(s, b) {
       const R = this.R, p = this.players[s], S = this.st(s), rf = this.remFrac();
       if (isAcorn(b)) { const v = acornVal(b), d = this.danger(s) ? 1.5 : 0.6; return (v / this.beta * d * S.saveW + 0.3 * v / this.beta) * S.side; }
-      const n = p.baubles[b];
-      if (b === 'feather') {
-        const fe = this.players.map((q) => q.baubles.feather), base = scoreOf(this.players, R)[s].feather;
-        const sim = this.players.map((q, i) => (i === s ? Object.assign({}, q, { baubles: Object.assign({}, q.baubles, { feather: q.baubles.feather + 1 }) }) : q));
-        const after = scoreOf(sim, R)[s].feather; void fe;
-        return ((after - base) + R.feather.most * 0.15 * rf) * S.side;
+      const n = p.baubles[b] || 0;
+      if (b === 'feather' || b === 'cap') {   // races: score the change for everyone
+        const base = scoreOf(this.players, R)[s][b];
+        const sim = this.players.map((q, i) => (i === s ? Object.assign({}, q, { baubles: Object.assign({}, q.baubles, { [b]: (q.baubles[b] || 0) + 1 }) }) : q));
+        const after = scoreOf(sim, R)[s][b];
+        return ((after - base) + (b === 'feather' ? R.feather.most : -R.cap.fewest / 2) * 0.15 * rf) * S.side;
       }
-      const lad = (k) => (b === 'earring' ? R.earring.pair * Math.floor(k / 2) + R.earring.single * (k % 2) : (b === 'berry' ? R.berry : R.button)[Math.min(k, (b === 'berry' ? R.berry : R.button).length - 1)]);
+      const T = b === 'berry' ? R.berry : b === 'button' ? R.button : R.bead;
+      const lad = (k) => (b === 'earring' ? R.earring.pair * Math.floor(k / 2) + R.earring.single * (k % 2) : T[Math.min(k, T.length - 1)]);
       const imm = lad(n + 1) - lad(n);
       let best = imm; for (const j of [1, 2]) best = Math.max(best, (lad(n + 1 + j) - lad(n)) / (j + 1));
       return (imm + rf * Math.max(0, best - imm) * 0.6) * S.side;
