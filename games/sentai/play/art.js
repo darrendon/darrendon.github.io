@@ -438,13 +438,16 @@
     opts = opts || {};
     const ACTN = ['Season 1', 'Season 2', 'Finale'], needs = b.needs || [b.need, b.need, b.need];
     const cells = needs.map((v, i) => `<span class="nu${n === i + 2 ? ' on' : ''}"><i>${'<u></u>'.repeat(i + 2)}</i><b>${v + (b.brooded && n === i + 2 ? '' : '')}</b></span>`).join('');
+    // the weak spot: a color (Runs and Sets) or a band of ranks (Flushes and Rainbows)
+    const WN = ['Red', 'Blue', 'Yellow', 'Green', 'Pink'], BN = { low: '1–4', mid: '5–8', high: '9–12', odd: 'Odd', even: 'Even' };
+    const wk = !b.weak ? '' : b.weak.kind === 'color' ? `<span class="wk"><i>Weak</i>${svg('0 0 24 24', emblem(b.weak.v), ' aria-hidden="true"')}<b>${WN[b.weak.v]}</b></span>` : `<span class="wk"><i>Weak</i><b>${BN[b.weak.v]}</b></span>`;
     const label = `${b.name}: ${TYPE_NAME[b.type]} of ${n ? (b.need != null ? b.need : needs[n - 2]) : needs.join(' / ')}`;
     return `<div class="mcard a${b.act}${b.hex ? ' hydra' : ''}${opts.cls ? ' ' + opts.cls : ''}" role="img" aria-label="${esc(label)}"${opts.attrs || ''}><div class="mf">` +
       `<div class="mt"><span>${ACTN[b.act]}</span><span class="bm">${bossMark(b.key >= 18 ? 'vael' : 'gorvax')}${b.key >= 18 ? 'Vael' : 'Gorvax'}</span></div>` +
-      `<div class="art">${monsterSVG(b.key, ' aria-hidden="true"', b.hex)}</div>` +
+      `<div class="art">${monsterSVG(b.key, ' aria-hidden="true"', b.hex)}${wk}</div>` +
       `<div class="nm${b.name.length > 12 ? ' long' : ''}">${esc(b.name)}</div>` +
       `<div class="cb"><span>${TYPE_NAME[b.type]} of</span></div>` +
-      `<div class="nums">${cells}</div>` +
+      `<div class="nums" style="--nn:${needs.length}">${cells}</div>` +
       (opts.hexText ? `<div class="hx"><b>${esc(opts.hexText.name)}</b> ${esc(opts.hexText.text)}</div>` : '') +
       `</div></div>`;
   }

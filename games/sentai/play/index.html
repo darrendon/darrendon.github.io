@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <link rel="stylesheet" href="/assets/css/dev-table.css?v=79371b01">
-<link rel="stylesheet" href="cards.css?v=c04041df">
+<link rel="stylesheet" href="cards.css?v=c069dad8">
 <style>
   body{--t-bg:#F3E7CF;--t-card:#FFF6E4;--t-ink:#1F1A2B;--t-muted:#6A5F57;--t-line:#E2CFAB;--t-accent:#E2482F;--t-accent-ink:#fff;--t-mast:#1F1A2B;--t-mast-ink:#F3E7CF;
     --felt:#24483F;--felt-d:#1A3730;--felt-ink:#EFE3C8;--felt-mute:#A9BFA9;--wood:#6B4329;--gold:#F0B429}
@@ -130,6 +130,12 @@
   .log{font-size:13.5px;color:var(--t-muted);max-height:150px;overflow:auto}
   .log p{margin:0 0 3px}
 
+  .energy{display:flex;gap:5px;justify-content:center;padding:4px 0}
+  .energy i{width:20px;height:20px;border-radius:50%;border:2px solid var(--gold);opacity:.35}
+  .energy i.on{background:radial-gradient(circle at 35% 30%,#FFE9A8,var(--gold) 60%);opacity:1;box-shadow:0 0 8px rgba(240,180,41,.6)}
+  .esp{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;padding:4px 8px;border:1px dashed var(--gold);border-radius:12px}
+  .esp i{font:700 11px/1 Jost;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-style:normal}
+  .twk{position:relative;display:inline-block}.twk::after{content:attr(data-t);position:absolute;right:-6px;top:-8px;background:var(--gold);color:#1F1A2B;font:900 12px/1 Archivo,Jost;padding:3px 5px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:2}
   .coach{max-width:1180px;margin:0 auto 10px;background:#1F1A2B;color:#F3E7CF;border-radius:14px;padding:12px 16px;border:2px solid var(--gold)}
   .coach span{font:700 11px/1 Jost;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
   .coach p{margin:5px 0 0;font-size:15.5px;line-height:1.45}.coach b{color:var(--gold)}
@@ -175,8 +181,8 @@
 <div id="app"></div>
 <script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
-<script src="art.js?v=a3818800"></script>
-<script src="engine.js?v=f83a4e56"></script>
+<script src="art.js?v=f990ae50"></script>
+<script src="engine.js?v=9d1daa56"></script>
 <script>
 (function () {
   'use strict';
@@ -184,10 +190,11 @@
   const ACT = ['Season 1', 'Season 2', 'Finale'], IN = ['Season 1', 'Season 2', 'the Finale'], TYPE = S.TYPE, COL = S.COLORS;
   const TUT = new URLSearchParams(location.search).has('tutorial');   // a coached first two monsters
   let tutDone = false;
-  let sel = [], selHead = {}, key = '', wildOn = false, wildId = null, beaconOn = false;   // sel: cards you've put on the table but not locked in; selHead: card id → head it's on
+  let sel = [], selHead = {}, key = '', wildOn = false, wildId = null, beaconOn = false;
+  let tweakD = 0, tweakId = null, showOn = false, giveOn = false, giveId = null;   // Energy: a Tweak (one card a rank up or down), showing a card as you pass, a Hand-off   // sel: cards you've put on the table but not locked in; selHead: card id → head it's on
 
   const tilt = (id) => ((id * 37) % 7) - 3;                       // played cards sit a little crooked, the way hands put them down
-  const card = (c, attrs) => '<span class="cw" data-k="k' + c.id + '"' + (attrs || '') + '>' + (c.wild ? '<span class="wild">' + A.cardHTML(c.real) + '</span>' : A.cardHTML(c)) + '</span>';
+  const card = (c, attrs) => '<span class="cw" data-k="k' + c.id + '"' + (attrs || '') + '>' + (c.wild ? '<span class="wild">' + A.cardHTML(c.real) + '</span>' : c.tweaked ? '<span class="twk" data-t="' + (c.tweaked > 0 ? '+1' : '−1') + '">' + A.cardHTML(c.real) + '</span>' : A.cardHTML(c)) + '</span>';
   const avatar = (h) => A.beastSVG(h);
   const chip = (c) => '<span class="kc c' + c.c + '" title="' + esc(S.cardName(c)) + '">' + c.r + '</span>';
   const actOf = (k) => Math.floor((k % 18) / 6);
@@ -219,7 +226,7 @@
   function mine(l, nm) {
     if (l.endsWith(' ' + nm + ' leads.')) return l.slice(0, -(nm.length + 7)) + 'You lead.';
     if (!l.startsWith(nm + ' ')) return l;
-    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes/, 'pass').replace(/^discards /, 'discard ').replace(/^uses /, 'use ').replace(/^has /, 'have ').replace(/their last/, 'your last');
+    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes and charges/, 'pass and charge').replace(/^passes and shows/, 'pass and show').replace(/^passes/, 'pass').replace(/^spends /, 'spend ').replace(/^discards /, 'discard ').replace(/^uses /, 'use ').replace(/^has /, 'have ').replace(/their last/, 'your last');
   }
 
   // a Boss card as printed; `attrs` carries where it came from when it first lands on the table
@@ -228,7 +235,7 @@
   // a combo laid out on the felt: placed cards (each remembers whose hand it came from), then empty spots
   // pend: cards you've picked for this head but not added yet, shown in its empty spots
   const slots = (x, pend) => '<div class="slots">' + x.cards.map((c) => card(c, ' style="rotate:' + tilt(c.id) + 'deg" data-from="seat' + (x.who ? x.who[c.id] : '') + '"')).join('') +
-    (pend || []).map((c) => '<span class="cw pend" data-k="k' + c.id + '" data-id="' + c.id + '" title="Not locked in yet: drag it back to take it back">' + A.cardHTML(c) + '</span>').join('') +
+    (pend || []).map((c) => '<span class="cw pend" data-k="k' + c.id + '" data-id="' + c.id + '" title="Not locked in yet: drag it back to take it back">' + (c.id === tweakId ? '<span class="twk" data-t="' + (tweakD > 0 ? '+1' : '−1') + '">' + A.cardHTML(c) + '</span>' : A.cardHTML(c)) + '</span>').join('') +
     Array.from({ length: Math.max(0, x.need - (pend || []).length) }, () => '<span class="slot"></span>').join('') + '</div>';
 
   /* ---------- motion: every card and monster keeps its identity, so it travels between hands, the combo and the piles ---------- */
@@ -291,7 +298,7 @@
     const me = v.seat, P = v.players, vael = v.boss === 'vael';
     SQUAD = P.length;
     const k = v.phase + ':' + v.fights + ':' + (v.round ? v.round.at : v.enc ? v.enc.at : 0);
-    if (k !== key) { sel = []; selHead = {}; key = k; wildOn = false; wildId = null; beaconOn = false; }
+    if (k !== key) { sel = []; selHead = {}; key = k; wildOn = false; wildId = null; beaconOn = false; tweakD = 0; tweakId = null; showOn = false; giveOn = false; giveId = null; }
     const myTurn = v.phase === 'build' && v.turn === me;
     const iDiscard = v.phase === 'discard' && P[me].needsDiscard;
     const iRiptide = v.phase === 'riptide' && v.riptide.seat === me;
@@ -301,7 +308,7 @@
     const onHead = (h) => sel.filter((id) => (selHead[id] || 0) === h);
     const handCard = (id) => v.hand.find((x) => x.id === id);
     const stateOf = (h, skip) => { const X = targets[h]; let st = { type: X.type, total: X.total, cards: X.cards.slice(), rank: X.rank, color: X.color, lo: X.lo, hi: X.hi, mask: X.mask || 0, rmask: X.cards.reduce((m, c) => m | (1 << c.r), 0) };
-      for (const id of onHead(h)) { if (id === skip) continue; const c = handCard(id), w = id === wildId ? wildAs(st, c) : null; st = addTo(st, w ? { id, r: w.r, c: w.c } : c); } return st; };
+      for (const id of onHead(h)) { if (id === skip) continue; const c = handCard(id), w = id === wildId ? wildAs(st, c) : null; st = addTo(st, w ? { id, r: w.r, c: w.c } : id === tweakId ? { id, r: c.r + tweakD, c: c.c } : c); } return st; };
     // the referee for one card put down on head h (h = 0 is Gorvax's combo): null if it may go there, else why not
     const placeWhy = (id, h) => {
       const c = handCard(id);
@@ -325,9 +332,11 @@
       const st = stateOf(h);
       if (!st.cards.length || S.fits(st, c)) return null;
       if (wildOn && wildId == null) return wildAs(st, c) ? null : 'Overcharge needs a combo already started, with room to grow.';
+      if (tweakD && tweakId == null) { const r = c.r + tweakD; return r >= 1 && r <= 12 && S.fits(st, { r, c: c.c }) ? null : 'Even as a ' + r + ', that card doesn’t fit. ' + whyNot(st, { r, c: c.c }); }
       return whyNot(st, c);
     };
-    const unpick = (id) => { const h = selHead[id] || 0; const drop = [id].concat(wildId != null && wildId !== id && (selHead[wildId] || 0) === h ? [wildId] : []); if (drop.includes(wildId)) wildId = null; sel = sel.filter((x) => !drop.includes(x)); drop.forEach((x) => delete selHead[x]); };
+    const unpickAny = (id) => { sel = sel.filter((x) => x !== id); delete selHead[id]; };
+    const unpick = (id) => { const h = selHead[id] || 0; const drop = [id].concat(wildId != null && wildId !== id && (selHead[wildId] || 0) === h ? [wildId] : []); if (drop.includes(wildId)) wildId = null; if (drop.includes(tweakId)) tweakId = null; sel = sel.filter((x) => !drop.includes(x)); drop.forEach((x) => delete selHead[x]); };
 
     const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
       : v.phase === 'riptide' ? (iRiptide ? 'Use Riptide?' : 'Waiting on Riptide…')
@@ -368,6 +377,7 @@
     const staged = iDiscard ? sel.map(handCard).filter(Boolean) : [];
     const right = '<div class="side r"><div class="pile" data-zone="trash"><div data-anchor="trash" class="trashspot">' + (staged.length ? staged.map((c, i) => '<span class="cw pend" data-k="k' + c.id + '" data-id="' + c.id + '" style="rotate:' + tilt(c.id) + 'deg;margin-top:' + (i ? '-64px' : '0') + '">' + A.cardHTML(c) + '</span>').join('')
       : top ? card(top.c, ' data-from="seat' + top.seat + '"') : '<div class="spot"></div>') + '</div><span class="lbl">Discards · ' + v.trashN + '</span></div>' +
+      '<div class="pile"><div class="energy" title="Energy: spend 1 on your turn for a Tweak or a Hand-off">' + Array.from({ length: v.energyMax }, (_, i) => '<i class="' + (i < v.energy ? 'on' : '') + '"></i>').join('') + '</div><span class="lbl">Energy · ' + v.energy + '</span></div>' +
       '<div class="pile"><div class="spot" data-anchor="beaten">' + (lastBeat != null ? '<b style="font:900 22px/1 Archivo;color:var(--gold)">' + v.done + '</b>' : '') + '</div><span class="lbl">' + (vael ? 'Cut ' + v.done + ' · struck ' + v.misses : 'Beaten ' + v.done + (v.misses ? ' · missed ' + v.misses + '×' : '')) + '</span></div></div>';
 
     // the middle: the fight, or the Hydra's heads
@@ -397,7 +407,7 @@
       const r = v.result;
       if (vael) {
         const bits = [];
-        if (r.cut.length) bits.push(r.cut.map((b) => esc(b.name)).join(' and ') + (r.cut.length > 1 ? ' are' : ' is') + ' cut off.');
+        if (r.cut.length) bits.push(r.cut.map((b) => esc(b.name)).join(' and ') + (r.cut.length > 1 ? ' are' : ' is') + ' cut off.' + (r.weak ? ' Weak spot hit: +' + r.weak + ' Energy.' : ''));
         if (r.struck.length) bits.push(r.struck.map((b) => esc(b.name)).join(' and ') + ' struck: its cards are lost and every Hero discards 2.');
         if (r.enraged.length) bits.push(r.enraged.map(esc).join(' and ') + (r.enraged.length > 1 ? ' are' : ' is') + ' enraged.');
         if (r.hunger.length) bits.push('Hunger takes a card from ' + r.hunger.map(nm).join(' and ') + '.');
@@ -408,7 +418,7 @@
         const back = r.bounced.map((x) => nm(x.seat) + ' took back ' + x.cards.map((c) => esc(S.cardName(c))).join(' and ')).join('; ');
         const e = v.enc;
         call = '<div class="call' + (r.met ? '' : ' bad') + '"><b>' + (r.met ? esc(e.boss.name) + ' is defeated!' : esc(e.boss.name) + ' holds on') + '</b><p>' +
-          (r.met ? 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 1, and you fight it again.' + discLine(r)) + '</p></div>';
+          (r.met ? (r.weak ? 'A finishing blow on its weak spot: the squad gains 1 Energy. ' : '') + 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 1, and you fight it again.' + discLine(r)) + '</p></div>';
       }
     }
 
@@ -419,11 +429,17 @@
     const myPw = P[me].power;
     let main = '';
     if (myTurn) {
-      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : vael ? 'Your turn. Put 1 or 2 cards on the heads (tap a card, then a head) and press Lock in, or pass.'
+      const prompt = beaconOn ? 'Beacon: tap the card you want everyone to see.' : showOn ? 'Pass and show: tap the card you want everyone to see.'
+        : giveOn ? (giveId == null ? 'Hand-off: tap the card you want to give away.' : 'Hand-off: who gets ' + esc(S.cardName(handCard(giveId))) + '?')
+        : tweakD && tweakId == null ? 'Tweak: the next card you put down counts as one rank ' + (tweakD > 0 ? 'higher' : 'lower') + '.' : vael ? 'Your turn. Put 1 or 2 cards on the heads (tap a card, then a head) and press Lock in, or pass.'
         : 'Your turn. Tap cards onto the combo, then press Lock in. Or pass.';
       main = '<p class="prompt">' + prompt + '</p>' + hand +
         '<div class="acts">' + (beaconOn ? '<button class="dt-btn" data-do="beacon-off">Cancel</button>'
-          : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Lock in' + (sel.length ? ' ' + sel.length : '') + '</button><button class="dt-btn" data-do="pass">Pass</button>' +
+          : showOn ? '<button class="dt-btn" data-do="mode-off">Cancel</button>'
+          : giveOn ? (giveId != null ? order.map((i) => '<button class="dt-btn go" data-do="give" data-to="' + i + '">Give to ' + esc(P[i].name) + '</button>').join('') : '') + '<button class="dt-btn" data-do="mode-off">Cancel</button>'
+          : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Lock in' + (sel.length ? ' ' + sel.length : '') + '</button>' +
+            '<button class="dt-btn" data-do="pass-charge"' + (v.energy < v.energyMax ? '' : ' disabled title="The squad’s Energy is full"') + '>Pass: +1 Energy</button><button class="dt-btn" data-do="pass-show">Pass: show a card</button>' +
+            (v.energy > 0 ? '<span class="esp"><i>Spend 1 Energy</i><button class="dt-btn' + (tweakD < 0 ? ' on' : '') + '" data-do="tweak-">Tweak −1</button><button class="dt-btn' + (tweakD > 0 ? ' on' : '') + '" data-do="tweak+">Tweak +1</button>' + (v.canHandoff ? '<button class="dt-btn" data-do="give-on">Hand-off</button>' : '') + '</span>' : '') +
             (v.canWild ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
             (v.canBeacon ? '<button class="dt-btn" data-do="beacon">Beacon: show a card</button>' : '')) + '</div>';
     } else if (iRiptide) {
@@ -479,7 +495,7 @@
         pieces: '.cardb, .pend[data-id]', zones: '[data-zone]', key: (n) => 'k' + n.dataset.id,
         canLift: () => v.phase !== 'over',
         home: (p) => {
-          if (sel.includes(+p.data.id) || beaconOn) return null;
+          if (sel.includes(+p.data.id) || beaconOn || showOn || giveOn) return null;
           if (iDiscard) return el.querySelector('[data-zone="trash"]');
           if (!myTurn) return null;
           if (!vael) return el.querySelector('.fight[data-zone="head"]');
@@ -490,6 +506,8 @@
         tap: (p) => {
           const id = +p.data.id;
           if (beaconOn && !sel.includes(id)) { beaconOn = false; api.act({ type: 'beacon', card: id }); return true; }
+          if (showOn && !sel.includes(id)) { showOn = false; api.act({ type: 'pass', reveal: id }); return true; }
+          if (giveOn && !sel.includes(id)) { giveId = id; render(el, v, api); return true; }
           if (sel.includes(id)) { unpick(id); Tabletop.sound('slide'); render(el, v, api); return true; }   // tap a card you put down to take it back
           return false;
         },
@@ -497,6 +515,7 @@
           const id = +p.data.id, zone = z.dataset.zone;
           if (zone === 'hand') { if (!sel.includes(id)) return { ok: false, quiet: true }; unpick(id); render(el, v, api); return true; }
           if (beaconOn) return 'Beacon: tap the card you want everyone to see, or cancel.';
+          if (showOn || giveOn) return 'Tap a card, or cancel.';
           if (zone === 'trash') {
             if (!iDiscard) return v.phase === 'build' && myTurn ? 'You don’t discard on your turn. Put cards on ' + (vael ? 'a head' : 'the combo') + ', or pass.' : 'Nobody is discarding right now.';
             if (sel.includes(id)) return { ok: false, quiet: true };
@@ -513,6 +532,7 @@
           } else { const why = placeWhy(id, h); if (why) return why; }
           const c = handCard(id);
           if (wildOn && wildId == null && targets[h].cards.length + onHead(h).length && !S.fits(stateOf(h), c)) wildId = id;
+          else if (tweakD && tweakId == null) tweakId = id;
           sel.push(id); selHead[id] = h;
           render(el, v, api); return true;
         },
@@ -523,17 +543,22 @@
       if (d === 'wild') { wildOn = !wildOn; if (!wildOn && wildId != null) { sel = sel.filter((x) => x !== wildId); wildId = null; } render(el, v, api); return; }
       if (d === 'beacon') { beaconOn = true; sel = []; render(el, v, api); return; }
       if (d === 'beacon-off') { beaconOn = false; render(el, v, api); return; }
-      if (d === 'add') { const heads = [...new Set(sel.map((x) => selHead[x] || 0))]; api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: sel.filter((x) => (selHead[x] || 0) === h) })), head: heads[0], cards: sel, wild: wildId }, b); }
-      if (d === 'pass') api.act({ type: 'pass' });
+      if (d === 'mode-off') { showOn = giveOn = false; giveId = null; render(el, v, api); return; }
+      if (d === 'pass-show') { showOn = true; sel = []; selHead = {}; tweakD = 0; tweakId = null; render(el, v, api); return; }
+      if (d === 'give-on') { giveOn = true; giveId = null; render(el, v, api); return; }
+      if (d === 'give') { const to = +b.dataset.to, card = giveId; giveOn = false; giveId = null; api.act({ type: 'handoff', card, to }); return; }
+      if (d === 'tweak-' || d === 'tweak+') { const nd = d === 'tweak+' ? 1 : -1; if (tweakId != null) unpickAny(tweakId); tweakD = tweakD === nd ? 0 : nd; tweakId = null; render(el, v, api); return; }
+      if (d === 'add') { const heads = [...new Set(sel.map((x) => selHead[x] || 0))]; api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: sel.filter((x) => (selHead[x] || 0) === h) })), head: heads[0], cards: sel, wild: wildId, tweak: tweakId != null ? { id: tweakId, d: tweakD } : null }, b); }
+      if (d === 'pass-charge') api.act({ type: 'pass', charge: true });
       if (d === 'rip-yes') api.act({ type: 'riptide', use: true });
       if (d === 'rip-no') api.act({ type: 'riptide', use: false });
-      sel = []; selHead = {}; wildId = null; wildOn = false;
+      sel = []; selHead = {}; wildId = null; wildOn = false; tweakD = 0; tweakId = null;
     }));
   }
 
   DevTable.mount(document.getElementById('app'), {
-    id: 'sentai', title: 'Sentai', blurb: '2–4 players · 20–30 minutes · cooperative',
-    minPlayers: 2, maxPlayers: 4, defaultPlayers: 3, botNames: S.BOT_NAMES,
+    id: 'sentai', title: 'Sentai', blurb: '2–5 players · 20–30 minutes · cooperative',
+    minPlayers: 2, maxPlayers: 5, defaultPlayers: 3, botNames: S.BOT_NAMES,
     options: [
       { key: 'boss', label: 'Boss', values: [['gorvax', 'Emperor Gorvax'], ['vael', 'Vael, the Hydra']], def: 'gorvax' },
       { key: 'powers', label: 'Hero powers', values: [[0, 'Off'], [1, 'On']], def: 0 },
@@ -542,10 +567,13 @@
     create: (players, opts) => new S.Game(players, TUT ? { boss: 'gorvax', powers: 0, firstLead: 0 } : opts),   // in the tutorial you lead the first fight
     render,
     rules:
-      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes, each ranked 1–12, and 15 cards each (14 against the Hydra).</p>' +
+      '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes (all five with 4 or 5), each ranked 1–12, and 15 cards each (14 against the Hydra, 11 with 5 Heroes).</p>' +
+      '<p><b>Passing.</b> When you pass, either show one card from your hand to everyone, or add 1 Energy to the squad’s pool.</p>' +
+      '<p><b>Energy.</b> On your turn, spend 1 Energy for a Tweak (one card you add counts as one rank higher or lower) or a Hand-off (give one card, face down, to another Hero).</p>' +
+      '<p><b>Weak spots.</b> Every monster has one: a color, or a band of ranks. If the last card added to a finished combo hits it, the squad gains 1 Energy.</p>' +
       '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Flush is one color, any ranks. A Rainbow is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
       '<p><b>Emperor Gorvax.</b> Each season’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
-      '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or 4 Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
+      '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or more Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once a season): show a card.</p>',
   });
   if (TUT) { const n = document.getElementById('dt-l-n'); if (n) n.value = '3'; const b = document.getElementById('dt-l-start'); if (b) b.click(); }

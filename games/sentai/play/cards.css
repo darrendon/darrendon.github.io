@@ -29,7 +29,10 @@
 .mcard .nm.long{font-size:.84em;padding-top:.3em}
 .mcard .cb{display:flex;align-items:center;justify-content:center;gap:.4em;font:700 .74em/1 Jost,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.14em 0 .3em;position:relative}
 .mcard .cb .ci{width:2.2em;height:auto;display:block;opacity:.9}
-.mcard .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:.28em;padding:0 .5em .5em;position:relative}
+.mcard .art{position:relative}
+.mcard .wk{position:absolute;right:.3em;bottom:.3em;display:flex;align-items:center;gap:.25em;background:#1F1A2B;color:#FFF6E4;border-radius:.4em;padding:.2em .4em;font:800 .6em/1 Jost,sans-serif;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 0 0 .1em #F0B429}
+.mcard .wk i{font-style:normal;font-weight:600;opacity:.75;font-size:.85em}.mcard .art .wk svg{position:static;inset:auto;width:1.1em;height:1.1em;display:block}.mcard .wk b{color:#F0B429}
+.mcard .nums{display:grid;grid-template-columns:repeat(var(--nn,3),1fr);gap:.28em;padding:0 .5em .5em;position:relative}
 .mcard .nu{border-radius:.34em;background:rgba(0,0,0,.26);padding:.22em 0 .14em;display:flex;flex-direction:column;align-items:center;gap:.16em}
 .mcard .nu i{display:flex;gap:.14em;height:.32em}
 .mcard .nu u{width:.32em;height:.32em;border-radius:50%;background:currentColor;opacity:.85;text-decoration:none}

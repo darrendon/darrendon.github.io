@@ -7,8 +7,14 @@
   'use strict';
   const RULES = {
     ranks: 12,                          // each color runs 1–12
-    colorsFor: (n) => n + 1,            // colors in play = Heroes + 1
+    colorsFor: (n) => Math.min(5, n + 1),   // colors in play = Heroes + 1, up to all five
     hand: 15,                           // cards dealt to each Hero (a Boss may say otherwise)
+    hand5: 11,                          // with 5 Heroes: 11 each, so 5 cards stay buried
+    energyStart: 1,                     // Energy tokens the squad starts with
+    energyMax: 4,                       // most Energy the squad can hold
+    passCharge: true,                   // when you pass: show a card, or gain 1 Energy
+    weakEnergy: 1,                      // Energy for beating a monster with a finishing blow on its weak spot
+    weakFinish: true,                   // the weak-spot card has to be the last card added (false: anywhere in the combo)
     missDiscard: 1,                     // Gorvax: cards each Hero discards when a combo falls short
     strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
     maxAdd: 2,                          // cards a Hero may add per turn
@@ -18,7 +24,7 @@
     rageRounds: 1,                      // Vael: rounds a head can stay enraged before it strikes
     starveStrike: false,                // Vael: an enraged head strikes only after a round in which nobody fed it
     lookahead: 24,                      // imagined deals a bot plays out before each move
-    actDraws: { 2: [3, 3, 4], 3: [3, 4, 5], 4: [4, 4, 4] },   // Boss cards drawn for each act
+    actDraws: { 2: [3, 3, 4], 3: [3, 4, 5], 4: [4, 4, 4], 5: [4, 4, 4] },   // Boss cards drawn for each act
     bosses: {
       gorvax: {
         name: 'Emperor Gorvax',
@@ -35,7 +41,7 @@
       vael: {
         name: 'Vael, the Hydra',
         hand: 14,
-        heads: { 2: 2, 3: 3, 4: 3 },
+        heads: { 2: 2, 3: 3, 4: 3, 5: 3 },
         // per act: [type, [need with 2, 3, 4 Heroes], name, hex]
         acts: [
           [['run', [2, 2, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3], 'Sallowmaw', 'coil'],
@@ -64,6 +70,14 @@
     { key: 'steady', name: 'Steady', kind: 'Passive', text: 'Whenever the squad discards, you discard 1 fewer.' },
     { key: 'beacon', name: 'Beacon', kind: 'Once a season', text: 'On your turn, show one card from your hand to everyone.' },
   ];
+  /* Weak spots: every monster is weak on the side its combo ignores. Runs and Sets are weak to a color (one of the
+     three colors that are always in play); Flushes and Rainbows are weak to a band of ranks. */
+  const BANDS = { low: { name: '1–4', ok: (r) => r <= 4 }, mid: { name: '5–8', ok: (r) => r >= 5 && r <= 8 }, high: { name: '9–12', ok: (r) => r >= 9 },
+    odd: { name: 'odd', ok: (r) => r % 2 === 1 }, even: { name: 'even', ok: (r) => r % 2 === 0 } };
+  const BAND_KEYS = ['low', 'high', 'odd', 'mid', 'even'];
+  const weakOf = (type, a, i) => (type === 'run' || type === 'set') ? { kind: 'color', v: (a + i) % 3 } : { kind: 'band', v: BAND_KEYS[(a * 2 + i) % 5] };
+  const isWeak = (w, c) => !!w && (w.kind === 'color' ? c.c === w.v : BANDS[w.v].ok(c.r));
+  const weakName = (w) => w.kind === 'color' ? COLORS[w.v] : BANDS[w.v].name;
   const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Pink'];
   const TYPE = { run: 'Run', set: 'Set', color: 'Flush', combine: 'Rainbow' };   // color = one color; combine = all different colors
   const ACTN = ['Season 1', 'Season 2', 'The Finale'];   // the three acts, as the players see them
@@ -174,13 +188,14 @@
       shuffle(deck);
       const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
       this.defs = B.acts;
-      const handN = this.handSize = B.hand || RULES.hand;
+      const handN = this.handSize = this.N === 5 ? RULES.hand5 : B.hand || RULES.hand;
+      this.energy = RULES.energyStart; this.turnUsed = {}; this.stat = { tweak: 0, handoff: 0, charge: 0, reveal: 0, weak: 0 };
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
       this.box = deck.slice(this.N * handN);          // never seen in play
       this.boxed = this.box.length;
       this.known = this.players.map(() => []);             // cards everyone has seen each Hero holding
       this.acts = RULES.actDraws[this.N].map((k, a) =>
-        shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[this.N - 2], needs: need.slice(), name, hex: hex || null, key: keyBase + a * 6 + i }))).slice(0, k));
+        shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[Math.min(this.N - 2, need.length - 1)], needs: need.slice(), name, hex: hex || null, key: keyBase + a * 6 + i, weak: weakOf(type, a, i) }))).slice(0, k));
       this.total = this.acts.reduce((t, x) => t + x.length, 0);
       this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = []; this.trash = [];   // trash: face-up discard pile, {c, seat}
       this.lead = opts.firstLead != null ? opts.firstLead % this.N : Math.floor(rnd() * this.N);
@@ -257,8 +272,19 @@
       if (this.phase === 'build') {
         if (seat !== this.turnSeat()) return { ok: false, error: 'Wait for ' + this.players[this.turnSeat()].name + '.' };
         if (a.type === 'beacon') return this.beacon(seat, a.card | 0);
+        if (a.type === 'handoff') return this.handoff(seat, a.card | 0, a.to | 0);
         if (a.type === 'pass') {
-          this.say(this.players[seat].name + ' passes.');
+          let extra = '';
+          if (RULES.passCharge && a.charge) {
+            if (this.energy >= RULES.energyMax) return { ok: false, error: 'The squad can’t hold more Energy. Show a card instead.' };
+            this.energy++; this.stat.charge++; extra = ' and charges 1 Energy';
+          } else if (RULES.passCharge && a.reveal != null) {
+            const c = this.hands[seat].find((x) => x.id === (a.reveal | 0));
+            if (!c) return { ok: false, error: 'You don’t have that card.' };
+            if (!this.known[seat].some((x) => x.id === c.id)) this.known[seat].push(c);
+            this.stat.reveal++; extra = ' and shows ' + cardName(c);
+          }
+          this.say(this.players[seat].name + ' passes' + extra + '.');
           if (this.boss === 'vael') { this.round.plays.push({ seat, pass: true }); this.round.lastHeads = []; } else this.enc.plays.push({ seat, pass: true, cards: [] });
           this.nextTurn(); return { ok: true };
         }
@@ -295,6 +321,21 @@
       return { ok: false, error: 'Not now.' };
     }
 
+    /* Energy: pass one card face down to another Hero. Once a turn, before you add or pass. */
+    handoff(seat, id, to) {
+      if (this.energy < 1) return { ok: false, error: 'The squad has no Energy.' };
+      if (this.turnUsed.handoff) return { ok: false, error: 'One Hand-off a turn.' };
+      if (to === seat || !this.players[to]) return { ok: false, error: 'Pick another Hero.' };
+      const hand = this.hands[seat], c = hand.find((x) => x.id === id);
+      if (!c) return { ok: false, error: 'You don’t have that card.' };
+      if (hand.length < 2) return { ok: false, error: 'You have to keep at least one card.' };
+      this.energy--; this.turnUsed.handoff = true; this.stat.handoff++;
+      this.hands[seat] = hand.filter((x) => x !== c); this.forget(seat, [id]);
+      this.hands[to] = this.hands[to].concat(c).sort(byCard);
+      this.lastHandoff = { from: seat, to, id };
+      this.say(this.players[seat].name + ' spends 1 Energy to hand a card to ' + this.players[to].name + '.');
+      return { ok: true };
+    }
     beacon(seat, id) {
       if (!this.canBeacon(seat)) return { ok: false, error: 'You can’t use Beacon now.' };
       const c = this.hands[seat].find((x) => x.id === id);
@@ -317,6 +358,8 @@
       const ids = parts.flatMap((p) => p.ids);
       if (new Set(ids).size !== ids.length) return { ok: false, error: 'Pick different cards.' };
       if (ids.length >= hand.length) return { ok: false, error: 'You have to keep at least one card.' };
+      const tweak = a.tweak && a.tweak.id != null ? { id: a.tweak.id | 0, d: a.tweak.d > 0 ? 1 : -1 } : null;
+      if (tweak && (!ids.includes(tweak.id) || this.energy < 1)) return { ok: false, error: 'The squad has no Energy for a Tweak.' };
       const wild = a.wild == null ? null : a.wild | 0;
       if (wild != null && (!ids.includes(wild) || !this.canWild(seat))) return { ok: false, error: 'You can’t use Overcharge now.' };
       const plan = [];
@@ -336,6 +379,12 @@
             if (!v) return { ok: false, error: 'Overcharge needs a combo already started, with room to grow.' };
             const w = { id: c.id, c: v.c, r: v.r, wild: true, real: c };
             addC(st, w); placed.push(w);
+          } else if (tweak && id === tweak.id) {
+            const r = c.r + tweak.d;
+            if (r < 1 || r > RULES.ranks) return { ok: false, error: 'A Tweak can’t go past 1 or ' + RULES.ranks + '.' };
+            const w = { id: c.id, c: c.c, r, tweaked: tweak.d, real: c };
+            if (!fitsC(st, w)) return { ok: false, error: cardName(c) + ' as a ' + r + ' doesn’t fit that combo.' };
+            addC(st, w); placed.push(w);
           } else {
             if (!(vael && tgt.enraged && RULES.enragedAny) && !fitsC(st, c)) return { ok: false, error: cardName(c) + ' doesn’t fit that combo.' };
             addC(st, c); placed.push(c);
@@ -343,6 +392,7 @@
         }
         plan.push({ p, tgt, st, placed });
       }
+      if (tweak) { this.energy--; this.stat.tweak++; this.say(this.players[seat].name + ' spends 1 Energy on a Tweak.'); }
       if (wild != null) { this.used.overcharge = true; this.say(this.players[seat].name + ' uses Overcharge.'); }
       for (const { tgt, st, placed } of plan) {
         tgt.st = st; tgt.cards = tgt.cards.concat(placed);
@@ -360,6 +410,7 @@
       this.nextTurn(); return { ok: true };
     }
     nextTurn() {
+      this.turnUsed = {};
       if (this.boss === 'vael') { this.round.at++; if (this.round.at >= this.N) this.endRound(); return; }
       this.enc.at++;
       if (this.enc.at >= this.N) this.resolve();
@@ -374,6 +425,7 @@
       if (met) {
         this.done++;
         this.say('Combo complete! ' + this.enc.boss.name + ' is defeated.');
+        this.weakHit(this.enc, this.result);
         this.phase = 'result';
         return;
       }
@@ -388,6 +440,13 @@
       this.startPenalty(this.players.map(() => RULES.missDiscard), () => { this.phase = 'result'; });
     }
 
+    weakHit(x, res) {
+      if (!RULES.weakEnergy || !(RULES.weakFinish ? isWeak(x.boss.weak, x.cards[x.cards.length - 1]) : x.cards.some((c) => isWeak(x.boss.weak, c)))) return;
+      const got = Math.min(RULES.weakEnergy, RULES.energyMax - this.energy);
+      res.weak = (res.weak || 0) + 1; this.stat.weak++;
+      if (got > 0) { this.energy += got; this.say('Weak spot hit (' + weakName(x.boss.weak) + '): the squad gains ' + got + ' Energy.'); }
+      else this.say('Weak spot hit (' + weakName(x.boss.weak) + '), but the squad’s Energy is full.');
+    }
     /* Vael: end of a round */
     endRound() {
       this.fights++;
@@ -406,6 +465,7 @@
         const x = this.slots[i];
         this.done++; this.hist.push({ key: x.boss.key, met: true });
         this.say(x.boss.name + ' is cut off!');
+        this.weakHit(x, res);
         if (x.boss.hex === 'spite') { const last = x.plays[x.plays.length - 1].seat; counts[last]++; res.spite.push(last); this.say('Spite: ' + this.players[last].name + ' added the last card and discards 1.'); }
         res.cutHeads = (res.cutHeads || []).concat(x.boss);
         for (const p of x.plays) for (const c of p.cards) this.trash.push({ c: c.real || c, seat: p.seat, spent: true });
@@ -498,6 +558,7 @@
       const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, total: x.boss.need, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })), who: Object.fromEntries(x.plays.flatMap((p) => p.cards.map((c) => [c.id, p.seat]))) });
       return {
         seat, boss: this.boss, bossName: RULES.bosses[this.boss].name, phase: this.phase, colors: this.colors, total: this.total, done: this.done, misses: this.misses, fights: this.fights,
+        energy: this.energy, energyMax: RULES.energyMax, canHandoff: this.phase === 'build' && seat === turn && this.energy > 0 && !this.turnUsed.handoff && this.hands[seat].length > 1,
         boxed: this.boxed, maxAdd: this.maxAdd(seat), maxAddHead: vael ? this.slots.map((_, h) => this.maxAdd(seat, h)) : null, act: this.actNo, lead: this.lead, powers: this.powers,
         players: this.players.map((p, i) => ({ name: p.name, bot: p.bot, hero: p.hero, count: this.hands[i].length,
           known: this.known[i].slice(),
@@ -516,7 +577,7 @@
         pile: vael ? this.pile.length : 0,
         round: vael ? { at: this.round.at, lastHeads: this.round.lastHeads.slice(), plays: this.round.plays.slice() } : null,
         result: this.result && {
-          met: this.result.met, bounced: this.result.bounced || [],
+          met: this.result.met, weak: this.result.weak || 0, bounced: this.result.bounced || [],
           cut: this.result.cutHeads || [], struck: this.result.struckHeads || [], enraged: (this.result.enraged || []).map((i) => this.slots[i] && this.slots[i].boss.name).filter(Boolean), hunger: this.result.hunger || [], spite: this.result.spite || [],
           discards: Object.keys(this.result.discards || {}).map((k) => ({ seat: +k, cards: this.result.discards[k] })),
         },
@@ -535,9 +596,13 @@
         if (this.canBeacon(s) && this.hands[s].length > 2) this.beacon(s, this.botBeacon(s).id);
         const w = this.botWild(s);
         if (w) { this.act(s, w); return true; }
+        this.botHandoff(s);
         const pick = this.simple ? this.simplePick(s) : chooseBuild(this, s, RULES.lookahead);
-        if (pick && pick.parts.some((x) => x.cards.length)) { const r = this.act(s, { type: 'add', parts: pick.parts, head: pick.parts[0].head, cards: pick.parts[0].cards }); if (r.ok) return true; }
-        this.act(s, { type: 'pass' });
+        if (pick && pick.parts.some((x) => x.cards.length)) { const r = this.act(s, { type: 'add', parts: pick.parts, head: pick.parts[0].head, cards: pick.parts[0].cards, tweak: pick.tweak }); if (r.ok) return true; }
+        // passing: charge Energy if there's room, otherwise show the card that says most about the hand
+        if (RULES.passCharge && this.energy < RULES.energyMax) this.act(s, { type: 'pass', charge: true });
+        else if (RULES.passCharge && this.hands[s].length) { const un = this.hands[s].filter((c) => !this.known[s].some((k) => k.id === c.id)); this.act(s, un.length ? { type: 'pass', reveal: this.botBeacon(s, un).id } : { type: 'pass' }); }
+        else this.act(s, { type: 'pass' });
         return true;
       }
       if (this.phase === 'riptide') {
@@ -593,7 +658,15 @@
       }
       return null;
     }
-    botBeacon(s) { const h = this.hands[s]; let b = h[0], bu = -1; for (const c of h) { const u = useful(c, h); if (u > bu) { bu = u; b = c; } } return b; }
+    botBeacon(s, from) { const h = this.hands[s]; let b = (from || h)[0], bu = -1; for (const c of from || h) { const u = useful(c, h); if (u > bu) { bu = u; b = c; } } return b; }
+    /* Hand-off: when a teammate is nearly out of cards and this Hero has plenty, pass over the least useful card. */
+    botHandoff(s) {
+      if (this.energy < 1 || this.turnUsed.handoff) return;
+      const mine = this.hands[s].length; let low = -1, n = 1e9;
+      this.hands.forEach((h, p) => { if (p !== s && h.length < n) { n = h.length; low = p; } });
+      if (low < 0 || n > 2 || mine < n + 3) return;
+      this.act(s, { type: 'handoff', card: worst(this.hands[s], this.hands[s]).id, to: low });
+    }
   }
 
   /* ---------- look-ahead bots ----------
@@ -666,7 +739,7 @@
   function futureOf(g) {
     const B = RULES.bosses[g.boss], base = g.boss === 'vael' ? 18 : 0;
     const out = [];
-    const unseen = (a) => shuffle(g.defs[a].map(([type, need, name, hex], i) => ({ type, need: need[g.N - 2], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key)));
+    const unseen = (a) => shuffle(g.defs[a].map(([type, need, name, hex], i) => ({ type, need: need[Math.min(g.N - 2, need.length - 1)], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key)));
     if (g.boss === 'vael') out.push(...unseen(g.actNo).slice(0, g.pile.length));
     for (let a = g.actNo + 1; a < g.acts.length; a++) out.push(...unseen(a).slice(0, g.acts[a].length));
     return out;
@@ -726,10 +799,28 @@
     }
     return opts;
   }
+  /* With Energy to spend, also try each card one rank up or down: alone, or beside one plain card. */
+  function tweakOptions(g, seat, opts) {
+    if (g.energy < 1) return;
+    const hand = g.hands[seat], vael = g.boss === 'vael';
+    for (const h of vael ? g.slots.map((_, i) => i) : [0]) {
+      const x = vael ? g.slots[h] : g.enc;
+      if (!x || x.st.n >= x.boss.need || !x.st.n || g.hands[seat].length < 2 || (vael && g.splitBlocked(h))) continue;
+      const rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, hand.length - 1);
+      if (cap < 1) continue;
+      for (const c of hand) for (const d of [-1, 1]) {
+        const r = c.r + d; if (r < 1 || r > RULES.ranks) continue;
+        const v = { id: c.id, c: c.c, r, tweaked: d, real: c };
+        if (fitsC(x.st, c) || !fitsC(x.st, v)) continue;        // only worth it when the plain card doesn't fit
+        opts.push({ parts: [{ head: h, cards: [v] }], tweak: { id: c.id, d } });
+        if (cap >= 2) { const t = copyC(x.st); addC(t, v); for (const c2 of hand) if (c2 !== c && fitsC(t, c2)) { opts.push({ parts: [{ head: h, cards: [v, c2] }], tweak: { id: c.id, d } }); break; } }
+      }
+    }
+  }
   const optCards = (o) => o.parts.flatMap((p) => p.cards);
   function stateAfter(g, deal, future, seat, o) {
-    const hands = deal.slice(), used = optCards(o);
-    if (used.length) hands[seat] = hands[seat].filter((c) => !used.includes(c));
+    const hands = deal.slice(), used = optCards(o), gone = used.map((c) => c.real || c);
+    if (used.length) hands[seat] = hands[seat].filter((c) => !gone.includes(c));
     const base = { N: g.N, hands, lead: g.lead, cmd: g.heroOf('command'), steady: g.heroOf('steady') };
     if (g.boss === 'vael') {
       const slots = g.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: copyC(x.st), enr: x.enraged, rage: x.rage || 0, fed: !!x.fed, last: x.plays.length ? x.plays[x.plays.length - 1].seat : -1 });
@@ -738,12 +829,14 @@
     }
     const e = g.enc, st = copyC(e.st), plays = [];
     e.plays.forEach((p) => { if (p.cards.length) plays.push(p.seat, p.cards.map((c) => c.real || c)); });
-    if (used.length) { for (const c of used) addC(st, c); plays.push(seat, used); }
+    if (used.length) { for (const c of used) addC(st, c); plays.push(seat, gone); }
     return Object.assign(base, { line: g.row.concat(future), li: 0, st, at: e.at + 1, plays });
   }
   function chooseBuild(g, seat, samples) {
     const opts = buildOptions(g, seat);
-    const out = (o) => ({ parts: o.parts.map((p) => ({ head: p.head, cards: p.cards.map((c) => c.id) })) });
+    tweakOptions(g, seat, opts);
+    const out = (o) => ({ parts: o.parts.map((p) => ({ head: p.head, cards: p.cards.map((c) => c.id) })), tweak: o.tweak || null });
+    const weakBonus = (o) => o.parts.some((p) => { const x = g.boss === 'vael' ? g.slots[p.head] : g.enc; const rem = x.boss.need - x.st.n; return RULES.weakFinish ? p.cards.length === rem && isWeak(x.boss.weak, p.cards[p.cards.length - 1]) : p.cards.some((c) => isWeak(x.boss.weak, c)) && !x.cards.some((c) => isWeak(x.boss.weak, c)); }) && g.energy < RULES.energyMax ? 0.4 : 0;
     if (opts.length === 1) return out(opts[0]);
     const keyOf = (parts) => parts.map((p) => p.head + ':' + p.cards.map((c) => (typeof c === 'number' ? c : c.id)).sort((a, b) => a - b).join(',')).sort().join('|');
     const simple = g.simplePick(seat), skey = simple ? keyOf(simple.parts) : '';
@@ -754,7 +847,7 @@
       opts.forEach((o, i) => { score[i] += run(stateAfter(g, deal, future, seat, o)); });
     }
     let best = 0, bs = -1;
-    opts.forEach((o, i) => { const sc = score[i] + (keyOf(o.parts) === skey ? 0.5 : 0); if (sc > bs) { bs = sc; best = i; } });
+    opts.forEach((o, i) => { const sc = score[i] + (keyOf(o.parts) === skey && !o.tweak ? 0.5 : 0) + weakBonus(o) - (o.tweak ? 1 : 0); if (sc > bs) { bs = sc; best = i; } });
     return out(opts[best]);
   }
   /* Discards: compare small sets drawn from the least useful cards. */
@@ -784,6 +877,6 @@
     return opts[best].map((c) => c.id);
   }
 
-  const api = { RULES, COLORS, TYPE, HEX, POWERS, BOT_NAMES, Game, fits, cardName };
+  const api = { RULES, COLORS, TYPE, HEX, POWERS, BOT_NAMES, BANDS, Game, fits, cardName, isWeak, weakName };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Sentai = api;
 })(typeof window !== 'undefined' ? window : globalThis);
