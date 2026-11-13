@@ -130,7 +130,9 @@
 
     refill() { while (this.row.length < this.rowSize && this.side.length) this.row.push(this.side.pop()); }
     nextLot(first) {
-      if (!first) this.start = (this.start + 1) % this.N;
+      // whoever won the last treasure starts; if nobody won it, the start moves to the left
+      if (!first) this.start = this.nextStart != null ? this.nextStart : (this.start + 1) % this.N;
+      this.nextStart = null;
       this.refill();
       const t = this.deck.pop();
       if (!t) return this.endGame();
@@ -266,7 +268,7 @@
       } else {
         const w = L.highSeat, solo = L.bids.filter((b) => b > 0).length === 1;
         if (solo) this.stats.solo++;
-        this.players[w].treasures.push(L.t);
+        this.players[w].treasures.push(L.t); this.nextStart = w;
         this.result = { kind: 'win', t: L.t, seat: w, bid: L.high, cards: L.spent[w].length, solo };
         this.say(this.players[w].name + ' wins the ' + L.t.name + ' for ' + L.high + ' acorns.');
       }
@@ -281,7 +283,7 @@
       const nz = ranked.filter((s) => tot[s] > 0);
       if (!nz.length) { this.result = { kind: 'wash', t: L.t, frost: true }; this.say('Nobody brings an offering for the ' + L.t.name + '.'); this.phase = 'lotEnd'; return; }
       const w = nz[0];
-      this.players[w].treasures.push(L.t);
+      this.players[w].treasures.push(L.t); this.nextStart = w;
       this.result = { kind: 'win', t: L.t, seat: w, bid: tot[w], cards: L.spent[w].length, frost: true, offers: tot };
       this.say(this.players[w].name + ' wins the ' + L.t.name + ' with ' + tot[w] + '. Offerings: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
       const list = nz.slice(1).map((s) => ({ seat: s, n: L.spent[s].length }));
