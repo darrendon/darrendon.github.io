@@ -41,6 +41,8 @@
   let rnd = Math.random;
   const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const sum = (a) => a.reduce((t, x) => t + x, 0);
+  const names = (ts) => ts.map((t) => t.name).join(' and the ');
+  let RISK = 0.6;   // how much elimination risk bots take for a rolled-over pot
   const gauss = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
 
   /* every reachable total in a hand, with the fewest cards and with the most cards that make it */
@@ -117,7 +119,8 @@
       this.beta = 0.9 * this.N * this.M / (avgVp * this.expLots + 7 * this.N * 2.5);   // acorns per point, for the bots
       this.start = Math.floor(rnd() * this.N); this.firstStart = this.start;
       this.lotNo = 0; this.log = []; this.phase = 'lotEnd'; this.lot = null; this.picks = []; this.result = null; this.final = null;
-      this.stats = { washes: 0, solo: 0, lots: 0, frostLots: 0 };
+      this.stats = { washes: 0, solo: 0, lots: 0, frostLots: 0, rolled: 0, potsWon: 0, potVp: 0, lostAtSnow: 0 };
+      this.carry = [];   // treasures nobody opened: they stay out and join the next one
       this.nextLot(true);
     }
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
@@ -136,25 +139,29 @@
       if (!t) return this.endGame();
       if (t.frost) {
         this.framesLeft--;
-        if (this.framesLeft === 0) { this.say('The first snow falls on the ' + t.name + '. Winter is here!'); this.snow = t; return this.endGame(); }
+        if (this.framesLeft === 0) {
+          this.say('The first snow falls on the ' + t.name + '. Winter is here!' + (this.carry.length ? ' Mr. Magpie keeps the ' + names(this.carry) + '.' : ''));
+          this.stats.lostAtSnow += this.carry.length; this.snow = t; return this.endGame();
+        }
       }
       this.lotNo++; this.stats.lots++;
       const N = this.N, order = [];
       for (let k = 0; k < N; k++) order.push((this.start + k) % N);
-      this.lot = { t, order, bids: Array(N).fill(0), spent: Array.from({ length: N }, () => []), out: [], high: 0, highSeat: -1 };
+      this.lot = { t, extra: this.carry.slice(), order, bids: Array(N).fill(0), spent: Array.from({ length: N }, () => []), out: [], high: 0, highSeat: -1 };
+      const with_ = this.carry.length ? ' with the ' + names(this.carry) + ' (' + this.lotVp() + ' in all)' : '';
       this.result = null;
       if (t.frost) {
         this.stats.frostLots++;
         this.phase = 'frost'; this.lot.offers = Array(N).fill(null);
         this.players.forEach((p, i) => { if (!p.hand.length) this.lot.offers[i] = []; });
-        this.say('A frost! Mr. Magpie takes secret offerings for the ' + t.name + ' (' + t.vp + ').');
+        this.say('A frost! Mr. Magpie takes secret offerings for the ' + t.name + ' (' + t.vp + ')' + with_ + '.');
         this.checkFrost();
       } else {
         this.phase = 'bid';
         this.lot.active = order.filter((s) => this.players[s].hand.length);
         this.lot.acted = [];
         this.lot.turn = this.lot.active.length ? this.lot.active[0] : -1;
-        this.say('Mr. Magpie shows off the ' + t.name + ' (' + t.vp + '). ' + (this.lot.turn >= 0 ? this.players[this.lot.turn].name + ' starts.' : ''));
+        this.say('Mr. Magpie shows off the ' + t.name + ' (' + t.vp + ')' + with_ + '. ' + (this.lot.turn >= 0 ? this.players[this.lot.turn].name + ' starts.' : ''));
         if (this.lot.turn < 0) this.finishBid();
       }
     }
@@ -261,14 +268,13 @@
       const L = this.lot; if (L.finished) return; L.finished = true; L.turn = -1;
       if (L.high === 0) {
         this.stats.washes++;
-        this.result = { kind: 'wash', t: L.t };
-        this.say('Nobody brings an offering. Mr. Magpie keeps the ' + L.t.name + '.');
+        this.rollOver();
       } else {
         const w = L.highSeat, solo = L.bids.filter((b) => b > 0).length === 1;
         if (solo) this.stats.solo++;
-        this.players[w].treasures.push(L.t); this.nextStart = w;
-        this.result = { kind: 'win', t: L.t, seat: w, bid: L.high, cards: L.spent[w].length, solo };
-        this.say(this.players[w].name + ' wins the ' + L.t.name + ' for ' + L.high + ' acorns.');
+        this.award(w);
+        this.result = { kind: 'win', t: L.t, extra: L.extra, seat: w, bid: L.high, cards: L.spent[w].length, solo };
+        this.say(this.players[w].name + ' wins the ' + names([L.t].concat(L.extra)) + ' for ' + L.high + ' acorns.');
       }
       this.phase = 'lotEnd';
     }
@@ -279,15 +285,28 @@
       L.bids = tot; L.spent = L.offers.map((o) => o.slice());
       const ranked = L.order.slice().sort((a, b) => tot[b] - tot[a] || L.order.indexOf(a) - L.order.indexOf(b));
       const nz = ranked.filter((s) => tot[s] > 0);
-      if (!nz.length) { this.result = { kind: 'wash', t: L.t, frost: true }; this.say('Nobody brings an offering for the ' + L.t.name + '.'); this.phase = 'lotEnd'; return; }
+      if (!nz.length) { this.rollOver(); return; }
       const w = nz[0];
-      this.players[w].treasures.push(L.t); this.nextStart = w;
-      this.result = { kind: 'win', t: L.t, seat: w, bid: tot[w], cards: L.spent[w].length, frost: true, offers: tot };
-      this.say(this.players[w].name + ' wins the ' + L.t.name + ' with ' + tot[w] + '. Offerings: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
+      this.award(w);
+      this.result = { kind: 'win', t: L.t, extra: L.extra, seat: w, bid: tot[w], cards: L.spent[w].length, frost: true, offers: tot };
+      this.say(this.players[w].name + ' wins the ' + names([L.t].concat(L.extra)) + ' with ' + tot[w] + '. Offerings: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
       const list = nz.slice(1).map((s) => ({ seat: s, n: L.spent[s].length }));
       if (!this.queuePicks(list, 'frostDone')) this.endFrost();
     }
     endFrost() { this.phase = 'lotEnd'; }
+    lotVp() { const L = this.lot; return L ? L.t.vp + sum(L.extra.map((t) => t.vp)) : 0; }
+    award(w) {
+      const L = this.lot; this.players[w].treasures.push(L.t, ...L.extra); this.nextStart = w;
+      if (L.extra.length) { this.stats.potsWon++; this.stats.potVp += this.lotVp(); }
+      this.carry = [];
+    }
+    rollOver() {   // nobody opened: the treasure stays out and joins the next one
+      const L = this.lot; this.stats.washes++; this.stats.rolled++;
+      this.carry = L.extra.concat([L.t]);
+      this.result = { kind: 'wash', t: L.t, extra: L.extra, frost: !!L.t.frost };
+      this.say('Nobody brings an offering, so the ' + names(this.carry) + (this.carry.length > 1 ? ' stay' : ' stays') + ' out for the next treasure.');
+      this.phase = 'lotEnd';
+    }
 
     endGame() {
       const N = this.N, sc = scoreOf(this.players, this.R), money = this.players.map((_, i) => this.money(i));
@@ -311,7 +330,7 @@
       const L = this.lot, sc = scoreOf(this.players, this.R);
       return {
         seat, phase: this.phase, lotNo: this.lotNo, start: this.start, rowSize: this.rowSize,
-        treasure: L ? L.t : null, deckLeft: this.deck.length, frostsLeft: this.framesLeft, bagLeft: this.side.length,
+        treasure: L ? L.t : null, extra: L ? L.extra.slice() : [], lotVp: this.lotVp(), deckLeft: this.deck.length, frostsLeft: this.framesLeft, bagLeft: this.side.length,
         row: this.row.slice(), result: this.result, final: this.final, snow: this.snow || null,
         lot: L && {
           order: L.order, high: L.high, highSeat: L.highSeat, turn: L.turn, out: L.out.slice(), active: L.active ? L.active.slice() : null,
@@ -343,7 +362,8 @@
     danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
     allowed(s) {
       const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)));
-      const floor = Math.max(1, opp + 1 - this.st(s).slack * this.M * this.remFrac());
+      const L = this.lot, pot = L ? sum(L.extra.map((t) => t.vp)) : 0;   // treasures rolled over from before
+      const floor = Math.max(1, opp + 1 - this.st(s).slack * this.M * this.remFrac() - RISK * pot * this.beta * this.st(s).aggr);
       return Math.max(0, me - floor);
     }
     itemVp(s, b) {
@@ -367,7 +387,7 @@
     botTake(s) { let bi = 0, bv = -1e9; this.row.forEach((b, i) => { const v = this.itemVp(s, b); if (v > bv) { bv = v; bi = i; } }); return bi; }
     botBid(s) {
       const L = this.lot, p = this.players[s], S = this.st(s), need = L.high + 1 - L.bids[s];
-      const W = L.t.vp * this.beta * S.mShow * Math.exp(gauss() * 0.15), cap = W * S.aggr;
+      const W = this.lotVp() * this.beta * S.mShow * Math.exp(gauss() * 0.15), cap = W * S.aggr;
       const map = sums(p.hand), keys = [...map.keys()].filter((t) => t >= Math.max(1, need)).sort((a, b) => a - b);
       if (!keys.length) return { type: 'pass' };
       const opts = [{ c: keys[0], sub: map.get(keys[0]).few }];
@@ -386,7 +406,7 @@
     }
     botFrost(s) {
       const p = this.players[s], S = this.st(s); if (!p.hand.length) return [];
-      const allow = this.allowed(s), W = this.lot.t.vp * this.beta * S.mShow * Math.exp(gauss() * 0.15);
+      const allow = this.allowed(s), W = this.lotVp() * this.beta * S.mShow * Math.exp(gauss() * 0.15);
       const big = Math.min(allow, W * (0.25 + rnd() * 0.55) * S.aggr), small = Math.min(...p.hand), resB = this.reserve();
       if (rnd() < 0.35 * S.mShow * S.aggr && big >= small && p.hand.length > resB) {
         const map = sums(p.hand); let t = Math.floor(big); while (t > 0 && !map.has(t)) t--; return t > 0 ? map.get(t).few : [];
@@ -401,6 +421,6 @@
     }
   }
 
-  const api = { RULES, BAUBLE, CRITTERS, BOT_NAMES, STYLES, Game, scoreOf, setRandom: (f) => { rnd = f; } };
+  const api = { RULES, BAUBLE, CRITTERS, BOT_NAMES, STYLES, Game, scoreOf, setRandom: (f) => { rnd = f; }, setRisk: (x) => { RISK = x; } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MrMagpie = api;
 })(typeof window !== 'undefined' ? window : globalThis);

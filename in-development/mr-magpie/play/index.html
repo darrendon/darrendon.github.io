@@ -30,6 +30,10 @@
   .tcard .nm{font-weight:600;font-size:15px;line-height:1.15;min-height:2.3em;display:flex;align-items:center;justify-content:center}
   .tcard .vp{position:absolute;top:-10px;right:-10px;width:42px;height:42px;border-radius:50%;background:#4A2E1E;color:#F7D9A6;display:grid;place-items:center;font:900 20px/1 Fraunces,serif;box-shadow:0 3px 0 rgba(0,0,0,.2)}
   .tcard .fr{position:absolute;top:8px;left:10px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#4B86A3;font-weight:700}
+  .tleft{display:grid;gap:8px;justify-items:center}
+  .carry{display:flex;align-items:center;gap:6px;max-width:170px;background:#FFFAF0;border:1px dashed #D9B57E;border-radius:10px;padding:4px 8px;font-size:12.5px;line-height:1.2}
+  .carry svg{width:26px;height:26px;flex:none}
+  .carry b{font:900 15px/1 Fraunces,serif}
   .tcard.empty{display:grid;place-items:center;min-height:180px;color:var(--t-muted);font-size:14px}
   .stage-r h2{margin:0 0 4px;font:900 24px/1.1 Fraunces,serif}
   .stage-r p{margin:0 0 8px;color:#6B4B33;font-size:14.5px}
@@ -137,7 +141,7 @@
       bid: myTurn ? 'Your turn: offer acorns or pass' : L && L.turn >= 0 ? P[L.turn].name + ' is thinking' : '',
       frost: myFrost ? 'A frost: bring a secret offering' : 'Waiting for secret offerings',
       pick: myPick ? 'Take ' + v.picking.n + ' bauble' + (v.picking.n > 1 ? 's' : '') : v.picking ? P[v.picking.seat].name + ' is choosing baubles' : '',
-      lotEnd: v.result && v.result.kind === 'win' ? P[v.result.seat].name + ' wins the ' + v.result.t.name : 'Mr. Magpie keeps it',
+      lotEnd: v.result && v.result.kind === 'win' ? P[v.result.seat].name + ' wins the ' + v.result.t.name + (v.result.extra && v.result.extra.length ? ' and more' : '') : 'It stays out for the next treasure',
       over: 'Winter is here',
     }[v.phase] || '';
     api.status('Treasure ' + v.lotNo + ' · ' + status);
@@ -147,12 +151,15 @@
     if (v.phase !== 'over') {
       const t = v.treasure;
       const frost = L && L.frost;
+      const ex = v.extra || [], exNames = ex.map((x) => 'the ' + esc(x.name)).join(' and ');
       let head = frost ? 'A frost! Secret offerings' : 'Mr. Magpie shows off a treasure';
       let sub = frost ? 'Everyone brings a secret offering of acorn cards at once. The biggest wins; everyone else who brought one takes a bauble per card.' :
         'Beat the top offering by adding acorn cards, or pass. The last critter in wins it. Mr. Magpie keeps every acorn, win or lose.';
+      if (ex.length && v.phase !== 'lotEnd') sub = 'Nobody claimed ' + exNames + ', so ' + (ex.length > 1 ? 'they go' : 'it goes') + ' with this one: <b>' + v.lotVp + ' points in all</b>. ' + sub;
       if (v.phase === 'lotEnd' && v.result) {
-        head = v.result.kind === 'win' ? name(v.result.seat) + ' wins the ' + esc(v.result.t.name) + '!' : 'Mr. Magpie keeps the ' + esc(v.result.t.name);
-        sub = v.result.kind === 'win' ? 'For ' + v.result.bid + ' acorns' + (v.result.solo ? ', and nobody else made an offer.' : '.') + ' Next treasure coming…' : 'Nobody brought an offering. Next treasure coming…';
+        const all = [v.result.t].concat(v.result.extra || []).map((x) => 'the ' + esc(x.name)).join(' and ');
+        head = v.result.kind === 'win' ? name(v.result.seat) + ' wins ' + all + '!' : 'Nobody wanted ' + all;
+        sub = v.result.kind === 'win' ? 'For ' + v.result.bid + ' acorns' + (v.result.solo ? ', and nobody else made an offer.' : '.') + ' Next treasure coming…' : 'Nobody brought an offering, so ' + ((v.result.extra || []).length ? 'they stay' : 'it stays') + ' out and goes with the next treasure.';
       }
       const offers = L ? '<div class="offers">' + L.order.map((s) => {
         const spent = L.spent[s] || [], out = L.out.includes(s), turn = L.turn === s && v.phase === 'bid';
@@ -162,7 +169,8 @@
         return '<div class="off' + (turn ? ' turn' : '') + (out ? ' out' : '') + (!frost && L.highSeat === s && L.high > 0 ? ' high' : '') + '">' + tok(P[s].critter) + '<span>' + name(s) + '</span>' + right +
           (spent.length && (!frost || v.phase !== 'frost' || s === me) ? '<span class="cards">' + spent.map((c, j) => acardHTML(c, { mini: true, k: 'sp' + s + '-' + j + '-' + v.lotNo })).join('') + '</span>' : '') + '</div>';
       }).join('') + '</div>' : '';
-      stage = '<div class="stage">' + tcardHTML(t) + '<div class="stage-r"><h2>' + head + '</h2><p>' + sub + '</p>' +
+      const carry = ex.length && v.phase !== 'lotEnd' ? ex.map((x) => '<div class="carry">' + svg(A.treasure(x.name), '-15 -15 30 30') + '<span>+ ' + esc(x.name) + '</span><b>' + x.vp + '</b></div>').join('') : '';
+      stage = '<div class="stage"><div class="tleft">' + tcardHTML(t) + carry + '</div><div class="stage-r"><h2>' + head + '</h2><p>' + sub + '</p>' +
         '<div class="clock"><span>' + v.deckLeft + ' treasure cards left</span><span>' + v.frostsLeft + ' frost card' + (v.frostsLeft === 1 ? '' : 's') + ' left · the last one brings the snow</span></div>' + offers + '</div></div>';
     }
 
@@ -272,7 +280,7 @@
     render,
     rules:
       '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 10 acorn cards, from 1 up to 16. Keep them hidden in your hand. You can’t make change, so pick your cards carefully.</p>' +
-      '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, he keeps it.</p>' +
+      '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, the treasure stays out and goes with the next one, so whoever wins next takes both. Treasures still waiting at the first snow stay with Mr. Magpie.</p>' +
       '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first, and if the row runs out, it’s refilled face up.</p>' +
       '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first. The fourth frost brings the first snow and ends the game at once.</p>' +
       '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Nearly a third of the bag is lost acorns, from 1 up to 20: take one instead of a bauble and it goes into your hand.</p>' +
