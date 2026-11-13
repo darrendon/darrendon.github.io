@@ -18,16 +18,16 @@
     baubles: { earring: 10, berry: 10, button: 10, feather: 10 },
     lostAcorns: [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20],   // acorn cards in the bauble deck: take one and it goes into your hand
     rowExtra: 2,                                        // the bauble row holds players + this many
-    earring: { single: -3, pair: 5 },                   // one alone is useless; each pair scores
-    berry: [0, 2, 4, 7, 2, 0],                          // a few are lovely, too many spoil
-    button: [0, 1, 3, 6, 10, 15, 21],                   // the bigger the collection, the better
-    feather: { each: 1, most: 6, second: 3 },           // ties take the lower place
+    earring: { single: -2, pair: 7 },                   // one alone is useless; each pair scores
+    berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
+    button: [0, 2, 5, 9, 14, 20, 27],                   // the bigger the collection, the better
+    feather: { each: 2, most: 8, second: 4 },           // ties take the lower place
   };
   const BAUBLE = {
-    earring: { name: 'Earring', plural: 'Earrings', rule: 'One alone −3 · each pair +5' },
-    berry: { name: 'Berry', plural: 'Berries', rule: '1·2·3·4·5+ → 2·4·7·2·0' },
-    button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 1·3·6·10·15·21' },
-    feather: { name: 'Feather', plural: 'Feathers', rule: '1 each · most +6 · second +3' },
+    earring: { name: 'Earring', plural: 'Earrings', rule: 'One alone −2 · each pair +7' },
+    berry: { name: 'Berry', plural: 'Berries', rule: '1·2·3·4·5+ → 3·6·10·4·0' },
+    button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 2·5·9·14·20·27' },
+    feather: { name: 'Feather', plural: 'Feathers', rule: '2 each · most +8 · second +4' },
     acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: '1 to 20 · goes into your hand' },
   };
   const CRITTERS = ['mouse', 'chipmunk', 'hedgehog', 'rabbit', 'mole'];
@@ -100,7 +100,6 @@
       this.players = players.map((p, i) => ({
         name: p.name, bot: !!p.bot, critter: crit[i % crit.length], style: styles[Math.floor(rnd() * styles.length)],
         hand: RULES.hand.slice(), treasures: [], baubles: Object.assign({ acorn: 0 }, ...Object.keys(RULES.baubles).map((k) => ({ [k]: 0 }))),
-        blind: 0,   // lost acorns drawn blind from the bag: nobody else saw them
       }));
       if (opts.styles) opts.styles.forEach((s, i) => { if (s && this.players[i]) this.players[i].style = s; });
       const deck = RULES.treasures.map((t) => Object.assign({ frost: false }, t)).concat(RULES.frosts.map((t) => Object.assign({ frost: true }, t)));
@@ -124,7 +123,6 @@
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
     over() { return this.phase === 'over'; }
     money(i) { return sum(this.players[i].hand); }
-    seen(i) { return this.money(i) - this.players[i].blind; }   // what a sharp player could have counted
     reserve() { return Math.round(this.R.hand.length * 5 / 13 * this.remFrac()); }   // cards a bot keeps back for later
     remFrac() { const n = this.deck.length, k = this.framesLeft; if (k <= 0) return 0; return Math.max(0, Math.min(1, (k * (n + 1) / (k + 1) - 1) / Math.max(1, this.expLots))); }
 
@@ -210,18 +208,18 @@
       if (this.phase === 'lotEnd' && a.type === 'next') { this.nextLot(); return { ok: true }; }
       return { ok: false, error: 'Not now.' };
     }
-    give(seat, b, blind) {
+    give(seat, b) {
       const p = this.players[seat];
-      if (isAcorn(b)) { p.hand.push(acornVal(b)); p.hand.sort((x, y) => x - y); p.baubles.acorn++; if (blind) p.blind += acornVal(b); }
+      if (isAcorn(b)) { p.hand.push(acornVal(b)); p.hand.sort((x, y) => x - y); p.baubles.acorn++; }
       else p.baubles[b]++;
       (this.lot.got = this.lot.got || []).push({ seat, b });
     }
     afterTake() {
-      // once the row is empty, the rest are drawn blind from the bag
+      // if the row runs out, refill it face up so everyone always chooses
       while (this.picks.length) {
         const cur = this.picks[0];
-        while (cur.n > 0 && !this.row.length && this.side.length) { this.give(cur.seat, this.side.pop(), true); cur.n--; }
-        if (cur.n > 0 && !this.row.length && !this.side.length) cur.n = 0;
+        if (cur.n > 0 && !this.row.length) this.refill();
+        if (cur.n > 0 && !this.row.length) cur.n = 0;   // the bag is empty too
         if (cur.n > 0) return;
         this.picks.shift();
       }
@@ -232,7 +230,7 @@
     queuePicks(list, then) {
       this.picks = list.filter((x) => x.n > 0); this.picksThen = then;
       if (!this.picks.length) { this.phase = then; return false; }
-      this.phase = 'pick'; this.afterTake(); return true;   // draws blind straight away if the row is already empty
+      this.phase = 'pick'; this.afterTake(); return true;   // refills straight away if the row is already empty
     }
 
     pass(seat) {
@@ -341,10 +339,10 @@
       return false;
     }
     st(s) { return STYLES[this.players[s].style]; }
-    // bots count the acorns everyone has offered, like a sharp player would, but can't see blind draws
-    danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.seen(i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
+    // bots count every acorn everyone has offered and taken, like a sharp player would
+    danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
     allowed(s) {
-      const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.seen(i)));
+      const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)));
       const floor = Math.max(1, opp + 1 - this.st(s).slack * this.M * this.remFrac());
       return Math.max(0, me - floor);
     }

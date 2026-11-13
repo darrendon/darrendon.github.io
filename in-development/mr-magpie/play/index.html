@@ -184,7 +184,7 @@
       row = '<div class="panel"><h3>Mr. Magpie’s baubles' + (myPick ? ' · take ' + v.picking.n : '') + '</h3>' +
         (myPick ? '<p class="prompt">You dropped out, so Mr. Magpie thanks you with <b>' + v.picking.n + ' bauble' + (v.picking.n > 1 ? 's' : '') + '</b>, one for each acorn card you offered. Tap ' + (want > 1 ? want + ' of them' : 'one') + ', then Take.</p>' : '') +
         '<div class="row">' + v.row.map((b, i) => '<' + (myPick ? 'button type="button"' : 'div') + ' class="bauble' + (myPick && bsel.includes(i) ? ' sel' : '') + '" data-i="' + i + '" data-k="b' + i + '-' + b + '" title="' + esc(B[bKind(b)].name + ': ' + B[bKind(b)].rule) + '">' + baubleIcon(b) + '<small>' + (b.startsWith('acorn') ? b.slice(5) + ' acorns' : esc(B[b].name)) + '</small></' + (myPick ? 'button' : 'div') + '>').join('') +
-        (v.row.length ? '' : '<span class="bag">The row is empty: baubles come from the bag.</span>') + '<span class="bag">' + v.bagLeft + ' in the bag</span></div>' +
+        '<span class="bag">' + v.bagLeft + ' in the bag</span></div>' +
         (myPick ? '<div class="acts"><button class="dt-btn go" data-do="take"' + (bsel.length === want ? '' : ' disabled') + '>Take ' + (want > 1 ? 'these ' + want : 'it') + '</button></div>' : '') +
         '<div class="key">' + ['earring', 'berry', 'button', 'feather', 'acorn'].map((k) => '<div>' + baubleIcon(k === 'acorn' ? 'acorn4' : k) + '<span><b>' + esc(B[k].plural) + '</b> · ' + esc(B[k].rule) + '</span></div>').join('') + '</div></div>';
     }
@@ -273,9 +273,9 @@
     rules:
       '<p><b>Bring your offerings before the first snow.</b> Mr. Magpie has a nest full of shiny things and a larder to fill before winter, and the woodland critters can’t resist a sparkle. Every autumn they trade him their winter acorns for his treasures. Every critter starts with the same 10 acorn cards, from 1 up to 16. Keep them hidden in your hand. You can’t make change, so pick your cards carefully.</p>' +
       '<p><b>Offer or pass.</b> Mr. Magpie shows off one treasure at a time. Whoever won the last treasure starts (if nobody did, the start moves left). In turn, beat the top offering by adding acorn cards, or pass. Passing is for good. The last critter in wins the treasure, even if nobody else brought anything. If everyone passes, he keeps it.</p>' +
-      '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first.</p>' +
+      '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: when you drop out after offering, take one bauble from the row for each acorn card you brought. Whoever drops out first picks first, and if the row runs out, it’s refilled face up.</p>' +
       '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, biggest offering first. The fourth frost brings the first snow and ends the game at once.</p>' +
-      '<p><b>Baubles.</b> Earrings: one alone is −3, each pair +5. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 1 each, most +6, second +3. Nearly a third of the bag is lost acorns, from 1 up to 20: take one instead of a bauble and it goes into your hand.</p>' +
+      '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +7. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +8, second +4. Nearly a third of the bag is lost acorns, from 1 up to 20: take one instead of a bauble and it goes into your hand.</p>' +
       '<p><b>Winter.</b> The critter with the fewest acorns left doesn’t make it through. Most points among the rest wins.</p>',
   });
 })();
