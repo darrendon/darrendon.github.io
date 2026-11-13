@@ -1,0 +1,15 @@
+#!/bin/sh
+# Runs the layout check (tools/check-layout.js) when a page or a stylesheet is in the commit.
+# One-time setup in a fresh clone: git config core.hooksPath .githooks
+# Skip once (not recommended): git commit --no-verify
+changed=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(css|html)$|^tools/check-layout\.js$' | grep -v '/play/' | grep -v '/img/src/')
+[ -z "$changed" ] && exit 0
+if ! command -v node >/dev/null 2>&1 || ! node -e "require('playwright')" >/dev/null 2>&1; then
+  echo "pre-commit: Node with Playwright isn't available here, so the layout check (tools/check-layout.js) did not run." >&2
+  exit 0
+fi
+echo "pre-commit: checking that no text overlaps or gets cut off…"
+node "$(git rev-parse --show-toplevel)/tools/check-layout.js" || {
+  echo "\npre-commit: commit stopped. Fix the layout problems above (or see tools/check-layout.js)." >&2
+  exit 1
+}

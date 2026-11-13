@@ -43,8 +43,8 @@
 .ranks figcaption{font-size:14.5px;color:var(--g-muted)}
 .ranks figcaption b{display:block;color:var(--g-ink);font-size:16px}
 .decoys{display:flex;align-items:center;gap:clamp(16px,3vw,36px);margin-top:clamp(20px,3vw,32px);padding:18px 20px;border-radius:18px;background:var(--g-panel);flex-wrap:wrap}
-.decoys .row{display:flex;gap:8px}
-.decoys .row img{width:58px;height:auto;aspect-ratio:5/7;border-radius:6px;display:block;box-shadow:0 1px 4px rgba(42,29,49,.2)}
+.decoys .row{display:flex;gap:8px;min-width:0}
+.decoys .row img{width:min(58px,calc((100vw - 120px) / 5));height:auto;aspect-ratio:5/7;border-radius:6px;display:block;box-shadow:0 1px 4px rgba(42,29,49,.2)}
 .decoys .row img.hit{box-shadow:0 0 0 3px var(--udtc-good)}
 .decoys p{margin:0;font-size:16.5px;max-width:48ch;color:var(--g-ink)}
 

@@ -328,24 +328,18 @@ a.chip:hover{border-color:var(--red);color:var(--red)}
 .signed-list a{border-bottom:0;text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px;text-underline-offset:.28em;text-decoration-skip-ink:none}
 .con-year ul{gap:14px}
 
-/* game cards: one standard layout, rows lined up across each row of cards */
+/* game cards: a plain column in normal flow. Every line of text takes its own room, so nothing can sit on top of anything.
+   NO subgrid, no absolute or negative-margin text, no fixed heights here: Safari laid the old subgrid cards out wrong
+   (text on top of text) and didn't always re-lay them out after the fonts loaded. tools/check-layout.js fails on these. */
 .game-grid{row-gap:clamp(18px,2.4vw,28px)}
-.game-grid .feature{display:grid;grid-template-rows:subgrid;grid-row:span 6;row-gap:0;padding:0 0 26px}
-.feature .feature-art{grid-row:1}
+.game-grid .feature{display:flex;flex-direction:column;padding:0 0 26px}
+.game-grid .feature>*{flex:none;min-height:0}
 .feature h3{padding:24px 26px 0;margin:0}
-.feature .blurb{padding:10px 26px 0;margin:0;font-size:16.5px;line-height:1.5;color:var(--g-ink)}
-.feature .specs{margin:18px 26px 0;padding:14px 0;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:4px 22px;border-top:1px solid var(--g-line);border-bottom:1px solid var(--g-line);align-self:start}
-.feature .specs div{display:flex;flex-direction:column;gap:3px;min-width:0}
-.feature .specs dt{font-family:var(--display);font-weight:600;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-muted)}
-.feature .specs dd{margin:0;font-family:var(--display);font-weight:600;font-size:16px;line-height:1.25;color:var(--g-ink)}
-.feature .comps{padding:12px 26px 0;margin:0;font-size:14.5px;color:var(--g-muted);align-self:start}
+.feature .blurb{padding:10px 26px 16px;margin:0;font-size:16.5px;line-height:1.5;color:var(--g-ink)}
+.feature .comps{padding:12px 26px 0;margin:0;font-size:14.5px;color:var(--g-muted)}
 .feature .comps b{color:var(--g-ink);font-weight:600}
-.feature .go{padding:18px 26px 0;margin:0;align-self:end}
-@supports not (grid-template-rows:subgrid){.game-grid .feature{display:flex;flex-direction:column}.feature .go{margin-top:auto}}
-@media (max-width:600px){.game-grid .feature{grid-row:auto;display:flex;flex-direction:column}.feature .go{margin-top:auto}}
+.feature .go{padding:18px 26px 0;margin:0}
 .about .copy a.chip{text-decoration:none}
-@media (max-width:600px){.feature .go{align-self:flex-start}}
-@supports not (grid-template-rows:subgrid){.feature .go{align-self:flex-start}}
 /* big logo: the four dice */
 .hero-dice{justify-self:end;width:100%;max-width:400px}
 .hero-dice .dice{width:100%;height:auto;display:block;overflow:visible}
@@ -437,7 +431,6 @@ a.chip:hover{border-color:var(--orange)}
 .signed-list a,.signed .tba a{display:inline-flex;align-items:center;min-height:44px}
 .section-head .more{min-height:44px}
 .game .views button,.views button{min-height:44px}
-.feature .specs div:nth-child(4){grid-column:1/-1}
 /* five games: three across, then two wider cards; on tablets the odd last card spans the row */
 @media (min-width:961px){.game-grid .feature:nth-child(4):nth-last-child(2),.game-grid .feature:nth-child(5):nth-last-child(1){grid-column:span 3}}
 @media (min-width:601px) and (max-width:960px){.game-grid .feature:last-child:nth-child(odd){grid-column:1/-1}}
@@ -454,7 +447,7 @@ a.chip:hover{border-color:var(--orange)}
 .band{background:#FFFFFF;border:1px solid var(--line);box-shadow:0 14px 34px -24px rgba(31,34,48,.35)}
 
 /* De-templated homepage and games page (Nov 2026): plain facts line, no eyebrow labels, simple lists */
-.feature .facts{margin:16px 26px 0;padding:12px 0;border-top:1px solid var(--g-line,var(--line));border-bottom:1px solid var(--g-line,var(--line));font-size:14.5px;line-height:1.5;color:var(--g-ink,var(--ink))}
+.feature .facts{margin:auto 26px 0;padding:12px 0;border-top:1px solid var(--g-line,var(--line));border-bottom:1px solid var(--g-line,var(--line));font-size:14.5px;line-height:1.5;color:var(--g-ink,var(--ink))}
 .meet2 h2{font-size:clamp(32px,4.4vw,54px);font-weight:600;letter-spacing:-.01em}
 .feature .go{display:none}
 .mast .signed-line{margin-top:clamp(22px,3vw,32px);padding-top:16px;border-top:1px solid var(--line);font-size:16px;line-height:1.55;color:var(--muted);max-width:44ch}
@@ -487,3 +480,7 @@ a.chip:hover{border-color:var(--orange)}
 .feature:has(a.stretch:focus-visible){outline:2px solid var(--g-red);outline-offset:3px}
 .feature .comps a,.spec dd a{position:relative;z-index:2;color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:3px}
 .feature .comps a:hover,.spec dd a:hover{text-decoration-color:currentColor}
+
+/* very small phones (320–360px wide): the name and the three links fit on one line without sideways scroll */
+@media (max-width:360px){.site-head .wrap{gap:6px}.brand{gap:6px}.brand svg{width:24px;height:24px}.brand b{font-size:13.5px;letter-spacing:.02em}.nav a{font-size:11px;letter-spacing:.03em;padding:8px 4px}}
+@media (max-width:600px){.page-hero h1{font-size:clamp(28px,9.6vw,46px)}}
