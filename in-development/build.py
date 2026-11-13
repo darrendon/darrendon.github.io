@@ -168,7 +168,8 @@ def head(title, desc, url, img, body_cls=''):
       <div><b>Darren Don</b><span>Board Game Designer</span></div>
     </a>
     <nav class="nav" aria-label="Main">
-      <a href="/games/" aria-current="page">Games</a>
+      <a href="/games/">Games</a>
+      <a href="/in-development/" aria-current="page">In Development</a>
       <a href="/#about">About</a>
       <a href="/contact/">Contact</a>
     </nav>

@@ -484,3 +484,5 @@ a.chip:hover{border-color:var(--orange)}
 /* very small phones (320–360px wide): the name and the three links fit on one line without sideways scroll */
 @media (max-width:360px){.site-head .wrap{gap:6px}.brand{gap:6px}.brand svg{width:24px;height:24px}.brand b{font-size:13.5px;letter-spacing:.02em}.nav a{font-size:11px;letter-spacing:.03em;padding:8px 4px}}
 @media (max-width:600px){.page-hero h1{font-size:clamp(28px,9.6vw,46px)}}
+/* Main nav: four links don't fit beside the wordmark on phones, so the nav drops to its own row */
+@media (max-width:700px){.site-head .wrap{flex-wrap:wrap;row-gap:0;min-height:0;padding-top:8px}.nav{width:100%;justify-content:space-between;gap:0}.nav a{padding-left:6px;padding-right:6px}}
