@@ -182,7 +182,7 @@
 <script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
 <script src="art.js?v=f990ae50"></script>
-<script src="engine.js?v=3da960fa"></script>
+<script src="engine.js?v=1d91f0e0"></script>
 <script>
 (function () {
   'use strict';
@@ -226,7 +226,7 @@
   function mine(l, nm) {
     if (l.endsWith(' ' + nm + ' leads.')) return l.slice(0, -(nm.length + 7)) + 'You lead.';
     if (!l.startsWith(nm + ' ')) return l;
-    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes and charges/, 'pass and charge').replace(/^passes and shows/, 'pass and show').replace(/^passes/, 'pass').replace(/^spends /, 'spend ').replace(/^discards /, 'discard ').replace(/^uses /, 'use ').replace(/^has /, 'have ').replace(/their last/, 'your last');
+    return 'You ' + l.slice(nm.length + 1).replace(/^adds /, 'add ').replace(/^passes and charges/, 'pass and charge').replace(/^passes/, 'pass').replace(/^spends /, 'spend ').replace(/^shows /, 'show ').replace(/^discards /, 'discard ').replace(/^uses /, 'use ').replace(/^has /, 'have ').replace(/their last/, 'your last');
   }
 
   // a Boss card as printed; `attrs` carries where it came from when it first lands on the table
@@ -301,6 +301,7 @@
     if (k !== key) { sel = []; selHead = {}; key = k; wildOn = false; wildId = null; beaconOn = false; tweakD = 0; tweakId = null; showOn = false; giveOn = false; giveId = null; }
     const myTurn = v.phase === 'build' && v.turn === me;
     const iDiscard = v.phase === 'discard' && P[me].needsDiscard;
+    const iShow = v.phase === 'show' && v.showSeat === me;
     const iRiptide = v.phase === 'riptide' && v.riptide.seat === me;
     const dn = P[me].discardCount;
     const nm = (i) => i === me ? 'You' : esc(P[i].name);
@@ -339,6 +340,7 @@
     const unpick = (id) => { const h = selHead[id] || 0; const drop = [id].concat(wildId != null && wildId !== id && (selHead[wildId] || 0) === h ? [wildId] : []); if (drop.includes(wildId)) wildId = null; if (drop.includes(tweakId)) tweakId = null; sel = sel.filter((x) => !drop.includes(x)); drop.forEach((x) => delete selHead[x]); };
 
     const status = v.phase === 'over' ? (v.outcome.win ? 'The squad wins!' : 'The Boss wins.')
+      : v.phase === 'show' ? (iShow ? 'Show a card' : 'Waiting for ' + P[v.showSeat].name + ' to show a card…')
       : v.phase === 'riptide' ? (iRiptide ? 'Use Riptide?' : 'Waiting on Riptide…')
       : v.phase === 'discard' ? (iDiscard ? 'Discard ' + dn : 'Waiting for discards…')
       : v.phase === 'result' ? (vael ? 'End of the round' : v.result.met ? 'Combo complete!' : 'Everyone discarded')
@@ -403,11 +405,11 @@
       const o = v.outcome;
       call = '<div class="call' + (o.win ? '' : ' bad') + '"><b>' + (o.win ? 'The squad holds the line!' : o.seat === me ? 'You are down' : esc(P[o.seat].name) + ' is down') + '</b><p>' +
         (o.win ? (vael ? 'Every head is cut' : 'You beat ' + v.done + ' of ' + v.total + ' monsters') + (v.misses ? '.' : ', a flawless run.') : (o.seat === me ? 'You ' + esc(o.how.replace('their', 'your')) : 'They ' + esc(o.how)) + ', so the Boss wins. Leave the table to try again.') + '</p></div>';
-    } else if (v.result && (v.phase === 'result' || v.phase === 'discard' || v.phase === 'riptide')) {
+    } else if (v.result && (v.phase === 'result' || v.phase === 'show' || v.phase === 'discard' || v.phase === 'riptide')) {
       const r = v.result;
       if (vael) {
         const bits = [];
-        if (r.cut.length) bits.push(r.cut.map((b) => esc(b.name)).join(' and ') + (r.cut.length > 1 ? ' are' : ' is') + ' cut off.' + (r.weak ? ' Weak spot hit: +' + r.weak + ' Energy.' : ''));
+        if (r.cut.length) bits.push(r.cut.map((b) => esc(b.name)).join(' and ') + (r.cut.length > 1 ? ' are' : ' is') + ' cut off.' + (r.weak ? ' Weak spot hit.' : ''));
         if (r.struck.length) bits.push(r.struck.map((b) => esc(b.name)).join(' and ') + ' struck: its cards are lost and every Hero discards 2.');
         if (r.enraged.length) bits.push(r.enraged.map(esc).join(' and ') + (r.enraged.length > 1 ? ' are' : ' is') + ' enraged.');
         if (r.hunger.length) bits.push('Hunger takes a card from ' + r.hunger.map(nm).join(' and ') + '.');
@@ -418,7 +420,7 @@
         const back = r.bounced.map((x) => nm(x.seat) + ' took back ' + x.cards.map((c) => esc(S.cardName(c))).join(' and ')).join('; ');
         const e = v.enc;
         call = '<div class="call' + (r.met ? '' : ' bad') + '"><b>' + (r.met ? esc(e.boss.name) + ' is defeated!' : esc(e.boss.name) + ' holds on') + '</b><p>' +
-          (r.met ? (r.weak ? 'A finishing blow on its weak spot: the squad gains 1 Energy. ' : '') + 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 1, and you fight it again.' + discLine(r)) + '</p></div>';
+          (r.met ? (r.weak ? 'A finishing blow on its weak spot. ' : '') + 'Next monster coming up…' : (back ? back + '. ' : 'Nobody added a card. ') + 'Every Hero discards 1, and you fight it again.' + discLine(r)) + '</p></div>';
       }
     }
 
@@ -438,10 +440,12 @@
           : showOn ? '<button class="dt-btn" data-do="mode-off">Cancel</button>'
           : giveOn ? (giveId != null ? order.map((i) => '<button class="dt-btn go" data-do="give" data-to="' + i + '">Give to ' + esc(P[i].name) + '</button>').join('') : '') + '<button class="dt-btn" data-do="mode-off">Cancel</button>'
           : '<button class="dt-btn go" data-do="add"' + (sel.length ? '' : ' disabled') + '>Lock in' + (sel.length ? ' ' + sel.length : '') + '</button>' +
-            '<button class="dt-btn" data-do="pass-charge"' + (v.energy < v.energyMax ? '' : ' disabled title="The squad’s Energy is full"') + '>Pass: +1 Energy</button><button class="dt-btn" data-do="pass-show">Pass: show a card</button>' +
+            '<button class="dt-btn" data-do="pass">Pass' + (v.energy < v.energyMax ? ': +1 Energy' : '') + '</button>' +
             (v.energy > 0 ? '<span class="esp"><i>Spend 1 Energy</i><button class="dt-btn' + (tweakD < 0 ? ' on' : '') + '" data-do="tweak-">Tweak −1</button><button class="dt-btn' + (tweakD > 0 ? ' on' : '') + '" data-do="tweak+">Tweak +1</button>' + (v.canHandoff ? '<button class="dt-btn" data-do="give-on">Hand-off</button>' : '') + '</span>' : '') +
             (v.canWild ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
             (v.canBeacon ? '<button class="dt-btn" data-do="beacon">Beacon: show a card</button>' : '')) + '</div>';
+    } else if (iShow) {
+      main = '<p class="prompt"><b>You hit the weak spot!</b> Tap one card in your hand to show it to the squad. It stays in your hand.</p>' + hand;
     } else if (iRiptide) {
       main = '<p class="prompt">The squad is about to discard (' + v.riptide.counts.map((n, i) => nm(i) + ' ' + n).join(', ') + '). <b>Use Riptide so nobody discards?</b> You can only use it once.</p>' + hand +
         '<div class="acts"><button class="dt-btn go" data-do="rip-yes">Use Riptide</button><button class="dt-btn" data-do="rip-no">Save it</button></div>';
@@ -495,7 +499,7 @@
         pieces: '.cardb, .pend[data-id]', zones: '[data-zone]', key: (n) => 'k' + n.dataset.id,
         canLift: () => v.phase !== 'over',
         home: (p) => {
-          if (sel.includes(+p.data.id) || beaconOn || showOn || giveOn) return null;
+          if (sel.includes(+p.data.id) || beaconOn || iShow || giveOn) return null;
           if (iDiscard) return el.querySelector('[data-zone="trash"]');
           if (!myTurn) return null;
           if (!vael) return el.querySelector('.fight[data-zone="head"]');
@@ -506,7 +510,7 @@
         tap: (p) => {
           const id = +p.data.id;
           if (beaconOn && !sel.includes(id)) { beaconOn = false; api.act({ type: 'beacon', card: id }); return true; }
-          if (showOn && !sel.includes(id)) { showOn = false; api.act({ type: 'pass', reveal: id }); return true; }
+          if (iShow) { api.act({ type: 'show', card: id }); return true; }
           if (giveOn && !sel.includes(id)) { giveId = id; render(el, v, api); return true; }
           if (sel.includes(id)) { unpick(id); Tabletop.sound('slide'); render(el, v, api); return true; }   // tap a card you put down to take it back
           return false;
@@ -515,7 +519,8 @@
           const id = +p.data.id, zone = z.dataset.zone;
           if (zone === 'hand') { if (!sel.includes(id)) return { ok: false, quiet: true }; unpick(id); render(el, v, api); return true; }
           if (beaconOn) return 'Beacon: tap the card you want everyone to see, or cancel.';
-          if (showOn || giveOn) return 'Tap a card, or cancel.';
+          if (iShow) return 'Tap the card you want to show the squad.';
+          if (giveOn) return 'Tap a card, or cancel.';
           if (zone === 'trash') {
             if (!iDiscard) return v.phase === 'build' && myTurn ? 'You don’t discard on your turn. Put cards on ' + (vael ? 'a head' : 'the combo') + ', or pass.' : 'Nobody is discarding right now.';
             if (sel.includes(id)) return { ok: false, quiet: true };
@@ -549,7 +554,7 @@
       if (d === 'give') { const to = +b.dataset.to, card = giveId; giveOn = false; giveId = null; api.act({ type: 'handoff', card, to }); return; }
       if (d === 'tweak-' || d === 'tweak+') { const nd = d === 'tweak+' ? 1 : -1; if (tweakId != null) unpickAny(tweakId); tweakD = tweakD === nd ? 0 : nd; tweakId = null; render(el, v, api); return; }
       if (d === 'add') { const heads = [...new Set(sel.map((x) => selHead[x] || 0))]; api.act({ type: 'add', parts: heads.map((h) => ({ head: h, cards: sel.filter((x) => (selHead[x] || 0) === h) })), head: heads[0], cards: sel, wild: wildId, tweak: tweakId != null ? { id: tweakId, d: tweakD } : null }, b); }
-      if (d === 'pass-charge') api.act({ type: 'pass', charge: true });
+      if (d === 'pass') api.act({ type: 'pass' });
       if (d === 'rip-yes') api.act({ type: 'riptide', use: true });
       if (d === 'rip-no') api.act({ type: 'riptide', use: false });
       sel = []; selHead = {}; wildId = null; wildOn = false; tweakD = 0; tweakId = null;
@@ -568,10 +573,9 @@
     render,
     rules:
       '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes (all five with 4 or 5), each ranked 1–12, and 15 cards each (14 against the Hydra, 11 with 5 Heroes).</p>' +
-      '<p><b>Passing.</b> When you pass, either show one card from your hand to everyone, or add 1 Energy to the squad’s pool.</p>' +
+      '<p><b>Passing.</b> When you pass, the squad gains 1 Energy (it holds up to 4).</p>' +
       '<p><b>Energy.</b> On your turn, spend 1 Energy for a Tweak (one card you add counts as one rank higher or lower) or a Hand-off (give one card, face down, to another Hero).</p>' +
-      '<p><b>Weak spots.</b> Every monster has one: a color, or a band of ranks. If the last card added to a finished combo hits it, the squad gains 1 Energy.</p>' +
-      '<p><b>Combos.</b> A Run is ranks in a row, any color; it can have gaps while it’s being built, as long as it all fits in its number. A Set is one rank. A Flush is one color, any ranks. A Rainbow is all different colors, any ranks. On your turn, add 1 or 2 cards that fit, or pass.</p>' +
+      '<p><b>Weak spots.</b> Every monster has one: a color, or a band of ranks. If the last card added to a finished combo hits it, the Hero who added it shows one card from their hand to the squad.</p>' +
       '<p><b>Emperor Gorvax.</b> Each season’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or more Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once a season): show a card.</p>',

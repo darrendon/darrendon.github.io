@@ -12,8 +12,9 @@
     hand5: 11,                          // with 5 Heroes: 11 each, so 5 cards stay buried
     energyStart: 1,                     // Energy tokens the squad starts with
     energyMax: 4,                       // most Energy the squad can hold
-    passCharge: true,                   // when you pass: show a card, or gain 1 Energy
-    weakEnergy: 1,                      // Energy for beating a monster with a finishing blow on its weak spot
+    passCharge: true,                   // when you pass, the squad gains 1 Energy (if there's room)
+    weakShow: true,                     // a finishing blow on a monster's weak spot: the Hero who landed it shows one card from their hand
+    weakEnergy: 0,                      // Energy for a finishing blow on a weak spot (tried at 1; now the reward is showing a card)
     weakFinish: true,                   // the weak-spot card has to be the last card added (false: anywhere in the combo)
     missDiscard: 1,                     // Gorvax: cards each Hero discards when a combo falls short
     strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
@@ -189,7 +190,7 @@
       const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
       this.defs = B.acts;
       const handN = this.handSize = this.N === 5 ? RULES.hand5 : B.hand || RULES.hand;
-      this.energy = RULES.energyStart; this.turnUsed = {}; this.stat = { tweak: 0, handoff: 0, charge: 0, reveal: 0, weak: 0 };
+      this.energy = RULES.energyStart; this.showQueue = []; this.turnUsed = {}; this.stat = { tweak: 0, handoff: 0, charge: 0, reveal: 0, weak: 0 };
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
       this.box = deck.slice(this.N * handN);          // never seen in play
       this.boxed = this.box.length;
@@ -275,15 +276,7 @@
         if (a.type === 'handoff') return this.handoff(seat, a.card | 0, a.to | 0);
         if (a.type === 'pass') {
           let extra = '';
-          if (RULES.passCharge && a.charge) {
-            if (this.energy >= RULES.energyMax) return { ok: false, error: 'The squad can’t hold more Energy. Show a card instead.' };
-            this.energy++; this.stat.charge++; extra = ' and charges 1 Energy';
-          } else if (RULES.passCharge && a.reveal != null) {
-            const c = this.hands[seat].find((x) => x.id === (a.reveal | 0));
-            if (!c) return { ok: false, error: 'You don’t have that card.' };
-            if (!this.known[seat].some((x) => x.id === c.id)) this.known[seat].push(c);
-            this.stat.reveal++; extra = ' and shows ' + cardName(c);
-          }
+          if (RULES.passCharge && this.energy < RULES.energyMax) { this.energy++; this.stat.charge++; extra = ' and charges 1 Energy'; }
           this.say(this.players[seat].name + ' passes' + extra + '.');
           if (this.boss === 'vael') { this.round.plays.push({ seat, pass: true }); this.round.lastHeads = []; } else this.enc.plays.push({ seat, pass: true, cards: [] });
           this.nextTurn(); return { ok: true };
@@ -315,6 +308,16 @@
         this.result.discards[seat] = cs;
         for (const c of cs) this.trash.push({ c, seat });
         if (!this.pendingDiscard.length) this.afterDiscards();
+        return { ok: true };
+      }
+      if (this.phase === 'show') {
+        if (seat !== this.showQueue[0]) return { ok: false, error: 'Waiting for ' + this.players[this.showQueue[0]].name + ' to show a card.' };
+        const c = this.hands[seat].find((x) => x.id === (a.card | 0));
+        if (a.type !== 'show' || !c) return { ok: false, error: 'Show one card from your hand.' };
+        if (!this.known[seat].some((x) => x.id === c.id)) this.known[seat].push(c);
+        this.stat.reveal++; this.say(this.players[seat].name + ' shows ' + cardName(c) + '.');
+        this.showQueue.shift();
+        if (!this.nextShow()) this.phase = 'result';
         return { ok: true };
       }
       if (this.phase === 'result' && a.type === 'next') { this.advance(); return { ok: true }; }
@@ -426,7 +429,7 @@
         this.done++;
         this.say('Combo complete! ' + this.enc.boss.name + ' is defeated.');
         this.weakHit(this.enc, this.result);
-        this.phase = 'result';
+        if (!this.nextShow()) this.phase = 'result';
         return;
       }
       this.misses++;
@@ -441,11 +444,23 @@
     }
 
     weakHit(x, res) {
-      if (!RULES.weakEnergy || !(RULES.weakFinish ? isWeak(x.boss.weak, x.cards[x.cards.length - 1]) : x.cards.some((c) => isWeak(x.boss.weak, c)))) return;
-      const got = Math.min(RULES.weakEnergy, RULES.energyMax - this.energy);
+      const hit = RULES.weakFinish ? isWeak(x.boss.weak, x.cards[x.cards.length - 1]) : x.cards.some((c) => isWeak(x.boss.weak, c));
+      if (!hit) return;
       res.weak = (res.weak || 0) + 1; this.stat.weak++;
-      if (got > 0) { this.energy += got; this.say('Weak spot hit (' + weakName(x.boss.weak) + '): the squad gains ' + got + ' Energy.'); }
-      else this.say('Weak spot hit (' + weakName(x.boss.weak) + '), but the squad’s Energy is full.');
+      const seat = x.plays.filter((p) => p.cards && p.cards.length).pop().seat;
+      let msg = 'A finishing blow on ' + x.boss.name + '’s weak spot (' + weakName(x.boss.weak) + ')';
+      if (RULES.weakEnergy) { const got = Math.min(RULES.weakEnergy, RULES.energyMax - this.energy); this.energy += got; msg += got ? ': the squad gains ' + got + ' Energy' : ''; }
+      this.say(msg + '.');
+      if (RULES.weakShow) this.showQueue.push(seat);
+    }
+    /* after a weak-spot hit, the Hero who landed it shows a card before play goes on */
+    nextShow() {
+      while (this.showQueue.length) {
+        const s = this.showQueue[0];
+        if (this.hands[s].some((c) => !this.known[s].some((k) => k.id === c.id))) { this.phase = 'show'; return true; }
+        this.showQueue.shift();       // everything they hold is already known
+      }
+      return false;
     }
     /* Vael: end of a round */
     endRound() {
@@ -502,7 +517,7 @@
         this.say('The last head falls. The squad wins!');
         return;
       }
-      this.phase = 'result';
+      if (!this.nextShow()) this.phase = 'result';
     }
 
     /* Discards: Steady and Riptide apply to every kind */
@@ -558,7 +573,7 @@
       const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, total: x.boss.need, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })), who: Object.fromEntries(x.plays.flatMap((p) => p.cards.map((c) => [c.id, p.seat]))) });
       return {
         seat, boss: this.boss, bossName: RULES.bosses[this.boss].name, phase: this.phase, colors: this.colors, total: this.total, done: this.done, misses: this.misses, fights: this.fights,
-        energy: this.energy, energyMax: RULES.energyMax, canHandoff: this.phase === 'build' && seat === turn && this.energy > 0 && !this.turnUsed.handoff && this.hands[seat].length > 1,
+        energy: this.energy, energyMax: RULES.energyMax, showSeat: this.phase === 'show' ? this.showQueue[0] : -1, canHandoff: this.phase === 'build' && seat === turn && this.energy > 0 && !this.turnUsed.handoff && this.hands[seat].length > 1,
         boxed: this.boxed, maxAdd: this.maxAdd(seat), maxAddHead: vael ? this.slots.map((_, h) => this.maxAdd(seat, h)) : null, act: this.actNo, lead: this.lead, powers: this.powers,
         players: this.players.map((p, i) => ({ name: p.name, bot: p.bot, hero: p.hero, count: this.hands[i].length,
           known: this.known[i].slice(),
@@ -599,10 +614,12 @@
         this.botHandoff(s);
         const pick = this.simple ? this.simplePick(s) : chooseBuild(this, s, RULES.lookahead);
         if (pick && pick.parts.some((x) => x.cards.length)) { const r = this.act(s, { type: 'add', parts: pick.parts, head: pick.parts[0].head, cards: pick.parts[0].cards, tweak: pick.tweak }); if (r.ok) return true; }
-        // passing: charge Energy if there's room, otherwise show the card that says most about the hand
-        if (RULES.passCharge && this.energy < RULES.energyMax) this.act(s, { type: 'pass', charge: true });
-        else if (RULES.passCharge && this.hands[s].length) { const un = this.hands[s].filter((c) => !this.known[s].some((k) => k.id === c.id)); this.act(s, un.length ? { type: 'pass', reveal: this.botBeacon(s, un).id } : { type: 'pass' }); }
-        else this.act(s, { type: 'pass' });
+        this.act(s, { type: 'pass' });
+        return true;
+      }
+      if (this.phase === 'show') {
+        const s = this.showQueue[0]; if (!this.players[s].bot) return false;
+        this.act(s, { type: 'show', card: this.botBeacon(s, this.hands[s].filter((c) => !this.known[s].some((k) => k.id === c.id))).id });
         return true;
       }
       if (this.phase === 'riptide') {
@@ -836,7 +853,7 @@
     const opts = buildOptions(g, seat);
     tweakOptions(g, seat, opts);
     const out = (o) => ({ parts: o.parts.map((p) => ({ head: p.head, cards: p.cards.map((c) => c.id) })), tweak: o.tweak || null });
-    const weakBonus = (o) => o.parts.some((p) => { const x = g.boss === 'vael' ? g.slots[p.head] : g.enc; const rem = x.boss.need - x.st.n; return RULES.weakFinish ? p.cards.length === rem && isWeak(x.boss.weak, p.cards[p.cards.length - 1]) : p.cards.some((c) => isWeak(x.boss.weak, c)) && !x.cards.some((c) => isWeak(x.boss.weak, c)); }) && g.energy < RULES.energyMax ? 0.4 : 0;
+    const weakBonus = (o) => o.parts.some((p) => { const x = g.boss === 'vael' ? g.slots[p.head] : g.enc; const rem = x.boss.need - x.st.n; return RULES.weakFinish ? p.cards.length === rem && isWeak(x.boss.weak, p.cards[p.cards.length - 1]) : p.cards.some((c) => isWeak(x.boss.weak, c)) && !x.cards.some((c) => isWeak(x.boss.weak, c)); }) ? 0.4 : 0;
     if (opts.length === 1) return out(opts[0]);
     const keyOf = (parts) => parts.map((p) => p.head + ':' + p.cards.map((c) => (typeof c === 'number' ? c : c.id)).sort((a, b) => a - b).join(',')).sort().join('|');
     const simple = g.simplePick(seat), skey = simple ? keyOf(simple.parts) : '';
