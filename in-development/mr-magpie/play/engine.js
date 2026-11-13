@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const RULES = {
-    hand: [1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5, 7, 9],     // every critter's acorn cards; no making change
+    hand: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 22], // every critter's acorn cards: a wide range, and no making change
     treasures: [                                        // open auctions: the last critter in wins it
       { name: 'Silver Thimble', vp: 5 }, { name: 'Old Key', vp: 5 }, { name: 'Jingle Bell', vp: 6 },
       { name: 'Teaspoon', vp: 6 }, { name: 'Pocket Mirror', vp: 7 }, { name: 'Locket', vp: 8 },
@@ -16,7 +16,7 @@
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
     baubles: { earring: 13, berry: 13, button: 13, feather: 13 },
-    lostAcorns: [3, 3, 4, 4, 5, 5, 6, 6],               // bauble cards that go straight into your hand
+    lostAcorns: [5, 6, 7, 8, 9, 10, 11, 13],            // bauble cards that go straight into your hand
     rowExtra: 2,                                        // the bauble row holds players + this many
     earring: { single: -3, pair: 5 },                   // one alone is useless; each pair scores
     berry: [0, 2, 4, 7, 2, 0],                          // a few are lovely, too many spoil
@@ -113,6 +113,7 @@
     over() { return this.phase === 'over'; }
     money(i) { return sum(this.players[i].hand); }
     seen(i) { return this.money(i) - this.players[i].blind; }   // what a sharp player could have counted
+    reserve() { return Math.round(this.R.hand.length * 5 / 13 * this.remFrac()); }   // cards a bot keeps back for later
     remFrac() { const n = this.deck.length, k = this.framesLeft; if (k <= 0) return 0; return Math.max(0, Math.min(1, (k * (n + 1) / (k + 1) - 1) / Math.max(1, this.expLots))); }
 
     refill() { while (this.row.length < this.rowSize && this.side.length) this.row.push(this.side.pop()); }
@@ -358,7 +359,7 @@
       if (!keys.length) return { type: 'pass' };
       const opts = [{ c: keys[0], sub: map.get(keys[0]).few }];
       keys.slice(0, 4).forEach((t) => opts.push({ c: t, sub: map.get(t).many }));
-      const allow = this.allowed(s), resB = Math.round(5 * this.remFrac()), nb = L.spent[s].length;
+      const allow = this.allowed(s), resB = this.reserve(), nb = L.spent[s].length;
       const P = L.bids[s] > 0 ? this.kValue(s, nb) : 0;
       let best = null, bs = 0;
       for (const o of opts) {
@@ -373,7 +374,7 @@
     botFrost(s) {
       const p = this.players[s], S = this.st(s); if (!p.hand.length) return [];
       const allow = this.allowed(s), W = this.lot.t.vp * this.beta * S.mShow * Math.exp(gauss() * 0.15);
-      const big = Math.min(allow, W * (0.25 + rnd() * 0.55) * S.aggr), small = Math.min(...p.hand), resB = Math.round(5 * this.remFrac());
+      const big = Math.min(allow, W * (0.25 + rnd() * 0.55) * S.aggr), small = Math.min(...p.hand), resB = this.reserve();
       if (rnd() < 0.35 * S.mShow * S.aggr && big >= small && p.hand.length > resB) {
         const map = sums(p.hand); let t = Math.floor(big); while (t > 0 && !map.has(t)) t--; return t > 0 ? map.get(t).few : [];
       }
