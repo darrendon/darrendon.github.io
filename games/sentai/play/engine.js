@@ -28,28 +28,28 @@
     bosses: {
       gorvax: {
         name: 'Emperor Gorvax',
-        // per act: [type, [need with 2, 3, 4 Heroes], name]
+        // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
         acts: [
-          [['run', [2, 2, 3], 'Cog Grunts'], ['run', [2, 2, 3], 'Rust Rats'], ['color', [2, 3, 3], 'Inkbats'],
-           ['combine', [2, 2, 3], 'Static Swarm'], ['set', [3, 3, 3], 'Gum Golem'], ['set', [2, 2, 2], 'Pin Mites']],
-          [['run', [3, 3, 4], 'Tiderazor'], ['run', [3, 3, 5], 'Lanternjaw'], ['color', [2, 3, 4], 'Copper Kraken'],
-           ['combine', [3, 4, 5], 'Thornbeak'], ['set', [2, 2, 3], 'Voltmoth'], ['set', [2, 3, 3], 'Twin Oni']],
-          [['run', [3, 4, 6], 'Megalith Rex'], ['run', [4, 5, 6], 'Ironhorn Titan'], ['color', [3, 4, 5], 'Starmaw'],
-           ['combine', [3, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4], 'Emperor Gorvax']],
+          [['run', [2, 2, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [2, 3, 3, 3], 'Inkbats'],
+           ['combine', [2, 2, 3, 2], 'Static Swarm'], ['set', [3, 3, 3, 3], 'Gum Golem'], ['set', [2, 2, 3, 2], 'Pin Mites']],
+          [['run', [3, 3, 5, 4], 'Tiderazor'], ['run', [3, 4, 5, 5], 'Lanternjaw'], ['color', [3, 3, 4, 4], 'Copper Kraken'],
+           ['combine', [3, 4, 5, 5], 'Thornbeak'], ['set', [2, 2, 3, 3], 'Voltmoth'], ['set', [2, 3, 3, 3], 'Twin Oni']],
+          [['run', [3, 4, 6, 5], 'Megalith Rex'], ['run', [4, 5, 6, 6], 'Ironhorn Titan'], ['color', [3, 4, 5, 5], 'Starmaw'],
+           ['combine', [3, 4, 5, 5], 'Doom Pagoda'], ['set', [2, 3, 4, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4, 3], 'Emperor Gorvax']],
         ],
       },
       vael: {
         name: 'Vael, the Hydra',
         hand: 14,
         heads: { 2: 2, 3: 3, 4: 3, 5: 3 },
-        // per act: [type, [need with 2, 3, 4 Heroes], name, hex]
+        // per act: [type, [need with 2, 3, 4, 5 Heroes], name, hex]
         acts: [
-          [['run', [2, 2, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3], 'Sallowmaw', 'coil'],
-           ['combine', [2, 2, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3], 'Ashtongue', 'venom']],
-          [['run', [2, 3, 4], 'Thornscale', 'hunger'], ['run', [2, 2, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3], 'Bilefang', 'venom'],
-           ['combine', [2, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 2, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3], 'Smokeneck', 'spite']],
-          [['run', [3, 3, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4], 'Nightmaw', 'hunger'],
-           ['combine', [3, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4], 'Hexmother', 'brood']],
+          [['run', [2, 2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3, 3], 'Sallowmaw', 'coil'],
+           ['combine', [2, 2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3, 3], 'Ashtongue', 'venom']],
+          [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 2, 3, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3, 3], 'Bilefang', 'venom'],
+           ['combine', [2, 3, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 3, 4, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3, 3], 'Smokeneck', 'spite']],
+          [['run', [3, 3, 4, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
+           ['combine', [3, 3, 4, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
         ],
       },
     },
