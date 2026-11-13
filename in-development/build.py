@@ -90,6 +90,7 @@ GAMES = [
            dict(q='Which specialist did you most want to draw, and why?', type='text', rows=2),
            dict(q='What would you change?', type='text')]),
   dict(slug='mr-magpie', title='Mr. Magpie', cls='d-magpie',
+       rules='/in-development/mr-magpie/mr-magpie-rules.pdf',
        hook='Mr. Magpie has a nest full of shiny things and a larder to fill before winter. The woodland critters can’t resist a sparkle, so every autumn they trade him their winter acorns for his treasures. He keeps every acorn, win or lose, and whoever is lowest at the first snow doesn’t make it through winter.',
        card='Beat the top offering or drop out. Mr. Magpie never sends a guest home empty-handed: drop out and he gives you a bauble for every acorn card you brought. Stay in to the end and the treasure is yours.',
        specs=[('Players', '3–5'), ('Time', '20–30 min'), ('Genre', 'Auction · Set Collection')],
@@ -241,6 +242,7 @@ def build_game(g):
     acts = []
     if g['play']: acts.append('<a class="btn accent" href="#play">Play in your browser</a>')
     acts.append(f'<a class="btn{"" if g["play"] else " accent"}" href="#feedback">Give feedback</a>')
+    if g.get('rules'): acts.append(f'<a class="btn" href="{g["rules"]}" download>Rules (PDF)</a>')
     acts.append(f'<a class="btn" href="mailto:darren@darrendon.com?subject={e(g["title"].replace(" ", "%20"))}%20print-and-play%20kit">Request a kit</a>')
     nav = ['<a href="#how">How it plays</a>']
     if g['play'] or g.get('play_soon'): nav.append('<a href="#play">Play</a>')
