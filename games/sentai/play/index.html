@@ -184,7 +184,7 @@
 <script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
 <script src="art.js?v=80ff36c8"></script>
-<script src="engine.js?v=9bfe37f1"></script>
+<script src="engine.js?v=976914d3"></script>
 <script>
 (function () {
   'use strict';
@@ -449,7 +449,7 @@
             (v.canWild ? '<button class="dt-btn' + (wildOn ? ' on' : '') + '" data-do="wild">Overcharge' + (wildOn ? ': on' : '') + '</button>' : '') +
             (v.canBeacon ? '<button class="dt-btn" data-do="beacon">Beacon: show a card</button>' : '')) + '</div>';
     } else if (iShow) {
-      main = '<p class="prompt"><b>You hit the weak spot!</b> Tap one card in your hand to show it to the squad. It stays in your hand.</p>' + hand;
+      main = '<p class="prompt"><b>Weak spot hit!</b> Every Hero shows a card. Tap one card in your hand to show it to the squad. It stays in your hand.</p>' + hand;
     } else if (iRiptide) {
       main = '<p class="prompt">The squad is about to discard (' + v.riptide.counts.map((n, i) => nm(i) + ' ' + n).join(', ') + '). <b>Use Riptide so nobody discards?</b> You can only use it once.</p>' + hand +
         '<div class="acts"><button class="dt-btn go" data-do="rip-yes">Use Riptide</button><button class="dt-btn" data-do="rip-no">Save it</button></div>';
@@ -579,7 +579,7 @@
       '<p><b>No table talk.</b> Everything the squad learns comes from the cards. Nobody draws, and if any Hero’s hand runs out, the Boss wins. One more color than there are Heroes (all five with 4 or 5), each ranked 1–12, and 15 cards each (14 against the Hydra, 11 with 5 Heroes).</p>' +
       '<p><b>Passing.</b> When you pass, the squad gains 1 Energy (it holds up to 4).</p>' +
       '<p><b>Energy.</b> On your turn, spend 1 Energy for a Tweak (one card you add counts as one rank higher or lower) or a Hand-off (give one card, face down, to another Hero).</p>' +
-      '<p><b>Weak spots.</b> Every monster has one: a color, or a band of ranks. If the last card added to a finished combo hits it, the Hero who added it shows one card from their hand to the squad.</p>' +
+      '<p><b>Weak spots.</b> Every monster has one: a color, or a band of ranks. If the last card added to a finished combo hits it, every Hero shows one card from their hand to the squad.</p>' +
       '<p><b>Shogun Kagami.</b> Fought like Gorvax, one monster at a time, with all 4 monsters of each season. The color of the card that finishes a monster is locked: nobody can play that color against the next monster.</p>' +
       '<p><b>Emperor Gorvax.</b> Each season’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or more Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +

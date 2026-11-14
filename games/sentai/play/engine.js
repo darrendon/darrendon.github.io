@@ -13,7 +13,7 @@
     energyStart: 1,                     // Energy tokens the squad starts with
     energyMax: 4,                       // most Energy the squad can hold
     passCharge: true,                   // when you pass, the squad gains 1 Energy (if there's room)
-    weakShow: true,                     // a finishing blow on a monster's weak spot: the Hero who landed it shows one card from their hand
+    weakShow: 'all',                    // a finishing blow on a monster's weak spot: every Hero shows one card from their hand ('one': only the Hero who landed it)
     weakEnergy: 0,                      // Energy for a finishing blow on a weak spot (tried at 1; now the reward is showing a card)
     mirrorSelf: 0,                      // Kagami: with this many Heroes or fewer, the lock binds only the Hero who landed the finishing blow
     botWeak: 0.4,                       // how much the look-ahead bots want a weak-spot finish (in rollout wins out of `lookahead`)
@@ -473,7 +473,7 @@
       let msg = 'A finishing blow on ' + x.boss.name + '’s weak spot (' + weakName(x.boss.weak) + ')';
       if (RULES.weakEnergy) { const got = Math.min(RULES.weakEnergy, RULES.energyMax - this.energy); this.energy += got; msg += got ? ': the squad gains ' + got + ' Energy' : ''; }
       this.say(msg + '.');
-      if (RULES.weakShow) this.showQueue.push(seat);
+      if (RULES.weakShow === 'all') { for (let i = 0; i < this.N; i++) this.showQueue.push((seat + i) % this.N); } else if (RULES.weakShow) this.showQueue.push(seat);
     }
     /* after a weak-spot hit, the Hero who landed it shows a card before play goes on */
     nextShow() {
