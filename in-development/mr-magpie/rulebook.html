@@ -6,44 +6,65 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/css/fonts.css">
 <style>
-/* Source for mr-magpie-rules.pdf: US Letter portrait, no margins, backgrounds on. Two pages.
+/* Source for mr-magpie-rules.pdf: US Letter portrait, no margins, backgrounds on. Four pages (one folded sheet).
    Print it with: python3 in-development/mr-magpie/pdf.py
-   The cards are drawn by play/art.js and every number comes from play/engine.js RULES, so the rulebook follows the playable. */
-:root{--ink:#3E2A1E;--bark:#4A2E1E;--accent:#B5612C;--cream:#F7EEDD;--gold:#F7D9A6;--soft:#7A5E48;--line:#E6D3B5;--moss:#3F6B4A;--disp:Fraunces,Georgia,serif}
+   Everything sits in normal flow, so blocks push each other down instead of colliding; pdf.py fails if a page
+   overflows or if any two blocks touch. Cards are drawn by play/art.js and numbers come from play/engine.js RULES. */
+:root{--ink:#3E2A1E;--bark:#4A2E1E;--accent:#B5612C;--cream:#F7EEDD;--gold:#F7D9A6;--soft:#7A5E48;--line:#E6D3B5;--disp:Fraunces,Georgia,serif}
 *{box-sizing:border-box}
 @page{size:8.5in 11in;margin:0}
 html,body{margin:0;background:#8E9499}
-.page{width:8.5in;height:11in;margin:24px auto;background:#fff;position:relative;overflow:hidden;padding:.5in .6in .5in;color:var(--ink);
-  font:9.8pt/1.36 Jost,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.page{width:8.5in;height:11in;margin:24px auto;background:#fff;color:var(--ink);display:flex;flex-direction:column;padding:.55in .65in .4in;
+  font:10pt/1.4 Jost,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 @media print{html,body{background:#fff}.page{margin:0;box-shadow:none;break-after:page}}
-.band{margin:-.5in -.6in .16in;padding:.28in .6in .24in;background:var(--bark);color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:.3in}
-.band h1{margin:0;font:900 46pt/1 var(--disp);color:var(--gold);letter-spacing:-.01em}
-.band p{margin:.08in 0 0;font-size:11.6pt;color:#EBD9BC;max-width:4.7in}
-.band img{width:1.2in;transform:rotate(3deg);border-radius:4px;box-shadow:0 10px 16px -8px rgba(0,0,0,.7)}
-.band .by{font:600 8.5pt/1 Jost;letter-spacing:.24em;text-transform:uppercase;color:#F2C66B;margin-top:.14in}
-h2{font:900 14pt/1.1 var(--disp);color:var(--accent);margin:.15in 0 .05in}
-h2:first-child{margin-top:0}
-p{margin:0 0 .065in}
+.body{flex:1;min-height:0}
+.foot{display:flex;justify-content:space-between;font-size:8.6pt;color:var(--soft);border-top:1px solid var(--line);padding-top:.07in;margin-top:.15in}
+.band{margin:-.55in -.65in .24in;padding:.38in .65in .32in;background:var(--bark);color:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;gap:.4in}
+.band h1{margin:0;font:900 50pt/1 var(--disp);color:var(--gold);letter-spacing:-.01em}
+.band p{margin:.12in 0 0;font-size:12.5pt;line-height:1.4;color:#EBD9BC}
+.band img{width:1.55in;border-radius:5px;box-shadow:0 10px 16px -8px rgba(0,0,0,.7)}
+.band .by{font:600 8.8pt/1 Jost;letter-spacing:.24em;text-transform:uppercase;color:#F2C66B;margin-top:.18in}
+h2{font:900 16pt/1.15 var(--disp);color:var(--accent);margin:.2in 0 .07in}
+h2.top{margin-top:0}
+h3{font:900 12pt/1.2 var(--disp);color:var(--bark);margin:0 0 .03in}
+p{margin:0 0 .075in}
 b{font-weight:600}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:.32in}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.4in;align-items:start}
 .cols>*{min-width:0}
-.goal{background:var(--cream);border-left:5px solid var(--accent);border-radius:6px;padding:.11in .16in;font-size:11pt;margin-bottom:.04in}
-.comp{display:grid;grid-template-columns:auto auto auto auto;justify-content:space-between;align-items:end;gap:.2in;margin:.08in 0 .04in}
-.comp figure{margin:0;text-align:center;font-size:9pt;line-height:1.25;color:var(--soft)}
-.comp figure>div{display:flex;gap:6px;justify-content:center;align-items:flex-end;margin-bottom:.07in}
-.comp b{display:block;color:var(--ink);font-size:9.8pt}
-ol.turn{margin:.04in 0 0;padding:0;list-style:none;counter-reset:t}
-ol.turn li{counter-increment:t;position:relative;padding:0 0 .085in .44in}
-ol.turn li::before{content:counter(t);position:absolute;left:0;top:-.01in;width:.3in;height:.3in;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font:900 12pt/1 var(--disp)}
-ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);margin-bottom:.02in}
-.tip{background:var(--bark);color:#F7EBD0;border-radius:8px;padding:.11in .15in;font-size:10pt;margin-top:.1in}
-.tip b{color:#F2C66B;font:900 10.5pt/1 var(--disp)}
-.frostbox{background:#EAF6FC;border-left:5px solid #6FAECB;border-radius:6px;padding:.1in .15in;margin-top:.08in}
+.goal{background:var(--cream);border-left:5px solid var(--accent);border-radius:6px;padding:.14in .2in;font-size:11.5pt}
+.goal p:last-child,.box p:last-child,.frostbox p:last-child,.eg p:last-child{margin-bottom:0}
+/* what's in the box: one row per kind of card, picture on the left, words on the right */
+.parts{display:grid;gap:.12in;margin-top:.04in}
+.part{display:grid;grid-template-columns:2.35in 1fr;gap:.3in;align-items:center;padding-bottom:.12in;border-bottom:1px solid var(--line)}
+.part:last-child{border-bottom:0;padding-bottom:0}
+.pics{display:flex;gap:7px;align-items:center;justify-content:center;zoom:.7}
+.part p{margin:0}
+.part .n{font:900 13pt/1.2 var(--disp);color:var(--bark);display:block;margin-bottom:.02in}
+.refpic{height:1.15in;border-radius:6px}
+/* numbered steps: the number is a grid cell, so text can never slide under it */
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:t;display:grid;gap:.1in}
+ol.steps>li{counter-increment:t;display:grid;grid-template-columns:.34in 1fr;gap:.12in;align-items:start}
+ol.steps>li::before{content:counter(t);width:.32in;height:.32in;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font:900 12.5pt/1 var(--disp)}
+ol.steps p{margin:0 0 .05in}ol.steps p:last-child{margin:0}
+.box{background:var(--bark);color:#F7EBD0;border-radius:8px;padding:.14in .18in;margin-top:.16in}
+.box b{color:#F2C66B}
+.eg{background:var(--cream);border-radius:8px;padding:.12in .18in;margin-top:.14in;font-size:9.6pt}
+.eg h3{color:var(--accent)}
+.frostbox{background:#EAF6FC;border-left:5px solid #6FAECB;border-radius:6px;padding:.13in .2in;margin-top:.16in}
 .frostbox h2{color:#2F5F7A;margin-top:0}
-.foot{position:absolute;left:.6in;right:.6in;bottom:.3in;display:flex;justify-content:space-between;font-size:8.6pt;color:var(--soft);border-top:1px solid var(--line);padding-top:.06in}
-.baubles{display:flex;justify-content:space-around;gap:8px;margin:.08in 0 .1in}
-.q p{font-size:9.8pt}
-.qrow{margin-top:.1in;border-top:1px solid var(--line);padding-top:.1in}
+/* the table at setup */
+.table{background:#3F6B4A;border-radius:12px;padding:.2in .22in;color:#EAF1DF;display:grid;gap:.2in;margin:.1in 0 .06in;font-size:9pt;line-height:1.3}
+.trow{display:flex;gap:.3in;align-items:flex-start;justify-content:center}
+.spot{display:grid;justify-items:center;gap:.07in;text-align:center}
+.spot .v{zoom:.72;display:flex;gap:6px;align-items:center}
+.larder{width:50px;height:74px;border:2.5px dashed #BFD3B0;border-radius:8px}
+/* scoring: card on the left, how it scores on the right */
+.sets{display:grid;grid-template-columns:1fr 1fr;gap:.14in .4in;margin-top:.04in}
+.set{display:grid;grid-template-columns:auto 1fr;gap:.18in;align-items:center}
+.set .v{zoom:.72}
+.set p{margin:0;font-size:9.6pt}
+.q{display:grid;grid-template-columns:1fr 1fr;gap:.06in .4in;font-size:9.6pt}
+.q p{margin:0 0 .08in}
 
 /* the cards, as in the playable */
 .acard,.bauble,.tcard,.back{box-shadow:0 1px 0 rgba(0,0,0,.2),0 6px 9px -6px rgba(0,0,0,.5)}
@@ -53,6 +74,10 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 .acard i{font:900 10px/1 var(--disp);font-style:normal;transform:rotate(180deg);align-self:flex-end;margin-right:6px;opacity:.7}
 .back{display:grid;place-items:center;border-radius:8px;border:3px solid #FBF1DA;width:50px;height:74px;background:repeating-linear-gradient(45deg,#8A5A32 0 7px,#7A4D29 7px 14px)}
 .back svg{width:60%;height:auto;background:#FBF1DA;border-radius:50%;padding:3px}
+.back.t{width:66px;height:92px;background:repeating-linear-gradient(45deg,#2B3A47 0 8px,#22303B 8px 16px)}
+.back.b{width:66px;height:92px;background:repeating-linear-gradient(45deg,#7B4A6B 0 8px,#6C3F5E 8px 16px)}
+.mb{width:44px;height:60px;border-radius:7px;background:#FFFBF2;border:2px solid #fff;display:grid;place-items:center;box-shadow:0 5px 8px -6px rgba(0,0,0,.6)}
+.mb svg{width:28px;height:28px}
 .tcard{width:104px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;padding:7px 6px 9px;text-align:center;color:#3E2A1E;display:flex;flex-direction:column;align-items:center;gap:3px}
 .tcard .tb{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#A17A3C}
 .tcard svg{width:50px;height:50px}
@@ -60,106 +85,154 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
 .tcard .tv{display:flex;align-items:baseline;gap:4px;background:#4A2E1E;color:#F7D9A6;border-radius:999px;padding:3px 9px;margin-top:2px}
 .tcard .tv b{font:900 14px/1 var(--disp);color:inherit}.tcard .tv i{font-style:normal;font-size:9.5px}
 .tcard.frost{background:linear-gradient(180deg,#EAF6FC,#FFFBF2 60%);outline-color:#9FCBE0}.tcard.frost .tb{color:#3F7E9C}.tcard.frost .tv{background:#2F5F7A;color:#E6F5FC}
-.bauble{width:108px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;overflow:hidden}
+.bauble{width:118px;border-radius:10px;background:#FFFBF2;border:3px solid #fff;outline:1px solid #D9BE93;outline-offset:-4px;display:flex;flex-direction:column;align-items:center;color:#3E2A1E;padding:0 0 7px;overflow:hidden}
 .bauble .bn{align-self:stretch;text-align:center;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;padding:6px 2px 5px;background:var(--bb);color:var(--bc)}
 .bauble .art{flex:1;display:grid;place-items:center;padding:6px 0 4px}
 .bauble .art svg{width:46px;height:46px}
-.bauble .an{display:flex;align-items:center;gap:3px}.bauble .an b{font:900 30px/1 var(--disp);color:#5A3A24}.bauble .an svg{width:28px;height:28px}
 .bauble .bs{align-self:stretch;margin:0 6px;padding-top:5px;border-top:1.5px dashed #DCC7A2;display:grid;gap:2px;font-size:10px;line-height:1.15}
-.bs .l{display:flex;justify-content:space-between;gap:4px}.bs .l.c{justify-content:center;text-align:center}
+.bs .l{display:flex;justify-content:space-between;gap:4px}
 .bs i{font-style:normal;color:#7A5E48}.bs b{font-weight:700}
 .bs .cap{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#9A8468;text-align:center}
 .bs .g{display:grid;grid-template-columns:repeat(var(--n),1fr);text-align:center;row-gap:1px}
-.bs .g i{font-size:8.5px}.bs .g b{font-size:9.5px;letter-spacing:-.03em}
-.k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-acorn{--bb:#F5E6C8;--bc:#7A4E24}.k-cap{--bb:#FBF0BF;--bc:#86650F}.k-bead{--bb:#E2F1E0;--bc:#3C7440}
+.bs .g i{font-size:8.5px}.bs .g b{font-size:10px;letter-spacing:-.02em}
+.k-earring{--bb:#EEE6F6;--bc:#6E4E92}.k-berry{--bb:#F9E2E0;--bc:#A0392F}.k-button{--bb:#DCEFEA;--bc:#2C6C63}.k-feather{--bb:#DEEBF4;--bc:#2D5E80}.k-cap{--bb:#FBF0BF;--bc:#86650F}.k-bead{--bb:#E2F1E0;--bc:#3C7440}
 </style>
 </head>
 <body>
+
 <section class="page">
-  <div class="band">
-    <div>
-      <h1>Mr. Magpie</h1>
-      <p>An auction game for 3–5 critters, 20–25 minutes. Trade your winter acorns for Mr.&nbsp;Magpie’s treasures, but he keeps every acorn you offer, win or lose.</p>
-      <div class="by">by Darren Don</div>
-    </div>
-    <img src="/in-development/mr-magpie/img/box-front-480.webp" alt="">
-  </div>
-  <div class="goal"><b>The goal.</b> Collect the most points in treasures and baubles before the first snow. One catch: the critter with the <b>fewest acorns left</b> when the snow falls doesn’t make it through winter and can’t win, however much they collected.</div>
-
-  <h2>Components</h2>
-  <div class="comp">
-    <figure><div data-c="acorns"></div><b>101 acorn cards</b>5 sets of <span data-n="hand"></span> (<span data-n="handList"></span>)<br>and a 36-card acorn deck: eighteen 1s, twelve 2s, six 3s</figure>
-    <figure><div data-c="treasures"></div><b>16 treasure cards</b>12 treasures (5–15 points)<br>and 4 frosts (7–10 points)</figure>
-    <figure><div data-c="bauble"></div><b>84 bauble cards</b>14 each of earrings, berries, buttons,<br>feathers, bottle caps and glass beads.<br><b style="display:inline">5 reference cards</b>, one per critter</figure>
-  </div>
-
-  <div class="cols">
-    <div>
-      <h2>Setup</h2>
-      <p>1. Each critter takes a reference card and one set of 13 acorn cards, and keeps the acorn cards <b>hidden in hand</b>. Put unused sets back in the box.</p>
-      <p>2. Shuffle the 16 treasure cards into a face-down deck.</p>
-      <p>3. Shuffle the bauble cards into a face-down deck, the <b>bag</b>. Leave room beside it for a face-up row of 8 baubles.</p>
-      <p>4. Leave room for Mr.&nbsp;Magpie’s <b>larder</b>, a face-down pile for every acorn card offered.</p>
-      <p>5. Shuffle the 36-card <b>acorn deck</b> and put it face down, then pick a start player at random.</p>
-      <h2>Acorn cards</h2>
-      <p>Acorn cards are your money and your winter food. You can’t make change: to offer 7 you need cards that add up to 7 or more, and whatever you put down is spent. Nobody may look at or count your hand, though they see every card you offer.</p>
-    </div>
-    <div>
-      <h2>Mr. Magpie’s deal</h2>
-      <p>He keeps <b>every acorn anyone offers</b>, whether they win the treasure or not. But he never sends a guest home empty-handed: drop out of an auction and he thanks you with <b>one bauble for each acorn card</b> you offered.</p>
-      <div class="frostbox">
-        <h2>Frosts</h2>
-        <p>Four treasure cards are frosts. A frost is a secret auction. Everyone chooses any acorn cards from their hand (or none) and holds them out face down, then all reveal together.</p>
-        <p>The <b>biggest total wins</b> the frost. Everyone else who offered takes one bauble per card, biggest offering first, and anyone who offered nothing draws from the acorn deck. All offered cards go to the larder. If nobody offers, the frost stays out like any other treasure.</p>
-        <p><b>Tied for biggest?</b> The tied critters offer again in secret, adding to what they brought, until the tie breaks. If none of them adds a card, nobody wins: the frost stays out and everyone who offered takes baubles.</p>
+  <div class="body">
+    <div class="band">
+      <div>
+        <h1>Mr. Magpie</h1>
+        <p>An auction game for 3 to 5 critters, about 20 minutes. Trade your winter acorns for Mr.&nbsp;Magpie’s treasures. He keeps every acorn you offer, whether you win or not.</p>
+        <div class="by">by Darren Don</div>
       </div>
+      <img src="/in-development/mr-magpie/img/box-front-480.webp" alt="">
+    </div>
+    <div class="goal">
+      <p><b>The goal.</b> Score the most points from treasures and baubles before the first snow.</p>
+      <p><b>The catch.</b> Whoever has the fewest acorns left when the snow falls doesn’t make it through winter, and can’t win however much they collected.</p>
+    </div>
+
+    <h2>What’s in the box</h2>
+    <div class="parts">
+      <div class="part"><div class="pics" data-c="hand"></div><p><b class="n"><span data-n="handTotal"></span> acorn cards in 5 sets</b>One set of <span data-n="hand"></span> for each critter: <span data-n="handList"></span>. Acorns are your money and your winter food.</p></div>
+      <div class="part"><div class="pics" data-c="adeck"></div><p><b class="n"><span data-n="adeck"></span>-card acorn deck</b><span data-n="adeckMix"></span>. You draw from it when you sit an auction out.</p></div>
+      <div class="part"><div class="pics" data-c="treasures"></div><p><b class="n"><span data-n="tcards"></span> treasure cards</b><span data-n="treasures"></span> treasures worth 5 to 15 points, and <span data-n="frosts"></span> frosts worth 7 to 10. Frosts are auctioned in secret, and the last one ends the game.</p></div>
+      <div class="part"><div class="pics" data-c="bauble"></div><p><b class="n"><span data-n="baubles"></span> bauble cards</b><span data-n="each"></span> each of earrings, berries, buttons, feathers, bottle caps and glass beads. Each kind scores as a set, as printed on the card.</p></div>
+      <div class="part"><div class="pics" style="zoom:1"><img class="refpic" src="/in-development/mr-magpie/reference-card.png" alt=""></div><p><b class="n">5 reference cards</b>One for each critter: how the baubles score on one side, the steps of an auction on the other.</p></div>
     </div>
   </div>
   <div class="foot"><span>Mr. Magpie · rules</span><span>1</span></div>
 </section>
 
 <section class="page">
-  <div class="cols">
-    <div>
-      <h2>Each treasure</h2>
-      <ol class="turn">
-        <li><b class="h">Show the treasure</b>Remove the oldest bauble from the left end of the row, slide the rest along, and <b>deal the row back up to 8</b> on the right. Then turn up the top treasure card. (If the bag runs out, reshuffle the removed baubles.) If it’s a frost, see <b>Frosts</b> on page 1. Whoever won the last treasure starts; if nobody won it, the start passes to the left.</li>
-        <li><b class="h">Offer or pass</b>Going clockwise, either <b>offer</b> or <b>pass</b>. To offer, lay acorn cards face up in front of you so that your total beats the top offering; cards you offered earlier still count. Nobody has to open. Once you pass you’re out of this auction, but if you pass <b>without having offered anything, draw a card from the acorn deck</b> into your hand without showing it. It’s a 1, a 2 or a 3, so nobody is ever stuck with nothing to bring.</li>
-        <li><b class="h">Drop out, take baubles</b>If you pass after offering, your cards go to the larder and you <b>take one bauble from the row for each acorn card you offered</b>, right away. So whoever drops out first picks first. You must take one for every card, even if nothing in the row helps you. If the row runs out, deal it back up to 8 and keep taking.</li>
-        <li><b class="h">Last critter in wins</b>When only one critter with an offering is left, they take the treasure and their cards go to the larder. They get no baubles. A lone offering wins even if nobody else offered anything.</li>
-        <li><b class="h">Nobody offered?</b>The treasure <b>stays out</b>. Turn up the next card: whoever wins it takes the waiting treasure as well. Several can pile up this way.</li>
-      </ol>
+  <div class="body">
+    <h2 class="top">Setup</h2>
+    <ol class="steps">
+      <li><p>Each critter takes a <b>reference card</b> and one <b>set of <span data-n="hand"></span> acorn cards</b>. Keep your acorn cards hidden in your hand. Return unused sets to the box.</p></li>
+      <li><p>Shuffle the <span data-n="tcards"></span> treasure cards into a face-down <b>treasure deck</b>.</p></li>
+      <li><p>Shuffle the bauble cards into a face-down deck, the <b>bag</b>. Deal <b>8 baubles face up in a row</b> beside it, from left to right.</p></li>
+      <li><p>Shuffle the <b>acorn deck</b> and place it face down.</p></li>
+      <li><p>Leave space for Mr.&nbsp;Magpie’s <b>larder</b>: a face-down pile where every offered acorn card ends up.</p></li>
+      <li><p>Choose a start player at random.</p></li>
+    </ol>
+    <div class="table">
+      <div class="trow">
+        <div class="spot"><div class="v" data-c="tback"></div><span>Treasure deck</span></div>
+        <div class="spot"><div class="v" data-c="aback"></div><span>Acorn deck</span></div>
+        <div class="spot"><div class="v"><div class="larder"></div></div><span>Larder</span></div>
+      </div>
+      <div class="trow">
+        <div class="spot"><div class="v" data-c="bback"></div><span>Bag</span></div>
+        <div class="spot"><div class="v" data-c="row"></div><span>The bauble row. The oldest bauble is on the left; new ones are dealt on the right.</span></div>
+      </div>
     </div>
-    <div>
-      <h2>Winter</h2>
-      <p>When the <b>fourth frost</b> is turned up, the game ends at once. That frost isn’t auctioned, and any treasure still waiting stays with Mr.&nbsp;Magpie.</p>
-      <p>Everyone shows their hand and adds up their acorns. The critter with the <b>fewest acorns doesn’t make it through winter</b> and is out. If critters tie for fewest, they are all out (unless every critter is level, when nobody is).</p>
-      <p>Everyone else scores their treasures and baubles. <b>Most points wins</b>; if tied, the critter with more acorns wins.</p>
-      <h2>Scoring baubles</h2>
-      <p>Each treasure scores the points on its card. Baubles score as sets, as printed along the bottom of each card:</p>
-      <p><b>Earrings.</b> Each pair scores <span data-n="pair"></span>. An earring left on its own scores <span data-n="single"></span>.</p>
-      <p><b>Berries.</b> <span data-n="berry"></span>. A few are lovely, but too many spoil.</p>
-      <p><b>Buttons.</b> <span data-n="button"></span>. The bigger the collection, the better.</p>
-      <p><b>Feathers.</b> <span data-n="each"></span> each. The critter with the most feathers scores <span data-n="most"></span> more and the second most <span data-n="second"></span> more. Tied critters all take the lower prize: a tie for most scores as second, and a tie for second scores nothing extra.</p>
-      <p><b>Glass beads.</b> One bead scores 1 and two score −3, but three score 6, four 10, five 14 and six or more 18. Don’t start a string you can’t finish.</p>
-      <p><b>Bottle caps.</b> <span data-n="capEach"></span> each, but the critter with the fewest caps scores <span data-n="capFewest"></span>, and having none counts as fewest. Tied for fewest? All of them lose the points, unless everyone is level.</p>
+
+    <div class="cols">
+      <div>
+        <h2>Acorn cards</h2>
+        <p>You pay for everything with acorn cards, and you can’t make change. To offer 7 you need cards that add up to at least 7, and every card you put down is spent.</p>
+        <p>Your hand is secret: nobody may look at it or ask how much you have left. Everyone does see each card you offer.</p>
+      </div>
+      <div>
+        <h2>Mr. Magpie’s deal</h2>
+        <p>Mr.&nbsp;Magpie keeps <b>every acorn card anyone offers</b>, whether they win the treasure or not.</p>
+        <p>But he never sends a guest home empty-handed. Drop out of an auction and he thanks you with <b>one bauble for each acorn card you offered</b>.</p>
+      </div>
+    </div>
+    <div class="box"><b>Two ways to shop.</b> One big card can win a treasure by itself. Several small cards win more baubles when you drop out, as long as nobody leaves you holding a treasure you didn’t want.</div>
+  </div>
+  <div class="foot"><span>Mr. Magpie · rules</span><span>2</span></div>
+</section>
+
+<section class="page">
+  <div class="body">
+    <h2 class="top">Each treasure</h2>
+    <ol class="steps">
+      <li><div><h3>Refresh the row and show the treasure</h3>
+        <p>Skip the refresh for the first treasure. After that, remove the leftmost bauble (the oldest), slide the rest left to close any gaps, and deal new ones on the right until there are 8 again.</p>
+        <p>Then turn up the top treasure card. For a frost, follow <b>Frosts</b> below instead of steps 2 to 4.</p></div></li>
+      <li><div><h3>Offer or pass</h3>
+        <p>Starting with the start player and going clockwise, round and round, each critter offers or passes.</p>
+        <p><b>Offer:</b> lay any number of acorn cards face up in front of you so that your total is higher than the top offering. Cards you offered earlier in this auction still count. Nobody has to make the first offer.</p>
+        <p><b>Pass:</b> you are out of this auction. If you pass <b>without having offered anything, draw a card from the acorn deck</b> into your hand, without showing it.</p></div></li>
+      <li><div><h3>Drop out and take baubles</h3>
+        <p>If you pass after offering, your cards go to the larder and you immediately <b>take one bauble from the row for each acorn card you offered</b>. Keep them face up in front of you.</p>
+        <p>You must take one for every card, even if none of them helps you. If the row runs out, deal it back up to 8 and carry on.</p></div></li>
+      <li><div><h3>The last critter in wins</h3>
+        <p>When everyone else has passed, the top offering takes the treasure, even if it was the only offer. The winner’s cards go to the larder, they take no baubles, and they are the start player for the next treasure.</p></div></li>
+      <li><div><h3>If nobody offers</h3>
+        <p>The treasure waits face up, and whoever wins the next auction takes it too. Several can wait at once. The start player moves one seat to the left.</p></div></li>
+    </ol>
+    <div class="eg"><h3>Example</h3><p>The Music Box (10 points) is turned up. Mouse offers a 3. Hedgehog offers a 5. Rabbit passes without offering and draws from the acorn deck. Mouse adds a 4, for 7 in all. Hedgehog adds a 2 and a 1, for 8. Mouse passes, so Mouse’s two cards go to the larder and Mouse takes two baubles. Hedgehog wins the Music Box. Hedgehog’s three cards go to the larder, and Hedgehog starts the next auction.</p></div>
+
+    <div class="frostbox">
+      <h2>Frosts</h2>
+      <p>A frost is a secret auction. Everyone picks any acorn cards from their hand, or none, and holds them out face down. Then all reveal at once.</p>
+      <p><b>The biggest total wins</b> the frost, along with any treasures that were waiting, and starts the next auction. Everyone else who offered takes one bauble per card, biggest offering first (ties go clockwise from the start player). Anyone who offered nothing draws from the acorn deck. All offered cards go to the larder. If nobody offers anything, the frost waits like an unclaimed treasure.</p>
+      <p><b>Tied for biggest?</b> The tied critters offer again in secret, adding to what they already put down, until the tie breaks. If none of them adds a card, nobody wins: the frost waits like any unclaimed treasure, and everyone who offered takes baubles.</p>
     </div>
   </div>
-  <div class="baubles" data-c="baubles"></div>
-  <div class="qrow">
-    <div class="q cols">
+  <div class="foot"><span>Mr. Magpie · rules</span><span>3</span></div>
+</section>
+
+<section class="page">
+  <div class="body">
+    <h2 class="top">The first snow</h2>
+    <p>When the <b>fourth frost</b> is turned up, the snow falls and the game ends at once. That frost is not auctioned, and any treasures still waiting stay with Mr.&nbsp;Magpie.</p>
+    <ol class="steps">
+      <li><p><b>Count acorns.</b> Everyone reveals their hand and adds it up. The critter with the fewest acorns is out. If several tie for fewest, they are all out. (If every critter is level, nobody is out.)</p></li>
+      <li><p><b>Score.</b> Everyone still in adds the points on their treasures to the points from their baubles. A critter who is out still counts when you compare feathers and bottle caps.</p></li>
+      <li><p><b>Most points wins.</b> If tied, the tied critter with more acorns wins. If that is tied too, they share the win.</p></li>
+    </ol>
+
+    <h2>Scoring baubles</h2>
+    <div class="sets">
+      <div class="set"><div class="v" data-c="s-earring"></div><p><b>Earrings.</b> <span data-n="earring"></span></p></div>
+      <div class="set"><div class="v" data-c="s-berry"></div><p><b>Berries.</b> <span data-n="berry"></span></p></div>
+      <div class="set"><div class="v" data-c="s-button"></div><p><b>Buttons.</b> <span data-n="button"></span></p></div>
+      <div class="set"><div class="v" data-c="s-bead"></div><p><b>Glass beads.</b> <span data-n="bead"></span></p></div>
+      <div class="set"><div class="v" data-c="s-feather"></div><p><b>Feathers.</b> <span data-n="feather"></span></p></div>
+      <div class="set"><div class="v" data-c="s-cap"></div><p><b>Bottle caps.</b> <span data-n="cap"></span></p></div>
+    </div>
+
+    <h2>Questions</h2>
+    <div class="q">
       <div>
-        <h2>Questions</h2>
-        <p><b>Can I offer more than I need to?</b> Yes, and without change you often have to. Extra cards also mean extra baubles if you drop out.</p>
-        <p><b>What if I have no acorn cards?</b> Pass and draw from the acorn deck. A few passes and you’re back in the bidding.</p>
+        <p><b>Can I offer more than I need to?</b> Yes, and without change you often have to. More cards also mean more baubles if you drop out.</p>
+        <p><b>Can I come back in after passing?</b> No. A pass lasts for that whole auction.</p>
+        <p><b>What if I have no acorn cards?</b> Pass and draw from the acorn deck. A few passes and you can bid again.</p>
       </div>
       <div>
         <p><b>Do I get baubles for a treasure I win?</b> No. Baubles only go to critters who offered and didn’t win.</p>
-        <p><b>Is my collection secret?</b> No. Treasures and baubles sit face up in front of you. Only your acorn hand is hidden.</p>
+        <p><b>What if a deck runs out?</b> If the bag is empty, shuffle the baubles removed from the row to make a new one. If the acorn deck is empty, nobody draws.</p>
+        <p><b>What is secret?</b> Only your acorn hand. Treasures and baubles sit face up in front of you, and nobody may look through the larder.</p>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mr. Magpie · rules · by Darren Don · darren@darrendon.com · play it at darrendon.com/in-development/mr-magpie</span><span>2</span></div>
+  <div class="foot"><span>Mr. Magpie · rules · by Darren Don · darren@darrendon.com · play it at darrendon.com/in-development/mr-magpie</span><span>4</span></div>
 </section>
 
 <script src="/in-development/mr-magpie/play/art.js"></script>
@@ -169,29 +242,45 @@ ol.turn li b.h{display:block;font:900 11.5pt/1.15 var(--disp);color:var(--bark);
   const E = window.MrMagpie, A = window.MagpieArt, R = E.RULES, B = E.BAUBLE;
   document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true">' + A.defs() + '</svg>');
   const svg = (inner, vb) => '<svg viewBox="' + (vb || '-10 -10 20 20') + '" aria-hidden="true">' + inner + '</svg>';
-  const acard = (v) => '<div class="acard"><b>' + v + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '<i>' + v + '</i></div>';
+  const acorn = svg(A.acorn(6), '-8 -8 16 16');
+  const acard = (v) => '<div class="acard"><b>' + v + '</b>' + acorn + '<i>' + v + '</i></div>';
+  const back = (k) => '<div class="back' + (k ? ' ' + k : '') + '">' + (k === 't' ? svg(A.treasure('Locket'), '-15 -15 30 30') : k === 'b' ? svg(A.bauble('feather')) : acorn) + '</div>';
   const tcard = (t, frost) => '<div class="tcard' + (frost ? ' frost' : '') + '"><span class="tb">' + (frost ? 'Frost' : 'Treasure') + '</span>' + svg(A.treasure(t.name), '-15 -15 30 30') + '<div class="nm">' + t.name + '</div><div class="tv"><b>' + t.vp + '</b><i>points</i></div></div>';
-  const signed = (n) => (n < 0 ? '−' + (-n) : '+' + n);
-  const ladder = (tab) => { const pts = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + pts.length + '">' + pts.map((_, i) => '<i>' + (i + 1) + (i === pts.length - 1 ? '+' : '') + '</i>').join('') + pts.map((x) => '<b>' + (x < 0 ? '−' + (-x) : x) + '</b>').join('') + '</span>'; };
+  const sg = (n) => (n < 0 ? '−' + (-n) : '+' + n), m = (x) => (x < 0 ? '−' + (-x) : '' + x);
+  const ladder = (tab) => { const p = tab.slice(1); return '<span class="cap">have · score</span><span class="g" style="--n:' + p.length + '">' + p.map((_, i) => '<i>' + (i + 1) + (i === p.length - 1 ? '+' : '') + '</i>').join('') + p.map((x) => '<b>' + m(x) + '</b>').join('') + '</span>'; };
   const line = (a, b) => '<span class="l"><i>' + a + '</i><b>' + b + '</b></span>';
   const SC = {
-    earring: line('One alone', signed(R.earring.single)) + line('Each pair', signed(R.earring.pair)), berry: ladder(R.berry), button: ladder(R.button),
-    feather: line('Each', signed(R.feather.each)) + line('Most', signed(R.feather.most)) + line('2nd most', signed(R.feather.second)), cap: line('Each', signed(R.cap.each)) + line('Fewest', signed(R.cap.fewest)), bead: ladder(R.bead), acorn: '<span class="l c"><i>Goes into your hand</i></span>',
+    earring: line('One alone', sg(R.earring.single)) + line('Each pair', sg(R.earring.pair)), berry: ladder(R.berry), button: ladder(R.button), bead: ladder(R.bead),
+    feather: line('Each', sg(R.feather.each)) + line('Most', sg(R.feather.most)) + line('2nd most', sg(R.feather.second)),
+    cap: line('Each', sg(R.cap.each)) + line('Fewest', sg(R.cap.fewest)),
   };
-  const bauble = (b) => { const k = b.startsWith('acorn') ? 'acorn' : b; return '<div class="bauble k-' + k + '"><span class="bn">' + (k === 'acorn' ? 'Lost acorns' : B[k].name) + '</span><span class="art">' + (k === 'acorn' ? '<span class="an"><b>' + b.slice(5) + '</b>' + svg(A.acorn(6), '-8 -8 16 16') + '</span>' : svg(A.bauble(b))) + '</span><span class="bs">' + SC[k] + '</span></div>'; };
+  const bauble = (k) => '<div class="bauble k-' + k + '"><span class="bn">' + B[k].name + '</span><span class="art">' + svg(A.bauble(k)) + '</span><span class="bs">' + SC[k] + '</span></div>';
   const put = (k, html) => document.querySelectorAll('[data-c="' + k + '"]').forEach((n) => { n.innerHTML = html; });
   const num = (k, t) => document.querySelectorAll('[data-n="' + k + '"]').forEach((n) => { n.textContent = t; });
-  const hand = R.hand, top = hand[hand.length - 1];
-  put('acorns', acard(hand[0]) + acard(hand[Math.floor(hand.length / 2)]) + acard(top) + '<div class="back">' + svg(A.acorn(6), '-8 -8 16 16') + '</div>');
-  put('treasures', tcard(R.treasures[R.treasures.length - 1]) + tcard(R.frosts[1], true));
-  put('bauble', bauble('button') + bauble('cap'));
-  put('baubles', ['earring', 'berry', 'button', 'feather', 'cap', 'bead'].map(bauble).join(''));
-  const steps = (tab, word) => tab.slice(1).map((p, i) => (i + 1) + (i === tab.length - 2 ? ' or more' : '') + ' ' + (i ? word[1] : word[0]) + ' ' + (i === tab.length - 2 ? 'score ' : i ? 'score ' : 'scores ') + p).join(', ');
-  num('hand', hand.length); num('handList', hand.join(', '));
-  num('pair', signed(R.earring.pair)); num('single', signed(R.earring.single));
-  num('berry', '1 to ' + (R.berry.length - 1) + ' berries score ' + R.berry.slice(1).join(', '));
-  num('button', '1 to ' + (R.button.length - 1) + ' buttons score ' + R.button.slice(1).join(', '));
-  num('capEach', signed(R.cap.each)); num('capFewest', signed(R.cap.fewest)); num('each', signed(R.feather.each)); num('most', R.feather.most); num('second', R.feather.second);
+  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+  const w = (n) => words[n] || '' + n, cap1 = (s) => s[0].toUpperCase() + s.slice(1);
+  const hand = R.hand, kinds = Object.keys(R.baubles), each = R.baubles[kinds[0]], loose = R.looseAcorns;
+  const cnt = (v) => loose.filter((x) => x === v).length;
+
+  put('hand', acard(hand[0]) + acard(hand[Math.floor(hand.length / 2)]) + acard(hand[hand.length - 1]));
+  put('adeck', back('') + acard(1) + acard(2) + acard(3));
+  put('treasures', tcard(R.treasures.find((t) => t.name === 'Music Box') || R.treasures[0]) + tcard(R.frosts[1], true));
+  put('bauble', bauble('button') + bauble('earring'));
+  put('tback', back('t')); put('aback', back('')); put('bback', back('b'));
+  put('row', ['earring', 'button', 'berry', 'cap', 'feather', 'bead', 'button', 'berry'].map((k) => '<div class="mb">' + svg(A.bauble(k)) + '</div>').join(''));
+  kinds.forEach((k) => put('s-' + k, bauble(k)));
+
+  num('hand', hand.length); num('handTotal', hand.length * 5); num('handList', hand.join(', '));
+  num('adeck', loose.length); num('adeckMix', cap1(w(cnt(1))) + ' 1s, ' + w(cnt(2)) + ' 2s and ' + w(cnt(3)) + ' 3s');
+  num('tcards', R.treasures.length + R.frosts.length); num('treasures', R.treasures.length); num('frosts', R.frosts.length);
+  num('baubles', each * kinds.length); num('each', each);
+  const tail = (tab) => tab.slice(1);
+  num('earring', 'Each pair scores ' + R.earring.pair + '. An earring left without a partner scores ' + m(R.earring.single) + '.');
+  num('berry', 'One, two or three berries score ' + tail(R.berry).slice(0, 3).join(', ') + '. A fourth drops the set to ' + R.berry[4] + ', and five or more score ' + R.berry[5] + '. Too many spoil.');
+  num('button', 'One to six buttons score ' + tail(R.button).join(', ') + '. More than six still score ' + R.button[R.button.length - 1] + '.');
+  num('bead', 'One bead scores ' + R.bead[1] + ', but two score ' + m(R.bead[2]) + '. Three score ' + R.bead[3] + ', four ' + R.bead[4] + ', five ' + R.bead[5] + ', and six or more ' + R.bead[6] + '.');
+  num('feather', 'Each feather scores ' + R.feather.each + '. The critter with the most scores ' + R.feather.most + ' more, and the second most ' + R.feather.second + ' more. You need at least one feather to place. Critters who tie for most each take the second prize, and then nobody else takes one. Critters who tie for second get no prize.');
+  num('cap', 'Each cap scores ' + R.cap.each + ', but the critter with the fewest caps scores ' + m(R.cap.fewest) + ', and having none counts as fewest. Everyone tied for fewest takes the penalty, unless all critters have the same number.');
   Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))).then(() => document.fonts.ready).then(() => { window.__done = true; });
 })();
 </script>

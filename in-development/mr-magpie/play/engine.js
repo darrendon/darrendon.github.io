@@ -158,7 +158,7 @@
       // whoever won the last treasure starts; if nobody won it, the start moves to the left
       if (!first) this.start = this.nextStart != null ? this.nextStart : (this.start + 1) % this.N;
       this.nextStart = null;
-      this.freshRow();
+      if (first) this.refill(); else this.freshRow();   // the row dealt at setup is used as it is for the first treasure
       const t = this.deck.pop();
       if (!t) return this.endGame();
       if (t.frost) {
