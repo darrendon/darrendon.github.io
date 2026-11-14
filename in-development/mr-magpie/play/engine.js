@@ -19,6 +19,8 @@
     baubles: { earring: 13, berry: 13, button: 13, feather: 13, cap: 13, bead: 13 },   // 78 cards, enough that the bag never runs dry at 5
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
     looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
+    rowSize: 8,                                         // a fixed row size for every player count (0 = players + rowExtra)
+    rowWipe: true,                                      // clear the whole row between treasures and deal a new one
     rowExtra: 2,                                        // the bauble row holds players + this many
     earring: { single: -2, pair: 7 },                   // one alone is useless; each pair scores
     berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
@@ -116,7 +118,7 @@
       for (const [t, c] of Object.entries(RULES.baubles)) for (let k = 0; k < c; k++) side.push(t);
       RULES.lostAcorns.forEach((v) => side.push('acorn' + v));
       this.side = shuffle(side); this.row = [];
-      this.rowSize = this.N + RULES.rowExtra;
+      this.rowSize = RULES.rowSize || this.N + RULES.rowExtra; this.gone = [];
       this.M = sum(RULES.hand) + sum(RULES.lostAcorns) / this.N * 0.5;   // starting acorns plus a share of the lost ones, for the bots
       this.framesLeft = RULES.frosts.length;
       const n = this.deck.length, k = this.framesLeft;
@@ -137,12 +139,21 @@
     reserve() { return Math.round(this.R.hand.length * 5 / 13 * this.remFrac()); }   // cards a bot keeps back for later
     remFrac() { const n = this.deck.length, k = this.framesLeft; if (k <= 0) return 0; return Math.max(0, Math.min(1, (k * (n + 1) / (k + 1) - 1) / Math.max(1, this.expLots))); }
 
-    refill() { while (this.row.length < this.rowSize && this.side.length) this.row.push(this.side.pop()); }
+    refill() {
+      while (this.row.length < this.rowSize) {
+        if (!this.side.length) { if (!this.gone.length) break; this.side = shuffle(this.gone); this.gone = []; }   // bag empty: shuffle the cleared cards back in
+        this.row.push(this.side.pop());
+      }
+    }
+    freshRow() {   // between treasures: either top the row up, or clear it and deal a new one
+      if (RULES.rowWipe) { this.gone.push(...this.row); this.row = []; }
+      this.refill();
+    }
     nextLot(first) {
       // whoever won the last treasure starts; if nobody won it, the start moves to the left
       if (!first) this.start = this.nextStart != null ? this.nextStart : (this.start + 1) % this.N;
       this.nextStart = null;
-      this.refill();
+      this.freshRow();
       const t = this.deck.pop();
       if (!t) return this.endGame();
       if (t.frost) {
