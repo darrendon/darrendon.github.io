@@ -8,8 +8,7 @@
   const RULES = {
     ranks: 12,                          // each color runs 1–12
     colorsFor: (n) => Math.min(5, n + 1),   // colors in play = Heroes + 1, up to all five
-    hand: 15,                           // cards dealt to each Hero (a Boss may say otherwise)
-    hand5: 11,                          // with 5 Heroes: 11 each, so 5 cards stay buried
+    hands: { 2: 15, 3: 14, 4: 13, 5: 11 },   // cards dealt to each Hero, whichever Boss: 6 / 6 / 8 / 5 cards stay buried
     energyStart: 1,                     // Energy tokens the squad starts with
     energyMax: 4,                       // most Energy the squad can hold
     passCharge: true,                   // when you pass, the squad gains 1 Energy (if there's room)
@@ -209,7 +208,7 @@
       const B = RULES.bosses[this.boss], keyBase = KEYBASE[this.boss];
       this.mirror = !!B.mirror; this.lock = -1; this.lockSeat = -1; this.lockSelf = this.N <= RULES.mirrorSelf;       // Kagami: the locked color (-1: none)
       this.defs = B.acts;
-      const handN = this.handSize = this.N === 5 ? RULES.hand5 : RULES.hand;       // one table for every Boss
+      const handN = this.handSize = RULES.hands[this.N];
       this.energy = RULES.energyStart; this.showQueue = []; this.turnUsed = {}; this.stat = { tweak: 0, handoff: 0, charge: 0, reveal: 0, weak: 0 };
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
       this.box = deck.slice(this.N * handN);          // never seen in play
