@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mr. Magpie — print rulebook.html to mr-magpie-rules.pdf (US Letter portrait, four pages) and render
+"""Mr. Magpie — print rulebook.html to mr-magpie-rules.pdf (US Letter portrait, eight pages) and render
 reference-card.html (poker size, front and back) to reference-card.png.
 Run from anywhere: python3 in-development/mr-magpie/pdf.py   Rerun after any rules change in play/engine.js.
 It fails if a page overflows, or if any two blocks of text or cards touch."""
@@ -9,7 +9,7 @@ from pypdf import PdfReader
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.abspath(os.path.join(HERE, '..', '..'))
-PAGES = 4
+PAGES = 8
 
 
 class Q(http.server.SimpleHTTPRequestHandler):
@@ -19,12 +19,12 @@ class Q(http.server.SimpleHTTPRequestHandler):
 
 # every block that carries words or a card; no two may overlap unless one contains the other
 OVERLAP = """() => {
-  const els = [...document.querySelectorAll('h1,h2,h3,p,li,.acard,.tcard,.bauble,.back,.mb,.larder,img,.spot>span,.foot,.box,.eg,.goal,.frostbox,.table')];
+  const els = [...document.querySelectorAll('.page:not(.cover) :is(h2,h3,p,li,.acard,.tcard,.bauble,.back,.mb,.larder,img,svg.crit,.lbl,.arrow,.bar,.tip svg,.obj svg,.ti,.vs)')];
   const R = els.map(e => e.getBoundingClientRect()), hits = [];
   for (let i = 0; i < els.length; i++) for (let j = i + 1; j < els.length; j++) {
     if (els[i].contains(els[j]) || els[j].contains(els[i])) continue;
     const a = R[i], b = R[j], w = Math.min(a.right, b.right) - Math.max(a.left, b.left), h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-    if (w > 1 && h > 1) hits.push((els[i].textContent || els[i].className).trim().slice(0, 40) + '  ×  ' + (els[j].textContent || els[j].className).trim().slice(0, 40));
+    if (w > 1 && h > 1) hits.push((els[i].textContent || els[i].className.baseVal || els[i].className).trim().slice(0, 40) + '  ×  ' + (els[j].textContent || els[j].className.baseVal || els[j].className).trim().slice(0, 40));
   }
   return hits;
 }"""
@@ -44,7 +44,8 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={'width': 1000, 'height': 1200})
     pg.goto('http://127.0.0.1:8774/in-development/mr-magpie/rulebook.html')
     pg.wait_for_function('window.__done', timeout=60000); pg.wait_for_timeout(300)
-    spare = pg.evaluate("[...document.querySelectorAll('.page .body')].map(n => Math.round(n.clientHeight - n.scrollHeight + (n.getBoundingClientRect().bottom - Math.max(...[...n.children].map(c => c.getBoundingClientRect().bottom)))))")
+    # each panel: how much room is left (a negative number means the page overflows)
+    spare = pg.evaluate("[...document.querySelectorAll('.panel')].map(n => { const over = n.scrollHeight - n.clientHeight; if (over > 0) return -over; const f = n.querySelector(':scope > .fill'); const cs = getComputedStyle(n); const last = [...n.children].filter(c => !c.classList.contains('fill')).pop(); return Math.round(f ? f.getBoundingClientRect().height : n.getBoundingClientRect().bottom - parseFloat(cs.paddingBottom) - last.getBoundingClientRect().bottom); })")
     hits = pg.evaluate(OVERLAP)
     pg.emulate_media(media='print')
     pg.pdf(path=out, width='8.5in', height='11in', print_background=True, prefer_css_page_size=True)
