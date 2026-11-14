@@ -4,23 +4,24 @@
 (function (root) {
   'use strict';
   const RULES = {
-    hand: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20], // every critter's starting acorn cards: a wide range, and no making change
+    hand: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20], // every critter's starting acorn cards: a wide range, and no making change
     treasures: [                                        // open auctions: the last critter in wins it
       { name: 'Silver Thimble', vp: 5 }, { name: 'Old Key', vp: 5 }, { name: 'Jingle Bell', vp: 6 },
       { name: 'Teaspoon', vp: 6 }, { name: 'Pocket Mirror', vp: 7 }, { name: 'Locket', vp: 8 },
       { name: 'Brass Compass', vp: 9 }, { name: 'Pocket Watch', vp: 11 }, { name: 'Tiara', vp: 13 },
       { name: 'Disco Ball', vp: 15 },
-      { name: 'Glass Marble', vp: 6 }, { name: 'Opera Glasses', vp: 8 }, { name: 'Music Box', vp: 10 }, { name: 'Goblet', vp: 12 },
+      { name: 'Glass Marble', vp: 6 }, { name: 'Music Box', vp: 10 },
     ],
     frosts: [                                           // sealed offers; the last one drawn is the first snow
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 13, berry: 13, button: 13, feather: 13, cap: 13, bead: 13 },   // 78 cards, enough that the bag never runs dry at 5
+    baubles: { earring: 12, berry: 12, button: 12, feather: 12, cap: 12, bead: 12 },   // 72 cards
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
-    looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
+    looseAcorns: Array(15).fill(1).concat(Array(10).fill(2), Array(5).fill(3)),   // the acorn deck, face down: pass without offering and draw one
     rowSize: 8,                                         // a fixed row size for every player count (0 = players + rowExtra)
-    rowWipe: true,                                      // clear the whole row between treasures and deal a new one
+    rowMode: 'conveyor', rowDrop: 1,                    // before each treasure the oldest bauble leaves, the rest slide along, and the row is dealt back up
+    rowWipe: false,                                     // clear the whole row between treasures and deal a new one
     rowExtra: 2,                                        // the bauble row holds players + this many
     earring: { single: -2, pair: 7 },                   // one alone is useless; each pair scores
     berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
