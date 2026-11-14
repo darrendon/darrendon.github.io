@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Mr. Magpie — reference card</title><meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/css/fonts.css">
+<style>
+/* Source for the reference card (poker size, 63 x 88 mm, front and back). Numbers come from play/engine.js.
+   Print with: python3 in-development/mr-magpie/pdf.py */
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:#3F6B4A;display:flex;gap:24px;font-family:Jost,system-ui,sans-serif;color:#3E2A1E;width:max-content}
+.card{width:63mm;height:88mm;border-radius:3.5mm;background:#FFFBF2;border:1.6mm solid #fff;outline:.3mm solid #D9BE93;outline-offset:-2mm;padding:3.6mm 3.6mm 3mm;display:flex;flex-direction:column}
+h1{margin:0;font:900 13.5pt/1 Fraunces,Georgia,serif;color:#4A2E1E;text-align:center}
+.sub{font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;text-align:center;color:#A17A3C;font-weight:700;margin:.8mm 0 1.6mm}
+.rows{flex:1;display:grid;align-content:space-between}
+.r{display:grid;grid-template-columns:8.5mm 1fr;gap:1.6mm;align-items:center;border-top:.25mm dashed #DCC7A2;padding-top:1.1mm}
+.r svg{width:8.5mm;height:8.5mm}
+.r b{display:block;font:900 8pt/1.05 Fraunces,serif}
+.r span{font-size:6.9pt;line-height:1.2;display:block}
+.r .g{display:grid;grid-template-columns:repeat(var(--n),1fr);text-align:center;font-size:6.6pt;line-height:1.15;margin-top:.3mm}
+.r .g i{font-style:normal;color:#7A5E48;font-size:5.8pt}.r .g em{font-style:normal;font-weight:700}
+.foot{font-size:6.3pt;text-align:center;color:#7A5E48;margin-top:1.4mm;line-height:1.25}
+ol{margin:0;padding:0;list-style:none;counter-reset:s;flex:1;display:grid;align-content:space-between}
+ol li{counter-increment:s;position:relative;padding-left:6.2mm;font-size:6.9pt;line-height:1.25}
+ol li::before{content:counter(s);position:absolute;left:0;top:.2mm;width:4.6mm;height:4.6mm;border-radius:50%;background:#B5612C;color:#fff;display:grid;place-items:center;font:900 7.5pt/1 Fraunces,serif}
+ol li b{font-weight:700}
+</style></head>
+<body>
+<div class="card" id="front"><h1>Baubles</h1><div class="sub">how each set scores</div><div class="rows" id="rows"></div><div class="foot">Fewest acorns at the first snow doesn’t make it through winter.</div></div>
+<div class="card" id="back"><h1>Each treasure</h1><div class="sub">Mr. Magpie keeps every acorn</div>
+<ol>
+<li><b>New row.</b> The oldest bauble leaves; deal the row back up to 8. Turn up a treasure. The last winner starts.</li>
+<li><b>Offer or pass.</b> Beat the top offering with acorn cards, or pass. Pass with nothing offered: draw from the acorn deck.</li>
+<li><b>Drop out.</b> Take one bauble for each acorn card you offered. You must take them all.</li>
+<li><b>Last one in</b> wins the treasure and takes no baubles.</li>
+<li><b>Nobody offered?</b> It waits for the next winner.</li>
+<li><b>Frost:</b> everyone offers in secret. Biggest wins; ties offer again. The 4th frost ends the game.</li>
+</ol></div>
+<script src="/in-development/mr-magpie/play/art.js"></script><script src="/in-development/mr-magpie/play/engine.js"></script>
+<script>
+(function () {
+  const E = window.MrMagpie, A = window.MagpieArt, R = E.RULES, B = E.BAUBLE;
+  document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute">' + A.defs() + '</svg>');
+  const sg = (n) => (n < 0 ? '−' + (-n) : '+' + n), m = (x) => (x < 0 ? '−' + (-x) : x);
+  const lad = (t) => { const p = t.slice(1); return '<span class="g" style="--n:' + p.length + '">' + p.map((_, i) => '<i>' + (i + 1) + (i === p.length - 1 ? '+' : '') + '</i>').join('') + p.map((x) => '<em>' + m(x) + '</em>').join('') + '</span>'; };
+  const rows = [
+    ['earring', 'One alone ' + sg(R.earring.single) + ' · each pair ' + sg(R.earring.pair)],
+    ['berry', lad(R.berry)], ['button', lad(R.button)],
+    ['feather', sg(R.feather.each) + ' each · most ' + sg(R.feather.most) + ' · 2nd ' + sg(R.feather.second)],
+    ['cap', sg(R.cap.each) + ' each · fewest ' + sg(R.cap.fewest)],
+    ['bead', lad(R.bead)],
+  ];
+  document.getElementById('rows').innerHTML = rows.map(([k, t]) => '<div class="r"><svg viewBox="-10 -10 20 20">' + A.bauble(k) + '</svg><div><b>' + B[k].plural + '</b><span>' + t + '</span></div></div>').join('');
+  document.fonts.ready.then(() => { window.__done = true; });
+})();
+</script></body></html>

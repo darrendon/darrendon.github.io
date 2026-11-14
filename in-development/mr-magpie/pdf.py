@@ -26,7 +26,15 @@ with sync_playwright() as p:
     over = pg.evaluate("[...document.querySelectorAll('.page')].map(s => { const f = s.querySelector('.foot').getBoundingClientRect().top; return Math.max(...[...s.querySelectorAll('.cols,.qrow,.baubles,.comp,.goal')].map(n => n.getBoundingClientRect().bottom)) - f; })")
     pg.emulate_media(media='print')
     pg.pdf(path=out, width='8.5in', height='11in', print_background=True, prefer_css_page_size=True)
+    # the reference card, front and back, as an image
+    rc = b.new_page(viewport={'width': 700, 'height': 420}, device_scale_factor=3)
+    rc.goto('http://127.0.0.1:8774/in-development/mr-magpie/reference-card.html')
+    rc.wait_for_function('window.__done', timeout=60000); rc.wait_for_timeout(300)
+    clip = rc.evaluate("[...document.querySelectorAll('.card')].map(c => [c.scrollHeight - c.clientHeight, c.scrollWidth - c.clientWidth])")
+    rc.locator('body').screenshot(path=os.path.join(HERE, 'reference-card.png'))
     b.close()
 n = len(PdfReader(out).pages)
 print('pages', n, '· content past the footer (px, should be negative):', [round(x) for x in over])
 assert n == 2 and all(x < 0 for x in over), 'rulebook does not fit two pages'
+print('reference card overflow (px, should be 0):', clip)
+assert all(v <= 0 for c in clip for v in c), 'reference card text does not fit'
