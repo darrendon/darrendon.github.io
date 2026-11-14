@@ -34,12 +34,12 @@
         keep: [[0, 2, 3, 4], [0, 2, 3, 5], [1, 2, 3, 5]], draws: [4, 4, 4],
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
         acts: [
-          [['run', [2, 3, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [2, 3, 3, 3], 'Inkbats'],
+          [['run', [2, 2, 2, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [2, 2, 3, 3], 'Inkbats'],
            ['combine', [2, 2, 3, 2], 'Static Swarm'], ['set', [2, 3, 3, 3], 'Gum Golem'], ['set', [2, 2, 3, 2], 'Pin Mites']],
-          [['run', [3, 3, 5, 4], 'Tiderazor'], ['run', [3, 4, 5, 5], 'Lanternjaw'], ['color', [2, 3, 4, 4], 'Copper Kraken'],
-           ['combine', [2, 4, 5, 5], 'Thornbeak'], ['set', [2, 2, 3, 3], 'Voltmoth'], ['set', [2, 3, 4, 3], 'Twin Oni']],
-          [['run', [3, 4, 6, 5], 'Megalith Rex'], ['run', [4, 5, 6, 6], 'Ironhorn Titan'], ['color', [3, 4, 5, 5], 'Starmaw'],
-           ['combine', [2, 4, 5, 5], 'Doom Pagoda'], ['set', [2, 3, 4, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4, 3], 'Emperor Gorvax']],
+          [['run', [3, 3, 4, 4], 'Tiderazor'], ['run', [3, 4, 5, 5], 'Lanternjaw'], ['color', [2, 3, 3, 4], 'Copper Kraken'],
+           ['combine', [2, 3, 3, 5], 'Thornbeak'], ['set', [2, 2, 3, 3], 'Voltmoth'], ['set', [2, 3, 3, 3], 'Twin Oni']],
+          [['run', [3, 4, 6, 5], 'Megalith Rex'], ['run', [4, 4, 6, 6], 'Ironhorn Titan'], ['color', [3, 4, 4, 5], 'Starmaw'],
+           ['combine', [2, 4, 4, 5], 'Doom Pagoda'], ['set', [2, 3, 4, 4], 'Eclipse Wyrm'], ['set', [2, 3, 4, 3], 'Emperor Gorvax']],
         ],
       },
       vael: {
@@ -49,12 +49,12 @@
         heads: { 2: 2, 3: 3, 4: 3, 5: 3 },
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name, hex]
         acts: [
-          [['run', [2, 2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3, 3], 'Mirefang', 'spite'], ['color', [2, 3, 4, 3], 'Sallowmaw', 'coil'],
-           ['combine', [2, 2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 3, 3, 3], 'Ashtongue', 'venom']],
-          [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 4, 4], 'Ropeneck', 'split'], ['color', [2, 3, 3, 4], 'Bilefang', 'venom'],
-           ['combine', [2, 3, 4, 3], 'Coilmaw', 'coil'], ['set', [2, 3, 4, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3, 3], 'Smokeneck', 'spite']],
-          [['run', [3, 3, 5, 4], 'Crownfang', 'spite'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 4, 4, 4], 'Nightmaw', 'hunger'],
-           ['combine', [2, 3, 4, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
+          [['run', [2, 2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3, 3], 'Sallowmaw', 'coil'],
+           ['combine', [2, 2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3, 3], 'Ashtongue', 'venom']],
+          [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 3, 4], 'Ropeneck', 'split'], ['color', [2, 3, 3, 4], 'Bilefang', 'venom'],
+           ['combine', [2, 3, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 3, 3, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3, 3], 'Smokeneck', 'spite']],
+          [['run', [3, 3, 4, 4], 'Crownfang', 'spite'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
+           ['combine', [2, 3, 3, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
         ],
       },
     },
@@ -67,9 +67,9 @@
     draws: [4, 4, 4],
     // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
     acts: [
-      [['run', [2, 2, 3, 3], 'Glint Imp'], ['set', [2, 2, 3, 3], 'Shardling'], ['color', [2, 3, 3, 3], 'Prism Moth'], ['combine', [2, 2, 3, 3], 'Glass Crab']],
-      [['run', [3, 4, 5, 5], 'Silverback'], ['set', [2, 3, 3, 3], 'Twin Reflections'], ['color', [2, 3, 4, 4], 'Glare Hound'], ['combine', [2, 3, 4, 3], 'Kaleido Serpent']],
-      [['set', [2, 3, 4, 3], 'Mirror Knight'], ['color', [2, 3, 5, 4], 'Shatterjaw'], ['combine', [2, 3, 4, 4], 'Halo Oni'], ['run', [3, 5, 6, 6], 'Shogun Kagami']],
+      [['run', [2, 2, 3, 3], 'Glint Imp'], ['set', [2, 2, 3, 3], 'Shardling'], ['color', [2, 3, 4, 3], 'Prism Moth'], ['combine', [2, 2, 3, 3], 'Glass Crab']],
+      [['run', [3, 3, 5, 5], 'Silverback'], ['set', [2, 3, 3, 3], 'Twin Reflections'], ['color', [2, 3, 4, 4], 'Glare Hound'], ['combine', [2, 3, 3, 3], 'Kaleido Serpent']],
+      [['set', [2, 3, 3, 3], 'Mirror Knight'], ['color', [2, 3, 3, 4], 'Shatterjaw'], ['combine', [2, 3, 3, 4], 'Halo Oni'], ['run', [3, 4, 5, 6], 'Shogun Kagami']],
     ],
   };
   const KEYBASE = { gorvax: 0, vael: 18, kagami: 36 };
