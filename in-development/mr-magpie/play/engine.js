@@ -18,7 +18,7 @@
     ],
     baubles: { earring: 12, berry: 12, button: 12, feather: 12, cap: 12, bead: 12 },   // 72 cards
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
-    looseAcorns: Array(15).fill(1).concat(Array(10).fill(2), Array(5).fill(3)),   // the acorn deck, face down: pass without offering and draw one
+    looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
     rowSize: 8,                                         // a fixed row size for every player count (0 = players + rowExtra)
     rowMode: 'conveyor', rowDrop: 1,                    // before each treasure the oldest bauble leaves, the rest slide along, and the row is dealt back up
     rowWipe: false,                                     // clear the whole row between treasures and deal a new one
