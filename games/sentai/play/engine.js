@@ -33,7 +33,7 @@
         name: 'Emperor Gorvax',
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
         acts: [
-          [['run', [2, 2, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [2, 3, 3, 3], 'Inkbats'],
+          [['run', [2, 2, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [3, 3, 3, 3], 'Inkbats'],
            ['combine', [2, 2, 3, 2], 'Static Swarm'], ['set', [3, 3, 3, 3], 'Gum Golem'], ['set', [2, 2, 3, 2], 'Pin Mites']],
           [['run', [3, 3, 5, 4], 'Tiderazor'], ['run', [3, 4, 5, 5], 'Lanternjaw'], ['color', [3, 3, 4, 4], 'Copper Kraken'],
            ['combine', [3, 4, 5, 5], 'Thornbeak'], ['set', [2, 2, 3, 3], 'Voltmoth'], ['set', [2, 3, 3, 3], 'Twin Oni']],
@@ -65,7 +65,7 @@
     draws: [4, 4, 4],
     // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
     acts: [
-      [['run', [2, 2, 3, 3], 'Glint Imp'], ['set', [2, 2, 3, 3], 'Shardling'], ['color', [2, 3, 3, 3], 'Prism Moth'], ['combine', [2, 2, 3, 2], 'Glass Crab']],
+      [['run', [2, 2, 3, 3], 'Glint Imp'], ['set', [2, 2, 3, 3], 'Shardling'], ['color', [2, 3, 3, 3], 'Prism Moth'], ['combine', [2, 2, 3, 3], 'Glass Crab']],
       [['run', [3, 4, 5, 5], 'Silverback'], ['set', [2, 3, 3, 3], 'Twin Reflections'], ['color', [2, 3, 4, 4], 'Glare Hound'], ['combine', [2, 3, 4, 3], 'Kaleido Serpent']],
       [['set', [2, 3, 4, 3], 'Mirror Knight'], ['color', [2, 3, 5, 4], 'Shatterjaw'], ['combine', [2, 3, 4, 4], 'Halo Oni'], ['run', [3, 5, 6, 6], 'Shogun Kagami']],
     ],
