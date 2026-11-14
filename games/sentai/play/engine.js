@@ -35,28 +35,28 @@
         keep: [[0, 2, 3, 4], [0, 2, 3, 5], [1, 2, 3, 5]], draws: [4, 4, 4],
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
         acts: [
-          [['run', [2, 2, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [3, 3, 3, 3], 'Inkbats'],
-           ['combine', [2, 2, 3, 2], 'Static Swarm'], ['set', [3, 3, 3, 3], 'Gum Golem'], ['set', [2, 2, 3, 2], 'Pin Mites']],
-          [['run', [3, 3, 5, 4], 'Tiderazor'], ['run', [3, 4, 5, 5], 'Lanternjaw'], ['color', [3, 3, 4, 4], 'Copper Kraken'],
-           ['combine', [3, 4, 5, 5], 'Thornbeak'], ['set', [2, 2, 3, 3], 'Voltmoth'], ['set', [2, 3, 3, 3], 'Twin Oni']],
+          [['run', [2, 3, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [2, 3, 3, 3], 'Inkbats'],
+           ['combine', [2, 2, 3, 2], 'Static Swarm'], ['set', [2, 3, 3, 3], 'Gum Golem'], ['set', [2, 2, 3, 2], 'Pin Mites']],
+          [['run', [3, 3, 5, 4], 'Tiderazor'], ['run', [3, 4, 5, 5], 'Lanternjaw'], ['color', [2, 3, 4, 4], 'Copper Kraken'],
+           ['combine', [2, 4, 5, 5], 'Thornbeak'], ['set', [2, 2, 3, 3], 'Voltmoth'], ['set', [2, 3, 4, 3], 'Twin Oni']],
           [['run', [3, 4, 6, 5], 'Megalith Rex'], ['run', [4, 5, 6, 6], 'Ironhorn Titan'], ['color', [3, 4, 5, 5], 'Starmaw'],
-           ['combine', [3, 4, 5, 5], 'Doom Pagoda'], ['set', [2, 3, 4, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4, 3], 'Emperor Gorvax']],
+           ['combine', [2, 4, 5, 5], 'Doom Pagoda'], ['set', [2, 3, 4, 4], 'Eclipse Wyrm'], ['set', [2, 2, 4, 3], 'Emperor Gorvax']],
         ],
       },
       vael: {
         name: 'Vael, the Hydra',
         // the 12-card deck: 4 heads a season, one of each combo, each hex twice. The other six are retired.
         keep: [[1, 2, 3, 5], [1, 2, 3, 4], [0, 2, 3, 5]], draws: [4, 4, 4],
-        hand: 14,
+        hand: 14, hand2: 15,          // 15 with 2 Heroes: twelve heads leave two 14-card hands no room for a single strike
         heads: { 2: 2, 3: 3, 4: 3, 5: 3 },
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name, hex]
         acts: [
           [['run', [2, 2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3, 3], 'Sallowmaw', 'coil'],
            ['combine', [2, 2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3, 3], 'Ashtongue', 'venom']],
-          [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 2, 3, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3, 3], 'Bilefang', 'venom'],
+          [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 4, 4], 'Ropeneck', 'split'], ['color', [2, 3, 3, 4], 'Bilefang', 'venom'],
            ['combine', [2, 3, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 3, 4, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3, 3], 'Smokeneck', 'spite']],
           [['run', [3, 3, 4, 4], 'Crownfang', 'spite'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
-           ['combine', [3, 3, 4, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
+           ['combine', [2, 3, 4, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
         ],
       },
     },
@@ -210,7 +210,7 @@
       const B = RULES.bosses[this.boss], keyBase = KEYBASE[this.boss];
       this.mirror = !!B.mirror; this.lock = -1; this.lockSeat = -1; this.lockSelf = this.N <= RULES.mirrorSelf;       // Kagami: the locked color (-1: none)
       this.defs = B.acts;
-      const handN = this.handSize = this.N === 5 ? RULES.hand5 : B.hand || RULES.hand;
+      const handN = this.handSize = this.N === 5 ? RULES.hand5 : (this.N === 2 && B.hand2) || B.hand || RULES.hand;
       this.energy = RULES.energyStart; this.showQueue = []; this.turnUsed = {}; this.stat = { tweak: 0, handoff: 0, charge: 0, reveal: 0, weak: 0 };
       this.hands = this.players.map((_, i) => deck.slice(i * handN, (i + 1) * handN).sort(byCard));
       this.box = deck.slice(this.N * handN);          // never seen in play
