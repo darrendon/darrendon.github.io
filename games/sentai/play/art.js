@@ -225,6 +225,7 @@
     return s;
   }
   function monster(key, hex) {
+    if (key >= 36) key -= 36;                      // Kagami's monsters borrow Gorvax's art for now
     if (key >= 18) return hydraHead(key - 18, hex);
     const size = M[key][3];
     return `<g transform="translate(50 95) scale(${size}) translate(-50 -94)">${villain(M[key])}</g>`;
@@ -443,7 +444,7 @@
     const wk = !b.weak ? '' : b.weak.kind === 'color' ? `<span class="wk"><i>Weak</i>${svg('0 0 24 24', emblem(b.weak.v), ' aria-hidden="true"')}<b>${WN[b.weak.v]}</b></span>` : `<span class="wk"><i>Weak</i><b>${BN[b.weak.v]}</b></span>`;
     const label = `${b.name}: ${TYPE_NAME[b.type]} of ${n ? (b.need != null ? b.need : needs[n - 2]) : needs.join(' / ')}`;
     return `<div class="mcard a${b.act}${b.hex ? ' hydra' : ''}${opts.cls ? ' ' + opts.cls : ''}" role="img" aria-label="${esc(label)}"${opts.attrs || ''}><div class="mf">` +
-      `<div class="mt"><span>${ACTN[b.act]}</span><span class="bm">${bossMark(b.key >= 18 ? 'vael' : 'gorvax')}${b.key >= 18 ? 'Vael' : 'Gorvax'}</span></div>` +
+      `<div class="mt"><span>${ACTN[b.act]}</span><span class="bm">${bossMark(b.key >= 36 ? 'kagami' : b.key >= 18 ? 'vael' : 'gorvax')}${b.key >= 36 ? 'Kagami' : b.key >= 18 ? 'Vael' : 'Gorvax'}</span></div>` +
       `<div class="art">${monsterSVG(b.key, ' aria-hidden="true"', b.hex)}${wk}</div>` +
       `<div class="nm${b.name.length > 12 ? ' long' : ''}">${esc(b.name)}</div>` +
       `<div class="cb"><span>${TYPE_NAME[b.type]} of</span></div>` +
@@ -461,7 +462,8 @@
       [[25, 40, -24], [50, 33, 0], [75, 40, 24]].map(([x, y, a]) => `<g transform="translate(${x} ${y}) rotate(${a})"><path d="M0 -15 C9 -15 12 -6 11 2 L5 9 L-5 9 L-11 2 C-12 -6 -9 -15 0 -15Z" fill="${k}"/><path d="M-4 8 L-2.5 14 L-1 8Z M4 8 L2.5 14 L1 8Z" fill="${k}"/><circle cx="-4.6" cy="-3" r="2.3" fill="${bg || 'none'}"/><circle cx="4.6" cy="-3" r="2.3" fill="${bg || 'none'}"/></g>`).join(''),
   };
   const bossMark = (boss, fill, cls) => svg('0 0 100 100', BOSS_MARK[boss](fill || 'currentColor'), (cls ? ` class="${cls}"` : '') + ' aria-hidden="true"');
-  const BOSS_LABEL = { gorvax: 'Gorvax', vael: 'Vael' };
+  BOSS_MARK.kagami = (k) => `<path d="M50 8 L84 50 L50 92 L16 50Z" fill="none" stroke="${k}" stroke-width="9" stroke-linejoin="round"/><path d="M40 38 L58 20 M34 58 L66 26" stroke="${k}" stroke-width="6" stroke-linecap="round"/>`;
+  const BOSS_LABEL = { gorvax: 'Gorvax', vael: 'Vael', kagami: 'Kagami' };
   // opts.boss: 'gorvax' (default) or 'vael'
   const bossBackHTML = (act, label, opts) => { opts = opts || {}; const boss = opts.boss || 'gorvax';
     return `<div class="mcard mbk a${act} bk-${boss}${opts.cls ? ' ' + opts.cls : ''}"${opts.attrs || ''}><div class="mf"><div class="ring">${svg('0 0 100 100', `<circle cx="50" cy="50" r="40" fill="#FFF6E4"/><circle cx="50" cy="50" r="34" fill="none" stroke="${P.act[act]}" stroke-width="2.4"/><g transform="translate(50 52) scale(.5) translate(-50 -50)">${BOSS_MARK[boss](P.act[act], '#FFF6E4')}</g>`, ' aria-hidden="true"')}</div><div class="bb">${BOSS_LABEL[boss]}</div><div class="bl">${['Season 1', 'Season 2', 'Finale'][act]}</div>${label != null ? `<div class="bn">${label}</div>` : ''}</div></div>`; };

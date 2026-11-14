@@ -130,6 +130,8 @@
   .log{font-size:13.5px;color:var(--t-muted);max-height:150px;overflow:auto}
   .log p{margin:0 0 3px}
 
+  .lock{margin-top:10px;padding:7px 10px;border-radius:10px;background:rgba(0,0,0,.28);border:1px dashed rgba(255,246,228,.5);font:500 13px/1.3 Jost;color:var(--cream,#FFF6E4);max-width:420px}
+  .lock b{color:var(--gold)}
   .energy{display:flex;gap:5px;justify-content:center;padding:4px 0}
   .energy i{width:20px;height:20px;border-radius:50%;border:2px solid var(--gold);opacity:.35}
   .energy i.on{background:radial-gradient(circle at 35% 30%,#FFE9A8,var(--gold) 60%);opacity:1;box-shadow:0 0 8px rgba(240,180,41,.6)}
@@ -181,8 +183,8 @@
 <div id="app"></div>
 <script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 <script src="/assets/js/dev-table.js?v=8204bfed"></script>
-<script src="art.js?v=f990ae50"></script>
-<script src="engine.js?v=ad646346"></script>
+<script src="art.js?v=80ff36c8"></script>
+<script src="engine.js?v=b6e6ed48"></script>
 <script>
 (function () {
   'use strict';
@@ -317,6 +319,7 @@
       if (iDiscard) return 'The squad is discarding. Put ' + (dn === 1 ? 'a card' : dn + ' cards') + ' on the discard pile.';
       if (v.phase !== 'build') return 'Hold on: the squad is between fights.';
       if (!myTurn) return 'It’s ' + P[v.turn].name + '’s turn.';
+      if (v.lockedMe && c.c === v.lock) return S.COLORS[v.lock] + ' is locked by the mirror for this fight.';
       const X = targets[h];
       if (!X) return 'There’s no head there yet.';
       if (vael && X.need <= 0) return X.boss.name + ' is already finished.';
@@ -394,7 +397,8 @@
     } else if (v.enc) {
       const e = v.enc;
       arena = '<div class="fight" data-zone="head" data-head="0" tabindex="-1">' + mcard(e.boss, '', ' data-from="deck' + e.boss.act + '"') +
-        '<div class="combo"><span class="lbl">The combo</span>' + slots(e, myTurn ? onHead(0).map(handCard) : null) + '</div></div>' +
+        '<div class="combo"><span class="lbl">The combo</span>' + slots(e, myTurn ? onHead(0).map(handCard) : null) +
+        (v.mirror ? '<div class="lock c' + (v.lock >= 0 ? v.lock : 'x') + '">' + (v.lock >= 0 ? '<b>Mirror lock: ' + S.COLORS[v.lock] + '</b> ' + (v.lockSeat >= 0 ? (v.lockSeat === me ? 'You' : esc(P[v.lockSeat].name)) + ' can’t' : 'Nobody can') + ' play ' + S.COLORS[v.lock] + ' in this fight.' : '<b>Mirror:</b> the color of the card that finishes this monster is locked for the next fight.') + '</div>' : '') + '</div></div>' +
         (v.upcoming.length ? '<div class="upnext"><span class="lbl">Up next in ' + IN[v.act] + ', in order</span><div class="line">' + v.upcoming.map((b, i) => mcard(b, 'sm' + (i ? '' : ' next'), ' data-from="deck' + b.act + '"')).join('') + '</div></div>' : '');
     } else arena = '<div class="spot" style="width:auto;height:160px">The table is clear.</div>';
 
@@ -565,7 +569,7 @@
     id: 'sentai', title: 'Sentai', blurb: '2–5 players · 20–30 minutes · cooperative',
     minPlayers: 2, maxPlayers: 5, defaultPlayers: 3, botNames: S.BOT_NAMES,
     options: [
-      { key: 'boss', label: 'Boss', values: [['gorvax', 'Emperor Gorvax'], ['vael', 'Vael, the Hydra']], def: 'gorvax' },
+      { key: 'boss', label: 'Boss', values: [['gorvax', 'Emperor Gorvax'], ['kagami', 'Shogun Kagami (new)'], ['vael', 'Vael, the Hydra']], def: 'gorvax' },
       { key: 'powers', label: 'Hero powers', values: [[0, 'Off'], [1, 'On']], def: 0 },
     ],
     botNote: 'Bot teammates think ahead: before each move they imagine the cards they can’t see, play the rest of the game out many times, and pick what wins most. They only know their own hand, the face-up Boss cards and cards they’ve seen.',
@@ -576,6 +580,7 @@
       '<p><b>Passing.</b> When you pass, the squad gains 1 Energy (it holds up to 4).</p>' +
       '<p><b>Energy.</b> On your turn, spend 1 Energy for a Tweak (one card you add counts as one rank higher or lower) or a Hand-off (give one card, face down, to another Hero).</p>' +
       '<p><b>Weak spots.</b> Every monster has one: a color, or a band of ranks. If the last card added to a finished combo hits it, the Hero who added it shows one card from their hand to the squad.</p>' +
+      '<p><b>Shogun Kagami.</b> Fought like Gorvax, one monster at a time, with all 4 monsters of each season. The color of the card that finishes a monster is locked: nobody can play that color against the next monster.</p>' +
       '<p><b>Emperor Gorvax.</b> Each season’s monsters line up face up; fight them in order. Starting with the lead, everyone adds to one combo. Beat it and those cards are spent. Miss it and the cards go back to whoever added them, every Hero discards 1 face up, and you fight it again with the lead passed on. Beat every monster in the Finale to win.</p>' +
       '<p><b>Vael, the Hydra.</b> Two heads are out at once (three with 3 or more Heroes), each with a combo and a hex that’s in force while it’s out. Cards stay on a head. At the end of the round, a finished head is cut off and a new one grows. An unfinished head is enraged; if it’s still unfinished after another round, it strikes: its cards are lost and every Hero discards 2. On your turn, add 1 or 2 cards to one head, or 1 card each to two heads. Get through every head to win.</p>' +
       '<p><b>Hero powers (optional).</b> Command: when you lead, add up to 3. Riptide (once): nobody discards. Overcharge (once): one card fits any combo. Steady: you discard 1 fewer. Beacon (once a season): show a card.</p>',

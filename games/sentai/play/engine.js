@@ -15,6 +15,7 @@
     passCharge: true,                   // when you pass, the squad gains 1 Energy (if there's room)
     weakShow: true,                     // a finishing blow on a monster's weak spot: the Hero who landed it shows one card from their hand
     weakEnergy: 0,                      // Energy for a finishing blow on a weak spot (tried at 1; now the reward is showing a card)
+    mirrorSelf: 0,                      // Kagami: with this many Heroes or fewer, the lock binds only the Hero who landed the finishing blow
     botWeak: 0.4,                       // how much the look-ahead bots want a weak-spot finish (in rollout wins out of `lookahead`)
     weakFinish: true,                   // the weak-spot card has to be the last card added (false: anywhere in the combo)
     missDiscard: 1,                     // Gorvax: cards each Hero discards when a combo falls short
@@ -56,6 +57,20 @@
       },
     },
   };
+  /* Shogun Kagami, the mirror: one monster at a time, like Gorvax, and all 4 monsters of each season come out.
+     The color of the card that finishes a monster is locked: nobody can play that color against the next monster. */
+  RULES.bosses.kagami = {
+    name: 'Shogun Kagami',
+    mirror: true,
+    draws: [4, 4, 4],
+    // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
+    acts: [
+      [['run', [2, 3, 3, 3], 'Glint Imp'], ['set', [2, 2, 3, 3], 'Shardling'], ['color', [2, 3, 3, 3], 'Prism Moth'], ['combine', [2, 2, 3, 3], 'Glass Crab']],
+      [['run', [3, 4, 5, 5], 'Silverback'], ['set', [2, 3, 3, 3], 'Twin Reflections'], ['color', [3, 3, 4, 4], 'Glare Hound'], ['combine', [2, 3, 4, 4], 'Kaleido Serpent']],
+      [['set', [3, 3, 4, 4], 'Mirror Knight'], ['color', [3, 4, 5, 5], 'Shatterjaw'], ['combine', [2, 3, 4, 4], 'Halo Oni'], ['run', [4, 5, 6, 6], 'Shogun Kagami']],
+    ],
+  };
+  const KEYBASE = { gorvax: 0, vael: 18, kagami: 36 };
   const HEX = {
     hunger: { name: 'Hunger', text: 'At the end of each round this head is out, the Hero with the most cards discards 1.' },
     venom: { name: 'Venom', text: 'If this head strikes, every Hero discards 1 more.' },
@@ -188,7 +203,8 @@
       const deck = [];
       for (let k = 0; k < (RULES.copies || 1); k++) for (let c = 0; c < this.colors; c++) for (let r = 1; r <= RULES.ranks; r++) deck.push({ id: id++, c, r });
       shuffle(deck);
-      const B = RULES.bosses[this.boss], keyBase = this.boss === 'vael' ? 18 : 0;
+      const B = RULES.bosses[this.boss], keyBase = KEYBASE[this.boss];
+      this.mirror = !!B.mirror; this.lock = -1; this.lockSeat = -1; this.lockSelf = this.N <= RULES.mirrorSelf;       // Kagami: the locked color (-1: none)
       this.defs = B.acts;
       const handN = this.handSize = this.N === 5 ? RULES.hand5 : B.hand || RULES.hand;
       this.energy = RULES.energyStart; this.showQueue = []; this.turnUsed = {}; this.stat = { tweak: 0, handoff: 0, charge: 0, reveal: 0, weak: 0 };
@@ -196,7 +212,7 @@
       this.box = deck.slice(this.N * handN);          // never seen in play
       this.boxed = this.box.length;
       this.known = this.players.map(() => []);             // cards everyone has seen each Hero holding
-      this.acts = RULES.actDraws[this.N].map((k, a) =>
+      this.acts = (B.draws || RULES.actDraws[this.N]).map((k, a) =>
         shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[Math.min(this.N - 2, need.length - 1)], needs: need.slice(), name, hex: hex || null, key: keyBase + a * 6 + i, weak: weakOf(type, a, i) }))).slice(0, k));
       this.total = this.acts.reduce((t, x) => t + x.length, 0);
       this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = []; this.trash = [];   // trash: face-up discard pile, {c, seat}
@@ -265,8 +281,11 @@
         if (x.enraged && RULES.enragedAny) return this.hands[seat].map((c) => c.id);
         return this.hands[seat].filter((c) => fitsC(x.st, c)).map((c) => c.id);
       }
-      return this.hands[seat].filter((c) => fitsC(this.enc.st, c)).map((c) => c.id);
+      return this.open(seat).filter((c) => fitsC(this.enc.st, c)).map((c) => c.id);
     }
+    /* the cards a Hero may play right now: everything, minus Kagami's locked color */
+    locked(seat) { return this.lock >= 0 && (!this.lockSelf || seat === this.lockSeat); }
+    open(seat) { return !this.locked(seat) ? this.hands[seat] : this.hands[seat].filter((c) => c.c !== this.lock); }
     canAddAny(seat) { return this.boss === 'vael' ? this.slots.some((_, h) => this.legalFor(seat, h).length) : this.legalFor(seat, 0).length > 0; }
 
     act(seat, a) {
@@ -377,6 +396,7 @@
         const st = copyC(tgt.st), placed = [];
         for (const id of p.ids) {
           const c = hand.find((x) => x.id === id);
+          if (c && this.locked(seat) && c.c === this.lock) return { ok: false, error: COLORS[this.lock] + ' is locked by the mirror for this fight.' };
           if (!c) return { ok: false, error: 'You don’t have that card.' };
           if (id === wild) {
             const v = wildAs(st, c);
@@ -429,6 +449,7 @@
       if (met) {
         this.done++;
         this.say('Combo complete! ' + this.enc.boss.name + ' is defeated.');
+        if (this.mirror) { const fc = this.enc.cards[this.enc.cards.length - 1]; this.lock = (fc.real || fc).c; this.lockSeat = this.enc.plays.filter((p) => p.cards && p.cards.length).pop().seat; this.say('The mirror locks ' + COLORS[this.lock] + ': ' + (this.lockSelf ? this.players[this.lockSeat].name : 'nobody') + ' can' + (this.lockSelf ? '’t' : '') + ' play ' + COLORS[this.lock] + ' against the next monster.'); }
         this.weakHit(this.enc, this.result);
         if (!this.nextShow()) this.phase = 'result';
         return;
@@ -573,7 +594,7 @@
       const turn = this.turnSeat(), vael = this.boss === 'vael';
       const combo = (x) => x && ({ boss: x.boss, cards: x.cards.slice(), need: x.boss.need - x.st.n, total: x.boss.need, type: x.st.type, n: x.st.n, rank: x.st.rank, color: x.st.color, lo: x.st.lo, hi: x.st.hi, mask: x.st.mask || 0, enraged: !!x.enraged, plays: x.plays.map((p) => ({ seat: p.seat, n: p.cards.length })), who: Object.fromEntries(x.plays.flatMap((p) => p.cards.map((c) => [c.id, p.seat]))) });
       return {
-        seat, boss: this.boss, bossName: RULES.bosses[this.boss].name, phase: this.phase, colors: this.colors, total: this.total, done: this.done, misses: this.misses, fights: this.fights,
+        seat, lock: this.lock, lockSeat: this.lockSelf ? this.lockSeat : -1, lockedMe: this.locked(seat), mirror: this.mirror, boss: this.boss, bossName: RULES.bosses[this.boss].name, phase: this.phase, colors: this.colors, total: this.total, done: this.done, misses: this.misses, fights: this.fights,
         energy: this.energy, energyMax: RULES.energyMax, showSeat: this.phase === 'show' ? this.showQueue[0] : -1, canHandoff: this.phase === 'build' && seat === turn && this.energy > 0 && !this.turnUsed.handoff && this.hands[seat].length > 1,
         boxed: this.boxed, maxAdd: this.maxAdd(seat), maxAddHead: vael ? this.slots.map((_, h) => this.maxAdd(seat, h)) : null, act: this.actNo, lead: this.lead, powers: this.powers,
         players: this.players.map((p, i) => ({ name: p.name, bot: p.bot, hero: p.hero, count: this.hands[i].length,
@@ -653,10 +674,10 @@
         const p = hydraPick(this.fast(), s);
         return p && { parts: p.parts.map((x) => ({ head: x.head, cards: x.cards.map((c) => c.id) })) };
       }
-      const hand = this.hands[s];
-      if (!hand.some((c) => fitsC(this.enc.st, c)) || hand.length < 2) return null;
+      const hand = this.open(s), full = this.hands[s].length;
+      if (!hand.some((c) => fitsC(this.enc.st, c)) || full < 2) return null;
       const st = copyC(this.enc.st);
-      return { parts: [{ head: 0, cards: simplePlay(hand, st, Math.min(this.maxAdd(s), this.need(), hand.length - 1)).map((c) => c.id) }] };
+      return { parts: [{ head: 0, cards: simplePlay(hand, st, Math.min(this.maxAdd(s), this.need(), full - 1)).map((c) => c.id) }] };
     }
     /* Overcharge: use it when it finishes a combo this turn. */
     botWild(s) {
@@ -693,16 +714,16 @@
      keeps the option that wins most often. One-time powers are left out of the imagined games. */
   function rolloutG(s) {   // Gorvax
     const N = s.N, hands = s.hands, line = s.line;
-    let lead = s.lead, st = s.st, at = s.at, plays = s.plays, li = s.li || 0;
+    let lead = s.lead, st = s.st, at = s.at, plays = s.plays, li = s.li || 0, lock = s.lock == null ? -1 : s.lock, lockSeat = s.lockSeat == null ? -1 : s.lockSeat, lastC = s.lastC || null, lastP = -1;
     while (li < line.length) {
       const m = line[li];
       if (!st) { st = newCombo(m.type, m.need); at = 0; plays = []; }
       while (at < N && st.n < m.need) {
-        const p = (lead + at) % N, h = hands[p];
-        if (h.length > 1 && h.some((c) => fitsC(st, c))) {
+        const p = (lead + at) % N, h = hands[p], ho = lock < 0 || (s.lockSelf && p !== lockSeat) ? h : h.filter((c) => c.c !== lock);
+        if (h.length > 1 && ho.some((c) => fitsC(st, c))) {
           const max = p === lead && p === s.cmd ? 3 : RULES.maxAdd;
-          const cs = simplePlay(h, st, Math.min(max, m.need - st.n, h.length - 1));
-          if (cs.length) { hands[p] = h.filter((x) => !cs.includes(x)); plays.push(p, cs); }
+          const cs = simplePlay(ho, st, Math.min(max, m.need - st.n, h.length - 1));
+          if (cs.length) { hands[p] = h.filter((x) => !cs.includes(x)); plays.push(p, cs); lastC = cs[cs.length - 1]; lastP = p; }
         }
         at++;
       }
@@ -710,6 +731,7 @@
         for (let i = 0; i < plays.length; i += 2) hands[plays[i]] = hands[plays[i]].concat(plays[i + 1]);
         for (let i = 0; i < N; i++) { hands[i] = simpleDiscard(hands[i], RULES.missDiscard - (i === s.steady ? 1 : 0)); if (!hands[i].length) return 0; }
       }
+      if (st.n >= m.need && s.mirror && lastC) { lock = lastC.c; if (lastP >= 0) lockSeat = lastP; }
       if (st.n >= m.need || !RULES.replay) li++;
       lead = (lead + 1) % N; st = null;
     }
@@ -755,7 +777,7 @@
   }
   // A guess at the Boss cards still face down, drawn from what hasn't been seen yet.
   function futureOf(g) {
-    const B = RULES.bosses[g.boss], base = g.boss === 'vael' ? 18 : 0;
+    const B = RULES.bosses[g.boss], base = KEYBASE[g.boss];
     const out = [];
     const unseen = (a) => shuffle(g.defs[a].map(([type, need, name, hex], i) => ({ type, need: need[Math.min(g.N - 2, need.length - 1)], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key)));
     if (g.boss === 'vael') out.push(...unseen(g.actNo).slice(0, g.pile.length));
@@ -778,12 +800,12 @@
   }
   /* Every legal way to add cards (up to the seat's limit) to each target, plus passing. */
   function buildOptions(g, seat) {
-    const hand = g.hands[seat], opts = [{ parts: [] }];
+    const hand = g.open(seat), full = g.hands[seat].length, opts = [{ parts: [] }];
     const vael = g.boss === 'vael';
     const singles = {};
     for (const h of vael ? g.slots.map((_, i) => i) : [0]) {
       if (!g.legalFor(seat, h).length) continue;
-      const x = vael ? g.slots[h] : g.enc, rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, hand.length - 1);
+      const x = vael ? g.slots[h] : g.enc, rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, full - 1);
       const seen = new Set();
       if (vael && x.enraged && RULES.enragedAny) {
         const pool = hand.slice().sort((a, b) => useful(a, hand) - useful(b, hand)).slice(0, 6);
@@ -798,7 +820,7 @@
       singles[h] = hand.filter((c) => fitsC(x.st, c));
       (function grow(st, picked) {
         if (picked.length) {
-          const key = picked.map((c) => c.id).sort((a, b) => a - b).join(':');
+          const key = g.mirror ? picked.map((c) => c.id).join(':') : picked.map((c) => c.id).sort((a, b) => a - b).join(':');   // against the mirror, which card goes last matters
           if (!seen.has(key)) { seen.add(key); opts.push({ parts: [{ head: h, cards: picked }] }); }
         }
         if (picked.length >= cap || opts.length > 90) return;
@@ -820,11 +842,11 @@
   /* With Energy to spend, also try each card one rank up or down: alone, or beside one plain card. */
   function tweakOptions(g, seat, opts) {
     if (g.energy < 1) return;
-    const hand = g.hands[seat], vael = g.boss === 'vael';
+    const hand = g.open(seat), vael = g.boss === 'vael';
     for (const h of vael ? g.slots.map((_, i) => i) : [0]) {
       const x = vael ? g.slots[h] : g.enc;
       if (!x || x.st.n >= x.boss.need || !x.st.n || g.hands[seat].length < 2 || (vael && g.splitBlocked(h))) continue;
-      const rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, hand.length - 1);
+      const rem = x.boss.need - x.st.n, cap = Math.min(g.maxAdd(seat, vael ? h : null), rem, g.hands[seat].length - 1);
       if (cap < 1) continue;
       for (const c of hand) for (const d of [-1, 1]) {
         const r = c.r + d; if (r < 1 || r > RULES.ranks) continue;
@@ -848,7 +870,8 @@
     const e = g.enc, st = copyC(e.st), plays = [];
     e.plays.forEach((p) => { if (p.cards.length) plays.push(p.seat, p.cards.map((c) => c.real || c)); });
     if (used.length) { for (const c of used) addC(st, c); plays.push(seat, gone); }
-    return Object.assign(base, { line: g.row.concat(future), li: 0, st, at: e.at + 1, plays });
+    const lastC = used.length ? gone[gone.length - 1] : e.cards.length ? (e.cards[e.cards.length - 1].real || e.cards[e.cards.length - 1]) : null;
+    return Object.assign(base, { line: g.row.concat(future), li: 0, st, at: e.at + 1, plays, lock: g.lock, mirror: g.mirror, lastC, lockSeat: used.length ? seat : g.lockSeat, lockSelf: g.lockSelf });
   }
   function chooseBuild(g, seat, samples) {
     const opts = buildOptions(g, seat);
@@ -858,7 +881,7 @@
     // for a teammate still to play this lap who is known to hold a weak-spot card that fits.
     const tgtOf = (p) => g.boss === 'vael' ? g.slots[p.head] : g.enc;
     const later = []; if (g.boss === 'vael') { for (let i = g.round.at + 1; i < g.N; i++) later.push((g.lead + i) % g.N); } else later.push(...g.enc.order.slice(g.enc.at + 1));
-    for (const o of opts) for (const p of o.parts) { const x = tgtOf(p); if (p.cards.length === x.boss.need - x.st.n) { const k = p.cards.findIndex((c) => isWeak(x.boss.weak, c)); if (k >= 0) p.cards.push(p.cards.splice(k, 1)[0]); } }
+    if (!g.mirror) for (const o of opts) for (const p of o.parts) { const x = tgtOf(p); if (p.cards.length === x.boss.need - x.st.n) { const k = p.cards.findIndex((c) => isWeak(x.boss.weak, c)); if (k >= 0) p.cards.push(p.cards.splice(k, 1)[0]); } }
     const weakBonus = (o) => {
       if (!RULES.weakShow && !RULES.weakEnergy) return 0;
       let b = 0;
@@ -905,7 +928,7 @@
         if (g.boss === 'vael') {
           const slots = g.slots.map((x) => x && { m: { type: x.boss.type, need: x.boss.need, hex: x.boss.hex }, st: copyC(x.st), enr: x.enraged, rage: x.rage || 0, fed: !!x.fed, last: x.plays.length ? x.plays[x.plays.length - 1].seat : -1 });
           score[i] += rolloutV(Object.assign(base, { slots, pile: future, at: 0, lastHeads: [], fresh: true }));
-        } else score[i] += rolloutG(Object.assign(base, { line: g.row.concat(future), li: 0, st: null }));
+        } else score[i] += rolloutG(Object.assign(base, { line: g.row.concat(future), li: 0, st: null, lock: g.lock, mirror: g.mirror, lockSeat: g.lockSeat, lockSelf: g.lockSelf }));
       });
     }
     let best = 0; opts.forEach((_, i) => { if (score[i] > score[best]) best = i; });
