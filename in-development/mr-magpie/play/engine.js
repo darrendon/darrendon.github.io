@@ -19,6 +19,10 @@
     baubles: { earring: 14, berry: 14, button: 14, feather: 14, cap: 14, bead: 14 },   // 84 cards: with treasures and reference cards, two poker sheets
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
     looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
+    penalty: 'treasure',                                // fewest acorns at the snow: 'out' (can't win) or 'treasure' (lose your best treasure)
+    frostTie: 'wait',                                   // tied for the biggest frost offering: 'rebid' in secret, or 'wait' (nobody wins it)
+    drop3: ['Disco Ball', 'Tiara'],                     // treasures left in the box with three critters
+    lastFrost: 'any',                                   // 'bottom' shuffles one frost into the bottom half of the deck
     rowSize: 8,                                         // a fixed row size for every player count (0 = players + rowExtra)
     rowMode: 'conveyor', rowDrop: 1,                    // before each treasure the oldest bauble leaves, the rest slide along, and the row is dealt back up
     rowWipe: false,                                     // clear the whole row between treasures and deal a new one
@@ -113,8 +117,12 @@
         hand: RULES.hand.slice(), treasures: [], baubles: Object.assign({ acorn: 0 }, ...Object.keys(RULES.baubles).map((k) => ({ [k]: 0 }))),
       }));
       if (opts.styles) opts.styles.forEach((s, i) => { if (s && this.players[i]) this.players[i].style = s; });
-      const deck = RULES.treasures.map((t) => Object.assign({ frost: false }, t)).concat(RULES.frosts.map((t) => Object.assign({ frost: true }, t)));
-      this.deck = shuffle(deck);
+      const drop = this.N === 3 ? (RULES.drop3 || []) : [];   // with three critters the biggest treasures stay in the box
+      const tr = RULES.treasures.filter((t) => !drop.includes(t.name)).map((t) => Object.assign({ frost: false }, t)), fr = RULES.frosts.map((t) => Object.assign({ frost: true }, t));
+      if (RULES.lastFrost === 'bottom') {   // one frost is shuffled into the bottom half, so the game can't end very early
+        const rest = shuffle(tr.concat(fr.slice(1))), half = Math.floor((rest.length + 1) / 2);
+        this.deck = shuffle(rest.slice(0, half).concat([fr[0]])).concat(rest.slice(half));   // cards are drawn from the end
+      } else this.deck = shuffle(tr.concat(fr));
       const side = [];
       for (const [t, c] of Object.entries(RULES.baubles)) for (let k = 0; k < c; k++) side.push(t);
       RULES.lostAcorns.forEach((v) => side.push('acorn' + v));
@@ -321,6 +329,12 @@
       const top = Math.max(...tot);
       if (top <= 0) { this.rollOver(); return; }
       const tied = L.order.filter((s) => tot[s] === top);
+      if (tied.length > 1 && RULES.frostTie === 'wait') {   // a tie for the biggest offering: nobody wins, the frost waits, and everyone who offered takes baubles
+        this.stats.frostTies = (this.stats.frostTies || 0) + 1;
+        this.rollOver();
+        this.say(tied.map((s) => this.players[s].name).join(' and ') + ' tie at ' + top + ', so nobody wins it.');
+        this.frostBaubles(-1); return;
+      }
       if (tied.length > 1) {   // a tie for the biggest offering: those critters offer again, in secret, until it breaks
         if (!tied.some((s) => this.players[s].hand.length)) return this.frostStandoff();
         L.rebid = tied; L.high = top; this.stats.rebids = (this.stats.rebids || 0) + 1;
@@ -367,19 +381,27 @@
     }
 
     endGame() {
-      const N = this.N, sc = scoreOf(this.players, this.R), money = this.players.map((_, i) => this.money(i));
+      const N = this.N, money = this.players.map((_, i) => this.money(i));
       const mn = Math.min(...money);
-      let out = money.map((m, i) => (m === mn ? i : -1)).filter((i) => i >= 0);   // everyone tied for fewest is out…
+      let out = money.map((m, i) => (m === mn ? i : -1)).filter((i) => i >= 0);   // everyone tied for fewest pays the price…
       if (out.length === N) out = [];                                              // …unless that's every critter
-      const alive = this.players.map((_, i) => i).filter((i) => !out.includes(i));
+      const soft = RULES.penalty === 'treasure', lost = {};
+      if (soft) out.forEach((i) => {   // the softer price: Mr. Magpie takes back your best treasure
+        const ts = this.players[i].treasures; if (!ts.length) return;
+        const k = ts.reduce((b, t, j) => (t.vp > ts[b].vp ? j : b), 0); lost[i] = ts.splice(k, 1)[0];
+      });
+      const sc = scoreOf(this.players, this.R);
+      const alive = this.players.map((_, i) => i).filter((i) => soft || !out.includes(i));
       let winners = [];
       if (alive.length) {
         const best = Math.max(...alive.map((i) => sc[i].total * 1000 + money[i]));
         winners = alive.filter((i) => sc[i].total * 1000 + money[i] === best);
       }
-      this.final = { scores: sc, money, out, winners };
+      this.final = { scores: sc, money, out, winners, soft, lost };
       this.phase = 'over'; this.lot = null; this.result = null; this.picks = [];
-      this.say(out.length ? out.map((i) => this.players[i].name).join(' and ') + (out.length > 1 ? ' run' : ' runs') + ' out of acorns for winter.' : 'Everyone is level on acorns, so everyone makes it through winter.')
+      if (soft) out.forEach((i) => this.say(this.players[i].name + (lost[i] ? ' has the fewest acorns, so Mr. Magpie takes back the ' + lost[i].name + '.' : ' has the fewest acorns, but no treasure to hand back.')));
+      else this.say(out.length ? out.map((i) => this.players[i].name).join(' and ') + (out.length > 1 ? ' run' : ' runs') + ' out of acorns for winter.' : 'Everyone is level on acorns, so everyone makes it through winter.');
+      if (soft && !out.length) this.say('Everyone is level on acorns, so nobody hands anything back.');
       if (winners.length) this.say(winners.map((i) => this.players[i].name).join(' and ') + (winners.length > 1 ? ' share the win!' : ' wins!'));
     }
 
@@ -422,7 +444,11 @@
       const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)));
       const L = this.lot, pot = L ? sum(L.extra.map((t) => t.vp)) : 0;   // treasures rolled over from before
       const floor = Math.max(1, opp + 1 - this.st(s).slack * this.M * this.remFrac() - RISK * pot * this.beta * this.st(s).aggr);
-      return Math.max(0, me - floor);
+      const hard = Math.max(0, me - floor);
+      if (RULES.penalty !== 'treasure') return hard;
+      // being poorest only costs your best treasure, so the less you stand to lose, the more freely you spend
+      const best = Math.max(0, ...this.players[s].treasures.map((t) => t.vp), L ? 0.5 * this.lotVp() : 0), g = Math.min(1, best / 12);
+      return hard + (1 - g) * Math.max(0, me - 1 - hard);
     }
     itemVp(s, b) {
       const R = this.R, p = this.players[s], S = this.st(s), rf = this.remFrac();
