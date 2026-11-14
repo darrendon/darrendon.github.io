@@ -31,6 +31,8 @@
     bosses: {
       gorvax: {
         name: 'Emperor Gorvax',
+        // the 12-card deck: 4 monsters a season, one of each combo, and all 4 come out every game. The other six are retired.
+        keep: [[0, 2, 3, 4], [0, 2, 3, 5], [1, 2, 3, 5]], draws: [4, 4, 4],
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name]
         acts: [
           [['run', [2, 2, 3, 2], 'Cog Grunts'], ['run', [2, 2, 3, 2], 'Rust Rats'], ['color', [3, 3, 3, 3], 'Inkbats'],
@@ -43,6 +45,8 @@
       },
       vael: {
         name: 'Vael, the Hydra',
+        // the 12-card deck: 4 heads a season, one of each combo, each hex twice. The other six are retired.
+        keep: [[1, 2, 3, 5], [1, 2, 3, 4], [0, 2, 3, 5]], draws: [4, 4, 4],
         hand: 14,
         heads: { 2: 2, 3: 3, 4: 3, 5: 3 },
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name, hex]
@@ -51,7 +55,7 @@
            ['combine', [2, 2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3, 3], 'Ashtongue', 'venom']],
           [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 2, 3, 3], 'Ropeneck', 'split'], ['color', [3, 3, 3, 3], 'Bilefang', 'venom'],
            ['combine', [2, 3, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 3, 4, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3, 3], 'Smokeneck', 'spite']],
-          [['run', [3, 3, 4, 4], 'Crownfang', 'venom'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
+          [['run', [3, 3, 4, 4], 'Crownfang', 'spite'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
            ['combine', [3, 3, 4, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
         ],
       },
@@ -213,7 +217,7 @@
       this.boxed = this.box.length;
       this.known = this.players.map(() => []);             // cards everyone has seen each Hero holding
       this.acts = (B.draws || RULES.actDraws[this.N]).map((k, a) =>
-        shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[Math.min(this.N - 2, need.length - 1)], needs: need.slice(), name, hex: hex || null, key: keyBase + a * 6 + i, weak: weakOf(type, a, i) }))).slice(0, k));
+        shuffle(this.defs[a].map(([type, need, name, hex], i) => ({ act: a, type, need: need[Math.min(this.N - 2, need.length - 1)], needs: need.slice(), name, hex: hex || null, key: keyBase + a * 6 + i, weak: weakOf(type, a, i) })).filter((m) => !B.keep || B.keep[a].includes((m.key - keyBase) % 6))).slice(0, k));
       this.total = this.acts.reduce((t, x) => t + x.length, 0);
       this.actNo = 0; this.done = 0; this.fights = 0; this.misses = 0; this.hist = []; this.trash = [];   // trash: face-up discard pile, {c, seat}
       this.lead = opts.firstLead != null ? opts.firstLead % this.N : Math.floor(rnd() * this.N);
@@ -779,7 +783,7 @@
   function futureOf(g) {
     const B = RULES.bosses[g.boss], base = KEYBASE[g.boss];
     const out = [];
-    const unseen = (a) => shuffle(g.defs[a].map(([type, need, name, hex], i) => ({ type, need: need[Math.min(g.N - 2, need.length - 1)], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key)));
+    const unseen = (a) => shuffle(g.defs[a].map(([type, need, name, hex], i) => ({ type, need: need[Math.min(g.N - 2, need.length - 1)], hex: hex || null, key: base + a * 6 + i })).filter((m) => !g.seen.has(m.key) && (!B.keep || B.keep[a].includes((m.key - base) % 6))));
     if (g.boss === 'vael') out.push(...unseen(g.actNo).slice(0, g.pile.length));
     for (let a = g.actNo + 1; a < g.acts.length; a++) out.push(...unseen(a).slice(0, g.acts[a].length));
     return out;
