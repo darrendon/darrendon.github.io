@@ -51,11 +51,11 @@
         heads: { 2: 2, 3: 3, 4: 3, 5: 3 },
         // per act: [type, [need with 2, 3, 4, 5 Heroes], name, hex]
         acts: [
-          [['run', [2, 2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 3, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3, 3], 'Sallowmaw', 'coil'],
+          [['run', [2, 2, 3, 3], 'Gloomfang', 'brood'], ['run', [2, 2, 2, 3], 'Mirefang', 'spite'], ['color', [2, 2, 3, 3], 'Sallowmaw', 'coil'],
            ['combine', [2, 2, 3, 3], 'Brineneck', 'hunger'], ['set', [2, 2, 3, 3], 'Hissjaw', 'split'], ['set', [2, 2, 3, 3], 'Ashtongue', 'venom']],
           [['run', [2, 3, 4, 4], 'Thornscale', 'hunger'], ['run', [2, 3, 4, 4], 'Ropeneck', 'split'], ['color', [2, 3, 3, 4], 'Bilefang', 'venom'],
            ['combine', [2, 3, 3, 3], 'Coilmaw', 'coil'], ['set', [2, 3, 4, 3], 'Gravejaw', 'brood'], ['set', [2, 3, 3, 3], 'Smokeneck', 'spite']],
-          [['run', [3, 3, 4, 4], 'Crownfang', 'spite'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
+          [['run', [3, 3, 5, 4], 'Crownfang', 'spite'], ['run', [3, 3, 4, 4], 'Doomcoil', 'coil'], ['color', [3, 3, 4, 4], 'Nightmaw', 'hunger'],
            ['combine', [2, 3, 4, 4], 'Wyrmspite', 'split'], ['set', [2, 3, 4, 4], 'Old Fang', 'spite'], ['set', [2, 3, 4, 4], 'Hexmother', 'brood']],
         ],
       },
