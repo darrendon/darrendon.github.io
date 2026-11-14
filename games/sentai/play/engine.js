@@ -15,6 +15,7 @@
     passCharge: true,                   // when you pass, the squad gains 1 Energy (if there's room)
     weakShow: true,                     // a finishing blow on a monster's weak spot: the Hero who landed it shows one card from their hand
     weakEnergy: 0,                      // Energy for a finishing blow on a weak spot (tried at 1; now the reward is showing a card)
+    botWeak: 0.4,                       // how much the look-ahead bots want a weak-spot finish (in rollout wins out of `lookahead`)
     weakFinish: true,                   // the weak-spot card has to be the last card added (false: anywhere in the combo)
     missDiscard: 1,                     // Gorvax: cards each Hero discards when a combo falls short
     strikeDiscard: 2,                   // Vael: cards each Hero discards when an enraged head strikes (Venom: +1)
@@ -853,7 +854,24 @@
     const opts = buildOptions(g, seat);
     tweakOptions(g, seat, opts);
     const out = (o) => ({ parts: o.parts.map((p) => ({ head: p.head, cards: p.cards.map((c) => c.id) })), tweak: o.tweak || null });
-    const weakBonus = (o) => o.parts.some((p) => { const x = g.boss === 'vael' ? g.slots[p.head] : g.enc; const rem = x.boss.need - x.st.n; return RULES.weakFinish ? p.cards.length === rem && isWeak(x.boss.weak, p.cards[p.cards.length - 1]) : p.cards.some((c) => isWeak(x.boss.weak, c)) && !x.cards.some((c) => isWeak(x.boss.weak, c)); }) ? 0.4 : 0;
+    // Weak spots. A finishing add puts a weak-spot card last when it has one; and a bot will leave the last slot open
+    // for a teammate still to play this lap who is known to hold a weak-spot card that fits.
+    const tgtOf = (p) => g.boss === 'vael' ? g.slots[p.head] : g.enc;
+    const later = []; if (g.boss === 'vael') { for (let i = g.round.at + 1; i < g.N; i++) later.push((g.lead + i) % g.N); } else later.push(...g.enc.order.slice(g.enc.at + 1));
+    for (const o of opts) for (const p of o.parts) { const x = tgtOf(p); if (p.cards.length === x.boss.need - x.st.n) { const k = p.cards.findIndex((c) => isWeak(x.boss.weak, c)); if (k >= 0) p.cards.push(p.cards.splice(k, 1)[0]); } }
+    const weakBonus = (o) => {
+      if (!RULES.weakShow && !RULES.weakEnergy) return 0;
+      let b = 0;
+      for (const p of o.parts) {
+        const x = tgtOf(p), rem = x.boss.need - x.st.n;
+        if (p.cards.length === rem) { if (isWeak(x.boss.weak, p.cards[p.cards.length - 1])) b += RULES.botWeak; }
+        else if (p.cards.length === rem - 1 && RULES.botWeak > 1) {
+          const st = copyC(x.st); for (const c of p.cards) addC(st, c);
+          if (later.some((t) => g.known[t].some((c) => isWeak(x.boss.weak, c) && fitsC(st, c)))) b += RULES.botWeak * 0.6;
+        }
+      }
+      return b;
+    };
     if (opts.length === 1) return out(opts[0]);
     const keyOf = (parts) => parts.map((p) => p.head + ':' + p.cards.map((c) => (typeof c === 'number' ? c : c.id)).sort((a, b) => a - b).join(',')).sort().join('|');
     const simple = g.simplePick(seat), skey = simple ? keyOf(simple.parts) : '';
