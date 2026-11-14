@@ -118,7 +118,7 @@
       for (const [t, c] of Object.entries(RULES.baubles)) for (let k = 0; k < c; k++) side.push(t);
       RULES.lostAcorns.forEach((v) => side.push('acorn' + v));
       this.side = shuffle(side); this.row = [];
-      this.rowSize = RULES.rowSize || this.N + RULES.rowExtra; this.gone = [];
+      this.rowSize = RULES.rowSize || this.N + RULES.rowExtra; this.gone = []; this.mode = RULES.rowMode || (RULES.rowWipe ? 'wipe' : 'top');
       this.M = sum(RULES.hand) + sum(RULES.lostAcorns) / this.N * 0.5;   // starting acorns plus a share of the lost ones, for the bots
       this.framesLeft = RULES.frosts.length;
       const n = this.deck.length, k = this.framesLeft;
@@ -139,14 +139,18 @@
     reserve() { return Math.round(this.R.hand.length * 5 / 13 * this.remFrac()); }   // cards a bot keeps back for later
     remFrac() { const n = this.deck.length, k = this.framesLeft; if (k <= 0) return 0; return Math.max(0, Math.min(1, (k * (n + 1) / (k + 1) - 1) / Math.max(1, this.expLots))); }
 
-    refill() {
-      while (this.row.length < this.rowSize) {
-        if (!this.side.length) { if (!this.gone.length) break; this.side = shuffle(this.gone); this.gone = []; }   // bag empty: shuffle the cleared cards back in
-        this.row.push(this.side.pop());
-      }
+    draw1() {   // one bauble from the bag into the row; if the bag is empty, shuffle the cleared cards back in
+      if (!this.side.length) { if (!this.gone.length) return false; this.side = shuffle(this.gone); this.gone = []; this.stats.reshuffles = (this.stats.reshuffles || 0) + 1; }
+      this.row.push(this.side.pop()); return true;
     }
-    freshRow() {   // between treasures: either top the row up, or clear it and deal a new one
-      if (RULES.rowWipe) { this.gone.push(...this.row); this.row = []; }
+    flip(n) { for (let k = 0; k < n; k++) if (!this.draw1()) break; }
+    refill() { if (this.mode === 'perCard') { if (!this.row.length) this.flip(1); return; } while (this.row.length < this.rowSize) if (!this.draw1()) break; }
+    clearRow(n) { this.gone.push(...this.row.splice(0, n == null ? this.row.length : n)); }
+    freshRow() {   // between treasures
+      const m = this.mode;
+      if (m === 'wipe') this.clearRow();                                 // clear it and deal a new one
+      else if (m === 'conveyor') this.clearRow(RULES.rowDrop || 1);      // the oldest cards leave, the rest slide along
+      else if (m === 'perCard') { if (!RULES.rowKeep) this.clearRow(); return; }   // the row is built by the offerings
       this.refill();
     }
     nextLot(first) {
@@ -157,6 +161,7 @@
       const t = this.deck.pop();
       if (!t) return this.endGame();
       if (t.frost) {
+        if (this.mode === 'frost') { this.clearRow(); this.refill(); }   // a frost kills off the old baubles
         this.framesLeft--;
         if (this.framesLeft === 0) {
           this.say('The first snow falls on the ' + t.name + '. Winter is here!' + (this.carry.length ? ' Mr. Magpie keeps the ' + names(this.carry) + '.' : ''));
@@ -218,6 +223,7 @@
         p.hand = p.hand.filter((_, x) => !idx.includes(x));
         L.bids[seat] += add; L.spent[seat] = L.spent[seat].concat(cards); L.high = L.bids[seat]; L.highSeat = seat;
         if (!L.acted.includes(seat)) L.acted.push(seat);
+        if (this.mode === 'perCard') this.flip(cards.length);   // a bauble comes out for every acorn card offered
         this.say(p.name + ' brings ' + cards.join('+') + (L.bids[seat] !== add ? ' (now ' + L.bids[seat] + ')' : '') + '.');
         this.nextTurn(seat);
         return { ok: true };
@@ -302,10 +308,11 @@
       const L = this.lot;
       if (L.offers.some((o) => o === null)) return;
       if (!L.rebid) {
-        L.spent = L.offers.map((o) => o.slice());
+        L.spent = L.offers.map((o) => o.slice()); if (this.mode === 'perCard') this.flip(sum(L.spent.map((o) => o.length)));
         L.order.forEach((s) => { if (!L.spent[s].length) this.drawOne(s); });   // brought nothing: a loose acorn
       } else {
         let added = 0;
+        if (this.mode === 'perCard') this.flip(sum(L.rebid.map((s) => L.offers[s].length)));
         L.rebid.forEach((s) => { added += L.offers[s].length; L.spent[s] = L.spent[s].concat(L.offers[s]); });
         if (!added) return this.frostStandoff();
       }
