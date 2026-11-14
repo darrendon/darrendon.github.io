@@ -16,7 +16,7 @@
       { name: 'Icicle Pendant', vp: 7 }, { name: 'Crystal Brooch', vp: 8 },
       { name: 'Silver Ring', vp: 9 }, { name: 'Frosted Lantern', vp: 10 },
     ],
-    baubles: { earring: 12, berry: 12, button: 12, feather: 12, cap: 12, bead: 12 },   // 72 cards
+    baubles: { earring: 13, berry: 13, button: 13, feather: 13, cap: 13, bead: 13 },   // 78 cards
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
     looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
     rowSize: 8,                                         // a fixed row size for every player count (0 = players + rowExtra)
