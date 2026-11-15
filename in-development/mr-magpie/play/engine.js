@@ -309,8 +309,8 @@
         this.award(w);
         this.result = { kind: 'win', t: L.t, extra: L.extra, seat: w, bid: L.high, cards: L.spent[w].length, solo };
         this.say(this.players[w].name + ' wins the ' + names([L.t].concat(L.extra)) + ' for ' + L.high + ' acorns.');
-        // baubles are handed out once the auction is over: first to drop out picks first
-        const list = L.out.filter((i) => i !== w && L.spent[i].length).map((i) => ({ seat: i, n: L.spent[i].length }));
+        // baubles are handed out once the auction is over: smallest offering picks first (the same as a frost)
+        const list = L.out.filter((i) => i !== w && L.spent[i].length).sort((a, b) => L.bids[a] - L.bids[b]).map((i) => ({ seat: i, n: L.spent[i].length }));
         this.queuePicks(list, 'lotEnd'); return;
       }
       this.phase = 'lotEnd';
@@ -469,7 +469,7 @@
       return (imm + rf * Math.max(0, best - imm) * 0.6) * S.side;
     }
     deckAvg(s) { const c = {}; this.side.slice(-20).forEach((b) => { c[b] = (c[b] || 0) + 1; }); const tot = sum(Object.values(c)); return tot ? sum(Object.entries(c).map(([b, k]) => this.itemVp(s, b) * k)) / tot : 0; }
-    kValue(s, k, ahead) {   // ahead: baubles that critters who dropped out earlier will take first (they may or may not want the same ones)
+    kValue(s, k, ahead) {   // ahead: baubles that critters with smaller offerings will take first (they may or may not want the same ones)
       if (k <= 0) return 0; const v = this.row.map((b) => this.itemVp(s, b)).sort((a, b) => b - a); const f = (u) => (sum(u.slice(0, k)) + Math.max(0, k - u.length) * this.deckAvg(s)) * this.beta; return ahead ? 0.5 * f(v) + 0.5 * f(v.slice(ahead)) : f(v); }
     botTake(s) { let bi = 0, bv = -1e9; this.row.forEach((b, i) => { const v = this.itemVp(s, b); if (v > bv) { bv = v; bi = i; } }); return bi; }
     botBid(s) {
@@ -480,7 +480,7 @@
       const opts = [{ c: keys[0], sub: map.get(keys[0]).few }];
       keys.slice(0, 4).forEach((t) => opts.push({ c: t, sub: map.get(t).many }));
       const allow = this.allowed(s), resB = this.reserve(), nb = L.spent[s].length;
-      const ahead = sum(L.out.map((i) => L.spent[i].length));
+      const ahead = sum(L.out.map((i) => L.spent[i].length));   // critters already out, who will mostly pick before me
       const P = L.bids[s] > 0 ? this.kValue(s, nb, ahead) : 0;
       let best = null, bs = 0;
       for (const o of opts) {
