@@ -19,7 +19,7 @@
     baubles: { earring: 14, berry: 14, button: 14, feather: 14, cap: 14, bead: 14 },   // 84 cards: with treasures and reference cards, two poker sheets
     lostAcorns: [],                                     // no acorn cards in the bauble deck: acorns only come from the acorn deck
     looseAcorns: Array(18).fill(1).concat(Array(12).fill(2), Array(6).fill(3)),   // the acorn deck, face down: pass without offering and draw one
-    penalty: 'treasure',                                // fewest acorns at the snow: 'out' (can't win) or 'treasure' (lose your best treasure)
+    penalty: 'treasure', tieOut: true,                                // fewest acorns at the snow: 'out' (can't win) or 'treasure' (lose your best treasure)
     frostTie: 'wait',                                   // tied for the biggest frost offering: 'rebid' in secret, or 'wait' (nobody wins it)
     drop3: ['Disco Ball', 'Tiara'],                     // treasures left in the box with three critters
     lastFrost: 'any',                                   // 'bottom' shuffles one frost into the bottom half of the deck
@@ -388,20 +388,22 @@
       let out = money.map((m, i) => (m === mn ? i : -1)).filter((i) => i >= 0);   // everyone tied for fewest pays the price…
       if (out.length === N) out = [];                                              // …unless that's every critter
       const soft = RULES.penalty === 'treasure', lost = {};
-      if (soft) out.forEach((i) => {   // the softer price: Mr. Magpie takes back your best treasure
+      const gone = soft && RULES.tieOut && out.length > 1 ? out.slice() : [];   // tied for the fewest: out of the game altogether
+      if (soft && !gone.length) out.forEach((i) => {   // the softer price: Mr. Magpie takes back your best treasure
         const ts = this.players[i].treasures; if (!ts.length) return;
         const k = ts.reduce((b, t, j) => (t.vp > ts[b].vp ? j : b), 0); lost[i] = ts.splice(k, 1)[0];
       });
       const sc = scoreOf(this.players, this.R);
-      const alive = this.players.map((_, i) => i).filter((i) => soft || !out.includes(i));
+      const alive = this.players.map((_, i) => i).filter((i) => (soft ? !gone.includes(i) : !out.includes(i)));
       let winners = [];
       if (alive.length) {
         const best = Math.max(...alive.map((i) => sc[i].total * 1000 + money[i]));
         winners = alive.filter((i) => sc[i].total * 1000 + money[i] === best);
       }
-      this.final = { scores: sc, money, out, winners, soft, lost };
+      this.final = { scores: sc, money, out, winners, soft, lost, gone };
       this.phase = 'over'; this.lot = null; this.result = null; this.picks = [];
-      if (soft) out.forEach((i) => this.say(this.players[i].name + (lost[i] ? ' has the fewest acorns, so Mr. Magpie takes back the ' + lost[i].name + '.' : ' has the fewest acorns, but no treasure to hand back.')));
+      if (gone.length) this.say(gone.map((i) => this.players[i].name).join(' and ') + ' are tied for the fewest acorns, so they are out of the game.');
+      else if (soft) out.forEach((i) => this.say(this.players[i].name + (lost[i] ? ' has the fewest acorns, so Mr. Magpie takes back the ' + lost[i].name + '.' : ' has the fewest acorns, but no treasure to hand back.')));
       else this.say(out.length ? out.map((i) => this.players[i].name).join(' and ') + (out.length > 1 ? ' run' : ' runs') + ' out of acorns for winter.' : 'Everyone is level on acorns, so everyone makes it through winter.');
       if (soft && !out.length) this.say('Everyone is level on acorns, so nobody hands anything back.');
       if (winners.length) this.say(winners.map((i) => this.players[i].name).join(' and ') + (winners.length > 1 ? ' share the win!' : ' wins!'));
@@ -482,9 +484,12 @@
       const allow = this.allowed(s), resB = this.reserve(), nb = L.spent[s].length;
       const ahead = sum(L.out.map((i) => L.spent[i].length));   // critters already out, who will mostly pick before me
       const P = L.bids[s] > 0 ? this.kValue(s, nb, ahead) : 0;
+      const mine = this.money(s), lowOpp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)));
+      const tieRisk = (c) => RULES.tieOut && this.remFrac() < 0.5 && mine - c === lowOpp;
       let best = null, bs = 0;
       for (const o of opts) {
         if (o.c > allow || p.hand.length - o.sub.length < resB) continue;
+        if (tieRisk(o.c)) continue;   // late on, don't land level with the poorest critter
         const farm = this.kValue(s, nb + o.sub.length, ahead) - P - o.c;
         const chase = L.bids[s] + o.c <= cap ? W - o.c - P : -1e9;
         const sc = Math.max(farm, chase);
