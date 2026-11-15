@@ -27,20 +27,20 @@
     rowMode: 'conveyor', rowDrop: 1,                    // before each treasure the oldest bauble leaves, the rest slide along, and the row is dealt back up
     rowWipe: false,                                     // clear the whole row between treasures and deal a new one
     rowExtra: 2,                                        // the bauble row holds players + this many
-    earring: { single: -2, pair: 7 },                   // one alone is useless; each pair scores
-    berry: [0, 3, 6, 10, 4, 0],                          // a few are lovely, too many spoil
-    button: [0, 2, 5, 9, 14, 20, 27],                   // the bigger the collection, the better
-    feather: { each: 2, most: 8, second: 4 },
-    bead: [0, 1, -3, 6, 10, 14, 18],                    // one is a trinket, two is a broken string, three or more is a necklace
+    earring: { single: -2, pair: 9 },                   // one alone is useless; each pair scores
+    berry: [0, 4, 8, 12, 5, 0],                          // a few are lovely, too many spoil
+    button: [0, 3, 7, 12, 18, 25, 33],                   // the bigger the collection, the better
+    feather: { each: 2, most: 10, second: 5 },
+    bead: [0, 1, -3, 8, 13, 18, 24],                    // one is a trinket, two is a broken string, three or more is a necklace
     cap: { each: 1, fewest: -6 },                       // everyone needs a few: whoever has the fewest loses points (nobody does if all are level)           // ties take the lower place
   };
   const BAUBLE = {
-    earring: { name: 'Earring', plural: 'Earrings', rule: 'One alone −2 · each pair +7' },
-    berry: { name: 'Berry', plural: 'Berries', rule: '1·2·3·4·5+ → 3·6·10·4·0' },
-    button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 2·5·9·14·20·27' },
-    feather: { name: 'Feather', plural: 'Feathers', rule: '2 each · most +8 · second +4' },
+    earring: { name: 'Earring', plural: 'Earrings', rule: 'One alone −2 · each pair +9' },
+    berry: { name: 'Berry', plural: 'Berries', rule: '1·2·3·4·5+ → 4·8·12·5·0' },
+    button: { name: 'Button', plural: 'Buttons', rule: '1·2·3·4·5·6 → 3·7·12·18·25·33' },
+    feather: { name: 'Feather', plural: 'Feathers', rule: '2 each · most +10 · second +5' },
     cap: { name: 'Bottle cap', plural: 'Bottle caps', rule: '1 each · fewest −6' },
-    bead: { name: 'Glass bead', plural: 'Glass beads', rule: '1·2·3·4·5·6 → 1·−3·6·10·14·18' },
+    bead: { name: 'Glass bead', plural: 'Glass beads', rule: '1·2·3·4·5·6 → 1·−3·8·13·18·24' },
     acorn: { name: 'Lost acorns', plural: 'Lost acorns', rule: 'Goes into your hand' },
   };
   const CRITTERS = ['mouse', 'chipmunk', 'hedgehog', 'rabbit', 'mole'];
