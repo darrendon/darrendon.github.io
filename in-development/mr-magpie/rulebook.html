@@ -263,7 +263,7 @@ ol.steps p{margin:0}
       <p>Starting with the start player and going clockwise, round and round, each critter chooses one:</p>
       <div class="pair">
         <div class="rule plum"><div class="bar">Offer</div><div class="in"><p>Lay any number of acorn cards face up in front of you so that <b>your total is higher than the top offering</b>.</p><p>Cards you offered earlier in this auction still count. Nobody has to make the first offer.</p></div></div>
-        <div class="rule red"><div class="bar">Pass</div><div class="in"><p>You are out of this auction and can’t come back in.</p><p><b>If you hadn’t offered anything,</b> draw a card from the acorn deck into your hand, without showing it.</p><p><b>If you had,</b> you drop out: see step 4.</p></div></div>
+        <div class="rule red"><div class="bar">Pass</div><div class="in"><p>You are out of this auction and can’t come back in.</p><p><b>If you hadn’t offered anything,</b> draw a card from the acorn deck into your hand, without showing it.</p><p><b>If you had,</b> you drop out. Leave your offering in front of you: see step 5.</p></div></div>
       </div>
       <div class="offerpic"><div class="v" data-c="offer"></div><p class="note">The top offering is 5. Adding a 4 to the 3 you already put down makes 7, which beats it.</p></div>
     </div></div>
@@ -273,26 +273,26 @@ ol.steps p{margin:0}
   <div class="pn">4</div>
 </section>
 
-<!-- 5 · dropping out, winning, example -->
+<!-- 5 · winning, dropping out, example -->
 <section class="page r">
   <div class="panel">
-    <div class="rule red"><div class="bar"><i>4</i>Drop out and take baubles</div><div class="in withpic">
-      <div><p>When you pass after offering, your cards go to the larder and you immediately <b>take one bauble from the row for each acorn card you offered</b>. Keep them face up in front of you.</p>
-      <p>You must take one for every card, even if none of them helps you. If the row runs out, deal it back up to 8 and carry on.</p>
-      <p class="note">Whoever drops out first gets first pick of the row.</p></div>
-      <div class="v" style="zoom:.86" data-c="dropout"></div>
-    </div></div>
-    <div class="rule moss"><div class="bar"><i>5</i>The last critter in wins</div><div class="in withpic">
+    <div class="rule moss"><div class="bar"><i>4</i>The last critter in wins</div><div class="in withpic">
       <div><p>When everyone else has passed, the top offering takes the treasure, even if it was the only offer. The winner’s cards go to the larder and <b>the winner takes no baubles</b>.</p>
       <p>The winner is the start player for the next treasure.</p></div>
       <div class="v" style="zoom:.74" data-c="winpic"></div>
+    </div></div>
+    <div class="rule red"><div class="bar"><i>5</i>Everyone who dropped out takes baubles</div><div class="in withpic">
+      <div><p>When the auction is over, everyone who dropped out puts their offering in the larder and <b>takes one bauble from the row for each acorn card they offered</b>. Keep them face up in front of you.</p>
+      <p>You must take one for every card, even if none of them helps you. If the row runs out, deal it back up to 8 and carry on.</p>
+      <p class="note">Whoever dropped out first takes all of theirs first, then the next to drop out, and so on.</p></div>
+      <div class="v" style="zoom:.86" data-c="dropout"></div>
     </div></div>
     <div class="rule bark"><div class="bar">If nobody offers</div><div class="in">
       <p>The treasure waits face up, and <b>whoever wins the next auction takes it too</b>. Several treasures can wait at once. The start player moves one seat to the left.</p>
     </div></div>
     <div class="fill"></div>
     <div class="eg"><h3>Example: the Music Box</h3>
-      <div class="egrow"><div data-c="c-mouse"></div><div class="v" data-c="eg-mouse"></div><p><b>Mouse</b> opens with a 3, and later adds a 4 to reach 7. When Hedgehog goes higher, Mouse passes: both cards go to the larder and Mouse <b>takes two baubles</b>.</p></div>
+      <div class="egrow"><div data-c="c-mouse"></div><div class="v" data-c="eg-mouse"></div><p><b>Mouse</b> opens with a 3, and later adds a 4 to reach 7. When Hedgehog goes higher, Mouse drops out. Once the auction is over, both cards go to the larder and Mouse <b>takes two baubles</b>.</p></div>
       <div class="egrow"><div data-c="c-hedgehog"></div><div class="v" data-c="eg-hedgehog"></div><p><b>Hedgehog</b> offers a 5, then adds a 2 and a 1 to reach 8. Everyone else has passed, so Hedgehog <b>wins the Music Box</b>. The three cards go to the larder, with no baubles.</p></div>
       <div class="egrow"><div data-c="c-rabbit"></div><div class="v" data-c="eg-rabbit"></div><p><b>Rabbit</b> passes without offering anything, and <b>draws a card from the acorn deck</b>.</p></div>
     </div>
@@ -313,7 +313,7 @@ ol.steps p{margin:0}
     </div></div>
     <div class="rule ice"><div class="bar"><i>2</i>Reveal together</div><div class="in">
       <p><b>The biggest total wins</b> the frost, along with any treasures that were waiting, and is the start player for the next treasure.</p>
-      <p>Everyone else who offered takes <b>one bauble per card</b>, biggest offering first. Ties go clockwise from the start player.</p>
+      <p>Everyone else who offered takes <b>one bauble per card</b>, smallest offering first. Ties go clockwise from the start player.</p>
       <p>Anyone who offered nothing draws a card from the acorn deck. All offered cards go to the larder.</p>
     </div></div>
     <div class="pair" style="margin-bottom:.16in">
@@ -379,9 +379,9 @@ ol.steps p{margin:0}
         <li><b>Refresh the row:</b> the oldest bauble leaves, then deal back up to 8.</li>
         <li><b>Turn up a treasure.</b> The last winner starts.</li>
         <li><b>Offer or pass.</b> Beat the top offering with acorn cards, or pass. Pass with nothing offered: draw from the acorn deck.</li>
-        <li><b>Drop out:</b> take one bauble for each acorn card you offered.</li>
         <li><b>Last critter in</b> wins the treasure and takes no baubles. If nobody offered, it waits for the next winner.</li>
-        <li><b>Frost:</b> everyone offers in secret. Biggest wins; if tied, nobody does.</li>
+        <li><b>Everyone who dropped out</b> takes one bauble for each acorn card they offered, first out first.</li>
+        <li><b>Frost:</b> everyone offers in secret. Biggest wins; if tied, nobody does. Baubles go smallest offering first.</li>
         <li><b>The fourth frost ends the game.</b> Fewest acorns hands back their best treasure. Most points wins.</li>
       </ol>
     </div>

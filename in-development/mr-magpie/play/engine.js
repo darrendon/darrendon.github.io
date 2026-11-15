@@ -280,11 +280,10 @@
       if (!L.acted.includes(seat)) L.acted.push(seat);
       const n = L.spent[seat].length;
       const loose = !n && this.drawOne(seat);
-      this.say(p.name + (n ? ' drops out and takes ' + n + ' bauble' + (n > 1 ? 's' : '') + '.' : loose ? ' passes and draws an acorn card.' : ' passes.'));
+      this.say(p.name + (n ? ' drops out.' : loose ? ' passes and draws an acorn card.' : ' passes.'));
       const ended = this.bidEnded();
       if (!ended) this.nextTurn(seat, true);
       L.done = ended;
-      if (n) { if (this.queuePicks([{ seat, n }], 'bid')) return; }
       if (ended) this.finishBid();
     }
     bidEnded() {
@@ -310,6 +309,9 @@
         this.award(w);
         this.result = { kind: 'win', t: L.t, extra: L.extra, seat: w, bid: L.high, cards: L.spent[w].length, solo };
         this.say(this.players[w].name + ' wins the ' + names([L.t].concat(L.extra)) + ' for ' + L.high + ' acorns.');
+        // baubles are handed out once the auction is over: first to drop out picks first
+        const list = L.out.filter((i) => i !== w && L.spent[i].length).map((i) => ({ seat: i, n: L.spent[i].length }));
+        this.queuePicks(list, 'lotEnd'); return;
       }
       this.phase = 'lotEnd';
     }
@@ -349,9 +351,9 @@
       this.say(this.players[w].name + ' wins the ' + names([L.t].concat(L.extra)) + ' with ' + tot[w] + '. Offerings: ' + L.order.map((s) => this.players[s].name + ' ' + tot[s]).join(', ') + '.');
       this.frostBaubles(w);
     }
-    frostBaubles(w) {   // everyone who offered and didn't win takes baubles, biggest offering first
+    frostBaubles(w) {   // everyone who offered and didn't win takes baubles, smallest offering first
       const L = this.lot, tot = L.bids;
-      const list = L.order.filter((s) => s !== w && tot[s] > 0).sort((a, b) => tot[b] - tot[a] || L.order.indexOf(a) - L.order.indexOf(b)).map((s) => ({ seat: s, n: L.spent[s].length }));
+      const list = L.order.filter((s) => s !== w && tot[s] > 0).sort((a, b) => tot[a] - tot[b] || L.order.indexOf(a) - L.order.indexOf(b)).map((s) => ({ seat: s, n: L.spent[s].length }));
       if (!this.queuePicks(list, 'frostDone')) this.endFrost();
     }
     frostStandoff() {   // still tied and nobody added a card: nobody wins it, and it stays out
@@ -467,7 +469,8 @@
       return (imm + rf * Math.max(0, best - imm) * 0.6) * S.side;
     }
     deckAvg(s) { const c = {}; this.side.slice(-20).forEach((b) => { c[b] = (c[b] || 0) + 1; }); const tot = sum(Object.values(c)); return tot ? sum(Object.entries(c).map(([b, k]) => this.itemVp(s, b) * k)) / tot : 0; }
-    kValue(s, k) { if (k <= 0) return 0; const v = this.row.map((b) => this.itemVp(s, b)).sort((a, b) => b - a); return (sum(v.slice(0, k)) + Math.max(0, k - v.length) * this.deckAvg(s)) * this.beta; }
+    kValue(s, k, ahead) {   // ahead: baubles that critters who dropped out earlier will take first (they may or may not want the same ones)
+      if (k <= 0) return 0; const v = this.row.map((b) => this.itemVp(s, b)).sort((a, b) => b - a); const f = (u) => (sum(u.slice(0, k)) + Math.max(0, k - u.length) * this.deckAvg(s)) * this.beta; return ahead ? 0.5 * f(v) + 0.5 * f(v.slice(ahead)) : f(v); }
     botTake(s) { let bi = 0, bv = -1e9; this.row.forEach((b, i) => { const v = this.itemVp(s, b); if (v > bv) { bv = v; bi = i; } }); return bi; }
     botBid(s) {
       const L = this.lot, p = this.players[s], S = this.st(s), need = L.high + 1 - L.bids[s];
@@ -477,11 +480,12 @@
       const opts = [{ c: keys[0], sub: map.get(keys[0]).few }];
       keys.slice(0, 4).forEach((t) => opts.push({ c: t, sub: map.get(t).many }));
       const allow = this.allowed(s), resB = this.reserve(), nb = L.spent[s].length;
-      const P = L.bids[s] > 0 ? this.kValue(s, nb) : 0;
+      const ahead = sum(L.out.map((i) => L.spent[i].length));
+      const P = L.bids[s] > 0 ? this.kValue(s, nb, ahead) : 0;
       let best = null, bs = 0;
       for (const o of opts) {
         if (o.c > allow || p.hand.length - o.sub.length < resB) continue;
-        const farm = this.kValue(s, nb + o.sub.length) - P - o.c;
+        const farm = this.kValue(s, nb + o.sub.length, ahead) - P - o.c;
         const chase = L.bids[s] + o.c <= cap ? W - o.c - P : -1e9;
         const sc = Math.max(farm, chase);
         if (sc > bs) { bs = sc; best = o; }
