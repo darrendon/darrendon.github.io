@@ -283,7 +283,7 @@
       '<div class="panel"><div class="side">' +
         (words
           ? '<p class="secret">Order ' + v.roll + '. The customer wants<b>' + esc(v.card[hit].word) + '</b></p><p class="muted">Only you saw this ticket. Everyone has a different one.</p><div class="row"><button class="dt-btn go" data-ready>Got it</button></div>'
-          : '<div class="write"><label>Order ' + v.roll + '. The customer wants a cake with a <b style="color:var(--t-ink)">' + esc(v.card[hit]) + '</b> theme. Decide what goes on it (something you could pipe in a few seconds) and keep it to yourself.<input data-word maxlength="' + D.RULES.maxWord + '" placeholder="What goes on the cake" autocomplete="off" autocapitalize="none" spellcheck="false"></label><button class="dt-btn go" data-ready>Lock it in</button></div><p class="muted" data-mine hidden></p>') +
+          : '<div class="write"><label><span>Order ' + v.roll + '. The customer’s theme is <b style="color:var(--t-ink)">' + esc(v.card[hit]) + '</b>. Decide what goes on the cake: something everyone knows, but too much to finish in one shift (a peacock, not a sun). Keep it to yourself.</span><input data-word maxlength="' + D.RULES.maxWord + '" placeholder="What goes on the cake" autocomplete="off" autocapitalize="none" spellcheck="false"></label><button class="dt-btn go" data-ready>Lock it in</button></div><p class="muted" data-mine hidden></p>') +
         '<div class="chips" data-ready-list></div><p class="muted" data-left></p>' +
       '</div></div>';
     snd('flip');

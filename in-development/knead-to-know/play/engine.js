@@ -30,46 +30,45 @@
     maxStrokesPerPass: 150, maxNumsPerPass: 6000,  // a stroke is a flat list x,y,x,y… on a 0–1000 board
   };
 
-  /* Word bank: category, then the words dealt from it. Every word should be drawable in a few seconds. */
+  /* Word bank: category, then the orders dealt from it. Every word is pitched at intermediate: something
+     everyone knows, but that takes two or three parts to draw, so one 10-second shift can't finish it and
+     the later decorators matter. No one-shape words (sun, ball, egg, heart), nothing abstract. */
   const BANK_SRC =
-    'Animals:cat,dog,horse,pig,cow,sheep,rabbit,mouse,elephant,giraffe,lion,monkey,bear,kangaroo,zebra,camel,snake,turtle,frog,owl,penguin,duck,chicken,squirrel,hedgehog,bat,fox,deer,skunk,koala;' +
-    'Sea creatures:fish,shark,whale,octopus,crab,jellyfish,starfish,seahorse,lobster,dolphin,squid,clam,eel,stingray,walrus,seal;' +
-    'Bugs:spider,ant,bee,butterfly,ladybug,snail,worm,caterpillar,dragonfly,mosquito,grasshopper,beetle,firefly,scorpion;' +
-    'Food:pizza,hamburger,hot dog,taco,sandwich,spaghetti,pancakes,egg,bacon,popcorn,pretzel,sushi,french fries,cheese,bread,soup,burrito,cereal,peanut,cookie;' +
-    'Fruits and vegetables:apple,banana,pineapple,watermelon,strawberry,cherry,grapes,lemon,pear,carrot,corn,broccoli,mushroom,onion,pumpkin,potato,pepper,peas,avocado,coconut;' +
-    'Desserts:cake,ice cream,donut,cupcake,lollipop,pie,candy cane,cotton candy,popsicle,brownie,pudding,waffle;' +
-    'In the kitchen:fork,spoon,knife,frying pan,teapot,mug,toaster,blender,oven,fridge,whisk,rolling pin,kettle,bowl,cheese grater;' +
-    'Around the house:chair,bed,lamp,door,window,stairs,couch,clock,mirror,bathtub,toilet,candle,key,ladder,fireplace,broom,vacuum,umbrella,doorbell,fan;' +
-    'Clothes:hat,shoe,sock,glove,scarf,shirt,pants,dress,crown,glasses,boot,tie,belt,backpack,mitten,sweater,flip flops,bow tie;' +
-    'Vehicles:car,bus,train,airplane,helicopter,bicycle,motorcycle,boat,rocket,tractor,truck,submarine,skateboard,sailboat,hot air balloon,scooter,ambulance,fire truck;' +
-    'Places:house,castle,igloo,lighthouse,barn,tent,bridge,tower,pyramid,school,church,windmill,treehouse,skyscraper,tepee,volcano,island,cave;' +
-    'Nature:tree,flower,cactus,mountain,river,sun,moon,star,cloud,rainbow,leaf,palm tree,waterfall,rock,mushroom,lightning,snowflake,tornado,wave,desert;' +
-    'Weather:rain,snow,thunderstorm,wind,fog,hail,sunshine,snowman,puddle,icicle;' +
-    'In space:planet,astronaut,alien,flying saucer,comet,telescope,satellite,black hole,moon landing,shooting star;' +
-    'Music:guitar,drum,piano,trumpet,violin,microphone,headphones,harp,saxophone,accordion,tambourine,music note,banjo,flute;' +
-    'Sports:soccer,basketball,baseball,football,tennis,golf,bowling,hockey,skiing,surfing,boxing,swimming,archery,karate,volleyball,trophy,whistle,medal;' +
-    'Tools:hammer,saw,screwdriver,wrench,shovel,rake,axe,drill,nail,paintbrush,tape measure,magnet,flashlight,scissors,ruler,bucket;' +
-    'School:pencil,book,eraser,backpack,globe,crayon,calculator,chalkboard,school bus,notebook,glue,paper clip,microscope,lunchbox;' +
-    'Body:eye,ear,nose,mouth,hand,foot,tooth,brain,heart,skeleton,bone,mustache,beard,muscle,tongue,fingerprint;' +
-    'Jobs:doctor,firefighter,chef,pilot,farmer,police officer,teacher,artist,astronaut,pirate,clown,magician,king,queen,mail carrier,dentist,lifeguard,detective;' +
-    'Fairy tales:dragon,unicorn,mermaid,wizard,witch,giant,fairy,knight,ghost,vampire,mummy,zombie,troll,genie,magic wand,treasure chest,beanstalk,glass slipper;' +
-    'Toys and games:kite,yo-yo,teddy bear,balloon,puzzle,dice,doll,robot,jump rope,top,marbles,building blocks,slide,swing,seesaw,frisbee,rubber duck,jack in the box;' +
-    'Party:birthday cake,present,party hat,confetti,pinata,fireworks,disco ball,balloon,streamers,candle;' +
-    'At the beach:sandcastle,beach ball,sunglasses,seashell,surfboard,beach umbrella,bucket and spade,swimsuit,lifeguard tower,sunscreen;' +
-    'Camping:campfire,tent,marshmallow,sleeping bag,lantern,compass,canoe,fishing rod,map,binoculars,log cabin;' +
-    'Halloween:jack-o-lantern,bat,spider web,haunted house,black cat,broomstick,cauldron,skull,tombstone,candy corn;' +
-    'Winter holidays:snowman,sled,ice skates,gingerbread man,stocking,reindeer,wreath,mittens,hot chocolate,chimney;' +
-    'Farm:barn,tractor,scarecrow,haystack,rooster,goat,windmill,fence,horseshoe,pitchfork,egg basket,beehive;' +
-    'Tech:computer,phone,television,camera,robot,lightbulb,battery,remote control,video game,keyboard,mouse trap,printer;' +
-    'Dinosaurs and fossils:dinosaur,egg,footprint,bone,volcano,meteor,caveman,fossil,mammoth,pterodactyl;' +
-    'Pirates:pirate ship,treasure map,parrot,anchor,cannon,eye patch,hook,plank,telescope,skull and crossbones;' +
-    'Circus:clown,tightrope,juggler,circus tent,lion tamer,unicycle,trapeze,ringmaster,cannonball,popcorn;' +
-    'Things that fly:bird,kite,airplane,helicopter,butterfly,balloon,paper airplane,dragon,bee,parachute;' +
-    'Things that are round:ball,clock,coin,pizza,wheel,donut,cookie,button,globe,bubble,plate,orange;' +
-    'In the bathroom:toothbrush,shower,soap,towel,toilet paper,comb,sink,rubber duck,bubble bath,plunger;' +
-    'In the garden:watering can,flower pot,gnome,birdhouse,hose,wheelbarrow,sunflower,snail,fence,vegetable patch;' +
-    'Actions:sleeping,running,jumping,dancing,swimming,crying,laughing,sneezing,reading,cooking,fishing,juggling;' +
-    'Famous places:Eiffel Tower,Statue of Liberty,pyramids,Great Wall,Big Ben,Leaning Tower,Mount Rushmore,Stonehenge,Golden Gate Bridge,Taj Mahal';
+    'Animals:kangaroo,peacock,flamingo,porcupine,armadillo,walrus,beaver,raccoon,skunk,moose,camel,koala,sloth,chameleon,ostrich,pelican,toucan,llama,rhinoceros,hedgehog;' +
+    'Sea creatures:seahorse,jellyfish,lobster,stingray,swordfish,hammerhead shark,narwhal,sea turtle,pufferfish,hermit crab,anglerfish,manta ray,octopus,starfish;' +
+    'Bugs:caterpillar,dragonfly,ladybug,grasshopper,praying mantis,scorpion,firefly,beehive,spider web,snail,ant farm,butterfly net;' +
+    'Bakery:cupcake,layer cake,cinnamon roll,croissant,gingerbread house,wedding cake,baguette,pretzel,rolling pin,birthday cake,muffin tin,cake stand,piping bag,chocolate chip cookie;' +
+    'Food:hot dog,taco,spaghetti,sushi,burrito,french fries,popcorn,corn on the cob,pancake stack,club sandwich,kebab,cheeseburger,ice cream sundae,banana split,fried egg sandwich,pizza slice;' +
+    'Fruits and vegetables:pineapple,watermelon slice,bunch of grapes,coconut,pomegranate,artichoke,corn,broccoli,eggplant,pea pod,avocado,pumpkin patch,cherry pie,banana peel;' +
+    'In the kitchen:waffle iron,cheese grater,blender,toaster,teapot,ice cream scoop,corkscrew,salt shaker,egg timer,pizza cutter,measuring cup,oven mitt,kettle,dish rack;' +
+    'Around the house:grandfather clock,rocking chair,chandelier,bunk bed,ceiling fan,fireplace,mailbox,washing machine,ironing board,birdcage,coat rack,aquarium,piggy bank,alarm clock,lava lamp;' +
+    'Clothes:top hat,cowboy boot,bow tie,tuxedo,raincoat,sombrero,flip flops,overalls,high heels,earmuffs,tiara,roller skates,mittens,graduation cap;' +
+    'Vehicles:hot air balloon,submarine,tractor,bulldozer,fire truck,ice cream truck,sailboat,helicopter,steam train,unicycle,tandem bicycle,cable car,monster truck,tow truck,canoe,school bus;' +
+    'Places:lighthouse,windmill,castle,igloo,treehouse,haunted house,skyscraper,ferris wheel,roller coaster,carousel,log cabin,gas station,bus stop,drawbridge,water tower;' +
+    'Nature:volcano,waterfall,tornado,cactus,palm tree,sunflower,venus flytrap,cave,island,rainstorm,geyser,mushroom ring,beaver dam,bird nest;' +
+    'Winter:snowman,sled,ice skates,gingerbread man,snow globe,icicle,snowplow,hot cocoa,ski lift,penguin,snowball fight,snow angel,fireplace stocking;' +
+    'In space:astronaut,rocket ship,flying saucer,satellite,telescope,comet,alien,Saturn,space station,moon landing,meteor shower,jetpack;' +
+    'Music:accordion,saxophone,harp,banjo,drum kit,tambourine,xylophone,bagpipes,trumpet,violin,record player,microphone stand,grand piano,conductor;' +
+    'Sports:bowling,archery,surfing,skateboard,ski jump,hockey stick,boxing glove,golf cart,tennis racket,trophy,diving board,pole vault,weightlifting,basketball hoop,soccer goal;' +
+    'Tools:chainsaw,wheelbarrow,toolbox,tape measure,pliers,stepladder,paint roller,magnifying glass,hacksaw,plunger,pickaxe,watering can,sledgehammer,power drill;' +
+    'School and office:calculator,stapler,globe,microscope,backpack,chalkboard,pencil sharpener,paper clip,crayon box,typewriter,swivel chair,filing cabinet,lunchbox,report card;' +
+    'Body:skeleton,brain,mustache,fingerprint,footprint,braces,ponytail,belly button,goosebumps,lungs,eyebrows,beard;' +
+    'Jobs:firefighter,chef,pilot,magician,pirate,lifeguard,detective,mail carrier,scuba diver,cowboy,ballerina,knight,mime,lumberjack,beekeeper,astronaut;' +
+    'Fairy tales:dragon,unicorn,mermaid,wizard,genie,troll,fairy,vampire,mummy,centaur,cyclops,werewolf,treasure chest,magic carpet,crystal ball,glass slipper,beanstalk;' +
+    'Toys and games:jack-in-the-box,yo-yo,kite,teddy bear,rubber duck,rocking horse,pinwheel,jump rope,building blocks,dollhouse,hula hoop,seesaw,pogo stick,spinning top,water gun,board game;' +
+    'Party:birthday cake,piñata,party hat,disco ball,fireworks,balloon animal,confetti,karaoke,photo booth,party popper,gift bag,limbo;' +
+    'At the beach:sandcastle,beach umbrella,surfboard,sunglasses,seashell,lifeguard tower,snorkel,flippers,pier,beach towel,sunscreen,bucket and spade,message in a bottle;' +
+    'Camping:campfire,tent,sleeping bag,lantern,fishing rod,s’mores,binoculars,compass,hammock,canoe paddle,trail map,bug spray,camper van;' +
+    'Halloween:jack-o’-lantern,broomstick,cauldron,tombstone,black cat,witch hat,candy corn,scarecrow,bat cave,trick-or-treat bag,coffin,full moon;' +
+    'Farm:scarecrow,haystack,rooster,pitchfork,chicken coop,silo,horseshoe,cornfield,milking stool,barn owl,tractor tire,egg basket;' +
+    'Tech:robot,laptop,video game controller,headphones,satellite dish,remote control,lightbulb,battery,smartwatch,drone,vending machine,cash register,security camera,selfie stick;' +
+    'Circus:tightrope walker,unicycle,circus tent,lion tamer,trapeze,ringmaster,human cannonball,juggler,stilts,strongman,clown car,popcorn stand;' +
+    'Pirates:pirate ship,treasure map,parrot,anchor,cannon,eye patch,hook hand,walking the plank,ship’s wheel,skull and crossbones,spyglass,treasure island;' +
+    'Things that fly:hot air balloon,paper airplane,parachute,blimp,hang glider,jetpack,flying carpet,seaplane,biplane,glider,paper lantern,dragonfly;' +
+    'In the garden:garden gnome,birdhouse,greenhouse,flower pot,bird bath,lawn mower,picket fence,hose,sprinkler,compost bin,vegetable patch,trellis;' +
+    'In the bathroom:toothbrush,bathtub,shower,toilet,hair dryer,bubble bath,toilet paper,shower cap,bath mat,razor,bathroom scale,soap dispenser;' +
+    'Actions:juggling,skydiving,sneezing,yawning,fishing,sunbathing,sleepwalking,ice skating,rock climbing,bungee jumping,snoring,tightrope walking,hula hooping,blowing bubbles;' +
+    'Famous places:Eiffel Tower,Statue of Liberty,pyramids,Leaning Tower of Pisa,Big Ben,Mount Rushmore,Stonehenge,Golden Gate Bridge,Great Wall,Sydney Opera House,Hollywood sign,Niagara Falls';
   const BANK = BANK_SRC.split(';').map((block) => { const i = block.indexOf(':'); return { cat: block.slice(0, i), words: block.slice(i + 1).split(',') }; });
 
   const rand = (n, rng) => Math.floor((rng || Math.random)() * n);
