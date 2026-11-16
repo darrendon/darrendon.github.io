@@ -1,8 +1,9 @@
 /* Doodle Relay — rules engine (online tables only, no bots).
    Runs in the host's browser through the shared table (assets/js/dev-table.js) and in node for sim.js.
 
-   A round: everyone is dealt a fresh card (six words, or six categories on the other side) and the
-   table rolls one die, so everyone draws the same row of their own card. Each player starts a board
+   A round: one player picks a number from 1 to 6 (a different player each round, before anyone
+   sees their card), then everyone is dealt a fresh card (six words, or six categories on the other
+   side) and draws that row of their own card. Each player starts a board
    with their secret word, draws for a few seconds, then every board passes left at once. The next
    player keeps drawing without knowing the word, until each board has had its drawers. Then the
    table guesses the boards one at a time, together; the board's starter stays quiet. One point to
@@ -19,6 +20,7 @@
     firstLookMs: 3500,     // before the first pass: read your word
     lookMs: 2500,          // before every later pass: look at the board you were handed
     graceMs: 1500,         // strokes still accepted after time runs out (network lag)
+    pickMs: 20000,         // the round's picker has this long to choose a row, then one is chosen for them
     cardMs: { words: 25000, categories: 60000 },   // then anyone not ready is dealt their row automatically
     revealMinMs: 2500,     // a reveal stays up at least this long before Next board works
     rounds: 2, cardSize: 6,
@@ -152,18 +154,24 @@
     /* ------------------------------------------------------------ round flow */
     startRound() {
       this.round++;
-      this.phase = 'card';
-      this.roll = 1 + rand(RULES.cardSize, this.rng);
+      this.phase = 'pick';
+      this.chooser = (this.round - 1) % this.N;
+      this.roll = null;
+      this.pickEnds = this.now() + RULES.pickMs;
       this.cards = this.players.map(() => {
         const c = dealCard(this.mode, this.used, this.rng);
         if (this.mode === 'words') c.forEach((it) => this.used.add(norm(it.word)));
         return c;
       });
+      this.boards = null;
+    }
+    pickRow(n, auto) {
+      this.roll = n;
+      this.phase = 'card';
       this.secret = this.players.map((_, s) => (this.mode === 'words' ? this.cards[s][this.roll - 1].word : null));
       this.ready = this.players.map(() => false);
       this.cardEnds = this.now() + RULES.cardMs[this.mode];
-      this.boards = null;
-      this.log(this.mode === 'words' ? 'Round ' + this.round + ': everyone draws word ' + this.roll + ' on their card.' : 'Round ' + this.round + ': everyone draws category ' + this.roll + ' on their card.');
+      this.log('Round ' + this.round + ': ' + (auto ? 'row ' + n + ' was picked for ' + this.players[this.chooser].name : this.players[this.chooser].name + ' picked row ' + n) + '.');
     }
     startDrawing() {
       this.phase = 'draw';
@@ -211,6 +219,7 @@
     /* ------------------------------------------------------------ the clock (the shared table calls botStep on a timer) */
     botStep() {
       const t = this.now();
+      if (this.phase === 'pick' && t >= this.pickEnds) { this.pickRow(1 + rand(RULES.cardSize, this.rng), true); return true; }
       if (this.phase === 'card' && t >= this.cardEnds) {
         this.players.forEach((_, s) => { if (!this.ready[s]) this.setReady(s, null, true); });
         this.startDrawing();
@@ -247,6 +256,14 @@
       if (!(seat >= 0 && seat < this.N)) return { ok: false, error: 'You’re not at this table.' };
       const t = this.now();
       switch (a.t) {
+        case 'pick': {
+          if (this.phase !== 'pick') return { ok: false, error: 'The row has already been picked.' };
+          if (seat !== this.chooser) return { ok: false, error: this.players[this.chooser].name + ' picks the row this round.' };
+          const n = a.n | 0;
+          if (n < 1 || n > RULES.cardSize) return { ok: false, error: 'Pick a number from 1 to ' + RULES.cardSize + '.' };
+          this.pickRow(n);
+          return { ok: true };
+        }
         case 'ready': {
           if (this.phase !== 'card') return { ok: false, error: 'The round has already started.' };
           if (this.mode === 'categories') {
@@ -328,7 +345,11 @@
         score: this.score, played: this.history.length, maxScore: this.N * this.rounds,
         history: this.history.slice(), log: (this.logLines || []).slice(-6),
       };
-      if (this.phase === 'card') {
+      if (this.phase === 'pick') {
+        v.chooser = this.chooser;
+        v.msLeft = Math.max(0, this.pickEnds - t);
+      } else if (this.phase === 'card') {
+        v.chooser = this.chooser;
         v.card = this.cards[seat];
         v.secret = this.mode === 'words' ? this.secret[seat] : (this.ready[seat] ? this.secret[seat] : null);
         v.ready = this.ready.slice();

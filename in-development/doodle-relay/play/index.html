@@ -28,7 +28,7 @@
   .chip.on{border-color:var(--c,var(--t-accent));background:color-mix(in srgb,var(--c,var(--t-accent)) 12%,#fff)}
   .chip .tick{font-weight:700;color:#2E9A62}
 
-  /* the card and the die */
+  /* the card and the row number */
   .deal{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:center}
   .wcard{width:min(330px,100%);background:#FFFDF6;border-radius:16px;border:2px solid var(--ink);box-shadow:0 2px 0 rgba(0,0,0,.18),0 18px 26px -18px rgba(0,0,0,.5);overflow:hidden}
   .wcard header{background:var(--ink);color:#FFE2A8;font:400 18px/1 "Bagel Fat One",Jost,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
@@ -38,11 +38,15 @@
   .wcard li .n{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--ink);display:grid;place-items:center;font:700 13px/1 Jost;flex:none}
   .wcard li.hit{background:#FFE2A8;font-weight:700}
   .wcard li.hit .n{background:var(--ink);color:#FFE2A8}
-  .die{width:84px;height:84px;border-radius:18px;background:#fff;border:2px solid var(--ink);box-shadow:0 4px 0 var(--ink);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:12px;flex:none}
-  .die i{width:14px;height:14px;border-radius:50%;background:var(--ink);place-self:center;visibility:hidden}
-  .die i.on{visibility:visible}
-  .die.roll{animation:roll .6s cubic-bezier(.3,.7,.3,1)}
-  @keyframes roll{0%{transform:rotate(-200deg) scale(.6);opacity:0}70%{transform:rotate(12deg) scale(1.06)}100%{transform:none}}
+  .rowtag{width:96px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:13px;color:var(--t-muted);line-height:1.25}
+  .rowtag b{width:76px;height:76px;border-radius:50%;background:#FFE2A8;border:2px solid var(--ink);box-shadow:0 4px 0 var(--ink);display:grid;place-items:center;font:400 40px/1 "Bagel Fat One",Jost,sans-serif;color:var(--ink);animation:pop .45s cubic-bezier(.3,.7,.3,1)}
+  @keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.08)}100%{transform:none}}
+  .nums{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;max-width:520px}
+  @media (max-width:480px){.nums{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .nums button{aspect-ratio:1;border-radius:16px;border:2px solid var(--ink);background:#fff;box-shadow:0 4px 0 var(--ink);font:400 34px/1 "Bagel Fat One",Jost,sans-serif;color:var(--ink);cursor:pointer;transition:transform .1s}
+  .nums button:hover{transform:translateY(-2px);background:#FFE2A8}
+  .nums button:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+  .cardback{width:min(240px,70%);aspect-ratio:5/7;border-radius:16px;border:2px solid var(--ink);background:repeating-linear-gradient(45deg,#2C3245 0 12px,#343B52 12px 24px);display:grid;place-items:center;color:#FFE2A8;font:400 22px/1 "Bagel Fat One",Jost,sans-serif;box-shadow:0 18px 26px -18px rgba(0,0,0,.5)}
   .secret{font-size:17px;margin:0}
   .secret b{font:400 26px/1.1 "Bagel Fat One",Jost,sans-serif;letter-spacing:.02em;color:var(--t-accent);display:block;margin-top:4px}
   .write{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -119,7 +123,6 @@
   const D = window.DoodleRelay, esc = DevTable.esc, T = window.Tabletop;
   const snd = (n) => { try { T && T.sound(n); } catch (e) {} };
   const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
   const INK = '#1E2433', SEAT = ['#2F6EB5', '#E2553A', '#2E9A62', '#8A55C2', '#D9971A', '#1C9AA5', '#D2477E', '#6B5A4E'];
   const W = 9;   // line width on the 1000-unit board
   const gallery = {};   // boards seen at their reveal, for the end screen: round:idx → legs
@@ -222,7 +225,7 @@
     if (!S || S.key !== key || !el.contains(S.root)) {
       if (S && S.destroy) S.destroy();
       cancelAnimationFrame(raf);
-      const make = { card: cardScreen, draw: drawScreen, guess: guessScreen, reveal: revealScreen, end: endScreen }[v.phase];
+      const make = { pick: pickScreen, card: cardScreen, draw: drawScreen, guess: guessScreen, reveal: revealScreen, end: endScreen }[v.phase];
       el.innerHTML = '<div class="dr" data-key="' + esc(key) + '"></div>';
       S = make(el.firstChild, v, api); S.key = key; S.root = el.firstChild;
     }
@@ -230,6 +233,7 @@
     api.status(statusOf(v));
   }
   function keyOf(v) {
+    if (v.phase === 'pick') return 'pick:' + v.round + ':' + v.history.length;
     if (v.phase === 'card') return 'card:' + v.round + ':' + v.history.length;
     if (v.phase === 'draw') return 'draw:' + v.round + ':' + v.draw.leg;
     if (v.phase === 'guess' || v.phase === 'reveal') return v.phase + ':' + v.round + ':' + v.board.idx;
@@ -237,6 +241,7 @@
   }
   function statusOf(v) {
     const r = 'Round ' + v.round + ' of ' + v.rounds;
+    if (v.phase === 'pick') return r + ' · ' + (v.chooser === v.seat ? 'Pick a number' : name(v, v.chooser) + ' is picking a number');
     if (v.phase === 'card') return r + ' · ' + (v.ready[v.seat] ? 'Waiting for everyone…' : v.mode === 'words' ? 'Your secret word' : 'Pick your secret word');
     if (v.phase === 'draw') return r + ' · Pass ' + (v.draw.leg + 1) + ' of ' + v.L;
     if (v.phase === 'guess') return r + ' · Guess board ' + (v.board.idx + 1) + ' of ' + v.board.of;
@@ -244,23 +249,44 @@
     return 'Game over · ' + v.score + ' of ' + v.maxScore;
   }
   const head = (v, title) => '<div class="dr-head"><h2>' + title + '</h2><span class="dr-score">Team score <b>' + v.score + '</b>' + (v.played ? ' of ' + v.played + ' boards' : '') + '</span></div>';
-  const dieHTML = (n) => '<div class="die roll" aria-label="The die shows ' + n + '">' + Array.from({ length: 9 }, (_, i) => '<i' + (PIPS[n].includes(i) ? ' class="on"' : '') + '></i>').join('') + '</div>';
+  const rowHTML = (v) => '<div class="rowtag"><b aria-label="Row ' + v.roll + '">' + v.roll + '</b>' + (v.chooser === v.seat ? 'Your pick' : esc(name(v, v.chooser)) + '’s pick') + '</div>';
+
+  /* ---- picking the round's number (before anyone sees their card) */
+  function pickScreen(root, v, api) {
+    const me = v.chooser === v.seat;
+    root.innerHTML = head(v, 'Round ' + v.round + ': ' + (me ? 'pick a number' : esc(name(v, v.chooser)) + ' picks a number')) +
+      '<div class="deal"><div class="cardback">' + (v.mode === 'words' ? 'Words' : 'Categories') + '</div></div>' +
+      '<div class="panel"><div class="side">' +
+        (me ? '<p class="prompt">Pick a number from 1 to 6. Everyone draws that row of their own card, and nobody has seen their card yet.</p><div class="nums">' + [1, 2, 3, 4, 5, 6].map((n) => '<button type="button" data-n="' + n + '">' + n + '</button>').join('') + '</div>'
+            : '<p class="prompt">' + who(v, v.chooser) + ' is picking a number from 1 to 6. Everyone will draw that row of their own card.</p>') +
+        '<p class="muted" data-left></p>' +
+      '</div></div>';
+    root.querySelectorAll('[data-n]').forEach((b) => b.addEventListener('click', () => api.act({ t: 'pick', n: +b.dataset.n }, b)));
+    let ends = 0;
+    return {
+      update(nv) {
+        ends = ends ? Math.min(ends, performance.now() + nv.msLeft) : performance.now() + nv.msLeft;
+        const left = root.querySelector('[data-left]');
+        loop(() => { const ms = ends - performance.now(); left.textContent = (me ? 'If you don’t pick in ' : 'If they don’t pick in ') + secs(ms) + ' s, a number is picked at random.'; return ms > 0; });
+      },
+    };
+  }
 
   /* ---- the card: your secret word */
   function cardScreen(root, v, api) {
     const words = v.mode === 'words', hit = v.roll - 1;
     const rows = v.card.map((it, i) => '<li' + (i === hit ? ' class="hit"' : '') + '><span class="n">' + (i + 1) + '</span>' + esc(words ? it.word : it) + '</li>').join('');
     root.innerHTML = head(v, 'Round ' + v.round + ': ' + (words ? 'your secret word' : 'pick your secret word')) +
-      '<div class="deal">' + dieHTML(v.roll) +
+      '<div class="deal">' + rowHTML(v) +
         '<div class="wcard"><header>' + (words ? 'Words' : 'Categories') + '<small>Doodle Relay</small></header><ol>' + rows + '</ol></div>' +
       '</div>' +
       '<div class="panel"><div class="side">' +
         (words
-          ? '<p class="secret">The die says ' + v.roll + ', so you’ll draw<b>' + esc(v.card[hit].word) + '</b></p><p class="muted">Keep it to yourself. Everyone has a different card.</p><div class="row"><button class="dt-btn go" data-ready>Got it</button></div>'
-          : '<div class="write"><label>The die says ' + v.roll + '. Think of something in <b style="color:var(--t-ink)">' + esc(v.card[hit]) + '</b> you could draw in a few seconds, and keep it to yourself.<input data-word maxlength="' + D.RULES.maxWord + '" placeholder="Your secret word" autocomplete="off" autocapitalize="none" spellcheck="false"></label><button class="dt-btn go" data-ready>Lock it in</button></div><p class="muted" data-mine hidden></p>') +
+          ? '<p class="secret">Row ' + v.roll + ', so you’ll draw<b>' + esc(v.card[hit].word) + '</b></p><p class="muted">Keep it to yourself. Everyone has a different card.</p><div class="row"><button class="dt-btn go" data-ready>Got it</button></div>'
+          : '<div class="write"><label>Row ' + v.roll + '. Think of something in <b style="color:var(--t-ink)">' + esc(v.card[hit]) + '</b> you could draw in a few seconds, and keep it to yourself.<input data-word maxlength="' + D.RULES.maxWord + '" placeholder="Your secret word" autocomplete="off" autocapitalize="none" spellcheck="false"></label><button class="dt-btn go" data-ready>Lock it in</button></div><p class="muted" data-mine hidden></p>') +
         '<div class="chips" data-ready-list></div><p class="muted" data-left></p>' +
       '</div></div>';
-    snd('dice');
+    snd('flip');
     const btn = root.querySelector('[data-ready]'), input = root.querySelector('[data-word]');
     const go = () => {
       if (S.v.ready[S.v.seat]) { api.act({ t: 'unready' }, btn); return; }
@@ -441,7 +467,7 @@
     create: (players, opts) => new D.Game(players, opts),
     render,
     rules:
-      '<p><b>Your secret word.</b> Everyone gets a fresh card of six words, and the die picks the row, so everyone draws the same row of their own card. On the Categories side, the die picks a category and you think of your own word in it.</p>' +
+      '<p><b>Your secret word.</b> Each round a different player picks a number from 1 to 6. Then everyone gets a fresh card of six words and draws that row of their own card. On the Categories side, the number picks a category and you think of your own word in it.</p>' +
       '<p><b>Draw, then pass.</b> Everyone starts drawing their word at once. When time runs out, every board passes left. Now you’re holding someone else’s drawing and you <b>don’t know the word</b>: keep drawing whatever you think it is. Each board gets three drawers (or goes all the way round, if you choose). One marker, no eraser.</p>' +
       '<p><b>Guess together.</b> Then the whole table looks at each board in turn and agrees on one answer. The player who started it stays quiet. Suggest answers, and once more than half the guessers agree, it’s locked in.</p>' +
       '<p><b>The reveal.</b> The word is shown and the drawing replays in each drawer’s colour, so you see who drew what. Every board you get scores the team a point. The starter can count a close answer.</p>' +

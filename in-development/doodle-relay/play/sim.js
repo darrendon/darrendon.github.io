@@ -31,6 +31,13 @@ for (let n = D.RULES.minPlayers; n <= D.RULES.maxPlayers; n++) {
       assert(steps++ < 200000, 'stuck in ' + game.phase);
       if (game.round !== lastRound) {
         lastRound = game.round;
+        assert(game.phase === 'pick' && game.chooser === (game.round - 1) % n, 'round starts with a pick by the next player');
+        assert(game.view(0).card === undefined, 'cards visible before the pick');
+        assert(!game.act((game.chooser + 1) % n, { t: 'pick', n: 2 }).ok, 'someone else picked');
+        assert(!game.act(game.chooser, { t: 'pick', n: 7 }).ok && !game.act(game.chooser, { t: 'pick', n: 0 }).ok, 'bad row accepted');
+        if (Math.random() < 0.85) { const r = 1 + Math.floor(Math.random() * 6); assert(game.act(game.chooser, { t: 'pick', n: r }).ok && game.roll === r, 'pick'); }
+        else { clock += D.RULES.pickMs + 1; game.botStep(); assert(game.roll >= 1 && game.roll <= 6, 'auto pick'); }
+        assert(game.phase === 'card', 'card after pick');
         if (mode === 'words') game.players.forEach((_, s) => { if (Math.random() < 0.8) assert(game.act(s, { t: 'ready' }).ok, 'ready'); });
         else game.players.forEach((_, s) => { if (Math.random() < 0.8) assert(game.act(s, { t: 'ready', word: 'thing ' + s }).ok, 'ready word'); });
         if (game.phase === 'card') { assert(!game.act(0, { t: 'answer', text: 'x' }).ok, 'answered during card'); clock += D.RULES.cardMs[mode] + 1; game.botStep(); }
@@ -90,7 +97,7 @@ for (let n = D.RULES.minPlayers; n <= D.RULES.maxPlayers; n++) {
     assert(game.score === game.history.filter((h) => h.ok).length, 'score');
     if (mode === 'words') assert(new Set(game.history.map((h) => D.norm(h.word))).size === game.history.length, 'a word came up twice');
     totalBoards += game.history.length; totalOk += game.score;
-    assert(game.act(1, { t: 'again' }).ok && game.phase === 'card' && game.round === 1 && game.score === 0, 'play again');
+    assert(game.act(1, { t: 'again' }).ok && game.phase === 'pick' && game.round === 1 && game.score === 0, 'play again');
   }
 }
 console.log(`ok · ${G} games at each of 3–8 players · ${totalBoards} boards · ${totalOk} guessed · ${strokes} strokes · ${rejected} bad strokes refused · ${D.BANK.length} categories, ${words} words · biggest guess view ${(maxView / 1024).toFixed(1)} KB`);

@@ -115,7 +115,7 @@ GAMES = [
        card='Start a doodle of your secret word, then pass it. The next players keep drawing without knowing the word, and the whole table guesses each board together.',
        specs=[('Players', '3–8'), ('Time', '15–25 min'), ('Genre', 'Party · Drawing · Cooperative'), ('For fans of', 'Telestrations · Bullseye')],
        now='Whether 10 seconds a pass is the right squeeze, whether three drawers per board is the sweet spot or the full lap is funnier, and whether the middle drawers steer the guess too hard.',
-       steps=[('Your secret word', 'Everyone gets a card with six words, and one die picks the row, so everyone draws the same row of their own card. Flip the card for categories: the die picks a category and you think of your own word in it.'),
+       steps=[('Your secret word', 'Someone picks a number from 1 to 6, then everyone takes a card with six words and draws that row of their own card. Flip the card for categories: the number picks a category and you think of your own word in it.'),
               ('Draw', 'Everyone starts at once and draws their word for 10 seconds. One marker, no eraser.'),
               ('Pass', 'Every board passes left. Now you’re holding someone else’s drawing and you <b>don’t know the word</b>. Keep drawing whatever you think it is. Each board gets three drawers.'),
               ('Guess together', 'Go through the boards one at a time. The whole table agrees on one answer, while the player who started that board stays quiet.'),
