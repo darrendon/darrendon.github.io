@@ -110,6 +110,25 @@ GAMES = [
            dict(q='Which bauble did you chase most?', type='choice', options=['Earrings', 'Berries', 'Buttons', 'Feathers', 'Bottle caps', 'Glass beads', 'None']),
            dict(q='How did the game’s length feel?', type='choice', options=['Too short', 'About right', 'Too long']),
            dict(q='What would you change?', type='text')]),
+  dict(slug='doodle-relay', title='Doodle Relay', cls='d-doodle',
+       hook='A drawing relay where only the first person knows what the picture is. Everyone starts a doodle of their secret word, then every few seconds the boards pass and you keep drawing someone else’s picture without knowing what it’s meant to be.',
+       card='Start a doodle of your secret word, then pass it. The next players keep drawing without knowing the word, and the whole table guesses each board together.',
+       specs=[('Players', '3–8'), ('Time', '15–25 min'), ('Genre', 'Party · Drawing · Cooperative'), ('For fans of', 'Telestrations · Bullseye')],
+       now='Whether 10 seconds a pass is the right squeeze, whether three drawers per board is the sweet spot or the full lap is funnier, and whether the middle drawers steer the guess too hard.',
+       steps=[('Your secret word', 'Everyone gets a card with six words, and one die picks the row, so everyone draws the same row of their own card. Flip the card for categories: the die picks a category and you think of your own word in it.'),
+              ('Draw', 'Everyone starts at once and draws their word for 10 seconds. One marker, no eraser.'),
+              ('Pass', 'Every board passes left. Now you’re holding someone else’s drawing and you <b>don’t know the word</b>. Keep drawing whatever you think it is. Each board gets three drawers.'),
+              ('Guess together', 'Go through the boards one at a time. The whole table agrees on one answer, while the player who started that board stays quiet.'),
+              ('The reveal', 'Flip the board to see the word. Each board you get is a point for the team. Play a few rounds and try to beat your best.')],
+       play=dict(modes=[('Host an online table', 'Three to eight people, each on their own phone or computer, with a five-letter code. Get everyone on a call so you can talk while you guess.')]),
+       fb=[dict(q='How much fun was it?', type='scale', lo='Not for me', hi='Loved it'),
+           dict(q='How did 10 seconds a pass feel?', type='choice', options=['Too short', 'About right', 'Too long']),
+           dict(q='When you were handed a board, how often could you tell what it was meant to be?', type='scale', lo='Never', hi='Almost always'),
+           dict(q='Did the players in the middle steer the guess, for better or worse?', type='choice', options=['Helped a lot', 'Mixed', 'Led us astray']),
+           dict(q='Sitting out the guess on your own board was…', type='choice', options=['Fun to watch', 'Fine', 'Frustrating']),
+           dict(q='Which did you play, and which was better?', type='choice', options=['Words', 'Categories', 'Both: words better', 'Both: categories better']),
+           dict(q='What was the funniest board?', type='text', rows=2),
+           dict(q='What would you change?', type='text')]),
   dict(slug='2-jibber-2-jabble', title='2 Jibber 2 Jabble', cls='d-jib',
        hook='The sequel to Jibber Jabble. Instead of spelling a clue one letter at a time, your team builds a question one word at a time.',
        card='One player guesses while everyone else builds a question one word at a time. Every question starts with Who, What, When, Where or Why and ends with “hmm?”',
@@ -188,7 +207,7 @@ FOOT = '''
 '''
 
 # every game named under "For fans of" links to its BoardGameGeek page
-BGG = {'Jibber Jabble': 438964, 'The Resistance': 41114, 'Hanabi': 98778}
+BGG = {'Jibber Jabble': 438964, 'The Resistance': 41114, 'Hanabi': 98778, 'Telestrations': 46213, 'Bullseye': 423989}
 def comps(v): return ' · '.join(f'<a href="https://boardgamegeek.com/boardgame/{BGG[n]}" target="_blank" rel="noopener">{e(n)}</a>' if n in BGG else e(n) for n in v.split(' · '))
 def specs_meta(g): return ''.join(f'<li>{e(v)}{" Players" if k == "Players" else ""}</li>' for k, v in g['specs'] if k in ('Players', 'Time', 'Genre'))
 def img(g, name, w=None): return f'/in-development/{g["slug"]}/img/{name}{("-" + str(w)) if w else ""}.webp'

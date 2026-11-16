@@ -9,13 +9,16 @@
        id: 'slipstream', title: 'Slipstream', blurb: '3–6 players · 15–20 minutes',
        minPlayers: 3, maxPlayers: 6, defaultPlayers: 4, botNames: [...],
        chat: true,                                  // show table talk (always on for online tables)
+       bots: false,                                 // optional: online tables only, no bots; open seats are dropped at the start
        options: [{ key: 'races', label: 'Race to', values: [[2,'2 wins'],[3,'3 wins']], def: 2 }],
        create(players, opts) -> game,               // players: [{name, bot}]
        render(el, view, api),                       // api.act(action), api.seat, api.toast(msg)
        rules: '<p>…</p>'                            // how-it-plays HTML for the home screen
      });
    game: view(seat) -> plain object; act(seat, a) -> {ok, error}; botStep() -> true if a bot acted;
-         over() -> bool; optional botDelay(view) -> ms before the next bot step. */
+         over() -> bool; optional botDelay(view) -> ms before the next bot step; optional idleDelay() -> ms before
+         botStep runs again when nothing happened (a game with timers uses botStep as its clock).
+         act may return {ok, quiet: true}: nothing visible changed, so no new views go out (and a refusal isn't shown). */
 (function (root) {
   'use strict';
   const BROKERS = [
@@ -80,14 +83,14 @@
     onUpdate(cb) { this.cb = cb; }
     start(players, opts) { this.game = this.def.create(players, opts || {}); this.cb && this.cb(); this.schedule(700); }
     view(seat) { return this.game ? this.game.view(seat) : null; }
-    act(seat, a) { if (!this.game) return { ok: false, error: 'No game' }; const r = this.game.act(seat, a) || { ok: false, error: 'Not allowed' }; if (r.ok) { this.cb && this.cb(); this.schedule(this.delay()); } return r; }
+    act(seat, a) { if (!this.game) return { ok: false, error: 'No game' }; const r = this.game.act(seat, a) || { ok: false, error: 'Not allowed' }; if (r.ok && !r.quiet) { this.cb && this.cb(); this.schedule(this.delay()); } return r; }
     delay() { const g = this.game; return g && g.botDelay ? g.botDelay() : 900; }
     schedule(ms) { clearTimeout(this.t); this.t = setTimeout(() => this.tick(), ms); }
     tick() {
       const g = this.game; if (!g) return;
       if (root.__ddBusy && root.__ddBusy()) { this.schedule(150); return; }   // let animations land first
       if (g.over && g.over()) return;
-      if (g.botStep()) { this.cb && this.cb(); this.schedule(this.delay()); } else this.schedule(600);
+      if (g.botStep()) { this.cb && this.cb(); this.schedule(this.delay()); } else this.schedule(g.idleDelay ? g.idleDelay() : 600);
     }
     stop() { clearTimeout(this.t); this.game = null; }
   }
@@ -148,17 +151,17 @@
         } else Object.assign(this.seats[seat], { connected: true, last: Date.now(), name });
         this.sendTo(seat, { t: 'welcome', seat, code: this.code });
         this.pushLobby();
-        if (this.started) { this.sendTo(seat, { t: 'view', view: this.runner.view(seat) }); this.sendTo(seat, { t: 'chat', chat: this.chat }); }
+        if (this.started) { this.sendView(seat); this.sendTo(seat, { t: 'chat', chat: this.chat }); }
         return;
       }
       if (seat < 0) return;
       this.seats[seat].last = Date.now();
       if (!this.seats[seat].connected) { this.seats[seat].connected = true; this.pushLobby(); }
-      if (m.t === 'ping') { if (this.started && m.needView) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) }); return; }
+      if (m.t === 'ping') { if (this.started && m.needView) this.sendView(seat); return; }
       if (m.t === 'bye') { this.seats[seat].connected = false; this.pushLobby(); return; }
       if (m.t === 'sit') { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].bot) { const a = this.seats[seat]; this.seats[seat] = this.seats[to]; this.seats[to] = a; this.pushLobby(); } return; }
       if (m.t === 'chat') { this.addChat(seat, m.text); return; }
-      if (m.t === 'act') { const r = this.runner.act(seat, m.a || {}); if (!r.ok) this.sendTo(seat, { t: 'err', msg: r.error }); }
+      if (m.t === 'act') { const r = this.runner.act(seat, m.a || {}); if (!r.ok && !r.quiet) this.sendTo(seat, { t: 'err', msg: r.error }); }
     }
     addChat(seat, text) {
       text = String(text || '').slice(0, 200).trim(); if (!text) return;
@@ -169,15 +172,25 @@
     say(text) { this.addChat(this.hostSeat(), text); }
     lobbyState() { return { code: this.code, N: this.N, started: this.started, relay: this.broker && this.broker.name, seats: this.seats.map((s) => ({ name: s.bot ? null : s.name, bot: s.bot, connected: s.connected })) }; }
     pushLobby() { const st = this.lobbyState(); this.seats.forEach((s, i) => this.sendTo(i, { t: 'lobby', state: st, seat: i })); this.lobbyCb && this.lobbyCb(st); }
+    humans() { return this.seats.filter((s) => !s.bot).length; }
     startGame() {
-      if (this.started) return; this.started = true;
+      if (this.started) return true;
+      if (this.def.bots === false) {
+        // no bots: the table is whoever sat down, in seat order
+        if (this.humans() < this.def.minPlayers) return false;
+        this.seats = this.seats.filter((s) => !s.bot); this.N = this.seats.length;
+      }
+      this.started = true;
       const names = shuffle(this.def.botNames || ['Ada', 'Bo', 'Cy', 'Dee', 'Eli', 'Fay', 'Gus', 'Hal', 'Ivy', 'Jo', 'Kit', 'Lou']); let bi = 0;
       const players = this.seats.map((s) => (s.bot ? { name: names[bi++ % names.length] + ' (bot)', bot: true } : { name: s.name, bot: false }));
       this.seat = this.hostSeat();
       this.pushLobby();
       this.runner.start(players, this.opts);
+      return true;
     }
-    broadcastViews() { this.seats.forEach((s, i) => this.sendTo(i, { t: 'view', view: this.runner.view(i) })); }
+    // views are numbered, so a guest that gets two out of order keeps the newer one
+    sendView(i) { this.vn = (this.vn || 0) + 1; this.sendTo(i, { t: 'view', view: this.runner.view(i), n: this.vn }); }
+    broadcastViews() { this.seats.forEach((s, i) => this.sendView(i)); }
     view() { return this.runner.view(this.seat); }
     act(a) { return this.runner.act(this.seat, a); }
     isHost() { return true; }
@@ -208,7 +221,7 @@
           if (m.t === 'welcome') { this.seat = m.seat; if (!settled) { settled = true; clearTimeout(to); resolve(); } }
           else if (m.t === 'rejected') { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.lobbyCb && this.lobbyCb({ error: m.reason }); }
           else if (m.t === 'lobby') { this.lobby = m.state; this.seat = m.seat; this.lobbyCb && this.lobbyCb(m.state); }
-          else if (m.t === 'view') { this._view = m.view; this.cb && this.cb(); }
+          else if (m.t === 'view') { if (m.n != null && this.viewN != null && m.n < this.viewN) return; this.viewN = m.n; this._view = m.view; this.cb && this.cb(); }
           else if (m.t === 'chat') { this.chat = m.chat || []; this.cb && this.cb(); }
           else if (m.t === 'err') { this.errCb && this.errCb(m.msg); }
           else if (m.t === 'closed') { this.lobbyCb && this.lobbyCb({ error: 'The host closed the table.' }); }
@@ -230,17 +243,18 @@
   /* ---------------------------------------------------------------- UI */
   function mount(el, def) {
     const opt = (def.options || []).map((o) => '<label>' + esc(o.label) + ' <select data-opt="' + esc(o.key) + '">' + o.values.map(([v, t]) => '<option value="' + esc(v) + '"' + (v === o.def ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select></label>').join('');
+    const noBots = def.bots === false;
     const counts = (sel) => { let h = ''; for (let n = def.minPlayers; n <= def.maxPlayers; n++) h += '<option' + (n === (def.defaultPlayers || def.minPlayers) ? ' selected' : '') + '>' + n + '</option>'; return '<select id="' + sel + '">' + h + '</select>'; };
     el.innerHTML =
       '<div class="dt-home" id="dt-home">' +
         '<header class="dt-mast">' + (def.mast || '<h1>' + esc(def.title) + '</h1>') + '<p class="dt-sub"><b>Play online</b> ' + esc(def.blurb || '') + '</p></header>' +
         '<section class="dt-card">' +
           '<label class="dt-name">Your name <input id="dt-name" maxlength="16" placeholder="Your name" autocomplete="nickname"></label>' +
-          '<div class="dt-tabs" role="tablist"><button data-tab="local" class="on" role="tab">Play vs bots</button><button data-tab="host" role="tab">Host a table</button><button data-tab="join" role="tab">Join a table</button></div>' +
-          '<div data-pane="local"><div class="dt-row"><label>Players ' + counts('dt-l-n') + '</label>' + opt + '<button class="dt-btn go" id="dt-l-start">Deal me in</button></div>' +
+          '<div class="dt-tabs" role="tablist">' + (noBots ? '' : '<button data-tab="local" class="on" role="tab">Play vs bots</button>') + '<button data-tab="host" role="tab"' + (noBots ? ' class="on"' : '') + '>Host a table</button><button data-tab="join" role="tab">Join a table</button></div>' +
+          '<div data-pane="local"' + (noBots ? ' hidden' : '') + '><div class="dt-row"><label>Players ' + counts('dt-l-n') + '</label>' + opt + '<button class="dt-btn go" id="dt-l-start">Deal me in</button></div>' +
             '<p class="dt-muted">Bots take the other seats.' + (def.botNote ? ' ' + esc(def.botNote) : '') + '</p></div>' +
-          '<div data-pane="host" hidden><div class="dt-row"><label>Seats ' + counts('dt-h-n') + '</label>' + opt + '<button class="dt-btn go" id="dt-h-open">Open a table</button></div>' +
-            '<p class="dt-muted">Share the five-letter code or the invite link. Bots fill any empty seats. Keep this tab open while you host.</p>' +
+          '<div data-pane="host"' + (noBots ? '' : ' hidden') + '><div class="dt-row"><label>' + (noBots ? 'Up to' : 'Seats') + ' ' + counts('dt-h-n') + '</label>' + opt + '<button class="dt-btn go" id="dt-h-open">Open a table</button></div>' +
+            '<p class="dt-muted">Share the five-letter code or the invite link. ' + (noBots ? 'Start once ' + def.minPlayers + ' or more people have joined. ' : 'Bots fill any empty seats. ') + 'Keep this tab open while you host.</p>' +
             '<div id="dt-h-lobby" hidden><div class="dt-code" id="dt-h-code"></div><div class="dt-row tight"><button class="dt-btn ghost sm" id="dt-h-copy">Copy invite link</button><span class="dt-muted" id="dt-h-relay"></span></div><div class="dt-seats" id="dt-h-seats"></div>' +
             '<div class="dt-row"><button class="dt-btn go" id="dt-h-start">Start the game</button><button class="dt-btn ghost" id="dt-h-close">Close table</button></div></div></div>' +
           '<div data-pane="join" hidden><div class="dt-row"><label>Table code <input id="dt-j-code" class="dt-codein" maxlength="5" placeholder="ABCDE" autocapitalize="characters"></label><button class="dt-btn go" id="dt-j-go">Join</button></div>' +
@@ -277,7 +291,7 @@
     const refuse = (why, at) => { if (root.Tabletop) root.Tabletop.nope(why || 'That move isn’t allowed.', { at }); else toast(why || 'Not allowed'); };
     const api = {
       get seat() { return session ? session.seat : 0; },
-      act(a, at) { if (!session) return; const r = session.act(a); if (r && !r.ok) refuse(r.error, at); return r; },
+      act(a, at) { if (!session) return; const r = session.act(a); if (r && !r.ok && !r.quiet) refuse(r.error, at); return r; },
       nope: refuse,
       toast,
       status(t) { $('dt-status').textContent = t || ''; },
@@ -325,7 +339,7 @@
       session.onUpdate(draw); session.start(); showGame();
     });
     function seatsHTML(st, mine, canSit) {
-      return st.seats.map((s, i) => '<div class="dt-seat' + (i === mine ? ' me' : '') + (s.bot ? ' bot' : '') + (canSit && s.bot ? ' sit' : '') + '" data-seat="' + i + '"><span class="n">' + (i + 1) + '</span><span>' + (s.bot ? 'Bot (open seat)' : esc(s.name) + (i === mine ? ' (you)' : '')) + '</span>' + (!s.bot && !s.connected ? '<i>away</i>' : '') + '</div>').join('');
+      return st.seats.map((s, i) => '<div class="dt-seat' + (i === mine ? ' me' : '') + (s.bot ? ' bot' : '') + (canSit && s.bot ? ' sit' : '') + '" data-seat="' + i + '"><span class="n">' + (i + 1) + '</span><span>' + (s.bot ? (noBots ? 'Open seat' : 'Bot (open seat)') : esc(s.name) + (i === mine ? ' (you)' : '')) + '</span>' + (!s.bot && !s.connected ? '<i>away</i>' : '') + '</div>').join('');
     }
     $('dt-h-open').addEventListener('click', async () => {
       const b = $('dt-h-open'); b.disabled = true; msg('Opening a table…');
@@ -333,7 +347,10 @@
       try {
         const code = await s.open(); session = s; msg('');
         $('dt-h-lobby').hidden = false; $('dt-h-code').textContent = code; $('dt-h-relay').textContent = 'Relay: ' + s.broker.name;
-        s.onLobby((st) => { $('dt-h-seats').innerHTML = seatsHTML(st, s.hostSeat(), false); });
+        s.onLobby((st) => {
+          $('dt-h-seats').innerHTML = seatsHTML(st, s.hostSeat(), false);
+          if (noBots && !st.started) { const k = st.seats.filter((x) => !x.bot).length, ok = k >= def.minPlayers; $('dt-h-start').disabled = !ok; msg(ok ? '' : k + ' at the table. ' + def.title + ' needs at least ' + def.minPlayers + '.'); }
+        });
         s.onUpdate(draw); s.pushLobby();
       } catch (e) { b.disabled = false; msg(e.message || String(e), true); }
     });
@@ -341,7 +358,7 @@
       const url = location.origin + location.pathname + '?join=' + (session && session.code);
       (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast('Invite link copied'), () => toast(url));
     });
-    $('dt-h-start').addEventListener('click', () => { if (session && session.kind === 'host') { session.startGame(); showGame(); } });
+    $('dt-h-start').addEventListener('click', () => { if (session && session.kind === 'host') { if (session.startGame()) showGame(); else msg(def.title + ' needs at least ' + def.minPlayers + ' people at the table.', true); } });
     $('dt-h-close').addEventListener('click', () => home('Table closed.'));
     $('dt-j-go').addEventListener('click', async () => {
       const code = $('dt-j-code').value.trim(); const b = $('dt-j-go'); b.disabled = true; msg('Looking for the table…');
