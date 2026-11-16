@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>In Development box art</title>
-<!-- Box fronts for the In Development games. ?g=slipstream|jibber|abducted|dayone|polar|mrmagpie|doodle
+<!-- Box fronts for the In Development games. ?g=slipstream|jibber|abducted|dayone|polar|mrmagpie|knead
      &view=scene (1600×1000: box on its own backdrop, for cards and page heroes) or &view=box (box front only, 900×900).
      Rendered to webp by shoot.py. -->
 <link rel="stylesheet" href="/assets/css/fonts.css">
@@ -28,28 +28,30 @@
 const q = new URLSearchParams(location.search), g = q.get('g') || 'slipstream';
 if (q.get('view') === 'box') document.body.classList.add('box');
 const A = {
-  /* Doodle Relay: one doodle passed down three boards, each drawer in their own colour (as at the reveal) */
-  doodle: (() => {
-    const B = ['#2F6EB5', '#E2553A', '#2E9A62'];
+  /* Knead to Know: the night shift at the bakery. One order passed down three cakes, each decorator in their own icing colour */
+  knead: (() => {
+    const B = ['#3E7CC4', '#D6416B', '#2E9A6B'];
     const head = `<g stroke="${B[0]}"><circle cx="12.5" cy="9" r="4.2"/><path d="M9.3 6.3 L9.8 2.8 L11.8 5.1 M13.2 5.1 L15.2 2.8 L15.7 6.3"/></g>`;
     const body = `<g stroke="${B[1]}"><ellipse cx="12.8" cy="17.3" rx="5.2" ry="4"/><path d="M10 20.6 V23 M15.6 20.6 V23"/></g>`;
     const rest = `<g stroke="${B[2]}"><path d="M18 17.6 C21.6 16 22 12 20 10.4 M8.2 10 H10.5 M14.5 10 H16.8 M11.6 10.7 Q12.5 11.5 13.4 10.7"/><circle cx="11" cy="8.4" r=".35" fill="${B[2]}"/><circle cx="14" cy="8.4" r=".35" fill="${B[2]}"/></g>`;
-    const board = (x, art) => `<g transform="translate(${x} 37)"><rect x="-1" y="-1" width="27" height="27" rx="2.4" fill="#2C3245"/><rect width="25" height="25" rx="1.4" fill="#fff"/><g fill="none" stroke-width=".75" stroke-linecap="round" stroke-linejoin="round">${art}</g></g>`;
-    const marker = (cx, c) => `<g transform="translate(${cx - 8} 71)"><rect x="0" y="0" width="12.5" height="3.4" rx="1.2" fill="#2C3245"/><rect x="12" y=".35" width="4" height="2.7" rx="1" fill="${c}"/><path d="M16 .9 L17.6 1.7 L16 2.5Z" fill="${c}"/><rect x="2" y=".9" width="6" height="1.6" rx=".8" fill="${c}"/></g>`;
-    const arrow = (x) => `<path d="M${x} 49.5 H${x + 3.2} M${x + 2} 48.2 L${x + 3.4} 49.5 L${x + 2} 50.8" stroke="#1E2433" stroke-width=".7" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>`;
+    const cake = (x, art) => `<g transform="translate(${x} 37)"><rect x="-1" y="0" width="27" height="27.6" rx="3" fill="#C9768F"/><rect x="-1" y="-1" width="27" height="27" rx="3" fill="#F3A9BD"/><rect x="1.4" y="1.4" width="22.2" height="22.2" rx="1.8" fill="#FFF8EC"/><rect x=".2" y=".2" width="24.6" height="24.6" rx="2.4" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round" stroke-dasharray=".01 1.5"/><g fill="none" stroke-width=".75" stroke-linecap="round" stroke-linejoin="round">${art}</g></g>`;
+    const bag = (cx, c) => `<g transform="translate(${cx} 73)"><path d="M-5.2 -3 L5.2 -3 L.9 4.6 L-.9 4.6Z" fill="#FFF1E2"/><path d="M-5.2 -3 L5.2 -3 L3.6 -.2 L-3.6 -.2Z" fill="${c}"/><rect x="-1.1" y="4.4" width="2.2" height="1.7" rx=".4" fill="#C9C2D6"/><path d="M-3.2 -4.6 Q0 -3.6 3.2 -4.6 L2.4 -3 L-2.4 -3Z" fill="#E9DCCB"/></g>`;
+    const arrow = (x) => `<path d="M${x} 49.5 H${x + 2.6} M${x + 1.5} 48.4 L${x + 2.7} 49.5 L${x + 1.5} 50.6" stroke="#FFC2D2" stroke-width=".7" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>`;
+    const stars = [[5, 6], [95, 6], [4, 31], [95.5, 31.5], [8, 88], [92, 86], [12, 30.5]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".45" fill="#FFF1E2" opacity=".75"/>`).join('');
     return {
-      bg: 'radial-gradient(120% 90% at 40% 35%,#F5F9F7,#BFD6D0)',
-      svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#EEF3F1"/>
-        <g fill="#1E2433" opacity=".07">${Array.from({ length: 11 }, (_, i) => Array.from({ length: 11 }, (_, j) => `<circle cx="${5 + i * 9}" cy="${5 + j * 9}" r=".45"/>`).join('')).join('')}</g>
-        ${board(6, head)}${arrow(32.6)}${board(37.5, head + body)}${arrow(64.1)}${board(69, head + body + rest)}
-        ${marker(18.5, B[0])}${marker(50, B[1])}${marker(81.5, B[2])}
+      bg: 'radial-gradient(120% 90% at 40% 35%,#4A4F78,#1E2238)',
+      svg: `<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#2B2F4A"/>
+        <rect y="83" width="100" height="17" fill="#3B2420"/><rect y="83" width="100" height=".8" fill="#5A3A32"/>
+        ${stars}
+        <g transform="translate(89 28.6)"><circle r="2.6" fill="#FFF1E2"/><circle cx="1.1" cy="-.8" r="2.25" fill="#2B2F4A"/></g>
+        ${cake(6, head)}${arrow(32.9)}${cake(37.5, head + body)}${arrow(64.4)}${cake(69, head + body + rest)}
+        ${bag(18.5, B[0])}${bag(50, B[1])}${bag(81.5, B[2])}
       </svg>
-      <div class="ttl" style="top:8.5%;font:400 12.6cqw/1 'Bagel Fat One',sans-serif;color:#1E2433;letter-spacing:.01em">Doodle Relay</div>
-      <div class="ttl" style="top:24.5%;font:600 3.2cqw/1 Jost;letter-spacing:.26em;color:#566072;text-transform:uppercase">Draw it · Pass it · Guess it</div>
-      <div class="by" style="color:#1E2433">by Darren Don</div>`,
+      <div class="ttl" style="top:8.5%;font:400 12.2cqw/1 'Bagel Fat One',sans-serif;color:#FFC2D2;letter-spacing:.01em">Knead to Know</div>
+      <div class="ttl" style="top:24.5%;font:600 3.1cqw/1 Jost;letter-spacing:.26em;color:#FFF1E2;opacity:.85;text-transform:uppercase">The night-shift bakery</div>
+      <div class="by" style="color:#FFF1E2">by Darren Don</div>`,
     };
   })(),
-  /* Slipstream: a chicken run to a cliff edge at sunset */
   slipstream: {
     bg: 'radial-gradient(120% 90% at 40% 35%,#F6C27A,#D9772B)',
     svg: `<svg viewBox="0 0 100 100" preserveAspectRatio="none">

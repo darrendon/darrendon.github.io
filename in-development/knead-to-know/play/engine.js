@@ -1,13 +1,15 @@
-/* Doodle Relay — rules engine (online tables only, no bots).
+/* Knead to Know — rules engine (online tables only, no bots).
+   The night shift at the bakery: each decorator starts a cake from their own secret order ticket, then
+   the shift changes and the next decorators keep going without ever seeing the ticket.
    Runs in the host's browser through the shared table (assets/js/dev-table.js) and in node for sim.js.
 
-   A round: one player picks a number from 1 to 6 (a different player each round, before anyone
+   A round (a night): one player picks an order number from 1 to 6 (a different player each round, before anyone
    sees their card), then everyone is dealt a fresh card (six words, or six categories on the other
-   side) and draws that row of their own card. Each player starts a board
-   with their secret word, draws for a few seconds, then every board passes left at once. The next
-   player keeps drawing without knowing the word, until each board has had its drawers. Then the
-   table guesses the boards one at a time, together; the board's starter stays quiet. One point to
-   the team for every board it gets.
+   side) and draws that row of their own card. Each player starts a cake (a board)
+   with their secret order, decorates for a few seconds, then every cake passes left at once. The next
+   decorator keeps going without knowing the order, until each cake has had its decorators. Then the
+   crew guesses the cakes one at a time, together; whoever took that order stays quiet. One happy
+   customer (a point for the team) for every order it gets.
 
    Cards aren't a fixed deck: each one is dealt on the spot from the word bank below, so no two
    cards repeat and no word comes up twice in a game. Every tunable number is in RULES. */
@@ -171,7 +173,7 @@
       this.secret = this.players.map((_, s) => (this.mode === 'words' ? this.cards[s][this.roll - 1].word : null));
       this.ready = this.players.map(() => false);
       this.cardEnds = this.now() + RULES.cardMs[this.mode];
-      this.log('Round ' + this.round + ': ' + (auto ? 'row ' + n + ' was picked for ' + this.players[this.chooser].name : this.players[this.chooser].name + ' picked row ' + n) + '.');
+      this.log('Night ' + this.round + ': ' + (auto ? 'order ' + n + ' was picked for ' + this.players[this.chooser].name : this.players[this.chooser].name + ' picked order ' + n) + '.');
     }
     startDrawing() {
       this.phase = 'draw';
@@ -247,7 +249,7 @@
         this.used.add(norm(w));
       }
       this.ready[s] = true;
-      if (auto) this.log(this.players[s].name + ' was dealt their word automatically.');
+      if (auto) this.log(this.players[s].name + ' was given an order automatically.');
     }
 
     /* ------------------------------------------------------------ actions */
@@ -257,19 +259,19 @@
       const t = this.now();
       switch (a.t) {
         case 'pick': {
-          if (this.phase !== 'pick') return { ok: false, error: 'The row has already been picked.' };
-          if (seat !== this.chooser) return { ok: false, error: this.players[this.chooser].name + ' picks the row this round.' };
+          if (this.phase !== 'pick') return { ok: false, error: 'The order number has already been picked.' };
+          if (seat !== this.chooser) return { ok: false, error: this.players[this.chooser].name + ' picks the order number tonight.' };
           const n = a.n | 0;
           if (n < 1 || n > RULES.cardSize) return { ok: false, error: 'Pick a number from 1 to ' + RULES.cardSize + '.' };
           this.pickRow(n);
           return { ok: true };
         }
         case 'ready': {
-          if (this.phase !== 'card') return { ok: false, error: 'The round has already started.' };
+          if (this.phase !== 'card') return { ok: false, error: 'The shift has already started.' };
           if (this.mode === 'categories') {
             const w = clean(a.word, RULES.maxWord);
-            if (!w) return { ok: false, error: 'Write a word for your category first.' };
-            if (!/[a-z0-9]/i.test(w)) return { ok: false, error: 'Use letters for your word.' };
+            if (!w) return { ok: false, error: 'Write what the customer gets first.' };
+            if (!/[a-z0-9]/i.test(w)) return { ok: false, error: 'Use letters for the order.' };
             this.setReady(seat, w);
           } else this.ready[seat] = true;
           if (this.ready.every(Boolean)) this.startDrawing();
@@ -283,21 +285,21 @@
         }
         case 'stroke': {
           // quiet: strokes are stored without sending everyone a new view (nobody else is looking at this board yet)
-          if (this.phase !== 'draw' || (a.leg | 0) !== this.leg) return { ok: false, error: 'Time’s up for that board.', quiet: true };
-          if (t < this.drawStart - 400 || t > this.drawEnd + RULES.graceMs) return { ok: false, error: 'Time’s up for that board.', quiet: true };
+          if (this.phase !== 'draw' || (a.leg | 0) !== this.leg) return { ok: false, error: 'That shift is over.', quiet: true };
+          if (t < this.drawStart - 400 || t > this.drawEnd + RULES.graceMs) return { ok: false, error: 'That shift is over.', quiet: true };
           const p = validStroke(a.p);
           if (!p) return { ok: false, error: 'That stroke didn’t come through.', quiet: true };
           const leg = this.boardHeldBy(seat, this.leg).legs[this.leg];
-          if (leg.seat !== seat) return { ok: false, error: 'That’s not your board.', quiet: true };
-          if (leg.strokes.length >= RULES.maxStrokesPerPass || leg.nums + p.length > RULES.maxNumsPerPass) return { ok: false, error: 'That board is full for this pass.', quiet: true };
+          if (leg.seat !== seat) return { ok: false, error: 'That’s not your cake.', quiet: true };
+          if (leg.strokes.length >= RULES.maxStrokesPerPass || leg.nums + p.length > RULES.maxNumsPerPass) return { ok: false, error: 'That cake is full for this shift.', quiet: true };
           leg.strokes.push(p); leg.nums += p.length;
           return { ok: true, quiet: true };
         }
         case 'answer': {
           if (this.phase !== 'guess') return { ok: false, error: 'There’s nothing to guess right now.' };
-          if (seat === this.curBoard().starter) return { ok: false, error: 'It’s your board, so you stay quiet on this one.' };
+          if (seat === this.curBoard().starter) return { ok: false, error: 'It’s your order, so you stay quiet on this one.' };
           const text = clean(a.text, RULES.maxAnswer);
-          if (!text) return { ok: false, error: 'Type the team’s guess first.' };
+          if (!text) return { ok: false, error: 'Type the counter’s guess first.' };
           this.answer = { text, by: seat };
           this.agrees = [seat];
           if (this.agrees.length >= this.need()) this.lockIn();
@@ -305,7 +307,7 @@
         }
         case 'agree': {
           if (this.phase !== 'guess' || !this.answer) return { ok: false, error: 'There’s no guess on the table yet.' };
-          if (seat === this.curBoard().starter) return { ok: false, error: 'It’s your board, so you stay quiet on this one.' };
+          if (seat === this.curBoard().starter) return { ok: false, error: 'It’s your order, so you stay quiet on this one.' };
           if (a.text != null && clean(a.text, RULES.maxAnswer) !== this.answer.text) return { ok: false, error: 'Someone just changed the answer. Have a look at the new one.' };
           const i = this.agrees.indexOf(seat);
           if (i >= 0) this.agrees.splice(i, 1); else this.agrees.push(seat);
@@ -314,18 +316,18 @@
         }
         case 'judge': {
           if (this.phase !== 'reveal') return { ok: false, error: 'Nothing to judge right now.' };
-          if (seat !== this.curBoard().starter) return { ok: false, error: 'Only the player who started this board can overrule.' };
+          if (seat !== this.curBoard().starter) return { ok: false, error: 'Only the player who took this order can overrule.' };
           this.verdict = !!a.ok; this.judged = true;
           return { ok: true };
         }
         case 'next': {
           if (this.phase !== 'reveal') return { ok: false, error: 'Not yet.' };
-          if (t - this.revealAt < RULES.revealMinMs) return { ok: false, error: 'Give everyone a second to see it.' };
+          if (t - this.revealAt < RULES.revealMinMs) return { ok: false, error: 'Give everyone a second to see the cake.' };
           this.advance();
           return { ok: true };
         }
         case 'again': {
-          if (this.phase !== 'end') return { ok: false, error: 'The game isn’t over.' };
+          if (this.phase !== 'end') return { ok: false, error: 'The bakery isn’t closed yet.' };
           this.used = new Set(); this.history = []; this.score = 0; this.round = 0; this.logLines = [];
           this.startRound();
           return { ok: true };
@@ -385,5 +387,5 @@
 
   const api = { Game, RULES, BANK, sameWord, norm, dealCard };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else root.DoodleRelay = api;
+  else root.KneadToKnow = api;
 })(typeof window !== 'undefined' ? window : globalThis);
