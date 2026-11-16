@@ -114,7 +114,7 @@ GAMES = [
        hook='It’s the night shift at the bakery, and nobody passes on the order tickets. Each decorator starts a cake from their own secret order, then the shift changes and the next decorator keeps going without ever seeing the ticket.',
        card='Start decorating your customer’s order, then hand the cake on at shift change. The next decorators never see the ticket, and the whole crew guesses each order together.',
        specs=[('Players', '3–8'), ('Time', '15–25 min'), ('Genre', 'Party · Drawing · Cooperative'), ('For fans of', 'Telestrations · Bullseye')],
-       now='Whether the orders are pitched right (everyday things that are too much to finish in one 10-second shift), whether three decorators per cake is the sweet spot or the whole crew is funnier, and whether the middle decorators steer the guess too hard.',
+       now='Whether the orders are pitched right (a familiar thing plus a twist, like an ice cream truck or a cowboy boot, so the twist has to survive the relay), whether three decorators per cake is the sweet spot or the whole crew is funnier, and whether the middle decorators steer the guess too hard.',
        steps=[('Take the orders', 'Someone picks an order number from 1 to 6, then everyone takes an order ticket and decorates that order from their own ticket. Flip the tickets for themes: the customer names a theme and you decide what goes on the cake.'),
               ('Decorate', 'Everyone starts at once and pipes their order onto a cake for 10 seconds. One piping bag, no scraping it off.'),
               ('Shift change', 'Every cake passes left. Now you’re finishing someone else’s cake and <b>you never saw the ticket</b>. Keep decorating whatever you think it is. Each cake gets three decorators.'),
