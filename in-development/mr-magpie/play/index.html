@@ -266,10 +266,10 @@
     if (v.phase === 'over' && v.final) {
       const f = v.final, w = f.winners;
       banner = '<div class="banner"><div><b>' + (v.snow ? 'The first snow falls on the ' + esc(v.snow.name) + '.' : 'Winter is here.') + ' ' + (w.length ? w.map(name).join(' and ') + (w.length > 1 ? ' share the win!' : (w[0] === me && P[me].name === 'You' ? ' win!' : ' wins!')) : 'Nobody makes it through!') + '</b>' +
-        '<p>' + (f.gone && f.gone.length ? f.gone.map(name).join(' and ') + ' were tied for the fewest acorns, so they are out of the game.' : f.out.length ? f.out.map((i) => name(i) + ' had the fewest acorns' + (f.lost && f.lost[i] ? ', so Mr. Magpie took back the ' + esc(f.lost[i].name) + ' (' + f.lost[i].vp + ').' : ', but no treasure to hand back.')).join(' ') : 'Everyone was level on acorns, so nobody handed anything back.') + '</p></div></div>';
+        '<p>' + (f.out.length ? f.out.map((i) => name(i) + ' had the fewest acorns' + (f.lost && f.lost[i] ? ', so Mr. Magpie took back the ' + esc(f.lost[i].name) + ' (' + f.lost[i].vp + ').' : ', but no treasure to hand back.')).join(' ') : 'Everyone was level on acorns, so nobody handed anything back.') + '</p></div></div>';
       const order = P.map((_, i) => i).sort((a, b) => (f.out.includes(a) - f.out.includes(b)) || f.scores[b].total - f.scores[a].total);
       banner += '<div class="panel"><h3>Final count</h3><div style="overflow-x:auto"><table class="final"><tr><th>Critter</th><th>Acorns left</th><th>Treasures</th><th>Earrings</th><th>Berries</th><th>Buttons</th><th>Feathers</th><th>Caps</th><th>Beads</th><th>Total</th></tr>' +
-        order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.gone && f.gone.includes(i) ? ' · out' : f.out.includes(i) ? ' · fewest acorns' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td>' + s.cap + '</td><td>' + s.bead + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
+        order.map((i) => { const s = f.scores[i]; return '<tr class="' + (w.includes(i) ? 'win' : f.out.includes(i) ? 'out' : '') + '"><td>' + name(i) + (f.out.includes(i) ? ' · fewest acorns' : '') + '</td><td>' + f.money[i] + '</td><td>' + s.treasures + '</td><td>' + s.earring + '</td><td>' + s.berry + '</td><td>' + s.button + '</td><td>' + s.feather + '</td><td>' + s.cap + '</td><td>' + s.bead + '</td><td class="tt">' + s.total + '</td></tr>'; }).join('') + '</table></div></div>';
     }
 
     // ---- Mr. Magpie's baubles: the bag and the face-up row
@@ -315,7 +315,7 @@
     DevTable.flip(el, () => {
       el.innerHTML = DEFS + '<div class="ne">' + banner + '<div class="table"><div class="felt">' + seats + mid + market + mine + '</div></div>' +
         '<div class="panel"><h3>Table talk</h3><div class="log">' + v.log.slice().reverse().map((l) => '<p>' + esc(youLine(l)) + '</p>').join('') + '</div>' +
-        '<p class="dt-muted" style="font-size:12.5px;margin:10px 0 0">Fewest acorns at the first snow hands back their best treasure; tied for fewest and you are out. Most points wins.</p></div></div>';
+        '<p class="dt-muted" style="font-size:12.5px;margin:10px 0 0">Fewest acorns at the first snow hands back their best treasure. Most points wins.</p></div></div>';
     });
 
     // pick cards up and put them down: acorns move between your hand and your offer, baubles come to you
@@ -365,7 +365,7 @@
       '<p><b>He keeps every acorn.</b> Win or lose, your offering goes face down into his larder. But Mr. Magpie never sends a guest home empty-handed: if you drop out after offering, then once the auction is over you take one bauble from the row for each acorn card you brought. The smallest offering picks first. The row holds 8 baubles. Before each treasure the oldest one, on the left, leaves, the rest slide along, and the row is dealt back up to 8.</p>' +
       '<p><b>Frosts.</b> Four treasures are frosts: everyone brings a secret offering at once. The biggest wins; everyone else who brought one takes baubles, smallest offering first, and anyone who brought nothing draws an acorn card. If the biggest offerings tie, nobody wins: the frost waits for the next winner, and everyone who brought an offering takes baubles. The fourth frost brings the first snow and ends the game at once.</p>' +
       '<p><b>Baubles.</b> Earrings: one alone is −2, each pair +9. Berries: a few are lovely, too many spoil. Buttons: the bigger the collection, the better. Feathers: 2 each, most +10, second +5. Bottle caps: 1 each, but whoever has the fewest loses 6. Glass beads: one scores 1, two score −3, then 8, 13, 18 and 24 for three to six.</p>' +
-      '<p><b>Winter.</b> The critter with the fewest acorns left has to hand their best treasure back to Mr. Magpie. If two or more critters are tied for the fewest, they are out of the game instead and cannot win. Then most points wins.</p>',
+      '<p><b>Winter.</b> The critter with the fewest acorns left has to hand their best treasure back to Mr. Magpie, and so does anyone tied with them. Then most points wins.</p>',
   });
 })();
 </script>
