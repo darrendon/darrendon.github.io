@@ -135,6 +135,7 @@
       const avgVp = (sum(RULES.treasures.map((t) => t.vp)) + sum(RULES.frosts.map((t) => t.vp))) / n;
       this.beta = 0.9 * this.N * this.M / (avgVp * this.expLots + 7 * this.N * 2.5);   // acorns per point, for the bots
       this.start = Math.floor(rnd() * this.N); this.firstStart = this.start;
+      this.fog = this.players.map(() => this.players.map(() => gauss()));   // how far off each bot's memory of each critter's spending runs
       this.lotNo = 0; this.log = []; this.phase = 'lotEnd'; this.lot = null; this.picks = []; this.result = null; this.final = null;
       this.stats = { washes: 0, solo: 0, lots: 0, frostLots: 0, rolled: 0, potsWon: 0, potVp: 0, lostAtSnow: 0 };
       this.carry = [];   // treasures nobody opened: they stay out and join the next one
@@ -145,6 +146,14 @@
     say(m) { this.log.push(m); if (this.log.length > 80) this.log.shift(); }
     over() { return this.phase === 'over'; }
     money(i) { return sum(this.players[i].hand); }
+    // What bot s believes critter i has left. Hands are hidden, so a bot only knows what it could have seen: what i has
+    // offered (remembered imperfectly, worse the more there was to follow) and how many acorn cards i drew, not their values.
+    guess(s, i) {
+      if (i === s || RULES.botsSeeHands) return this.money(i);
+      const p = this.players[i], mean = RULES.looseAcorns.length ? sum(RULES.looseAcorns) / RULES.looseAcorns.length : 0;
+      const drew = (p.looseSum || 0) - (p.loose || 0) * mean, spent = Math.max(0, sum(RULES.hand) + (p.looseSum || 0) - this.money(i));
+      return Math.max(0, Math.round(this.money(i) - drew + this.fog[s][i] * 0.4 * Math.sqrt(spent)));
+    }
     reserve() { return Math.round(this.R.hand.length * 5 / 13 * this.remFrac()); }   // cards a bot keeps back for later
     remFrac() { const n = this.deck.length, k = this.framesLeft; if (k <= 0) return 0; return Math.max(0, Math.min(1, (k * (n + 1) / (k + 1) - 1) / Math.max(1, this.expLots))); }
 
@@ -364,7 +373,7 @@
     }
     drawOne(seat) {   // the way back in: pass without offering and take a loose acorn
       if (!this.looseDeck.length) return false;
-      const p = this.players[seat]; p.hand.push(this.looseDeck.pop()); p.hand.sort((x, y) => x - y); p.loose = (p.loose || 0) + 1;
+      const p = this.players[seat]; const got = this.looseDeck.pop(); p.hand.push(got); p.hand.sort((x, y) => x - y); p.loose = (p.loose || 0) + 1; p.looseSum = (p.looseSum || 0) + got;
       return true;
     }
     endFrost() { this.phase = 'lotEnd'; }
@@ -441,9 +450,9 @@
     }
     st(s) { return STYLES[this.players[s].style]; }
     // bots count every acorn everyone has offered and taken, like a sharp player would
-    danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
+    danger(s) { const me = this.money(s), others = this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.guess(s, i)).sort((a, b) => a - b); return me <= others[Math.min(1, others.length - 1)]; }
     allowed(s) {
-      const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.money(i)));
+      const me = this.money(s), opp = Math.min(...this.players.map((_, i) => i).filter((i) => i !== s).map((i) => this.guess(s, i)));
       const L = this.lot, pot = L ? sum(L.extra.map((t) => t.vp)) : 0;   // treasures rolled over from before
       const floor = Math.max(1, opp + 1 - this.st(s).slack * this.M * this.remFrac() - RISK * pot * this.beta * this.st(s).aggr);
       const hard = Math.max(0, me - floor);
