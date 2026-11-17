@@ -18,7 +18,7 @@
   const RULES = {
     minPlayers: 3, maxPlayers: 8,
     drawers: 3,            // players who draw on each board ('all' = the board goes all the way round)
-    drawMs: 10000,         // drawing time per pass (table option: 5, 10 or 15 s)
+    drawMs: 5000,          // drawing time per shift (table option: 5, 10 or 15 s)
     firstLookMs: 3500,     // before the first pass: read your word
     lookMs: 2500,          // before every later pass: look at the board you were handed
     graceMs: 1500,         // strokes still accepted after time runs out (network lag)
