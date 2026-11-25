@@ -422,7 +422,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       <p><b>Roll.</b> Everyone rolls in the open: 7 dice on job 1, then 6 on jobs 2 and 3.</p>
       <p><b>Send.</b> In turn, send exactly 4 dice to rivals' jobs, split any way, never to your own. The dice you keep are what you pay people with.</p>
       <p><b>Crew.</b> Every crew is one of each kind: an <em>inside man</em> (a 1 or 2), a <em>getaway driver</em> (3 or 4) and <em>the muscle</em> (5 or 6). Never two of a kind. You score the total of your crew.</p>
-      <p><b>Cuts.</b> At the same time and in secret, hand out every die you kept to your crew: 3 on job 1, 2 on jobs 2 and 3. Stack several on one person if you like. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing. You keep nothing for yourself.</p>
+      <p><b>Cuts.</b> At the same time and in secret, hand out every die you kept to your crew: 3 on job 1, 2 on jobs 2 and 3. Put one under each crook or stack several under one, on any job. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing. You keep nothing for yourself.</p>
       <p><b>The last job.</b> On job 3 your crew scores double.</p>
       <p><b>Frozen out.</b> If nobody sends you anything, crew one of each kind from your own kept dice and score it (doubled on job 3). You pay no one.</p>
       <p><b>Promises.</b> Promise anything. None of it is binding, but everyone sees who kept their word before the next job.</p>
@@ -1075,7 +1075,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     if (mine) {
       const j = v.job;
       out += '<div class="sched"><span>SEND <b>4</b> EVERY JOB</span><span>ROLL <b class="' + (j === 0 ? 'on' : '') + '">7</b> / <b class="' + (j === 1 ? 'on' : '') + '">6</b> / <b class="' + (j === 2 ? 'on' : '') + '">6</b></span>' +
-        '<span>PAY <b class="' + (j === 0 ? 'on' : '') + '">ALL 3</b> ON JOB 1 · <b class="' + (j > 0 ? 'on' : '') + '">ANY 2</b> AFTER</span><span class="hot">JOB 3 DOUBLES</span></div>';
+        '<span>PAY OUT <b class="' + (j === 0 ? 'on' : '') + '">3</b> ON JOB 1 · <b class="' + (j > 0 ? 'on' : '') + '">2</b> AFTER · <b>STACKING OK</b></span><span class="hot">JOB 3 DOUBLES</span></div>';
     }
     out += '</div>';
     return out;
@@ -1419,7 +1419,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       case 'crew': return ['Pick your crew', "Everyone now picks a crew from what they were sent: one of each kind, never two. You have two muscles, so take Vic's " + B('6') + ". Add Dot's " + B('4') + " and Sal's " + B('2') + ". Sal's 5 goes home and earns him nothing. Your crew scores its total: 12."];
       case 'pay': {
         const need = v.handOut || 3, have = Object.keys(paySel).length;
-        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. On job 1 you pay all three of your crew. Click a die from your hand, then the red slot under a crew member. You can stack two on one person. All three of your kept dice go out; you keep nothing for yourself. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
+        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. All three of your kept dice go out. Click a die from your hand, then the red slot under a crew member. One each is fine, or stack two or three on one person and leave someone out. All three of your kept dice go out; you keep nothing for yourself. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
       }
     }
     return ['', ''];
@@ -1506,7 +1506,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       '<table class="jobs"><thead><tr><th></th><th>Job 1</th><th>Job 2</th><th>Job 3</th></tr></thead><tbody>' +
       '<tr><td>Roll</td><td>7</td><td class="hot">6</td><td class="hot">6</td></tr><tr><td>Send out</td><td>4</td><td>4</td><td>4</td></tr><tr><td>Keep and pay out</td><td>3</td><td class="hot">2</td><td class="hot">2</td></tr>' +
       '<tr><td>Your crew scores</td><td>its total</td><td>its total</td><td class="hot">double</td></tr></tbody></table>' +
-      '<div class="rules"><p><b>Jobs 2 and 3.</b> You pay only two cuts, so one of your crew gets nothing. You choose who.</p>' +
+      '<div class="rules"><p><b>Jobs 2 and 3.</b> You keep only two dice for three crew, so someone always gets nothing. You choose who. Stacking is allowed on every job.</p>' +
       '<p><b>The last job.</b> Your crew scores double, and nobody can pay you back afterward.</p>' +
       '<p><b>Frozen out.</b> If nobody sends you anything, run the job with your own people: one of each kind from your kept dice, scored as your crew (doubled on job 3). You pay no one.</p>' +
       '<p><b>After job 1.</b> ' + ranked.map((r) => esc(nm(r.i)) + (r.i === 0 && nm(r.i) !== 'You' ? ' (you)' : '') + ' ' + r.s).join(' · ') + '</p></div>' +
