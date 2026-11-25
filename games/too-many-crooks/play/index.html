@@ -108,7 +108,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
 .sheet .hd .tgt svg{width:12px;height:12px;fill:var(--gold);stroke:var(--gold);flex:none}
 .sheet .hd .st{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:var(--ink);background:var(--gold);border-radius:3px;padding:1px 5px;letter-spacing:.5px;white-space:nowrap}
 .sheet .hd .st:empty{display:none}
-.bands{display:grid;grid-template-columns:16px repeat(3,minmax(0,1fr)) 1px minmax(56px,.75fr);grid-template-rows:auto minmax(48px,auto) minmax(44px,auto);gap:5px 6px}
+.bands{display:grid;grid-template-columns:16px repeat(3,minmax(0,1fr));grid-template-rows:auto minmax(48px,auto) minmax(44px,auto);gap:5px 6px}
 .sheet.me .bands{grid-template-rows:auto minmax(58px,auto) minmax(54px,auto)}
 .rh{grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1;min-width:0}
 .rh svg{width:16px;height:16px;fill:var(--cream);stroke:var(--cream);margin-bottom:2px}
@@ -119,15 +119,12 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   border-radius:3px;display:flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap}
 .tab.score{grid-column:1;grid-row:2;background:var(--gold);color:var(--ink)}
 .tab.pay{grid-column:1;grid-row:3;background:#F0603F;color:#FFF6E8}
-.vdiv{grid-column:5;grid-row:1/4;background:repeating-linear-gradient(180deg,#BFC8CD 0 3px,transparent 3px 7px)}
 .slot{border-radius:5px;display:flex;flex-wrap:wrap;gap:4px;padding:4px;justify-content:center;align-content:center;position:relative;min-width:0}
 .slot.gold{grid-row:2;background:#6F7E87;border:1.5px solid var(--gold);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
 .slot.red{grid-row:3;background:#867475;border:1.5px dashed #F0603F}
-.slot.keep{grid-column:6;grid-row:2/4;background:#6F7670;border:1.5px solid var(--gold)}
 .slot .ghost{font-family:'Courier Prime',monospace;font-weight:700;font-size:9px;letter-spacing:.5px;text-align:center;line-height:1.15;pointer-events:none}
 .slot.gold .ghost svg{width:22px;height:22px;fill:var(--cream);stroke:var(--cream);opacity:.22;display:block}
 .slot.red .ghost{color:#FFD6C8;opacity:.85}
-.slot.keep .ghost{color:var(--gold)}
 .slot.red.drop{cursor:pointer;background:#9A7F7C;box-shadow:0 0 0 2px #F0603F}
 .slot.gold.empty-crew{border-style:dashed;opacity:.8}
 .kept{margin-top:7px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:30px}
@@ -422,12 +419,12 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     <h2 style="font-size:16px;margin-bottom:10px">How it plays</h2>
     <div class="rules">
       <p><b>The idea.</b> You can't hire your own crew. Your crew comes from dice your rivals send you, and theirs from yours. Whoever runs a job picks the crew and decides what each of them is paid.</p>
-      <p><b>Roll.</b> Everyone rolls in the open: 8 dice on job 1, then 7, then 6.</p>
+      <p><b>Roll.</b> Everyone rolls in the open: 7 dice on job 1, then 6 on jobs 2 and 3.</p>
       <p><b>Send.</b> In turn, send exactly 4 dice to rivals' jobs, split any way, never to your own. The dice you keep are what you pay people with.</p>
       <p><b>Crew.</b> Every crew is one of each kind: an <em>inside man</em> (a 1 or 2), a <em>getaway driver</em> (3 or 4) and <em>the muscle</em> (5 or 6). Never two of a kind. You score the total of your crew.</p>
-      <p><b>Cuts.</b> At the same time and in secret, hand out your kept dice to your crew: 3 of them on job 1, 2 on jobs 2 and 3. Stack several on one person if you like. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing.</p>
-      <p><b>Your cut.</b> On jobs 1 and 2, score your one leftover kept die. On job 3 both kept dice go to your crew, and your crew scores double.</p>
-      <p><b>Frozen out.</b> If nobody sends you anything, crew one of each kind from your own kept dice and score it (doubled on job 3); you pay no one, and on jobs 1 and 2 you still keep your best leftover die as your cut.</p>
+      <p><b>Cuts.</b> At the same time and in secret, hand out every die you kept to your crew: 3 on job 1, 2 on jobs 2 and 3. Stack several on one person if you like. Whoever gets a die scores it. Anyone on your crew you don't pay gets nothing. You keep nothing for yourself.</p>
+      <p><b>The last job.</b> On job 3 your crew scores double.</p>
+      <p><b>Frozen out.</b> If nobody sends you anything, crew one of each kind from your own kept dice and score it (doubled on job 3). You pay no one.</p>
       <p><b>Promises.</b> Promise anything. None of it is binding, but everyone sees who kept their word before the next job.</p>
     </div>
   </div>
@@ -811,7 +808,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     let live = 0, lastStart = 0, holdUntil = 0, snapMap = null, scoreShown = null;
     const track = (a) => { live++; lastStart = Date.now(); const done = () => { live = Math.max(0, live - 1); }; a.finished.then(done, done); return a; };
     const placeOf = (el) => {
-      const sh = el.closest('.sheet'), row = el.closest('.slot.gold, .slot.red, .slot.keep, .kept');
+      const sh = el.closest('.sheet'), row = el.closest('.slot.gold, .slot.red, .kept');
       return (sh ? 's' + sh.dataset.seat : 'h') + ':' + (row ? row.className.replace(/\s*(drop|empty-crew)\b/g, '') : '');
     };
     const zoomOf = (el, r) => (el.offsetWidth ? r.width / el.offsetWidth : 1) || 1;   // page zoom (the video zooms the body)
@@ -905,13 +902,12 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       for (const i of order) {
         const sh = document.querySelector('.sheet[data-seat="' + i + '"]'); if (!sh) continue;
         const crew = v.crews[i] || [];
-        // crew dice score for this host; the cuts under each crook score for the crook's owner; the own cut for the host
+        // crew dice score for this host; the cuts under each crook score for the crook's owner
         sh.querySelectorAll('.slot.gold .die').forEach((el) => { if (crew.some((c) => c.id === el.dataset.id)) fly(el, i); });
         sh.querySelectorAll('.slot.red[data-crew]').forEach((slot) => {
           const c = crew.find((x) => x.id === slot.dataset.crew);
           slot.querySelectorAll('.die').forEach((el) => fly(el, c ? c.owner : i));
         });
-        sh.querySelectorAll('.slot.keep .die').forEach((el) => fly(el, i));
       }
       return end;
     }
@@ -1029,9 +1025,8 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     const paying = mine && v.phase === 'pay' && !v.payDone[me];
 
     out += '<div class="bands">';
-    // header row: the three kinds, then your cut
+    // header row: the three kinds
     for (let b = 0; b < 3; b++) out += '<div class="rh" style="grid-column:' + (b + 2) + '">' + ROLE_ICO[b] + '<span class="bl">' + (mine ? BANDN[b] : BANDS[b]) + '</span><span class="bn">' + BANDR[b] + '</span></div>';
-    out += '<span class="vdiv"></span><div class="rh mine" style="grid-column:6">' + ICO.coin + '<span class="bl">Your cut</span><span class="bn">JOBS 1–2</span></div>';
     out += '<span class="tab score">You score</span><span class="tab pay">You pay</span>';
 
     for (let b = 0; b < 3; b++) {
@@ -1063,19 +1058,6 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       out += '<div class="slot red' + (drop ? ' drop' : '') + '" style="grid-column:' + (b + 2) + '"' + (crewHere && !self ? ' data-zone="cut" data-crew="' + crewHere.id + '"' : '') + '>' + r + '</div>';
     }
 
-    // your cut: what's left of the host's kept dice once the cuts are out (jobs 1-2)
-    let keep = '';
-    const spare = v.jobs[v.job].spare;
-    if (spare && (done || paying)) {
-      const left = (v.kept[i] || []).filter((d) => !(d.id in assign) && !(self && crew.some((c) => c.id === d.id)));
-      const need = paying ? v.handOut : 0;
-      if (done) {
-        const own = v.summary && v.summary.hosts[i] ? v.summary.hosts[i].own : 0;
-        const ownDie = own ? left.slice().sort((a, b) => b.v - a.v).find((d) => d.v === own) : null;
-        if (ownDie) keep = dieHTML(ownDie, '');
-      } else if (Object.keys(assign).length === need) keep = left.map((d) => dieHTML(d, '')).join('');
-    }
-    out += '<div class="slot keep">' + (keep || '<span class="ghost">' + (spare ? 'YOU<br>KEEP' : 'NONE ON<br>JOB 3') + '</span>') + '</div>';
     out += '</div>';
 
     // hand line: everyone rolls in the open, so rivals' dice are visible all job
@@ -1086,14 +1068,13 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     } else if (!done) {
       // kept dice still to be handed out (placed ones sit in the red row)
       let left = (v.kept[i] || []).filter((x) => !(x.id in assign) && !(self && crew.some((c) => c.id === x.id)));
-      if (paying && spare && Object.keys(assign).length === v.handOut) left = [];   // the leftover is shown in YOU KEEP
       out += '<div class="kept"><span class="lbl">' + (mine ? 'YOUR HAND' : 'THEIR HAND') + '</span>';
       for (const d of left) out += dieHTML(d, 'sm' + (paying ? ' pick' + (pickKept === d.id ? ' sel' : '') : ''));
       out += '</div>';
     }
     if (mine) {
       const j = v.job;
-      out += '<div class="sched"><span>SEND <b>4</b> EVERY JOB</span><span>ROLL <b class="' + (j === 0 ? 'on' : '') + '">8</b> / <b class="' + (j === 1 ? 'on' : '') + '">7</b> / <b class="' + (j === 2 ? 'on' : '') + '">6</b></span>' +
+      out += '<div class="sched"><span>SEND <b>4</b> EVERY JOB</span><span>ROLL <b class="' + (j === 0 ? 'on' : '') + '">7</b> / <b class="' + (j === 1 ? 'on' : '') + '">6</b> / <b class="' + (j === 2 ? 'on' : '') + '">6</b></span>' +
         '<span>PAY <b class="' + (j === 0 ? 'on' : '') + '">ALL 3</b> ON JOB 1 · <b class="' + (j > 0 ? 'on' : '') + '">ANY 2</b> AFTER</span><span class="hot">JOB 3 DOUBLES</span></div>';
     }
     out += '</div>';
@@ -1290,11 +1271,11 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     }
     h += '<div class="sumgrid">';
     for (const hst of s.hosts) {
-      h += '<div class="sumh"><div class="hd"><span class="dot p' + hst.seat + '" style="width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)"></span><span class="nm">' + esc(nm(hst.seat)) + '</span><span class="pts">+' + (hst.crewPts + hst.own) + '</span></div>';
+      h += '<div class="sumh"><div class="hd"><span class="dot p' + hst.seat + '" style="width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.25)"></span><span class="nm">' + esc(nm(hst.seat)) + '</span><span class="pts">+' + hst.crewPts + '</span></div>';
       if (hst.selfCrew) h += '<div class="line muted">Nobody sent dice. Ran the job with their own.</div>';
       else if (hst.noCrew) h += '<div class="line muted">Nobody showed up.</div>';
       for (const c of hst.crew) h += '<div class="line">' + dieHTML({ id: 'x', v: c.v, owner: c.owner }, 'sm') + '<span class="who">' + esc(nm(c.owner)) + '</span><span class="amt' + (c.paid || c.owner === hst.seat ? '' : ' zero') + '">' + (c.owner === hst.seat ? 'OWN' : c.paid ? '+' + c.paid : 'NOTHING') + '</span></div>';
-      h += '<div class="own">Crew ' + hst.crewPts + (s.last ? ' (doubled)' : '') + ' · own cut ' + hst.own + '</div></div>';
+      h += '<div class="own">Crew ' + hst.crewPts + (s.last ? ' (doubled)' : '') + ' · paid out ' + hst.paidOut + '</div></div>';
     }
     h += '</div><div class="row" style="margin-top:14px">' + (v.phase === 'summary' && session.isHost() && !tut ? '<button class="btn red" id="m-next">Next job</button>' : '') + (v.phase === 'over' ? '<button class="btn red" id="m-again">Back to the lobby</button>' : '') + '<button class="btn" id="m-close">Close</button></div></div>';
     m.innerHTML = h;
@@ -1306,16 +1287,16 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
   /* ============================================================ TUTORIAL
      One scripted first job at a four-player table, with a coach.
      Fixed rolls and fixed bot moves, so every lesson plays out the same way:
-       You  6 5 4 4 3 2 1 1  send 6→Dot (promised), 1→Sal (his missing inside man), 3 and 1→Vic; keep 5 4 4 2
-       Vic  6 5 4 4 3 2 2 1  sends 6→you, 2→Dot, 4 and 3→Sal; keeps 5 4 2 1 and pays fair
-       Dot  6 6 5 5 4 2 1 1  sends 4→you, 5→Vic, 5 and 6→Sal; keeps 6 2 1 1 and breaks her promise to you
-       Sal  6 5 4 3 3 2 2 1  sends 5 and 2→you, 3→Dot, 6→Vic; keeps 4 3 2 1
+       You  6 5 4 3 2 1 1  send 6→Dot (promised), 1→Sal (his missing inside man), 3 and 1→Vic; keep 5 4 2
+       Vic  6 5 4 4 3 2 2  sends 6→you, 2→Dot, 4 and 3→Sal; keeps 5 4 2 and pays fair
+       Dot  6 6 5 5 4 2 1  sends 4→you, 5→Vic, 5 and 6→Sal; keeps 6 2 1, and pays her 6 to Sal, not you as promised
+       Sal  6 5 4 3 3 2 2  sends 5 and 2→you, 3→Dot, 6→Vic; keeps 4 3 2
      Your job is sent Vic's 6, Dot's 4, Sal's 5 and 2: crew 2 + 4 + 6 = 12, and Sal's 5 goes home. */
-  const TUT_DEAL = [[[6, 5, 4, 4, 3, 2, 1, 1], [6, 5, 4, 4, 3, 2, 2, 1], [6, 6, 5, 5, 4, 2, 1, 1], [6, 5, 4, 3, 3, 2, 2, 1]]];
+  const TUT_DEAL = [[[6, 5, 4, 3, 2, 1, 1], [6, 5, 4, 4, 3, 2, 2], [6, 6, 5, 5, 4, 2, 1], [6, 5, 4, 3, 3, 2, 2]]];
   const TUT_BOTS = ['Vic', 'Dot', 'Sal'];
   const TUT_SENDS = { 1: [[6, 0], [2, 2], [4, 3], [3, 3]], 2: [[4, 0], [5, 1], [5, 3], [6, 3]], 3: [[5, 0], [2, 0], [3, 2], [6, 1]] };
   // bot cuts: [kept die value, owner of the crew die, value of the crew die]
-  const TUT_PAYS = { 1: [[5, 3, 6], [4, 0, 3], [2, 0, 1]], 2: [[1, 0, 6], [1, 1, 2], [2, 3, 3]], 3: [[4, 2, 6], [3, 1, 4], [2, 0, 1]] };
+  const TUT_PAYS = { 1: [[5, 3, 6], [4, 0, 3], [2, 0, 1]], 2: [[1, 0, 6], [2, 1, 2], [6, 3, 3]], 3: [[4, 2, 6], [3, 1, 4], [2, 0, 1]] };
   // your sends, by step: [die value, which of that value (0 = first), to seat]
   const TUT_MINE = { send6: [[6, 0, 2]], send1: [[1, 0, 3]], sendV: [[3, 0, 1], [1, 1, 1]] };
   const TUT_STEPS = ['table', 'roll', 'talk', 'land', 'send6', 'send1', 'sendV', 'sendGo', 'crew', 'pay', 'reveal'];
@@ -1426,7 +1407,7 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       case 'table': return ['Meet the table',
         "You're red. Vic, Dot and Sal are bots. Every job needs a crew of three, one of each kind: an " + B('inside man') + ' (a 1 or 2), a ' + B('getaway driver') + ' (3 or 4) and ' + B('the muscle') + " (5 or 6). The catch: you can't use your own dice on your own job. Your crew comes from dice your rivals send you."];
       case 'roll': return ['Everyone rolls in the open',
-        'Everyone rolled 8 dice, face up, so you can see what each rival has to offer. Yours are at the bottom. You will ' + B('send 4') + " to rivals' jobs and " + B('keep 4') + '. The dice you keep are the only thing you can pay anyone with.'];
+        'Everyone rolled 7 dice, face up, so you can see what each rival has to offer. Yours are at the bottom. You will ' + B('send 4') + " to rivals' jobs and " + B('keep 3') + '. The dice you keep are the only thing you can pay anyone with, and every one of them gets paid out.'];
       case 'talk': return ['Talk is free',
         'Dot says: <q>Send me your 6 and my best cut is yours.</q> Vic says: <q>My 6 is coming your way. Pay me well.</q> Ask, offer and promise whatever you like. Promises are made out loud, and ' + B('none of them are binding') + '.'];
       case 'land': return tut.landed < 2 ? ['Rivals send first', 'Players send in turn. Vic, Dot and Sal go before you this job. Watch your job.']
@@ -1434,11 +1415,11 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
       case 'send6': return ['Your turn to send', 'You told Dot you would. Click your ' + B('6') + ', then click ' + B("Dot's job") + '.'];
       case 'send1': return ['Hold the missing kind', "Sal's job has no inside man, and only a 1 or 2 can fill that slot. Whoever holds the missing kind holds the job. Send Sal a " + B('1') + '.'];
       case 'sendV': return ['Any split you like', 'Vic has no driver and no inside man yet. Send him your ' + B('3') + ' and your other ' + B('1') + '. You can split your four any way, even all four to one rival. Never to your own job.'];
-      case 'sendGo': return ['Your payroll', "That's four. You keep 5, 4, 4 and 2. Send your best dice out and you'd have nothing good left to pay with. Click " + B('Send them out') + '.'];
+      case 'sendGo': return ['Your payroll', "That's four. You keep 5, 4 and 2. Send your best dice out and you'd have nothing good left to pay with. Click " + B('Send them out') + '.'];
       case 'crew': return ['Pick your crew', "Everyone now picks a crew from what they were sent: one of each kind, never two. You have two muscles, so take Vic's " + B('6') + ". Add Dot's " + B('4') + " and Sal's " + B('2') + ". Sal's 5 goes home and earns him nothing. Your crew scores its total: 12."];
       case 'pay': {
         const need = v.handOut || 3, have = Object.keys(paySel).length;
-        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. On job 1 you pay all three of your crew. Click a die from your hand, then the red slot under a crew member. You can stack two on one person. The die you keep is your own cut. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
+        return ['Hand out the cuts, in secret', 'Everyone does this at once, face down. On job 1 you pay all three of your crew. Click a die from your hand, then the red slot under a crew member. You can stack two on one person. All three of your kept dice go out; you keep nothing for yourself. Vic sent his 6 on a promise. Dot promised you her best. Your call. ' + B(have + ' of ' + need + ' placed.')];
       }
     }
     return ['', ''];
@@ -1507,12 +1488,12 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     const from = (i) => s.hosts[i].given[0] || 0, paid = (i) => me.given[i] || 0;
     if (id === 'reveal') {
       renderSummary();
-      const got = from(1) + from(2) + from(3), total = me.crewPts + me.own + got;
+      const got = from(1) + from(2) + from(3), total = me.crewPts + got;
       const amt = (i) => (paid(i) ? paid(i) : 'nothing');
       const word = 'You paid Vic ' + amt(1) + ', Dot ' + amt(2) + ' and Sal ' + amt(3) + '. ' + (paid(1) ? '' : "Vic sent you his 6 and got nothing. He'll remember. ");
       const note = '<div class="tnote"><span class="c-eye">Tutorial · ' + TUT_STEPS.length + ' of ' + TUT_STEPS.length + '</span><h3>The reveal</h3>' +
-        '<p>Everyone\'s cuts flip over at once. You scored ' + B(total) + ': your crew\'s ' + me.crewPts + ', your own cut of ' + me.own + ', and cuts of ' + from(1) + ' from Vic, ' + from(3) + ' from Sal and ' + from(2) + ' from Dot.</p>' +
-        '<p>' + word + 'Dot promised you her best cut for your 6. She handed you her ' + B(from(2)) + ' and kept her 6 for herself. That\'s allowed: promises don\'t bind. But the whole table saw it, and there are two more jobs. Next time, you choose who gets your dice.</p></div>';
+        '<p>Everyone\'s cuts flip over at once. You scored ' + B(total) + ': your crew\'s ' + me.crewPts + ', and cuts of ' + from(1) + ' from Vic, ' + from(3) + ' from Sal and ' + from(2) + ' from Dot.</p>' +
+        '<p>' + word + 'Dot promised you her best cut for your 6. She handed you her ' + B(from(2)) + ' and gave her 6 to Sal. That\'s allowed: promises don\'t bind. But the whole table saw it, and there are two more jobs. Next time, you choose who gets your dice.</p></div>';
       m.querySelector('.sub').insertAdjacentHTML('afterend', note);
       m.querySelector('.box > .row').outerHTML = '<div class="row" style="margin-top:14px"><button class="btn red" data-t="finish">Next</button><button class="btn ghost" data-t="exit">Exit tutorial</button></div>';
       m.querySelector('.box').scrollTop = 0;
@@ -1521,14 +1502,13 @@ aside{border-left:1.5px solid var(--line);background:var(--paper2);display:flex;
     const ranked = v.players.map((p, i) => ({ i, s: v.scores[i] })).sort((a, b) => b.s - a.s);
     m.classList.remove('hide');
     m.innerHTML = '<div class="box fin" role="dialog" aria-label="Tutorial complete"><h2>That\'s a whole job</h2><div class="sub">TUTORIAL COMPLETE</div>' +
-      '<p class="lead">A game is three jobs, played just like this one. You roll one fewer die each job, because the die you keep as your cut leaves the game. Highest total after job 3 wins.</p>' +
+      '<p class="lead">A game is three jobs, played just like this one. You roll 7 dice on job 1 and 6 after that. Highest total after job 3 wins.</p>' +
       '<table class="jobs"><thead><tr><th></th><th>Job 1</th><th>Job 2</th><th>Job 3</th></tr></thead><tbody>' +
-      '<tr><td>Roll</td><td>8</td><td>7</td><td>6</td></tr><tr><td>Send out</td><td>4</td><td>4</td><td>4</td></tr><tr><td>Keep</td><td>4</td><td>3</td><td>2</td></tr>' +
-      '<tr><td>Cuts you pay</td><td>3</td><td class="hot">2</td><td class="hot">2</td></tr><tr><td>Your own cut</td><td>1</td><td>1</td><td class="hot">none</td></tr>' +
+      '<tr><td>Roll</td><td>7</td><td class="hot">6</td><td class="hot">6</td></tr><tr><td>Send out</td><td>4</td><td>4</td><td>4</td></tr><tr><td>Keep and pay out</td><td>3</td><td class="hot">2</td><td class="hot">2</td></tr>' +
       '<tr><td>Your crew scores</td><td>its total</td><td>its total</td><td class="hot">double</td></tr></tbody></table>' +
       '<div class="rules"><p><b>Jobs 2 and 3.</b> You pay only two cuts, so one of your crew gets nothing. You choose who.</p>' +
-      '<p><b>The last job.</b> Your crew scores double, and both kept dice go out to your crew. Nothing is left for you, and nobody can pay you back afterward.</p>' +
-      '<p><b>Frozen out.</b> If nobody sends you anything, run the job with your own people: one of each kind from your kept dice, scored as your crew (doubled on job 3). You pay no one. On jobs 1 and 2 you still score your best leftover kept die as your cut.</p>' +
+      '<p><b>The last job.</b> Your crew scores double, and nobody can pay you back afterward.</p>' +
+      '<p><b>Frozen out.</b> If nobody sends you anything, run the job with your own people: one of each kind from your kept dice, scored as your crew (doubled on job 3). You pay no one.</p>' +
       '<p><b>After job 1.</b> ' + ranked.map((r) => esc(nm(r.i)) + (r.i === 0 && nm(r.i) !== 'You' ? ' (you)' : '') + ' ' + r.s).join(' · ') + '</p></div>' +
       '<div class="row" style="margin-top:14px"><button class="btn red" data-t="play">Play against bots</button><button class="btn" data-t="again">Replay the tutorial</button><button class="btn ghost" data-t="menu">Back to the menu</button></div></div>';
     m.querySelector('.box').scrollTop = 0;

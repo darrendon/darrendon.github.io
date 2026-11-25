@@ -4,9 +4,10 @@
   'use strict';
 
   const JOBS = [
-    { roll: 8, send: 4, pay: 3, spare: 1 },
-    { roll: 7, send: 4, pay: 2, spare: 1 },
-    { roll: 6, send: 4, pay: 2, spare: 0 },
+    // no cut for the host: every die you keep is paid out to your crew
+    { roll: 7, send: 4, pay: 3 },
+    { roll: 6, send: 4, pay: 2 },
+    { roll: 6, send: 4, pay: 2 },
   ];
   const BANDS = ['Inside Man', 'Getaway Driver', 'The Muscle'];
   const band = (v) => (v <= 2 ? 0 : v <= 4 ? 1 : 2);
@@ -209,7 +210,7 @@
         for (let i = 0; i < S.N; i++) S.kept[i] = S.hands[i].slice();
         S.phase = 'crew';
         // frozen out: nobody sent you anything, so you run the job with your own people —
-        // one of each kind from your kept dice, by the usual crew rules. You pay no one; your own cut works as usual.
+        // one of each kind from your kept dice, by the usual crew rules. You pay no one.
         for (let i = 0; i < S.N; i++) if (!S.kitchens[i].length) { S.crews[i] = bestCrew(S.kept[i]); S.selfCrew[i] = true; S.crewDone[i] = true; this.log('Nobody showed up for ' + S.players[i].name + ' — they run it with their own people.'); }
         this.log('Everyone picks a crew.');
       }
@@ -283,9 +284,7 @@
           paidOut += kd.v;
         }
         const self = !!S.selfCrew[i];
-        // frozen-out hosts still take their own cut on jobs 1 and 2: the best kept die their crew didn't use
-        const rest = self ? kept.filter((d) => !crew.some((c) => c.id === d.id)).map((d) => d.v) : [];
-        const own = self ? (job.spare && rest.length ? Math.max(...rest) : 0) : sum(kept.filter((d) => !(d.id in pays)).map((d) => d.v));
+        const own = 0;   // the host keeps nothing for themselves any more: kept dice only ever pay the crew
         S.scores[i] += crewPts + own;
         for (const o of Object.keys(given)) S.scores[o] += given[o];
         const stiffed = crew.filter((d) => d.owner !== i && !(d.owner in given)).map((d) => d.owner);

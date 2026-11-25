@@ -153,15 +153,15 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       </div>
       <div class="callout goal">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.6C6.3 1.6 1.7 6.3 1.7 12S6.3 22.4 12 22.4 22.3 17.7 22.3 12 17.7 1.6 12 1.6zm0 2.4c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8 3.6-8 8-8z"/><path d="M12.9 5.9v1.3c1.2.2 2.1.8 2.6 1.7l-1.9 1.1c-.3-.6-.9-.9-1.7-.9-.8 0-1.2.3-1.2.8 0 .5.5.8 1.8 1.2 1.9.5 3.1 1.2 3.1 2.9 0 1.5-1.1 2.4-2.7 2.7v1.4h-1.8v-1.4c-1.4-.3-2.4-1-2.9-2.1l1.9-1.1c.3.8 1 1.2 2 1.2.9 0 1.4-.3 1.4-.8 0-.5-.5-.8-1.9-1.2-1.8-.5-3-1.3-3-2.9 0-1.4 1.1-2.4 2.5-2.6V5.9z"/></svg>
-        <div><b>The goal.</b> After three jobs, have the most points — from the crews you run, the cuts other players pay you, and the cut you keep for yourself.</div>
+        <div><b>The goal.</b> After three jobs, have the most points — from the crews you run and the cuts other players pay you.</div>
       </div>
 
       <div class="sec">
         <h2>In the box</h2>
         <div class="box comp">
-          <div class="q">48</div>
+          <div class="q">42</div>
           <div><div class="dice" style="margin-bottom:.03in"><span class="d sm R" data-v="6"></span><span class="d sm B" data-v="4"></span><span class="d sm Y" data-v="2"></span><span class="d sm G" data-v="5"></span><span class="d sm W" data-v="3"></span><span class="d sm K" data-v="1"></span></div>
-            Dice, eight in each of six colors. A die is a <b>contact</b>; its number is how good they are.</div>
+            Dice, seven in each of six colors. A die is a <b>contact</b>; its number is how good they are.</div>
           <div class="q">6</div>
           <div><img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="" style="width:.7in;vertical-align:middle;border-radius:2px;margin-right:.04in;box-shadow:0 1px 2px rgba(0,0,0,.3)"> Crew sheets, one per player. Each is named for a different score; they all play the same.</div>
           <div class="q">1</div>
@@ -174,7 +174,7 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       <div class="sec">
         <h2>Setup</h2>
         <ul class="tight">
-          <li>Each player takes a <b>crew sheet</b> and the <b>eight dice</b> of one color. These dice are your contacts.</li>
+          <li>Each player takes a <b>crew sheet</b> and the <b>seven dice</b> of one color. These dice are your contacts.</li>
           <li>Put the sheet in front of you. Its top row is where <i>other</i> players' dice land when they work your job.</li>
           <li>Give someone the scorepad, with a column per player.</li>
           <li>Choose a <b>first player</b>. That role passes one seat to the left before every job.</li>
@@ -193,7 +193,7 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       </div>
 
       <div class="callout red">
-        <b>Your dice do three jobs at once.</b> The dice you send out are your rivals' workers. The dice you keep back are the only thing you can <b>pay</b> anyone with. And whatever lands in your pocket is your <b>score</b>.
+        <b>Your dice pull double duty.</b> The dice you send out are your rivals' workers. The dice you keep back are the only thing you can <b>pay</b> anyone with — and every one of them gets paid out. You never keep a die for yourself.
       </div>
     </div>
   </div>
@@ -208,15 +208,14 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
         <h2>Your crew sheet</h2>
         <p>Colors on the sheet tell you whose points a die is. <span class="tag score">Gold</span> is yours. <span class="tag pay">Red</span> is paid out to someone else.</p>
         <div class="sheetfig">
-          <img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="A crew sheet: a gold You Score row of three crew slots, a red You Pay row of cut slots beneath, and a gold You Keep slot on the right.">
-          <span class="pin" style="left:-2.6%;top:44.5%">1</span>
-          <span class="pin" style="left:-2.6%;top:71.8%">2</span>
-          <span class="pin" style="left:97%;top:58.2%">3</span>
+          <img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="A crew sheet: a gold You Score row of three crew slots and a red You Pay row of cut slots beneath them.">
+          <span class="pin" style="left:-2.6%;top:43.25%">1</span>
+          <span class="pin" style="left:-2.6%;top:70.5%">2</span>
         </div>
         <div class="keys">
           <div class="key"><span class="pin">1</span><div><b>You score — your crew.</b> One rival die in each slot: inside man, driver, muscle. You score their total.</div></div>
           <div class="key"><span class="pin">2</span><div><b>You pay — their cuts.</b> Your own kept dice go here, under the crook you're paying. That crook's owner scores them.</div></div>
-          <div class="key"><span class="pin">3</span><div><b>You keep — your cut.</b> On jobs 1 and 2, one kept die is left over. It's yours to score.</div></div>
+          <div class="key"><span class="pin" style="background:var(--soft)">!</span><div><b>Nothing for you.</b> Every die you keep is paid out. Your points come from your crew and from the cuts rivals hand you.</div></div>
         </div>
       </div>
     </div>
@@ -224,17 +223,16 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
     <div>
       <div class="sec">
         <h2>Three jobs</h2>
-        <p>The game is three jobs. You roll one fewer die each job, because the contact you keep as your cut takes the money and leaves.</p>
+        <p>The game is three jobs. You roll 7 dice on the first job and 6 on the other two.</p>
         <table class="sched">
           <tr><th></th><th>Job 1</th><th>Job 2</th><th class="last">Job 3</th></tr>
-          <tr><td class="lbl">Roll</td><td>8</td><td>7</td><td class="last">6</td></tr>
+          <tr><td class="lbl">Roll</td><td>7</td><td>6</td><td class="last">6</td></tr>
           <tr><td class="lbl">Send out</td><td>4</td><td>4</td><td class="last">4</td></tr>
-          <tr><td class="lbl">Keep</td><td>4</td><td>3</td><td class="last">2</td></tr>
+          <tr><td class="lbl">Keep</td><td>3</td><td>2</td><td class="last">2</td></tr>
           <tr class="score"><td class="lbl">Crew you score</td><td>3</td><td>3</td><td class="last">3 · <b>double</b></td></tr>
           <tr class="pay"><td class="lbl">Cuts you pay</td><td>3</td><td>2</td><td class="last">2</td></tr>
-          <tr class="score"><td class="lbl">Cut you keep</td><td>1</td><td>1</td><td class="last">—</td></tr>
         </table>
-        <p class="small">You always send four and always crew three. Your kept dice pay your crew, as far as they go, and anything left over is your own cut. The crew sheet's bottom line carries this whole table.</p>
+        <p class="small">You always send four and always crew three, and you pay out every die you keep. The crew sheet's bottom line carries this whole table.</p>
       </div>
     </div>
   </div>
@@ -246,7 +244,7 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       <div><span class="num">2</span><b>Send</b><span>In turn, 4 dice each to rivals' jobs</span></div>
       <div><span class="num">3</span><b>Crew</b><span>Take one of each kind from what you were sent</span></div>
       <div><span class="num">4</span><b>Pay</b><span>In secret, hand your kept dice to your crew</span></div>
-      <div><span class="num">5</span><b>Score</b><span>Write it down; your cut walks</span></div>
+      <div><span class="num">5</span><b>Score</b><span>Write it down, dice go home</span></div>
     </div>
   </div>
 
@@ -260,9 +258,9 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
     </div>
     <div>
       <div class="fig" style="margin-top:.1in">
-        <div class="row"><span class="lab">You rolled</span><div class="dice"><span class="d sm B" data-v="6"></span><span class="d sm B" data-v="5"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="3"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="1"></span></div></div>
+        <div class="row"><span class="lab">You rolled</span><div class="dice"><span class="d sm B" data-v="6"></span><span class="d sm B" data-v="5"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="3"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="1"></span></div></div>
         <div class="row"><span class="lab">Sent out</span><div class="bracket out"><span class="d sm B" data-v="6"></span><span class="d sm B" data-v="5"></span><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="1"></span><span class="cap" style="color:var(--red)">→ rivals</span></div></div>
-        <div class="row"><span class="lab">Kept back</span><div class="bracket"><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="3"></span><span class="d sm B" data-v="2"></span><span class="d sm B" data-v="2"></span><span class="cap" style="color:#7A5C14">your payroll</span></div></div>
+        <div class="row"><span class="lab">Kept back</span><div class="bracket"><span class="d sm B" data-v="4"></span><span class="d sm B" data-v="3"></span><span class="d sm B" data-v="2"></span><span class="cap" style="color:#7A5C14">your payroll</span></div></div>
         <p class="note">Send your best people and your rivals score well with them — but you've nothing good left to pay anyone with.</p>
       </div>
     </div>
@@ -292,14 +290,13 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       </ul>
       <p>Each cut goes to the <b>owner of the crook above it</b>, who scores the total of the dice they were handed. The cut dice themselves come back to you.</p>
       <div class="fig">
-        <div class="row"><span class="lab">Kept back</span><div class="dice"><span class="d B" data-v="4"></span><span class="d B" data-v="3"></span><span class="d B" data-v="2"></span><span class="d B" data-v="2"></span></div></div>
+        <div class="row"><span class="lab">Kept back</span><div class="dice"><span class="d B" data-v="4"></span><span class="d B" data-v="3"></span><span class="d B" data-v="2"></span></div></div>
         <div class="row" style="align-items:flex-start"><span class="lab">Crew &amp; cuts</span>
           <div style="display:grid;grid-template-columns:repeat(3,auto) .15in auto;gap:.05in .1in;align-items:center">
             <span class="d Y" data-v="2"></span><span class="d G" data-v="4"></span><span class="d R" data-v="6"></span><span></span><span class="small" style="color:#7A5C14"><b>gold:</b> you score 12</span>
             <span class="d B" data-v="2"></span><span class="d B" data-v="3"></span><span class="d B" data-v="4"></span><span></span><span class="small" style="color:var(--red)"><b>red:</b> yellow +2, green +3, red +4</span>
           </div>
         </div>
-        <div class="row"><span class="lab">Your cut</span><div class="bracket"><span class="d B" data-v="2"></span><span class="cap" style="color:#7A5C14">you keep 2</span></div></div>
       </div>
     </div>
     <div>
@@ -308,25 +305,24 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       <ul class="tight">
         <li><span class="tag score">Crew</span> the total of the crew on your job.</li>
         <li><span class="tag score">Cuts</span> every die other players handed you.</li>
-        <li><span class="tag score">Your cut</span> on jobs 1 and 2, the one kept die you didn't hand out. Score its number, then <b>put that die back in the box</b> — that contact has taken the money and gone. It's why you roll one fewer next job.</li>
       </ul>
-      <p>Every other die goes back to its owner. Pass the first-player role one seat to the left and start the next job.</p>
+      <p>Every die goes back to its owner. Pass the first-player role one seat to the left and start the next job.</p>
       <div class="sec" style="margin-top:.16in">
         <h2>Promises</h2>
         <p>Talk at any time, to anyone, about anything: which die you'll send where, who you'll crew, what cut you'll hand over. Make deals, threaten, beg.</p>
-        <div class="callout red"><b>Nothing is binding.</b> The player who promised you their 6 can hand you their 1 and keep the 6 for themselves.</div>
+        <div class="callout red"><b>Nothing is binding.</b> The player who promised you their 6 can hand you their 1 and give the 6 to someone else.</div>
         <p>But every die is face up all job, so the whole table can see exactly what a player <i>could</i> have paid — and, at the reveal, what they did. There are three jobs, and everyone remembers who they sent to last time.</p>
       </div>
 
       <div class="sec">
         <h2>Nobody shows up</h2>
-        <p>If nobody sends you anything at all, <b>run the job with your own people</b>. From your kept dice, take one of each kind by the usual crew rules — one inside man, one driver, one muscle — and score them as your crew (doubled on job 3). You pay no one. On jobs 1 and 2 you still take your cut: score your best leftover kept die and put it in the box, as usual.</p>
-        <p class="small">If your crew used every kept die, you have no cut that job — put one of your dice in the box anyway. Being frozen out hurts — it's worth about three-quarters of a normal job, with nobody paying you for it — but it doesn't knock you out of the game.</p>
+        <p>If nobody sends you anything at all, <b>run the job with your own people</b>. From your kept dice, take one of each kind by the usual crew rules — one inside man, one driver, one muscle — and score them as your crew (doubled on job 3). You pay no one.</p>
+        <p class="small">Being frozen out hurts — your kept dice rarely make a full crew, and nobody pays you, so it\'s worth about half a normal job — but it doesn\'t knock you out of the game.</p>
       </div>
 
       <div class="sec">
         <h2>The last job</h2>
-        <p>On job 3 your <b>crew scores double</b>. You keep two dice and pay two crew, so there's nothing left over for yourself — both kept dice go out, to two of your crew or stacked on one.</p>
+        <p>On job 3 your <b>crew scores double</b>. You keep two dice and pay them both out, to two of your crew or stacked on one.</p>
         <p>Nobody can punish what you do on the last job. Everyone at the table knows that.</p>
       </div>
       <div class="sec">
@@ -352,23 +348,23 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
   </div>
   <div class="cols" style="grid-template-columns:1fr 1.05fr">
     <div>
-      <p><b>The deal.</b> Priya rolled 6, 5, 4, 4, 3, 2, 2, 1. Owen needs muscle, and promises Priya his best cut if she sends him her 6. She does — and sends her 5, 4 and 4 to other jobs. That leaves her 3, 2, 2 and 1 to pay her own crew with.</p>
+      <p><b>The deal.</b> Priya rolled 6, 5, 4, 4, 3, 2, 1. Owen needs muscle, and promises Priya his best cut if she sends him her 6. She does — and sends her 5, 4 and 4 to other jobs. That leaves her 3, 2 and 1 to pay her own crew with.</p>
       <p><b>The crew.</b> Owen is sent Priya's 6, a 5 and a 2 from Sam, and a 4 from Nel. He takes Sam's 2 as inside man, Nel's 4 to drive and Priya's 6 for muscle: <b>12 points</b>. Sam's 5 goes home — Priya's 6 already has that place.</p>
-      <p><b>The cuts.</b> Owen kept a 6, 4, 3 and 1, and must pay all three crew on job 1. In secret he puts the 4 under Sam's 2, the 3 under Nel's 4 — and the 1 under Priya's 6. He keeps the 6 as his own cut.</p>
+      <p><b>The cuts.</b> Owen kept a 6, 4 and 1, and must pay all three crew on job 1. But Priya is ahead, and Sam has promised Owen an inside man next job. In secret Owen puts the 6 under Sam's 2, the 4 under Nel's 4 — and the 1 under Priya's 6.</p>
       <div class="score-tally box">
-        <div>Owen: crew 12 + his cut 6</div><div>18</div>
-        <div>Sam: Owen's cut</div><div>4</div>
-        <div>Nel: Owen's cut</div><div>3</div>
+        <div>Owen: his crew</div><div>12</div>
+        <div>Sam: Owen's cut</div><div>6</div>
+        <div>Nel: Owen's cut</div><div>4</div>
         <div>Priya: Owen's cut</div><div>1</div>
       </div>
-      <p style="margin-top:.08in">Had Owen kept his word — the 6 to Priya, the 1 for himself — he'd have scored 13. The lie was worth five points, and the whole table watched him tell it. There are two jobs left, and Priya decides where her best contacts go in both.</p>
+      <p style="margin-top:.08in">Owen scores 12 whoever he pays, so breaking his word cost him nothing today. It moved five points from Priya to Sam, and the whole table watched him do it. There are two jobs left, and Priya decides where her best contacts go in both.</p>
       <p class="small">(Everyone else's job runs at the same time; only Owen's is shown.)</p>
     </div>
     <div>
       <div class="sheetfig" id="owen">
-        <img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="Owen's crew sheet at the reveal: Sam's yellow 2, Nel's green 4 and Priya's red 6 in the crew row; Owen's blue 4, 3 and 1 beneath them as cuts; Owen's blue 6 in his own cut slot.">
+        <img src="/games/too-many-crooks/img/src/tex/sheet-0.jpg" alt="Owen's crew sheet at the reveal: Sam's yellow 2, Nel's green 4 and Priya's red 6 in the crew row; Owen's blue 6, 4 and 1 beneath them as cuts.">
       </div>
-      <p class="small" style="text-align:center;margin-top:-.04in">Owen's sheet at the reveal. Gold row: his crew, worth 12 to him. Red row: his blue dice, scored by the owner of the crook above. Right: the 6 he kept.</p>
+      <p class="small" style="text-align:center;margin-top:-.04in">Owen's sheet at the reveal. Gold row: his crew, worth 12 to him. Red row: his blue dice, scored by the owner of the crook above.</p>
     </div>
   </div>
 
@@ -383,17 +379,16 @@ table.sched{width:100%;border-collapse:collapse;font-size:9pt;margin:.04in 0 .06
       <ul class="tight tips">
         <li><b>Your payroll is what you didn't send.</b> Send out your best and you'll have nothing worth paying with.</li>
         <li><b>Whoever holds the missing kind holds the job.</b> If a job has no inside man, the player with a 1 or 2 to spare can name their price.</li>
-        <li><b>You can freeze someone out — for a while.</b> Nothing obliges you to send a rival anything. A frozen job runs on its host's own dice and is worth about three-quarters — and whoever breaks ranks to supply it gets to set the terms.</li>
+        <li><b>You can freeze someone out — for a while.</b> Nothing obliges you to send a rival anything. A frozen job runs on its host's own dice and is worth about half — and whoever breaks ranks to supply it gets to set the terms.</li>
         <li><b>Only the crew doubles on job 3.</b> Cuts score their face value, every job.</li>
       </ul>
     </div>
     <div>
       <h2>Quick reference</h2>
       <div class="box" style="font-size:8.8pt">
-        <p><b>Roll</b> 8 / 7 / 6 · <b>send</b> 4 each, in turn, never to yourself.</p>
+        <p><b>Roll</b> 7 / 6 / 6 · <b>send</b> 4 each, in turn, never to yourself.</p>
         <p><b>Crew</b> one each: inside man 1–2, driver 3–4, muscle 5–6. <span class="tag score">You score</span> their total (double on job 3).</p>
-        <p><b>Pay</b> in secret: 3 cuts on job 1, then 2. Stacking allowed. <span class="tag pay">They score</span> what you hand them.</p>
-        <p style="margin:0"><b>Your cut</b> jobs 1–2: score the leftover kept die, then it leaves the game.</p>
+        <p style="margin:0"><b>Pay</b> in secret, every kept die: 3 cuts on job 1, then 2. Stacking allowed. <span class="tag pay">They score</span> what you hand them.</p>
       </div>
       <div class="credits"><b>Too Many Crooks!</b><br>A game by Darren Don · darren@darrendon.com<br>Play it online at darrendon.com/games/too-many-crooks</div>
     </div>
@@ -418,12 +413,11 @@ document.querySelectorAll('.d').forEach(function (d) { d.innerHTML = '<i></i><i>
 // Owen's sheet at the reveal: dice dropped into the measured slot centres (percent of the sheet)
 (function () {
   var fig = document.getElementById('owen');
-  var X = [19.44, 39.59, 59.73], CREW = 44.51, PAY = 71.79, OWN = [82.01, 58.15];
+  var X = [24.03, 53.36, 82.68], CREW = 43.25, PAY = 70.52;
   function put(cls, v, x, y) { var s = document.createElement('span'); s.className = 'd lg onsheet ' + cls; s.dataset.v = v; s.style.left = x + '%'; s.style.top = y + '%';
     s.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>'; fig.appendChild(s); }
   put('Y', 2, X[0], CREW); put('G', 4, X[1], CREW); put('R', 6, X[2], CREW);
-  put('B', 4, X[0], PAY); put('B', 3, X[1], PAY); put('B', 1, X[2], PAY);
-  put('B', 6, OWN[0], OWN[1]);
+  put('B', 6, X[0], PAY); put('B', 4, X[1], PAY); put('B', 1, X[2], PAY);
 })();
 </script>
 </body>

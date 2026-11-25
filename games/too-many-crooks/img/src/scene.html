@@ -97,7 +97,8 @@
     const m = new THREE.Mesh(new THREE.BoxGeometry(SW, ST, SD), mats); m.castShadow = true; m.receiveShadow = true; m.position.y = ST / 2; return m;
   }
   // slot centres in sheet-local x/z (measured off the texture; texture is 384 px/in)
-  const CREW_X = [0.68 - 1.75, 1.385 - 1.75, 2.09 - 1.75], CREW_Z = 1.125 - 1.25, PAY_Z = 1.79 - 1.25, OWN = [2.855 - 1.75, 1.46 - 1.25];
+  // slot centres measured from sheet.html (inches from the sheet's top-left, minus half the sheet)
+  const CREW_X = [0.841 - 1.75, 1.867 - 1.75, 2.894 - 1.75], CREW_Z = 1.081 - 1.25, PAY_Z = 1.763 - 1.25;
   // place a die on a sheet at local (x,z); returns a world-positioned group added to the sheet's parent
   function dieOnSheet(sheet, colour, v, lx, lz, yaw) {
     const d = makeDie(colour, v, yaw); d.position.set(lx, ST + DIE / 2, lz); sheet.add(d); return d;
@@ -160,7 +161,6 @@
     const s = add(makeSheet(2), 'crew sheet'); s.position.set(3.4, 0, 1.6); s.rotation.y = -0.16;
     dieOnSheet(s, 1, 2, CREW_X[0], CREW_Z, 0); dieOnSheet(s, 2, 4, CREW_X[1], CREW_Z, 0); dieOnSheet(s, 3, 6, CREW_X[2], CREW_Z, 0);
     // cut slots stay empty: dice in back-to-back slots read as touching from any table-height camera
-    dieOnSheet(s, 0, 2, OWN[0], OWN[1], 0);
     const r = rnd(7);
     [[0.9, 4, 6], [2.2, 5, 2], [3.5, 3, 5], [4.8, 1, 1], [6.1, 0, 4]].forEach(([t, c, v], k) => {
       const [x, z] = frontOf(box, t, 1.7); const d = add(makeDie(c, v, 0.3 + (r() - 0.5) * 0.5), 'die ' + (k + 1)); d.position.set(x, DIE / 2, z); });
@@ -181,7 +181,6 @@
     seats.forEach((st, k) => {
       const s = add(makeSheet([0, 1, 4, 5][k]), 'crew ' + (k + 1)); s.position.set(st.pos[0], 0, st.pos[2]); s.rotation.y = st.rot;
       crewsFor[k].forEach(([c, v], i) => dieOnSheet(s, c, v, CREW_X[i], CREW_Z, 0));
-      dieOnSheet(s, st.me, 2, OWN[0], OWN[1], 0);
       // the rest of this player's hand in a row beside the sheet (local coords, clear of the card edge)
       [[2.35, -1.0], [2.35, -0.05], [2.35, 0.9]].forEach(([lx, lz], j) => dieOnSheet(s, st.me, [6, 5, 1][j], lx, lz, (r() - .5) * .24));
     });
@@ -189,10 +188,10 @@
   }
 
   if (SCENE === 'kit') {
-    // what's in the box: the box standing at the left, six sheets in a 3x2 grid, six rows of eight dice
+    // what's in the box: the box standing at the left, six sheets in a 3x2 grid, six rows of seven dice
     const box = add(makeStandingBox(), 'box'); box.position.set(-5.4, 0, -3.6); box.rotation.y = 0.12;
     for (let i = 0; i < 6; i++) { const s = add(makeSheet(i), 'sheet ' + (i + 1)); s.position.set(1.9 + (i % 3) * 3.8, 0, -5.6 + Math.floor(i / 3) * 2.85); }
-    for (let c = 0; c < 6; c++) for (let k = 0; k < 8; k++) { const d = add(makeDie(c, ((c * 3 + k) % 6) + 1, 0), 'die ' + c + '-' + k); d.position.set(-1.3 + k * 1.0, DIE / 2, -0.2 + c * 1.25); }
+    for (let c = 0; c < 6; c++) for (let k = 0; k < 7; k++) { const d = add(makeDie(c, ((c * 3 + k) % 6) + 1, 0), 'die ' + c + '-' + k); d.position.set(-0.8 + k * 1.0, DIE / 2, -0.2 + c * 1.25); }
     frame([-9.0, 0, -7.0], [9.6, 5.0, 6.4], 46, 0, 0.97);
   }
 

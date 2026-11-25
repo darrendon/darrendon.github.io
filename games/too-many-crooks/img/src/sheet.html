@@ -63,15 +63,15 @@ body.all .sheet{zoom:1;width:7.0in;margin:0 auto;display:grid;grid-template-colu
 /* ───────────── grid ───────────── */
 .grid{
   flex:1;display:grid;
-  grid-template-columns:.19in var(--d) var(--d) var(--d) .03in var(--d);
+  grid-template-columns:.19in repeat(3,minmax(0,1fr));
   grid-template-rows:auto var(--d) var(--d) auto;
   column-gap:.045in;row-gap:.022in;
-  align-items:center;justify-items:center;padding-top:.025in;
+  align-items:center;justify-items:stretch;padding-top:.025in;
 }
 .c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}
 .r2{grid-row:2}.r3{grid-row:3}
 
-.role{grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1}
+.role{grid-row:1;justify-self:center;display:flex;flex-direction:column;align-items:center;line-height:1}
 .role svg{height:16px;width:16px;display:block;fill:var(--ink);stroke:var(--ink);margin-bottom:2.5px}
 .rname{font-size:7px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
   text-align:center;line-height:1.18;white-space:nowrap}
@@ -79,30 +79,21 @@ body.all .sheet{zoom:1;width:7.0in;margin:0 auto;display:grid;grid-template-colu
   letter-spacing:.8px;line-height:1.45;margin-top:.5px}
 .band.jobs{font-size:6.5px;letter-spacing:.4px;text-transform:uppercase}
 
-.rowlab{font-size:7px;font-weight:700;letter-spacing:.8px;
+.rowlab{justify-self:center;font-size:7px;font-weight:700;letter-spacing:.8px;
   writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
   width:.17in;height:var(--d);border-radius:3px;display:flex;align-items:center;justify-content:center;line-height:1}
 /* gold = yours (scores for you), red = paid out to someone else */
 .rowlab.score{background:var(--gold);color:#1B2228}
 .rowlab.payout{background:var(--hot);color:#FFF6E8}
 
-.slot{width:var(--d);height:var(--d);border-radius:4px;background:var(--slot);
+.slot{width:100%;height:var(--d);border-radius:4px;background:var(--slot);
   border:1.5px solid var(--gold);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);
   display:flex;align-items:center;justify-content:center}
 .slot svg{width:.3in;height:.3in;fill:var(--ink);stroke:var(--ink);opacity:.22}
 .slot.pay{background:#867475;border:1.5px dashed var(--hot);box-shadow:none;flex-direction:column;gap:1px}
 .slot.pay .to{font-family:'Courier Prime',monospace;font-weight:700;font-size:6.2px;letter-spacing:.4px;color:#FFD6C8;line-height:1}
 .slot.pay .to b{font-size:9px;display:block;text-align:center;line-height:.9}
-.slot.own{border:1.5px solid var(--gold);background:#6F7670;
-  grid-column:6;grid-row:2 / 4;align-self:center;flex-direction:column}
-.slot.own .to{font-family:'Courier Prime',monospace;font-weight:700;font-size:6.2px;letter-spacing:.4px;color:var(--gold);line-height:1.2;text-align:center}
 
-.div{grid-column:5;grid-row:1 / 5;width:1px;height:100%;
-  background:repeating-linear-gradient(180deg,var(--soft) 0 2px,transparent 2px 5px)}
-.mine{grid-column:6;grid-row:1;display:flex;flex-direction:column;align-items:center;line-height:1}
-.mine svg{height:16px;width:16px;display:block;fill:var(--gold);stroke:none;margin-bottom:2.5px}
-.mine .rname{color:var(--gold)}
-.mine .band.jobs{color:var(--ink)}
 
 /* brace under the three cut slots — it applies to the group, not to one column */
 .cutnote{grid-column:2 / 5;grid-row:4;position:relative;align-self:start;
@@ -212,9 +203,9 @@ const LOOT_DEFS = `
 // tucked into the empty margins, clear of every slot and label: [symbol, x, y, size, rotation] in css px on a 336 x 240 card
 const LOOT_AT = [
   ['mask',   24, 40,20,-10],['shades', 24, 63,18, 12],
-  ['ring',  258, 90,15, -8],['gem',   306, 92,14, 14],
-  ['cash',  262,198,22,-12],['siren', 312,188,18, 10],['bag', 296,214,15,-6],
-  ['bag',    22,216,15,  8],['gem',    44,224,10,-10],
+  ['gem',   132, 40,12, 14],['ring',  230, 40,12, -8],
+  ['cash',  318, 40,18,-12],['siren', 318, 64,14, 10],
+  ['bag',    22,214,15,  8],
 ];
 const LOOT = `<svg class="loot" viewBox="0 0 336 240" preserveAspectRatio="none" aria-hidden="true"><defs>${LOOT_DEFS}</defs>${
   LOOT_AT.map(([n,x,y,sz,r])=>`<use href="#l-${n}" x="${x-sz/2}" y="${y-sz/2}" width="${sz}" height="${sz}" transform="rotate(${r} ${x} ${y})"/>`).join("")}</svg>`;
@@ -248,12 +239,6 @@ const board = (t) => `
       <span class="band">${r.band}</span>
     </div>`).join("")}
 
-    <span class="div"></span>
-    <div class="mine">
-      ${COIN}
-      <span class="rname">Your<br>Cut</span>
-      <span class="band jobs">Jobs 1&ndash;2</span>
-    </div>
 
     <span class="rowlab score c1 r2">YOU SCORE</span>
     ${ROLES.map((r,i)=>`<span class="slot c${i+2} r2">${r.ico}</span>`).join("")}
@@ -261,15 +246,14 @@ const board = (t) => `
     <span class="rowlab payout c1 r3">YOU PAY</span>
     ${[2,3,4].map(c=>`<span class="slot pay c${c} r3"><span class="to"><b>&uarr;</b>THEIRS</span></span>`).join("")}
 
-    <span class="slot own"><span class="to">YOU<br>KEEP</span></span>
 
-    <div class="cutnote">JOB 1 <b>PAY ALL 3</b> &nbsp;&middot;&nbsp; JOBS 2&amp;3 <b>PAY ANY 2</b></div>
+    <div class="cutnote">EVERY KEPT DIE IS PAID OUT &nbsp;&middot;&nbsp; JOB 1 <b>PAY ALL 3</b> &nbsp;&middot;&nbsp; JOBS 2&amp;3 <b>PAY ANY 2</b></div>
   </div>
 
   <div class="sched">
     <span>SEND <b>4</b> EVERY JOB</span>
-    <span>ROLL <b>8 / 7 / 6</b></span>
-    <span>KEEP <b>4 / 3 / 2</b></span>
+    <span>ROLL <b>7 / 6 / 6</b></span>
+    <span>KEEP <b>3 / 2 / 2</b></span>
     <span class="hot">JOB 3 DOUBLES</span>
   </div>
 </div>`;
